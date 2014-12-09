@@ -8,9 +8,9 @@ dist/
 doc/build
 *.DS_Store
 *.pyc
-neutron.egg-info/
-neutron/vcsversion.py
-neutron/versioninfo
+networking_odl.egg-info/
+networking-odl/vcsversion.py
+networking-odl/versioninfo
 pbr*.egg/
 quantum.egg-info/
 quantum/vcsversion.py
