@@ -23,8 +23,8 @@ import inspect
 import pkg_resources
 import six
 
-from networking-odl.openstack.common._i18n import _
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common._i18n import _
+from networking_odl.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ class deprecated(object):
             # TODO(tsufiev): change `functools` module to `six` as
             # soon as six 1.7.4 (with fix for passing `assigned`
             # argument to underlying `functools.wraps`) is released
-            # and added to the networking-odl-incubator requrements
+            # and added to the networking_odl-incubator requrements
             @functools.wraps(orig_init, assigned=('__name__', '__doc__'))
             def new_init(self, *args, **kwargs):
                 LOG.deprecated(msg, details)

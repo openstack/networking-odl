@@ -16,8 +16,8 @@ import threading
 import eventlet
 from eventlet import greenpool
 
-from networking-odl.openstack.common import log as logging
-from networking-odl.openstack.common import loopingcall
+from networking_odl.openstack.common import log as logging
+from networking_odl.openstack.common import loopingcall
 
 
 LOG = logging.getLogger(__name__)

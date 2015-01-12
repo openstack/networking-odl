@@ -37,11 +37,11 @@ import eventlet
 from eventlet import event
 from oslo.config import cfg
 
-from networking-odl.openstack.common import eventlet_backdoor
-from networking-odl.openstack.common._i18n import _LE, _LI, _LW
-from networking-odl.openstack.common import log as logging
-from networking-odl.openstack.common import systemd
-from networking-odl.openstack.common import threadgroup
+from networking_odl.openstack.common import eventlet_backdoor
+from networking_odl.openstack.common._i18n import _LE, _LI, _LW
+from networking_odl.openstack.common import log as logging
+from networking_odl.openstack.common import systemd
+from networking_odl.openstack.common import threadgroup
 
 
 CONF = cfg.CONF

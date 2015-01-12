@@ -14,7 +14,7 @@
 
 from oslo.middleware import request_id
 
-from networking-odl.openstack.common import versionutils
+from networking_odl.openstack.common import versionutils
 
 
 ENV_REQUEST_ID = 'openstack.request_id'

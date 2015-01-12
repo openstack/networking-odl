@@ -14,7 +14,7 @@
 
 from oslo.middleware import catch_errors
 
-from networking-odl.openstack.common import versionutils
+from networking_odl.openstack.common import versionutils
 
 
 @versionutils.deprecated(as_of=versionutils.deprecated.KILO,

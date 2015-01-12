@@ -25,10 +25,10 @@ Supported configuration options:
 # THIS MODULE IS DEPRECATED
 #
 # Please refer to
-# https://etherpad.openstack.org/p/kilo-networking-odl-library-proposals for
+# https://etherpad.openstack.org/p/kilo-networking_odl-library-proposals for
 # the discussion leading to this deprecation.
 #
-# We recommend helping with the new networking-odl.cache library being created
+# We recommend helping with the new networking_odl.cache library being created
 # as a wrapper for dogpile.
 #
 ########################################################################
@@ -85,7 +85,7 @@ def get_cache(url='memory://'):
     parameters = parse.parse_qsl(query)
     kwargs = {'options': dict(parameters)}
 
-    mgr = driver.DriverManager('networking-odl.openstack.common.cache.backends', backend,
+    mgr = driver.DriverManager('networking_odl.openstack.common.cache.backends', backend,
                                invoke_on_load=True,
                                invoke_args=[parsed],
                                invoke_kwds=kwargs)

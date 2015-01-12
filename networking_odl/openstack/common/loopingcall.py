@@ -21,8 +21,8 @@ import time
 from eventlet import event
 from eventlet import greenthread
 
-from networking-odl.openstack.common._i18n import _LE, _LW
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common._i18n import _LE, _LW
+from networking_odl.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

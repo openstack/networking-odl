@@ -30,8 +30,8 @@ import eventlet.backdoor
 import greenlet
 from oslo.config import cfg
 
-from networking-odl.openstack.common._i18n import _LI
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common._i18n import _LI
+from networking_odl.openstack.common import log as logging
 
 help_for_backdoor_port = (
     "Acceptable values are 0, <port>, and <start>:<end>, where 0 results "

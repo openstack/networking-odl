@@ -9,8 +9,8 @@ doc/build
 *.DS_Store
 *.pyc
 networking_odl.egg-info/
-networking-odl/vcsversion.py
-networking-odl/versioninfo
+networking_odl/vcsversion.py
+networking_odl/versioninfo
 pbr*.egg/
 quantum.egg-info/
 quantum/vcsversion.py

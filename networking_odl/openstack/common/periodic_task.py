@@ -18,8 +18,8 @@ import time
 from oslo.config import cfg
 import six
 
-from networking-odl.openstack.common._i18n import _, _LE, _LI
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common._i18n import _, _LE, _LI
+from networking_odl.openstack.common import log as logging
 
 
 periodic_opts = [

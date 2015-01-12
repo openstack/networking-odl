@@ -24,7 +24,7 @@ try:
     # repository. It is OK to have more than one translation function
     # using the same domain, since there will still only be one message
     # catalog.
-    _translators = oslo.i18n.TranslatorFactory(domain='networking-odl')
+    _translators = oslo.i18n.TranslatorFactory(domain='networking_odl')
 
     # The primary translation function using the well-known name "_"
     _ = _translators.primary
@@ -40,6 +40,6 @@ try:
     _LC = _translators.log_critical
 except ImportError:
     # NOTE(dims): Support for cases where a project wants to use
-    # code from networking-odl-incubator, but is not ready to be internationalized
+    # code from networking_odl-incubator, but is not ready to be internationalized
     # (like tempest)
     _ = _LI = _LW = _LE = _LC = lambda x: x

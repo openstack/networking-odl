@@ -100,9 +100,9 @@ import six
 import six.moves.urllib.parse as urlparse
 import six.moves.urllib.request as urlrequest
 
-from networking-odl.openstack.common import fileutils
-from networking-odl.openstack.common._i18n import _, _LE, _LI
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common import fileutils
+from networking_odl.openstack.common._i18n import _, _LE, _LI
+from networking_odl.openstack.common import log as logging
 
 
 policy_opts = [

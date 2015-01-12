@@ -20,7 +20,7 @@ import os
 import socket
 import sys
 
-from networking-odl.openstack.common import log as logging
+from networking_odl.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

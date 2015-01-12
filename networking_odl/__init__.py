@@ -16,4 +16,4 @@
 import gettext
 
 
-gettext.install('networking-odl', unicode=1)
+gettext.install('networking_odl', unicode=1)
