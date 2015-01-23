@@ -13,6 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from networking_odl.common import client
+from networking_odl.ml2 import mech_driver
+
 import mock
 from oslo.serialization import jsonutils
 import requests
@@ -42,8 +45,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
         self.mech = mechanism_odl.OpenDaylightMechanismDriver()
-        mechanism_odl.OpenDaylightMechanismDriver.sendjson = (
-            self.check_sendjson)
+        client.OpenDaylightRestClient.sendjson = (self.check_sendjson)
 
     def check_sendjson(self, method, urlpath, obj, ignorecodes=[]):
         self.assertFalse(urlpath.startswith("http://"))
@@ -111,7 +113,7 @@ class DataMatcher(object):
     def __init__(self, operation, object_type, context):
         self._data = context.current.copy()
         self._object_type = object_type
-        filter_map = getattr(mechanism_odl.OpenDaylightMechanismDriver,
+        filter_map = getattr(mech_driver.OpenDaylightDriver,
                              '%s_object_map' % operation)
         attr_filter = filter_map["%ss" % object_type]
         attr_filter(self._data, context)
@@ -220,7 +222,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     def _test_single_operation(self, method, context, status_code,
                                exc_class=None, *args, **kwargs):
-        self.mech.out_of_sync = False
+        self.mech.odl_drv.out_of_sync = False
         request_response = self._get_mock_request_response(status_code)
         with mock.patch('requests.request',
                         return_value=request_response) as mock_method:
