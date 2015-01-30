@@ -23,7 +23,7 @@ import requests
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import driver_api as api
-from neutron.plugins.ml2.drivers import mechanism_odl
+from neutron.plugins.ml2.drivers.opendaylight import driver
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.ml2 import test_ml2_plugin as test_plugin
@@ -44,7 +44,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
 
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
-        self.mech = mechanism_odl.OpenDaylightMechanismDriver()
+        self.mech = driver.OpenDaylightMechanismDriver()
         client.OpenDaylightRestClient.sendjson = (self.check_sendjson)
 
     def check_sendjson(self, method, urlpath, obj, ignorecodes=[]):
@@ -132,7 +132,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
         config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
         config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
-        self.mech = mechanism_odl.OpenDaylightMechanismDriver()
+        self.mech = driver.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
     @staticmethod
