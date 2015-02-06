@@ -14,7 +14,7 @@
 #  under the License.
 #
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.common import constants as q_const

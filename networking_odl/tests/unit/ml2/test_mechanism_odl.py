@@ -17,7 +17,7 @@ from networking_odl.common import client
 from networking_odl.ml2 import mech_driver
 
 import mock
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import requests
 
 from neutron.plugins.common import constants

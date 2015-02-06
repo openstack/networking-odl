@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.config import cfg
-from oslo.utils import excutils
+from oslo_config import cfg
+from oslo_utils import excutils
 import requests
 
 from neutron.common import exceptions as n_exc
