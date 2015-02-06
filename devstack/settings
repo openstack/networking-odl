@@ -1,0 +1,13 @@
+# Devstack settings
+
+# Each service you enable has the following meaning:
+# odl-neutron - Add this config flag if Opendaylight controller and Openstack
+#               Controller are on different nodes.
+# odl-server  - Add this config flag if Opendaylight controller and Openstack
+#               Controller are on the same node.
+# odl-compute - Add this config flag for Openstack Compute.
+#
+# NOTE: odl-server includes odl-neutron.
+#
+# An example of enabling all-in-one ODL is below.
+#enable_service odl-compute odl-server
