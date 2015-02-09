@@ -18,8 +18,6 @@ import requests
 
 from neutron.openstack.common import log
 
-from networking_odl.common import auth
-
 LOG = log.getLogger(__name__)
 
 
@@ -28,7 +26,7 @@ class OpenDaylightRestClient(object):
     def __init__(self, url, username, password, timeout, session_timeout):
         self.url = url
         self.timeout = timeout
-        self.auth = auth.JsessionId(url, username, password, session_timeout)
+        self.auth = (username, password)
 
     def sendjson(self, method, urlpath, obj):
         """Send json to the OpenDaylight controller."""
