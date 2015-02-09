@@ -11,3 +11,55 @@
 #
 # An example of enabling all-in-one ODL is below.
 #enable_service odl-compute odl-server
+
+# This can be overriden in the localrc file
+ODL_MODE=${ODL_MODE:-allinone}
+
+# ODL_MODE is used to configure how devstack works with OpenDaylight. You
+# can configure this three ways:
+#
+# ODL_MODE=allinone
+# Use this mode if you want to run ODL in this devstack instance. Useful
+# for a single node deployment or on the control node of a multi-node
+# devstack environment.
+#
+# ODL_MODE=compute
+# Use this for the compute nodes of a multi-node devstack install.
+#
+# ODL_MODE=externalodl
+# This installs the neutron code for ODL, but does not attempt to
+# manage ODL in devstack. This is used for development environments
+# similar to the allinone case except where you are using bleeding edge ODL
+# which is not yet released, and thus don't want it managed by
+# devstack.
+#
+# ODL_MODE=manual
+# You're on your own here, and are enabling services outside the scope of
+# the ODL_MODE variable.
+
+# Set a few things up for Neutron here
+
+# We are explicitely enabling the opendaylight ML2 MechanismDriver here.
+# Note we are also enabling the logger driver, which is helpful for
+# debugging things on the Neutron side.
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
+
+# We have to disable the neutron L2 agent. OpenDaylight does not use the
+# L2 agent, it instead uses a combination of OpenFlow and OVSDB commands
+# to program OVS on each compute and network node host.
+disable_service q-agt
+
+case $ODL_MODE in
+    allinone)
+        enable_service odl-server odl-compute
+        ;;
+    externalodl)
+        enable_service odl-neutron odl-compute
+        ;;
+    compute)
+        enable_service odl-compute
+        ;;
+    manual)
+        echo "Manual mode: Enabling services explicitily."
+        ;;
+esac
