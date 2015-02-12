@@ -8,7 +8,7 @@
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin networking-odl https://github.com/stackforge/networking-odl
+     enable_plugin networking-odl http://git.openstack.org/stackforge/networking-odl
      enable_service odl-compute odl-server
 
 
