@@ -223,7 +223,9 @@ if is_service_enabled odl-server; then
         # no-op
         :
     elif [[ "$1" == "stack" && "$2" == "install" ]]; then
-        install_opendaylight
+        if [[ "$OFFLINE" != "True" ]]; then
+            install_opendaylight
+        fi
         configure_opendaylight
         init_opendaylight
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
