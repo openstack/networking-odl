@@ -1,18 +1,18 @@
 # Devstack settings
 
 # Each service you enable has the following meaning:
-# odl-neutron - Add this config flag if Opendaylight controller and Openstack
+# odl-neutron - Add this config flag if Opendaylight controller and OpenStack
 #               Controller are on different nodes.
-# odl-server  - Add this config flag if Opendaylight controller and Openstack
+# odl-server  - Add this config flag if Opendaylight controller and OpenStack
 #               Controller are on the same node.
-# odl-compute - Add this config flag for Openstack Compute.
+# odl-compute - Add this config flag for OpenStack Compute.
 #
 # NOTE: odl-server includes odl-neutron.
 #
 # An example of enabling all-in-one ODL is below.
 #enable_service odl-compute odl-server
 
-# This can be overriden in the localrc file
+# This can be overridden in the localrc file
 ODL_MODE=${ODL_MODE:-allinone}
 
 # ODL_MODE is used to configure how devstack works with OpenDaylight. You
@@ -39,7 +39,7 @@ ODL_MODE=${ODL_MODE:-allinone}
 
 # Set a few things up for Neutron here
 
-# We are explicitely enabling the opendaylight ML2 MechanismDriver here.
+# We are explicitly enabling the opendaylight ML2 MechanismDriver here.
 # Note we are also enabling the logger driver, which is helpful for
 # debugging things on the Neutron side.
 Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
@@ -60,6 +60,6 @@ case $ODL_MODE in
         enable_service odl-compute
         ;;
     manual)
-        echo "Manual mode: Enabling services explicitily."
+        echo "Manual mode: Enabling services explicitly."
         ;;
 esac
