@@ -9,7 +9,7 @@ discover
 python-subunit
 sphinx>=1.1.2
 oslosphinx
-oslotest>=1.1.0.0a1
+oslotest>=1.2.0  # Apache-2.0
 testrepository>=0.0.18
 testscenarios>=0.4
 WebTest>=2.0
