@@ -1,5 +1,5 @@
 Testing Neutron
-=============================================================
+===============
 
 Overview
 --------
@@ -42,25 +42,16 @@ for DevStack at https://github.com/bcwaldon/vagrant_devstack.
 Running unit tests
 ------------------
 
-There are three mechanisms for running tests: run_tests.sh, tox,
-and nose. Before submitting a patch for review you should always
-ensure all test pass; a tox run is triggered by the jenkins gate
-executed on gerrit for each patch pushed for review.
+There are two mechanisms for running tests: tox, and nose. Before submitting
+a patch for review you should always ensure all test pass; a tox run is
+triggered by the jenkins gate executed on gerrit for each patch pushed for
+review.
 
 With these mechanisms you can either run the tests in the standard
 environment or create a virtual environment to run them in.
 
 By default after running all of the tests, any pep8 errors
 found in the tree will be reported.
-
-
-With `run_tests.sh`
-~~~~~~~~~~~~~~~~~~~
-
-You can use the `run_tests.sh` script in the root source directory to execute
-tests in a virtualenv::
-
-    ./run_tests -V
 
 
 With `nose`
@@ -100,16 +91,6 @@ Neutron source code::
 
     tox
 
-To run functional tests that do not require sudo privileges or
-specific-system dependencies::
-
-    tox -e functional
-
-To run all the functional tests in an environment that has been configured
-by devstack to support sudo and system-specific dependencies::
-
-    tox -e dsvm-functional
-
 For more information on the standard Tox-based test infrastructure used by
 OpenStack and how to do some common test/debugging procedures with Testr,
 see this wiki page:
@@ -133,10 +114,6 @@ class separating it from the module path with a colon.
 For example, the following would run only the JSONV2TestCase tests from
 neutron/tests/unit/test_api_v2.py::
 
-      $ ./run_tests.sh neutron.tests.unit.test_api_v2.JSONV2TestCase
-
-or::
-
       $ tox -e py27 neutron.tests.unit.test_api_v2.JSONV2TestCase
 
 Adding more tests
@@ -148,15 +125,10 @@ need to be covered by unit and functional tests.
 To get a grasp of the areas where tests are needed, you can check
 current coverage by running::
 
-    $ ./run_tests.sh -c
+    $ tox -ecover
 
 Debugging
 ---------
-
-By default, calls to pdb.set_trace() will be ignored when tests
-are run.  For pdb statements to work, invoke run_tests as follows::
-
-    $ ./run_tests.sh -d [test module path]
 
 It's possible to debug tests in a tox environment::
 
@@ -180,23 +152,6 @@ that the source tree be installed in the venv in editable mode::
 Editable mode ensures that changes made to the source tree are
 automatically reflected in the venv, and that such changes are not
 overwritten during the next tox run.
-
-Post-mortem debugging
-~~~~~~~~~~~~~~~~~~~~~
-
-Setting OS_POST_MORTEM_DEBUGGER in the shell environment will ensure
-that the debugger .post_mortem() method will be invoked on test failure::
-
-    $ OS_POST_MORTEM_DEBUGGER=pdb ./run_tests.sh -d [test module path]
-
-Supported debuggers are pdb, and pudb. Pudb is full-screen, console-based
-visual debugger for Python which let you inspect variables, the stack,
-and breakpoints in a very visual way, keeping a high degree of compatibility
-with pdb::
-
-    $ ./.venv/bin/pip install pudb
-
-    $ OS_POST_MORTEM_DEBUGGER=pudb ./run_tests.sh -d [test module path]
 
 References
 ==========
