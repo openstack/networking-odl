@@ -37,8 +37,11 @@ source $TOP_DIR/lib/neutron_plugins/ovs_base
 # ODL_MGR_IP=
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
 
+# The default ODL port for Tomcat to use
+ODL_PORT=${ODL_PORT:-8088}
+
 # The ODL endpoint URL
-ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:8080/controller/nb/v2/neutron}
+ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:${ODL_PORT}/controller/nb/v2/neutron}
 
 # The ODL username
 ODL_USERNAME=${ODL_USERNAME:-admin}
@@ -67,7 +70,7 @@ ODL_NETWORKING_DIR=$DEST/networking-odl
 ODL_ARGS=${ODL_ARGS:-"-XX:MaxPermSize=384m"}
 
 # How long to pause after ODL starts to let it complete booting
-ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-20}
+ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-300}
 
 # The physical provider network to device mapping
 ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
@@ -99,11 +102,21 @@ function cleanup_opendaylight {
 
 # configure_opendaylight() - Set config files, create data dirs, etc
 function configure_opendaylight {
+    echo "Configuring OpenDaylight"
     # Add odl-ovsdb-openstack if it's not already there
     local ODLOVSDB=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep odl)
     if [ "$ODLOVSDB" == "" ]; then
         sed -i '/^featuresBoot=/ s/$/,odl-ovsdb-openstack/' $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
+
+    # Move Tomcat to 8088
+    local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
+    if [ "$_ODLPORT" == "" ]; then
+        sed -i '/\<Connector port/ s/8080/8088/' $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml
+    fi
+    _CONTENTS=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml)
+    echo "Contents of tomcat-server.xml file:"
+    echo "$_CONTENTS"
 
     # Configure OpenFlow 1.3 if it's not there
     local OFLOW13=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | grep ^of.version)
@@ -138,6 +151,7 @@ function configure_opendaylight {
 }
 
 function configure_ml2_odl {
+    echo "Configuring ML2 for OpenDaylight"
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD
@@ -153,6 +167,7 @@ function init_opendaylight {
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
     local _pwd=$(pwd)
+    echo "Installing OpenDaylight and dependent packages"
 
     if is_ubuntu; then
         install_package maven openjdk-7-jre openjdk-7-jdk
@@ -183,18 +198,23 @@ function install_opendaylight-compute {
 
 # start_opendaylight() - Start running processes, including screen
 function start_opendaylight {
+    echo "Starting OpenDaylight"
     if is_ubuntu; then
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
     else
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk
     fi
+    echo "JHOME set to: $JHOME"
 
     # The flags to ODL have the following meaning:
     #   -of13: runs ODL using OpenFlow 1.3 protocol support.
     #   -virt ovsdb: Runs ODL in "virtualization" mode with OVSDB support
 
-    run_process odl-server "cd $ODL_DIR/$ODL_NAME && JAVA_HOME=$JHOME bin/karaf"
+    echo "About to run: JAVE_HOME=$JHOME $ODL_DIR/$ODL_NAME/bin/karaf"
+    export JAVA_HOME=$JHOME
+    run_process odl-server "$ODL_DIR/$ODL_NAME/bin/karaf"
 
+    echo "Sleeping now while we wait for OpenDaylight to fire up"
     # Sleep a bit to let OpenDaylight finish starting up
     sleep $ODL_BOOT_WAIT
 }
