@@ -8,6 +8,7 @@
 # ``functions`` file
 # ``DEST`` must be defined
 # ``STACK_USER`` must be defined
+# ``DATA_DIR`` must be defined
 
 # ``stack.sh`` calls the entry points in this order:
 #
@@ -37,8 +38,14 @@ source $TOP_DIR/lib/neutron_plugins/ovs_base
 # ODL_MGR_IP=
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
 
+# The default ODL port for Tomcat to use
+# NOTE: We make this configurable because by default, ODL uses port 8080 for
+# Tomcat (Helium releases) or Jetty (Lithium and later releases), and this
+# conflicts with swift which also uses port 8080.
+ODL_PORT=${ODL_PORT:-8087}
+
 # The ODL endpoint URL
-ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:8080/controller/nb/v2/neutron}
+ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:${ODL_PORT}/controller/nb/v2/neutron}
 
 # The ODL username
 ODL_USERNAME=${ODL_USERNAME:-admin}
@@ -61,13 +68,8 @@ ODL_URL=${ODL_URL:-https://nexus.opendaylight.org/content/repositories/public/or
 # The OpenDaylight Networking-ODL DIR
 ODL_NETWORKING_DIR=$DEST/networking-odl
 
-# Default arguments for OpenDaylight. This is typically used to set
-# Java memory options.
-# ``ODL_ARGS=Xmx1024m -XX:MaxPermSize=512m``
-ODL_ARGS=${ODL_ARGS:-"-XX:MaxPermSize=384m"}
-
-# How long to pause after ODL starts to let it complete booting
-ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-20}
+# How long (in seconds) to pause after ODL starts to let it complete booting
+ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-90}
 
 # The physical provider network to device mapping
 ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
@@ -78,8 +80,14 @@ ODL_L3=${ODL_L3:-False}
 # Enable debug logs for odl ovsdb
 ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
 
+# Karaf logfile information
+ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf}
+
 # The logging config file in ODL
 ODL_LOGGING_CONFIG=${ODL_LOGGING_CONFIG:-${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg}
+
+# The bridge to configure
+OVS_BR=${OVS_BR:-br-int}
 
 # Entry Points
 # ------------
@@ -99,11 +107,25 @@ function cleanup_opendaylight {
 
 # configure_opendaylight() - Set config files, create data dirs, etc
 function configure_opendaylight {
+    echo "Configuring OpenDaylight"
+
+    sudo ovs-vsctl --no-wait -- --may-exist add-br $OVS_BR
+    sudo ovs-vsctl --no-wait br-set-external-id $OVS_BR bridge-id $OVS_BR
+
     # Add odl-ovsdb-openstack if it's not already there
     local ODLOVSDB=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep odl)
     if [ "$ODLOVSDB" == "" ]; then
         sed -i '/^featuresBoot=/ s/$/,odl-ovsdb-openstack/' $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
+
+    # Move Tomcat to $ODL_PORT
+    local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
+    if [ "$_ODLPORT" == "" ]; then
+        sed -i "/\<Connector port/ s/808./$ODL_PORT/" $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml
+    fi
+    _CONTENTS=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml)
+    echo "Contents of tomcat-server.xml file:"
+    echo "$_CONTENTS"
 
     # Configure OpenFlow 1.3 if it's not there
     local OFLOW13=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | grep ^of.version)
@@ -120,24 +142,38 @@ function configure_opendaylight {
         fi
     fi
 
+    # Log karaf output to a file
+    _LF=$DEST/logs/$ODL_KARAF_LOG_NAME
+    LF=$(echo $_LF | sed 's/\//\\\//g')
+
+    # Remove the existing logfile
+    rm -f $_LF*
+    # Change the karaf logfile
+    sed -i "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
+    $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
+
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
         local OVSDB_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.ovsdb)
         if [ "${OVSDB_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.ovsdb = TRACE' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb = TRACE, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, FILE' >> $ODL_LOGGING_CONFIG
         fi
         local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
         if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, FILE' >> $ODL_LOGGING_CONFIG
         fi
+    else
+        # Enable minimal logging to syslog by default
+        echo 'log4j.rootLogger=INFO, FILE, osgi:*' >> $ODL_LOGGING_CONFIG
     fi
 }
 
 function configure_ml2_odl {
+    echo "Configuring ML2 for OpenDaylight"
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD
@@ -153,6 +189,7 @@ function init_opendaylight {
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
     local _pwd=$(pwd)
+    echo "Installing OpenDaylight and dependent packages"
 
     if is_ubuntu; then
         install_package maven openjdk-7-jre openjdk-7-jdk
@@ -183,17 +220,26 @@ function install_opendaylight-compute {
 
 # start_opendaylight() - Start running processes, including screen
 function start_opendaylight {
+    echo "Starting OpenDaylight"
     if is_ubuntu; then
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
     else
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk
     fi
 
-    # The flags to ODL have the following meaning:
-    #   -of13: runs ODL using OpenFlow 1.3 protocol support.
-    #   -virt ovsdb: Runs ODL in "virtualization" mode with OVSDB support
+    # The following variables are needed by the running karaf process.
+    # See the "bin/setenv" file in the OpenDaylight distribution for
+    # their individual meaning.
+    export JAVA_HOME=$JHOME
+    export JAVA_MIN_MEM=96m
+    export JAVA_MAX_MEM=192m
+    export JAVA_MAX_PERM_MEM=96m
+    run_process odl-server "$ODL_DIR/$ODL_NAME/bin/start"
 
-    run_process odl-server "cd $ODL_DIR/$ODL_NAME && JAVA_HOME=$JHOME bin/karaf"
+    # Link the logfile
+    LF=$DEST/logs/$ODL_KARAF_LOG_NAME
+    mkdir -p $DATA_DIR/log
+    ln -sf $LF $DATA_DIR/log/screen-karaf.log
 
     # Sleep a bit to let OpenDaylight finish starting up
     sleep $ODL_BOOT_WAIT
@@ -201,6 +247,8 @@ function start_opendaylight {
 
 # stop_opendaylight() - Stop running processes (non-screen)
 function stop_opendaylight {
+    # Stop the karaf container
+    $ODL_DIR/$ODL_NAME/bin/stop
     stop_process odl-server
 }
 
