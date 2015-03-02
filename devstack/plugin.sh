@@ -156,19 +156,16 @@ function configure_opendaylight {
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
         local OVSDB_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.ovsdb)
         if [ "${OVSDB_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.ovsdb = TRACE, FILE' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO, FILE' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG, FILE' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, FILE' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb = TRACE, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
         local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
         if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, FILE' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
         fi
-    else
-        # Enable minimal logging to syslog by default
-        echo 'log4j.rootLogger=INFO, FILE, osgi:*' >> $ODL_LOGGING_CONFIG
     fi
 }
 
