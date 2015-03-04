@@ -81,7 +81,7 @@ ODL_L3=${ODL_L3:-False}
 ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
 
 # Karaf logfile information
-ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf}
+ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf.log}
 
 # The logging config file in ODL
 ODL_LOGGING_CONFIG=${ODL_LOGGING_CONFIG:-${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg}
@@ -228,6 +228,9 @@ function start_opendaylight {
     else
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk
     fi
+
+    # Wipe out the data directory ... grumble grumble grumble
+    rm -rf $ODL_DIR/$ODL_NAME/data
 
     # The following variables are needed by the running karaf process.
     # See the "bin/setenv" file in the OpenDaylight distribution for
