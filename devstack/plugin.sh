@@ -89,6 +89,11 @@ ODL_LOGGING_CONFIG=${ODL_LOGGING_CONFIG:-${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pa
 # The bridge to configure
 OVS_BR=${OVS_BR:-br-int}
 
+# Allow the min/max/perm Java memory to be configurable
+ODL_JAVA_MIN_MEM=${ODL_JAVA_MIN_MEM:-96m}
+ODL_JAVA_MAX_MEM=${ODL_JAVA_MAX_MEM:-256m}
+ODL_JAVA_MAX_PERM_MEM=${ODL_JAVA_MAX_PERM_MEM:-256m}
+
 # Entry Points
 # ------------
 
@@ -228,9 +233,9 @@ function start_opendaylight {
     # See the "bin/setenv" file in the OpenDaylight distribution for
     # their individual meaning.
     export JAVA_HOME=$JHOME
-    export JAVA_MIN_MEM=96m
-    export JAVA_MAX_MEM=192m
-    export JAVA_MAX_PERM_MEM=96m
+    export JAVA_MIN_MEM=$ODL_JAVA_MIN_MEM
+    export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
+    export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
     run_process odl-server "$ODL_DIR/$ODL_NAME/bin/start"
 
     # Link the logfile
