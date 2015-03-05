@@ -117,20 +117,29 @@ function configure_opendaylight {
     sudo ovs-vsctl --no-wait -- --may-exist add-br $OVS_BR
     sudo ovs-vsctl --no-wait br-set-external-id $OVS_BR bridge-id $OVS_BR
 
+    # Determine the version of ODL we're running. Needed below
+    # Get the MAJOR.MINOR version
+    local ODL_VERSION=$(echo $ODL_NAME | cut -d '-' -f 3 | cut -d '.' -f 1,2)
+
     # Add odl-ovsdb-openstack if it's not already there
     local ODLOVSDB=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep odl)
     if [ "$ODLOVSDB" == "" ]; then
         sed -i '/^featuresBoot=/ s/$/,odl-ovsdb-openstack/' $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
-    # Move Tomcat to $ODL_PORT
-    local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
-    if [ "$_ODLPORT" == "" ]; then
-        sed -i "/\<Connector port/ s/808./$ODL_PORT/" $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml
+    if [ "$ODL_VERSION" == "0.2" ]; then
+        # Move Tomcat to $ODL_PORT
+        local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
+        if [ "$_ODLPORT" == "" ]; then
+            sed -i "/\<Connector port/ s/808./$ODL_PORT/" $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml
+        fi
+    else
+        # Move Jetty to $ODL_PORT
+        local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/etc/jetty.xml | grep $ODL_PORT)
+        if [ "$_ODLPORT" == "" ]; then
+            sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" $ODL_DIR/$ODL_NAME/etc/jetty.xml
+        fi
     fi
-    _CONTENTS=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml)
-    echo "Contents of tomcat-server.xml file:"
-    echo "$_CONTENTS"
 
     # Configure OpenFlow 1.3 if it's not there
     local OFLOW13=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | grep ^of.version)
