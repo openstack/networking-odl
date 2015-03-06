@@ -141,12 +141,6 @@ function configure_opendaylight {
         fi
     fi
 
-    # Configure OpenFlow 1.3 if it's not there
-    local OFLOW13=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | grep ^of.version)
-    if [ "$OFLOW13" == "" ]; then
-        echo "ovsdb.of.version=1.3" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
-    fi
-
     # Configure L3 if the user wants it
     if [ "${ODL_L3}" == "True" ]; then
         # Configure L3 FWD if it's not there
@@ -176,9 +170,16 @@ function configure_opendaylight {
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
-        if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+        if [ "$ODL_VERSION" == "0.2" ]; then
+            local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
+            if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
+		echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+            fi
+        else
+            local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.neutron)
+            if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
+		echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+            fi
         fi
     fi
 }
