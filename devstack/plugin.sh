@@ -94,11 +94,6 @@ ODL_JAVA_MIN_MEM=${ODL_JAVA_MIN_MEM:-96m}
 ODL_JAVA_MAX_MEM=${ODL_JAVA_MAX_MEM:-256m}
 ODL_JAVA_MAX_PERM_MEM=${ODL_JAVA_MAX_PERM_MEM:-256m}
 
-# Only run certain tempest tests
-export DEVSTACK_GATE_TEMPEST_REGEX="tempest.api.network.test_networks \
-                                    tempest.api.network.test_networks_negative \
-                                    tempest.api.network.test_ports"
-
 # Entry Points
 # ------------
 
