@@ -15,8 +15,8 @@
 #
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
-from neutron.openstack.common import log as logging
 from neutron.services.loadbalancer.drivers import lbaas_base
 
 from networking_odl.common import client as odl_client

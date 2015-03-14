@@ -14,18 +14,18 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
 from neutron.common import exceptions as n_exc
 from neutron.common import utils
-from neutron.openstack.common import log
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 not_found_exception_map = {odl_const.ODL_NETWORKS: n_exc.NetworkNotFound,
                            odl_const.ODL_SUBNETS: n_exc.SubnetNotFound,

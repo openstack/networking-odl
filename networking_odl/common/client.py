@@ -13,12 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 from oslo_serialization import jsonutils
 import requests
 
-from neutron.openstack.common import log
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class OpenDaylightRestClient(object):
