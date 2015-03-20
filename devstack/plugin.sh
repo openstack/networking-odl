@@ -53,17 +53,21 @@ ODL_USERNAME=${ODL_USERNAME:-admin}
 # The ODL password
 ODL_PASSWORD=${ODL_PASSWORD:-admin}
 
-# Short name of ODL package
-ODL_NAME=${ODL_NAME:-distribution-karaf-0.2.2-Helium-SR2}
-
 # <define global variables here that belong to this project>
 ODL_DIR=$DEST/opendaylight
 
-# The OpenDaylight Package, currently using 'Helium' release
-ODL_PKG=${ODL_PKG:-distribution-karaf-0.2.2-Helium-SR2.zip}
+# The OpenDaylight URL PREFIX
+# Note: this is only used when ODL_URL is not provided
+ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
 # The OpenDaylight URL
-ODL_URL=${ODL_URL:-https://nexus.opendaylight.org/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.2-Helium-SR2/}
+ODL_URL=${ODL_URL:-${ODL_URL_PREFIX}/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.3-Helium-SR3}
+
+# Short name of ODL package
+ODL_NAME=${ODL_NAME:-distribution-karaf-0.2.3-Helium-SR3}
+
+# The OpenDaylight Package, currently using 'Helium' release
+ODL_PKG=${ODL_PKG:-distribution-karaf-0.2.3-Helium-SR3.zip}
 
 # The OpenDaylight Networking-ODL DIR
 ODL_NETWORKING_DIR=$DEST/networking-odl
