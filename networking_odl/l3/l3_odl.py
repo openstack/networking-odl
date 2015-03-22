@@ -17,10 +17,15 @@
 from oslo_config import cfg
 
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
+from neutron.api.rpc.handlers import l3_rpc
 from neutron.common import constants as q_const
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
-import neutron.db as db
+from neutron.db import db_base_plugin_v2
+from neutron.db import extraroute_db
+from neutron.db import l3_agentschedulers_db
+from neutron.db import l3_dvr_db
+from neutron.db import l3_gwmode_db
 from neutron.plugins.common import constants
 
 from networking_odl.common import client as odl_client
@@ -31,15 +36,12 @@ ROUTERS = 'routers'
 FLOATINGIPS = 'floatingips'
 
 
-class OpenDaylightRouterPluginRpcCallbacks(n_rpc.RpcCallback,
-                                           db.l3_rpc_base.L3RpcCallbackMixin):
-    RPC_API_VERSION = '1.3'
-
-
-class OpenDaylightL3RouterPlugin(db.common_db_mixin.CommonDbMixin,
-                                 db.extraroute_db.ExtraRoute_db_mixin,
-                                 db.l3_dvr_db.L3_NAT_with_dvr_db_mixin,
-                                 db.l3_gwmode_db.L3_NAT_db_mixin):
+class OpenDaylightL3RouterPlugin(
+    db_base_plugin_v2.common_db_mixin.CommonDbMixin,
+    extraroute_db.ExtraRoute_db_mixin,
+    l3_dvr_db.L3_NAT_with_dvr_db_mixin,
+    l3_gwmode_db.L3_NAT_db_mixin,
+    l3_agentschedulers_db.L3AgentSchedulerDbMixin):
 
     """Implementation of the OpenDaylight L3 Router Service Plugin.
 
@@ -53,11 +55,11 @@ class OpenDaylightL3RouterPlugin(db.common_db_mixin.CommonDbMixin,
     def __init__(self):
         self.setup_rpc()
         self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.odl_rest.url,
-            cfg.CONF.odl_rest.username,
-            cfg.CONF.odl_rest.password,
-            cfg.CONF.odl_rest.timeout,
-            cfg.CONF.odl_rest.session_timeout
+            cfg.CONF.ml2_odl.url,
+            cfg.CONF.ml2_odl.username,
+            cfg.CONF.ml2_odl.password,
+            cfg.CONF.ml2_odl.timeout,
+            cfg.CONF.ml2_odl.session_timeout
         )
 
     def setup_rpc(self):
@@ -65,7 +67,7 @@ class OpenDaylightL3RouterPlugin(db.common_db_mixin.CommonDbMixin,
         self.conn = n_rpc.create_connection(new=True)
         self.agent_notifiers.update(
             {q_const.AGENT_TYPE_L3: l3_rpc_agent_api.L3AgentNotifyAPI()})
-        self.endpoints = [OpenDaylightRouterPluginRpcCallbacks()]
+        self.endpoints = [l3_rpc.L3RpcCallback()]
         self.conn.create_consumer(self.topic, self.endpoints,
                                   fanout=False)
         self.conn.consume_in_threads()

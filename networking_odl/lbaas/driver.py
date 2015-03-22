@@ -17,7 +17,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron.services.loadbalancer.drivers import lbaas_base
+from neutron_lbaas.services.loadbalancer.drivers import abstract_driver
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import config  # noqa
@@ -25,7 +25,7 @@ from networking_odl.common import config  # noqa
 LOG = logging.getLogger(__name__)
 
 
-class OpenDaylightLbaasDriver(lbaas_base.LoadBalancerAbstractDriver):
+class OpenDaylightLbaasDriver(abstract_driver.LoadBalancerAbstractDriver):
 
     """OpenDaylight LBaaS Driver
 
@@ -37,11 +37,11 @@ class OpenDaylightLbaasDriver(lbaas_base.LoadBalancerAbstractDriver):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         self.plugin = plugin
         self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.odl_rest.url,
-            cfg.CONF.odl_rest.username,
-            cfg.CONF.odl_rest.password,
-            cfg.CONF.odl_rest.timeout,
-            cfg.CONF.odl_rest.session_timeout
+            cfg.CONF.ml2_odl.url,
+            cfg.CONF.ml2_odl.username,
+            cfg.CONF.ml2_odl.password,
+            cfg.CONF.ml2_odl.timeout,
+            cfg.CONF.ml2_odl.session_timeout
         )
 
     def create_vip(self, context, vip):

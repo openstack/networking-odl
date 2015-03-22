@@ -17,7 +17,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron.services.firewall.drivers import fwaas_base
+from neutron_fwaas.services.firewall.drivers import fwaas_base
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import config  # noqa
@@ -36,11 +36,11 @@ class OpenDaylightFwaasDriver(fwaas_base.FwaasDriverBase):
     def __init__(self):
         LOG.debug("Initializing OpenDaylight FWaaS driver")
         self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.odl_rest.url,
-            cfg.CONF.odl_rest.username,
-            cfg.CONF.odl_rest.password,
-            cfg.CONF.odl_rest.timeout,
-            cfg.CONF.odl_rest.session_timeout
+            cfg.CONF.ml2_odl.url,
+            cfg.CONF.ml2_odl.username,
+            cfg.CONF.ml2_odl.password,
+            cfg.CONF.ml2_odl.timeout,
+            cfg.CONF.ml2_odl.session_timeout
         )
 
     def create_firewall(self, apply_list, firewall):
