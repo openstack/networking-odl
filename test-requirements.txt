@@ -14,3 +14,6 @@ testrepository>=0.0.18
 testscenarios>=0.4
 WebTest>=2.0
 testtools>=0.9.34
+
+-e git://git.openstack.org/openstack/neutron-fwaas.git#egg=neutron-fwaas
+-e git://git.openstack.org/openstack/neutron-lbaas.git#egg=neutron-lbaas
