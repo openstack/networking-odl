@@ -19,7 +19,9 @@ from networking_odl.ml2 import mech_driver
 import mock
 from oslo_serialization import jsonutils
 import requests
+import webob.exc
 
+from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import driver_api as api
@@ -29,11 +31,12 @@ from neutron.tests import base
 from neutron.tests.unit.ml2 import test_ml2_plugin as test_plugin
 from neutron.tests.unit import testlib_api
 
+HOST = 'fake-host'
 PLUGIN_NAME = 'neutron.plugins.ml2.plugin.Ml2Plugin'
 
 
 class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['logger', 'opendaylight']
+    _mechanism_drivers = ['opendaylight']
 
     def setUp(self):
         # Set URL/user/pass so init doesn't throw a cfg required error.
@@ -47,7 +50,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
         self.mech = driver.OpenDaylightMechanismDriver()
         client.OpenDaylightRestClient.sendjson = (self.check_sendjson)
 
-    def check_sendjson(self, method, urlpath, obj, ignorecodes=[]):
+    def check_sendjson(self, method, urlpath, obj):
         self.assertFalse(urlpath.startswith("http://"))
 
 
@@ -98,7 +101,13 @@ class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
 
 class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
                                        OpenDaylightTestCase):
-    pass
+
+    def test_update_port_mac(self):
+        self.check_update_port_mac(
+            host_arg={portbindings.HOST_ID: HOST},
+            arg_list=(portbindings.HOST_ID,),
+            expected_status=webob.exc.HTTPConflict.code,
+            expected_error='PortBound')
 
 
 class DataMatcher(object):
