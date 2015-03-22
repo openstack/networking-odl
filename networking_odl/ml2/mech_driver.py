@@ -62,7 +62,8 @@ class OpenDaylightDriver(object):
     @staticmethod
     def filter_create_network_attributes(network, context):
         """Filter out network attributes not required for a create."""
-        odl_utils.try_del(network, ['status', 'subnets'])
+        odl_utils.try_del(network, ['status', 'subnets', 'vlan_transparent',
+                          'mtu'])
 
     @staticmethod
     def filter_create_subnet_attributes(subnet, context):
@@ -122,7 +123,8 @@ class OpenDaylightDriver(object):
     @staticmethod
     def filter_update_network_attributes(network, context):
         """Filter out network attributes for an update operation."""
-        odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
+        odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id',
+                          'vlan_transparent', 'mtu'])
 
     @staticmethod
     def filter_update_subnet_attributes(subnet, context):
