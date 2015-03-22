@@ -25,9 +25,9 @@ from networking_odl.common import config  # noqa
 LOG = logging.getLogger(__name__)
 
 
-class OpenDaylightLbaasDriver(abstract_driver.LoadBalancerAbstractDriver):
+class OpenDaylightLbaasDriverV1(abstract_driver.LoadBalancerAbstractDriver):
 
-    """OpenDaylight LBaaS Driver
+    """OpenDaylight LBaaS Driver for the V1 API
 
     This code is the backend implementation for the OpenDaylight
     LBaaS V1 driver for Openstack Neutron.

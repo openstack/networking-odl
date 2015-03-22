@@ -11,15 +11,15 @@
 # under the License.
 
 """
-test_fwaas_odl
+test_lbaas_odl
 ----------------------------------
 
-Tests for the L3 FWaaS plugin for networking-odl.
+Tests for the LBaaS plugin for networking-odl.
 """
 
 import mock
 
-from networking_odl.lbaas import driver as lbaas_odl
+from networking_odl.lbaas import driver_v1 as lbaas_odl
 
 from neutron.tests import base
 
@@ -27,6 +27,6 @@ from neutron.tests import base
 class TestODL_LBaaS(base.BaseTestCase):
 
     def test_init(self):
-        # just create an instance of OpenDaylightLbaasDriver
+        # just create an instance of OpenDaylightLbaasDriverV1
         self.plugin = mock.Mock()
-        lbaas_odl.OpenDaylightLbaasDriver(self.plugin)
+        lbaas_odl.OpenDaylightLbaasDriverV1(self.plugin)
