@@ -24,8 +24,6 @@ odl_opts = [
                help=_("HTTP password for authentication")),
     cfg.IntOpt('timeout', default=10,
                help=_("HTTP timeout in seconds.")),
-    cfg.IntOpt('session_timeout', default=30,
-               help=_("Tomcat session timeout in minutes.")),
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")

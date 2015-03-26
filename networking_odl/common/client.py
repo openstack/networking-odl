@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 
 class OpenDaylightRestClient(object):
 
-    def __init__(self, url, username, password, timeout, session_timeout):
+    def __init__(self, url, username, password, timeout):
         self.url = url
         self.timeout = timeout
         self.auth = (username, password)

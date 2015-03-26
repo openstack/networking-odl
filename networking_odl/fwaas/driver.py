@@ -39,8 +39,7 @@ class OpenDaylightFwaasDriver(fwaas_base.FwaasDriverBase):
             cfg.CONF.ml2_odl.url,
             cfg.CONF.ml2_odl.username,
             cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout,
-            cfg.CONF.ml2_odl.session_timeout
+            cfg.CONF.ml2_odl.timeout
         )
 
     def create_firewall(self, apply_list, firewall):

@@ -39,7 +39,6 @@ class OpenDaylightDriver(object):
     This code is the backend implementation for the OpenDaylight ML2
     MechanismDriver for OpenStack Neutron.
     """
-    auth = None
     out_of_sync = True
 
     def __init__(self):
@@ -48,8 +47,7 @@ class OpenDaylightDriver(object):
             cfg.CONF.ml2_odl.url,
             cfg.CONF.ml2_odl.username,
             cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout,
-            cfg.CONF.ml2_odl.session_timeout
+            cfg.CONF.ml2_odl.timeout
         )
 
     def synchronize(self, operation, object_type, context):
