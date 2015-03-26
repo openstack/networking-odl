@@ -22,18 +22,16 @@ from neutron_lbaas.drivers import driver_base
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import config  # noqa
+from networking_odl.common import constants as odl_const
 
 LOG = logging.getLogger(__name__)
+
+LBAAS = "lbaas"
 
 
 class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
 
-    """OpenDaylight LBaaS Driver for the V2 API
-
-    This code is the backend implementation for the OpenDaylight
-    LBaaS V1 driver for Openstack Neutron.
-    """
-
+    @call_log.log
     def __init__(self, plugin):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         self.plugin = plugin
@@ -43,21 +41,50 @@ class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
             cfg.CONF.ml2_odl.password,
             cfg.CONF.ml2_odl.timeout
         )
+        self._loadbalancer = ODLLoadBalancerManager(self.client)
+        self._listener = ODLListenerManager(self.client)
+        self._pool = ODLPoolManager(self.client)
+        self._member = ODLMemberManager(self.client)
+        self._healthmonitor = ODLHealthMonitorManager(self.client)
 
 
-class ODLLoadBalancerManager(driver_base.BaseLoadBalancerManager):
+class OpenDaylightManager(object):
+
+    out_of_sync = True
+    url_path = ""
+    obj_type = ""
+
+    """OpenDaylight LBaaS Driver for the V2 API
+
+    This code is the backend implementation for the OpenDaylight
+    LBaaS V1 driver for Openstack Neutron.
+    """
 
     @call_log.log
-    def create(self, context, lb):
-        pass
+    def __init__(self, client):
+        self.client = client
+        self.url_path = LBAAS + self.obj_type
 
     @call_log.log
-    def update(self, context, old_lb, lb):
-        pass
+    def create(self, context, obj):
+        self.client.sendjson('post', self.obj_type, None)
 
     @call_log.log
-    def delete(self, context, lb):
-        pass
+    def update(self, context, obj):
+        self.client.sendjson('put', self.obj_type + '/' + obj.id, None)
+
+    @call_log.log
+    def delete(self, context, obj):
+        self.client.sendjson('delete', self.obj_type + '/' + obj.id, None)
+
+
+class ODLLoadBalancerManager(OpenDaylightManager,
+                             driver_base.BaseLoadBalancerManager):
+
+    @call_log.log
+    def __init__(self, client):
+        self.obj_type = odl_const.ODL_LOADBALANCERS
+        super(ODLLoadBalancerManager, self).__init__(client)
 
     @call_log.log
     def refresh(self, context, lb):
@@ -68,61 +95,37 @@ class ODLLoadBalancerManager(driver_base.BaseLoadBalancerManager):
         pass
 
 
-class ODLListenerManager(driver_base.BaseListenerManager):
+class ODLListenerManager(OpenDaylightManager,
+                         driver_base.BaseListenerManager):
 
     @call_log.log
-    def create(self, context, listener):
-        pass
+    def __init__(self, client):
+        self.obj_type = odl_const.ODL_LISTENERS
+        super(ODLListenerManager, self).__init__(client)
+
+
+class ODLPoolManager(OpenDaylightManager,
+                     driver_base.BasePoolManager):
 
     @call_log.log
-    def update(self, context, old_listener, listener):
-        pass
+    def __init__(self, client):
+        self.obj_type = odl_const.ODL_POOLS
+        super(ODLPoolManager, self).__init__(client)
+
+
+class ODLMemberManager(OpenDaylightManager,
+                       driver_base.BaseMemberManager):
 
     @call_log.log
-    def delete(self, context, listener):
-        pass
+    def __init__(self, client):
+        self.obj_type = odl_const.ODL_MEMBERS
+        super(ODLMemberManager, self).__init__(client)
 
 
-class ODLPoolManager(driver_base.BasePoolManager):
-
-    @call_log.log
-    def create(self, context, pool):
-        pass
+class ODLHealthMonitorManager(OpenDaylightManager,
+                              driver_base.BaseHealthMonitorManager):
 
     @call_log.log
-    def update(self, context, old_pool, pool):
-        pass
-
-    @call_log.log
-    def delete(self, context, listener):
-        pass
-
-
-class ODLMemberManager(driver_base.BaseMemberManager):
-
-    @call_log.log
-    def create(self, context, member):
-        pass
-
-    @call_log.log
-    def update(self, context, old_member, member):
-        pass
-
-    @call_log.log
-    def delete(self, context, member):
-        pass
-
-
-class ODLHealthMonitorManager(driver_base.BaseHealthMonitorManager):
-
-    @call_log.log
-    def create(self, context, hm):
-        pass
-
-    @call_log.log
-    def update(self, context, old_hm, hm):
-        pass
-
-    @call_log.log
-    def delete(self, context, hm):
-        pass
+    def __init__(self, client):
+        self.obj_type = odl_const.ODL_HEALTHMONITORS
+        super(ODLHealthMonitorManager, self).__init__(client)
