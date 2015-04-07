@@ -28,7 +28,7 @@ from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2.drivers.opendaylight import driver
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
-from neutron.tests.unit.ml2 import test_ml2_plugin as test_plugin
+from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
 
 HOST = 'fake-host'
