@@ -15,9 +15,9 @@
 #
 
 from oslo_config import cfg
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
-from neutron.common import log as call_log
 from neutron_lbaas.drivers import driver_base
 
 from networking_odl.common import client as odl_client
@@ -31,7 +31,7 @@ LBAAS = "lbaas"
 
 class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, plugin):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         self.plugin = plugin
@@ -60,20 +60,20 @@ class OpenDaylightManager(object):
     LBaaS V1 driver for Openstack Neutron.
     """
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.client = client
         self.url_path = LBAAS + self.obj_type
 
-    @call_log.log
+    @log_helpers.log_method_call
     def create(self, context, obj):
         self.client.sendjson('post', self.obj_type, None)
 
-    @call_log.log
+    @log_helpers.log_method_call
     def update(self, context, obj):
         self.client.sendjson('put', self.obj_type + '/' + obj.id, None)
 
-    @call_log.log
+    @log_helpers.log_method_call
     def delete(self, context, obj):
         self.client.sendjson('delete', self.obj_type + '/' + obj.id, None)
 
@@ -81,16 +81,16 @@ class OpenDaylightManager(object):
 class ODLLoadBalancerManager(OpenDaylightManager,
                              driver_base.BaseLoadBalancerManager):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.obj_type = odl_const.ODL_LOADBALANCERS
         super(ODLLoadBalancerManager, self).__init__(client)
 
-    @call_log.log
+    @log_helpers.log_method_call
     def refresh(self, context, lb):
         pass
 
-    @call_log.log
+    @log_helpers.log_method_call
     def stats(self, context, lb):
         pass
 
@@ -98,7 +98,7 @@ class ODLLoadBalancerManager(OpenDaylightManager,
 class ODLListenerManager(OpenDaylightManager,
                          driver_base.BaseListenerManager):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.obj_type = odl_const.ODL_LISTENERS
         super(ODLListenerManager, self).__init__(client)
@@ -107,7 +107,7 @@ class ODLListenerManager(OpenDaylightManager,
 class ODLPoolManager(OpenDaylightManager,
                      driver_base.BasePoolManager):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.obj_type = odl_const.ODL_POOLS
         super(ODLPoolManager, self).__init__(client)
@@ -116,7 +116,7 @@ class ODLPoolManager(OpenDaylightManager,
 class ODLMemberManager(OpenDaylightManager,
                        driver_base.BaseMemberManager):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.obj_type = odl_const.ODL_MEMBERS
         super(ODLMemberManager, self).__init__(client)
@@ -125,7 +125,7 @@ class ODLMemberManager(OpenDaylightManager,
 class ODLHealthMonitorManager(OpenDaylightManager,
                               driver_base.BaseHealthMonitorManager):
 
-    @call_log.log
+    @log_helpers.log_method_call
     def __init__(self, client):
         self.obj_type = odl_const.ODL_HEALTHMONITORS
         super(ODLHealthMonitorManager, self).__init__(client)
