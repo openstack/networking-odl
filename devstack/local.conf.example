@@ -1,0 +1,42 @@
+[[local|localrc]]
+LOGFILE=stack.sh.log
+SCREEN_LOGDIR=/opt/stack/data/log
+LOG_COLOR=False
+
+disable_service swift
+disable_service cinder
+disable_service n-net
+enable_service q-svc
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+enable_service q-vpn
+enable_service q-metering
+enable_service q-lbaas
+enable_service q-fwaas
+enable_service neutron
+enable_service tempest
+
+enable_plugin networking-odl http://git.openstack.org/stackforge/networking-odl
+
+ENABLE_TENANT_TUNNELS=True
+
+HOST_NAME=$(hostname)
+SERVICE_HOST_NAME=${HOST_NAME}
+SERVICE_HOST=$HOST_NAME
+
+VNCSERVER_PROXYCLIENT_ADDRESS=$SERVICE_HOST
+VNCSERVER_LISTEN=0.0.0.0
+
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+KEYSTONE_AUTH_HOST=$SERVICE_HOST
+KEYSTONE_SERVICE_HOST=$SERVICE_HOST
+
+MYSQL_PASSWORD=mysql
+RABBIT_PASSWORD=rabbit
+SERVICE_TOKEN=service
+SERVICE_PASSWORD=admin
+ADMIN_PASSWORD=admin
+
