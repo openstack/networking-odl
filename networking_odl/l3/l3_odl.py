@@ -123,3 +123,19 @@ class OpenDaylightL3RouterPlugin(
         super(OpenDaylightL3RouterPlugin, self).update_floatingip(context, id)
         url = FLOATINGIPS + "/" + id
         self.client.sendjson('delete', url, None)
+
+    def add_router_interface(self, context, router_id, interface_info):
+        new_router = super(
+            OpenDaylightL3RouterPlugin, self).create_router_interface(
+                context, router_id, interface_info)
+        url = ROUTERS + "/" + router_id + "/add_router_interface"
+        self.client.sendjson('post', url, {ROUTERS[:-1]: new_router})
+        return new_router
+
+    def remove_router_interface(self, context, router_id, interface_info):
+        new_router = super(
+            OpenDaylightL3RouterPlugin, self).delete_router_interface(
+                context, router_id, interface_info)
+        url = ROUTERS + "/" + router_id + "/remove_router_interface"
+        self.client.sendjson('delete', url, None)
+        return new_router
