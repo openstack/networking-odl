@@ -20,7 +20,9 @@ import requests
 
 from neutron.common import exceptions as n_exc
 from neutron.common import utils
+from neutron.extensions import securitygroup as sg
 
+from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
@@ -29,7 +31,10 @@ LOG = logging.getLogger(__name__)
 
 not_found_exception_map = {odl_const.ODL_NETWORKS: n_exc.NetworkNotFound,
                            odl_const.ODL_SUBNETS: n_exc.SubnetNotFound,
-                           odl_const.ODL_PORTS: n_exc.PortNotFound}
+                           odl_const.ODL_PORTS: n_exc.PortNotFound,
+                           odl_const.ODL_SGS: sg.SecurityGroupNotFound,
+                           odl_const.ODL_SG_RULES:
+                               sg.SecurityGroupRuleNotFound}
 
 
 class OpenDaylightDriver(object):
@@ -49,6 +54,7 @@ class OpenDaylightDriver(object):
             cfg.CONF.ml2_odl.password,
             cfg.CONF.ml2_odl.timeout
         )
+        odl_call.subscribe()
 
     def synchronize(self, operation, object_type, context):
         """Synchronize ODL with Neutron following a configuration change."""
@@ -76,6 +82,16 @@ class OpenDaylightDriver(object):
         # https://bugs.opendaylight.org/show_bug.cgi?id=477
         port['mac_address'] = port['mac_address'].upper()
         odl_utils.try_del(port, ['status'])
+
+    @classmethod
+    def filter_create_security_group_attributes(cls, sg, context):
+        """Filter out security-group attributes not required for a create."""
+        pass
+
+    @classmethod
+    def filter_create_security_group_rule_attributes(cls, sg_rule, context):
+        """Filter out sg-rule attributes not required for a create."""
+        pass
 
     def sync_resources(self, collection_name, context):
         """Sync objects from Neutron over to OpenDaylight.
@@ -114,7 +130,9 @@ class OpenDaylightDriver(object):
             return
         for collection_name in [odl_const.ODL_NETWORKS,
                                 odl_const.ODL_SUBNETS,
-                                odl_const.ODL_PORTS]:
+                                odl_const.ODL_PORTS,
+                                odl_const.ODL_SGS,
+                                odl_const.ODL_SG_RULES]:
             self.sync_resources(collection_name, context)
         self.out_of_sync = False
 
@@ -136,6 +154,16 @@ class OpenDaylightDriver(object):
         cls.add_security_groups(port, context)
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
                           'tenant_id', 'fixed_ips'])
+
+    @classmethod
+    def filter_update_security_group_attributes(cls, sg, context):
+        """Filter out security-group attributes for an update operation."""
+        pass
+
+    @classmethod
+    def filter_update_security_group_rule_attributes(cls, sg_rule, context):
+        """Filter out sg-rule attributes for an update operation."""
+        pass
 
     def sync_single_resource(self, operation, object_type, context):
         """Sync over a single resource from Neutron to OpenDaylight.
@@ -166,6 +194,18 @@ class OpenDaylightDriver(object):
             with excutils.save_and_reraise_exception():
                 self.out_of_sync = True
 
+    def sync_from_callback(self, operation, object_type, res_id, resource):
+        if operation == 'delete':
+            self.client.sendjson('delete', object_type + '/' + res_id, None)
+        else:
+            if operation == 'create':
+                urlpath = object_type
+                method = 'post'
+            elif operation == 'update':
+                urlpath = object_type + '/' + res_id
+                method = 'put'
+            self.client.sendjson(method, urlpath, {object_type[:-1]: resource})
+
     @staticmethod
     def add_security_groups(port, context):
         """Populate the 'security_groups' field with entire records."""
@@ -180,7 +220,12 @@ OpenDaylightDriver.create_object_map = {
     odl_const.ODL_SUBNETS:
         OpenDaylightDriver.filter_create_subnet_attributes,
     odl_const.ODL_PORTS:
-        OpenDaylightDriver.filter_create_port_attributes}
+        OpenDaylightDriver.filter_create_port_attributes,
+    odl_const.ODL_SGS:
+        OpenDaylightDriver.filter_create_security_group_attributes,
+    odl_const.ODL_SG_RULES:
+        OpenDaylightDriver.filter_create_security_group_rule_attributes}
+
 
 OpenDaylightDriver.update_object_map = {
     odl_const.ODL_NETWORKS:
@@ -188,4 +233,8 @@ OpenDaylightDriver.update_object_map = {
     odl_const.ODL_SUBNETS:
         OpenDaylightDriver.filter_update_subnet_attributes,
     odl_const.ODL_PORTS:
-        OpenDaylightDriver.filter_update_port_attributes}
+        OpenDaylightDriver.filter_update_port_attributes,
+    odl_const.ODL_SGS:
+        OpenDaylightDriver.filter_update_security_group_attributes,
+    odl_const.ODL_SG_RULES:
+        OpenDaylightDriver.filter_update_security_group_rule_attributes}
