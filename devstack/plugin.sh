@@ -84,6 +84,9 @@ ODL_L3=${ODL_L3:-False}
 # Enable debug logs for odl ovsdb
 ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
 
+# The network virtualization feature used by opendaylight loaded by Karaf
+ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-ovsdb-openstack}
+
 # Karaf logfile information
 ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf.log}
 
@@ -125,10 +128,10 @@ function configure_opendaylight {
     # Get the MAJOR.MINOR version
     local ODL_VERSION=$(echo $ODL_NAME | cut -d '-' -f 3 | cut -d '.' -f 1,2)
 
-    # Add odl-ovsdb-openstack if it's not already there
-    local ODLOVSDB=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep odl)
-    if [ "$ODLOVSDB" == "" ]; then
-        sed -i '/^featuresBoot=/ s/$/,odl-ovsdb-openstack/' $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+    # Add netvirt feature in Karaf, if it's not already there
+    local ODLFEATUREMATCH=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep $ODL_NETVIRT_KARAF_FEATURE)
+    if [ "$ODLFEATUREMATCH" == "" ]; then
+        sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
     if [ "$ODL_VERSION" == "0.2" ]; then
