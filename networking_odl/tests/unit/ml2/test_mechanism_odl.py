@@ -102,13 +102,6 @@ class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
 class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
                                        OpenDaylightTestCase):
 
-    def setUp(self):
-        mock.patch.object(
-            mech_driver.OpenDaylightDriver,
-            'out_of_sync',
-            new_callable=mock.PropertyMock(return_value=False)).start()
-        super(OpenDaylightMechanismTestPortsV2, self).setUp()
-
     def test_update_port_mac(self):
         self.check_update_port_mac(
             host_arg={portbindings.HOST_ID: HOST},
