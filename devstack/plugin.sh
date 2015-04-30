@@ -211,9 +211,9 @@ function install_opendaylight {
     echo "Installing OpenDaylight and dependent packages"
 
     if is_ubuntu; then
-        install_package maven openjdk-7-jre openjdk-7-jdk
+        install_package maven openjdk-7-jre openjdk-7-jdk libxml-xpath-perl
     else
-        yum_install maven java-1.7.0-openjdk
+        yum_install maven java-1.7.0-openjdk perl-XML-XPath
     fi
 
     install_opendaylight_neutron_thin_ml2_driver
@@ -221,6 +221,25 @@ function install_opendaylight {
     # Download OpenDaylight
     mkdir -p $ODL_DIR
     cd $ODL_DIR
+    # This defaults to lithium, so grab the latest lithium nightly build
+    if [ "$ODL_RELEASE" == "lithium-snapshot" ]; then
+        NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
+        BUNDLEVERSION='0.3.0-SNAPSHOT'
+
+        # Acquire the timestamp information from maven-metadata.xml
+        wget ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+        if is_ubuntu; then
+            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" maven-metadata.xml 2>/dev/null`
+        else
+            BUNDLE_TIMESTAMP=`xpath maven-metadata.xml "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
+        fi
+        echo "Nexus timestamp is ${BUNDLE_TIMESTAMP}"
+
+        ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+        ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+        ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+    fi
+
     wget -N $ODL_URL/$ODL_PKG
     unzip -u $ODL_PKG
 }
