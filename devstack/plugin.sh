@@ -147,10 +147,6 @@ function configure_opendaylight {
     sudo ovs-vsctl --no-wait -- --may-exist add-br $OVS_BR
     sudo ovs-vsctl --no-wait br-set-external-id $OVS_BR bridge-id $OVS_BR
 
-    # Determine the version of ODL we're running. Needed below
-    # Get the MAJOR.MINOR version
-    local ODL_VERSION=$(echo $ODL_NAME | cut -d '-' -f 3 | cut -d '.' -f 1,2)
-
     # The logging config file in ODL
     local ODL_LOGGING_CONFIG=${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg
 
@@ -160,7 +156,7 @@ function configure_opendaylight {
         sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
-    if [ "$ODL_VERSION" == "0.2" ]; then
+    if [ "$ODL_RELEASE" == "helium" ]; then
         # Move Tomcat to $ODL_PORT
         local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
         if [ "$_ODLPORT" == "" ]; then
@@ -203,7 +199,7 @@ function configure_opendaylight {
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        if [ "$ODL_VERSION" == "0.2" ]; then
+        if [ "$ODL_RELEASE" == "helium" ]; then
             local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
             if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
                 echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
