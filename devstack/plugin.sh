@@ -57,17 +57,7 @@ ODL_PASSWORD=${ODL_PASSWORD:-admin}
 ODL_DIR=$DEST/opendaylight
 
 # The OpenDaylight URL PREFIX
-# Note: this is only used when ODL_URL is not provided
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
-
-# The OpenDaylight URL
-ODL_URL=${ODL_URL:-${ODL_URL_PREFIX}/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.3-Helium-SR3}
-
-# Short name of ODL package
-ODL_NAME=${ODL_NAME:-distribution-karaf-0.2.3-Helium-SR3}
-
-# The OpenDaylight Package, currently using 'Helium' release
-ODL_PKG=${ODL_PKG:-distribution-karaf-0.2.3-Helium-SR3.zip}
 
 # The OpenDaylight Networking-ODL DIR
 ODL_NETWORKING_DIR=$DEST/networking-odl
@@ -90,9 +80,6 @@ ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-ovsdb-openstack}
 # Karaf logfile information
 ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf.log}
 
-# The logging config file in ODL
-ODL_LOGGING_CONFIG=${ODL_LOGGING_CONFIG:-${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg}
-
 # The bridge to configure
 OVS_BR=${OVS_BR:-br-int}
 
@@ -100,6 +87,40 @@ OVS_BR=${OVS_BR:-br-int}
 ODL_JAVA_MIN_MEM=${ODL_JAVA_MIN_MEM:-96m}
 ODL_JAVA_MAX_MEM=${ODL_JAVA_MAX_MEM:-256m}
 ODL_JAVA_MAX_PERM_MEM=${ODL_JAVA_MAX_PERM_MEM:-256m}
+
+function configure_odl_pkg_vars {
+    # This defaults to lithium, so grab the latest lithium nightly build
+    if [ "$ODL_RELEASE" == "lithium-snapshot" ]; then
+
+        NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
+        BUNDLEVERSION='0.3.0-SNAPSHOT'
+        MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
+
+        if [ ! -f $MAVENMETAFILE ]; then
+            # Acquire the timestamp information from maven-metadata.xml
+            wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+        fi
+        if is_ubuntu; then
+            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
+        else
+            BUNDLE_TIMESTAMP=`xpath $MAVENMETAFILE "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
+        fi
+        echo "Nexus timestamp is ${BUNDLE_TIMESTAMP}"
+
+        export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+        export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+        export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+    else
+        # The OpenDaylight URL
+        export ODL_URL=${ODL_URL:-${ODL_URL_PREFIX}/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.3-Helium-SR3}
+
+        # Short name of ODL package
+        export ODL_NAME=${ODL_NAME:-distribution-karaf-0.2.3-Helium-SR3}
+
+        # The OpenDaylight Package, currently using 'Helium' release
+        export ODL_PKG=${ODL_PKG:-distribution-karaf-0.2.3-Helium-SR3.zip}
+    fi
+}
 
 # Entry Points
 # ------------
@@ -119,6 +140,8 @@ function cleanup_opendaylight {
 
 # configure_opendaylight() - Set config files, create data dirs, etc
 function configure_opendaylight {
+    configure_odl_pkg_vars
+
     echo "Configuring OpenDaylight"
 
     sudo ovs-vsctl --no-wait -- --may-exist add-br $OVS_BR
@@ -127,6 +150,9 @@ function configure_opendaylight {
     # Determine the version of ODL we're running. Needed below
     # Get the MAJOR.MINOR version
     local ODL_VERSION=$(echo $ODL_NAME | cut -d '-' -f 3 | cut -d '.' -f 1,2)
+
+    # The logging config file in ODL
+    local ODL_LOGGING_CONFIG=${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg
 
     # Add netvirt feature in Karaf, if it's not already there
     local ODLFEATUREMATCH=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep featuresBoot= | grep $ODL_NETVIRT_KARAF_FEATURE)
@@ -180,12 +206,12 @@ function configure_opendaylight {
         if [ "$ODL_VERSION" == "0.2" ]; then
             local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
             if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-		echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+                echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
             fi
         else
             local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.neutron)
             if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-		echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+                echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
             fi
         fi
     fi
@@ -221,25 +247,8 @@ function install_opendaylight {
     # Download OpenDaylight
     mkdir -p $ODL_DIR
     cd $ODL_DIR
-    # This defaults to lithium, so grab the latest lithium nightly build
-    if [ "$ODL_RELEASE" == "lithium-snapshot" ]; then
-        NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
-        BUNDLEVERSION='0.3.0-SNAPSHOT'
 
-        # Acquire the timestamp information from maven-metadata.xml
-        wget ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
-        if is_ubuntu; then
-            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" maven-metadata.xml 2>/dev/null`
-        else
-            BUNDLE_TIMESTAMP=`xpath maven-metadata.xml "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
-        fi
-        echo "Nexus timestamp is ${BUNDLE_TIMESTAMP}"
-
-        ODL_NAME=distribution-karaf-${BUNDLEVERSION}
-        ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
-        ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
-    fi
-
+    configure_odl_pkg_vars
     wget -N $ODL_URL/$ODL_PKG
     unzip -u $ODL_PKG
 }
@@ -258,6 +267,8 @@ function install_opendaylight-compute {
 
 # start_opendaylight() - Start running processes, including screen
 function start_opendaylight {
+    configure_odl_pkg_vars
+
     echo "Starting OpenDaylight"
     if is_ubuntu; then
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
@@ -288,6 +299,8 @@ function start_opendaylight {
 
 # stop_opendaylight() - Stop running processes (non-screen)
 function stop_opendaylight {
+    configure_odl_pkg_vars
+
     # Stop the karaf container
     $ODL_DIR/$ODL_NAME/bin/stop
     stop_process odl-server
