@@ -1,0 +1,49 @@
+# Add here any global default values that apply for any ODL release
+# -----------------------------------------------------------------
+
+# The IP address of ODL. Set this in local.conf.
+ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
+
+# The default ODL port for Tomcat to use
+# NOTE: We make this configurable because by default, ODL uses port 8080 for
+# Tomcat (Helium releases) or Jetty (Lithium and later releases), and this
+# conflicts with swift which also uses port 8080.
+ODL_PORT=${ODL_PORT:-8087}
+
+# The ODL endpoint URL
+ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:${ODL_PORT}/controller/nb/v2/neutron}
+
+# The ODL username
+ODL_USERNAME=${ODL_USERNAME:-admin}
+
+# The ODL password
+ODL_PASSWORD=${ODL_PASSWORD:-admin}
+
+# The OpenDaylight URL PREFIX
+ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
+
+# How long (in seconds) to pause after ODL starts to let it complete booting
+ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-90}
+
+# The physical provider network to device mapping
+ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
+
+# Enable OpenDaylight l3 forwarding
+ODL_L3=${ODL_L3:-False}
+
+# Enable debug logs for odl ovsdb
+ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
+
+# The network virtualization feature used by opendaylight loaded by Karaf
+ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-ovsdb-openstack}
+
+# Karaf logfile information
+ODL_KARAF_LOG_NAME=${ODL_KARAF_LOG_NAME:-q-odl-karaf.log}
+
+# The bridge to configure
+OVS_BR=${OVS_BR:-br-int}
+
+# Allow the min/max/perm Java memory to be configurable
+ODL_JAVA_MIN_MEM=${ODL_JAVA_MIN_MEM:-96m}
+ODL_JAVA_MAX_MEM=${ODL_JAVA_MAX_MEM:-256m}
+ODL_JAVA_MAX_PERM_MEM=${ODL_JAVA_MAX_PERM_MEM:-256m}
