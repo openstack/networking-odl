@@ -391,6 +391,17 @@ if is_service_enabled odl-compute; then
                 other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
         fi
         sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
+
+        # Configure public bridge to be used by ODL_L3
+        if [ "${ODL_L3}" == "True" ]; then
+            sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
+            sudo ovs-vsctl --no-wait br-set-external-id $PUBLIC_BRIDGE bridge-id $PUBLIC_BRIDGE
+
+            # Add public interface to public bridge, if provided
+            if [ -n "$PUBLIC_INTERFACE" ]; then
+                sudo ovs-vsctl add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
+            fi
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-extra" ]]; then
         # no-op
         :
