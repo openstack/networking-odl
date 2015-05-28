@@ -1,5 +1,5 @@
 NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
-BUNDLEVERSION='0.3.0-SNAPSHOT'
+BUNDLEVERSION='0.2.4-SNAPSHOT'
 MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
 
 # Remove stale MAVENMETAFILE for cases where you switch releases

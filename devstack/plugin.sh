@@ -78,7 +78,7 @@ function configure_opendaylight {
         sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
-    if [ "$ODL_RELEASE" == "helium" ]; then
+    if [[ "$ODL_RELEASE" =~ "helium" ]]; then
         # Move Tomcat to $ODL_PORT
         local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | grep $ODL_PORT)
         if [ "$_ODLPORT" == "" ]; then
@@ -121,7 +121,7 @@ function configure_opendaylight {
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        if [ "$ODL_RELEASE" == "helium" ]; then
+        if [[ "$ODL_RELEASE" =~ "helium" ]]; then
             local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
             if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
                 echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
