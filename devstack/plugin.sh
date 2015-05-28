@@ -101,12 +101,14 @@ function configure_opendaylight {
         fi
     fi
 
+    # Remove existing logfiles
+    rm -f "/opt/stack/logs/$ODL_KARAF_LOG_BASE*"
     # Log karaf output to a file
-    _LF=$DEST/logs/$ODL_KARAF_LOG_NAME
+    _LF=/opt/stack/logs/$ODL_KARAF_LOG_NAME
     LF=$(echo $_LF | sed 's/\//\\\//g')
+    # Soft link for easy consumption
+    ln -sf $_LF "/opt/stack/logs/screen-karaf.txt"
 
-    # Remove the existing logfile
-    rm -f $_LF*
     # Change the karaf logfile
     sed -i "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
     $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
@@ -201,11 +203,6 @@ function start_opendaylight {
     export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
     export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
     run_process odl-server "$ODL_DIR/$ODL_NAME/bin/start"
-
-    # Link the logfile
-    LF=$DEST/logs/$ODL_KARAF_LOG_NAME
-    mkdir -p $DATA_DIR/log
-    ln -sf $LF $DATA_DIR/log/screen-karaf.log
 
     # Sleep a bit to let OpenDaylight finish starting up
     sleep $ODL_BOOT_WAIT
