@@ -153,7 +153,6 @@ function init_opendaylight {
 
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
-    local _pwd=$(pwd)
     echo "Installing OpenDaylight and dependent packages"
 
     if is_ubuntu; then
