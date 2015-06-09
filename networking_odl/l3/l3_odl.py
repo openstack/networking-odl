@@ -21,7 +21,6 @@ from neutron.api.rpc.handlers import l3_rpc
 from neutron.common import constants as q_const
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
-from neutron.db import db_base_plugin_v2
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
@@ -32,12 +31,21 @@ from networking_odl.common import client as odl_client
 from networking_odl.common import config  # noqa
 from networking_odl.common import utils as odl_utils
 
+try:
+    from neutron.db.db_base_plugin_v2 import common_db_mixin
+except ImportError as e:
+    # the change set ofece8cc2e9aae1610a325d0c206e38da3da9a0a1a
+    # the Change-Id of I1eac61c258541bca80e14be4b7c75519a014ffae
+    # db_base_plugin_v2.common_db_mixin was removed
+    from neutron.db import common_db_mixin
+
+
 ROUTERS = 'routers'
 FLOATINGIPS = 'floatingips'
 
 
 class OpenDaylightL3RouterPlugin(
-    db_base_plugin_v2.common_db_mixin.CommonDbMixin,
+    common_db_mixin.CommonDbMixin,
     extraroute_db.ExtraRoute_db_mixin,
     l3_dvr_db.L3_NAT_with_dvr_db_mixin,
     l3_gwmode_db.L3_NAT_db_mixin,
