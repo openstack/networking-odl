@@ -1,21 +1,19 @@
-NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
-BUNDLEVERSION='0.3.0-SNAPSHOT'
-MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
+function setup_opendaylight_package {
+    NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
+    BUNDLEVERSION='0.3.0-SNAPSHOT'
+    MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
 
-# Remove stale MAVENMETAFILE for cases where you switch releases
-rm -f $MAVENMETAFILE
+    odl_update_maven_metadata_xml ${MAVENMETAFILE} ${NEXUSPATH} ${BUNDLEVERSION}
 
-# Acquire the timestamp information from maven-metadata.xml
-wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+    if is_ubuntu; then
+        install_package libxml-xpath-perl
+        BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
+    else
+        yum_install perl-XML-XPath
+        BUNDLE_TIMESTAMP=`xpath $MAVENMETAFILE "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
+    fi
 
-if is_ubuntu; then
-    install_package libxml-xpath-perl
-    BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
-else
-    yum_install perl-XML-XPath
-    BUNDLE_TIMESTAMP=`xpath $MAVENMETAFILE "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
-fi
-
-export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
-export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
-export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+    export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+    export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+    export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+}

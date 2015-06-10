@@ -44,6 +44,21 @@ source $TOP_DIR/lib/neutron_plugins/ovs_base
 source $ODL_NETWORKING_DIR/devstack/settings.odl
 
 # Source specicic ODL release settings
+function odl_update_maven_metadata_xml {
+    local MAVENMETAFILE=$1
+    local NEXUSPATH=$2
+    local BUNDLEVERSION=$3
+
+    if [[ "$OFFLINE" == "True" ]]; then
+        return
+    fi
+
+    # Remove stale MAVENMETAFILE for cases where you switch releases
+    rm -f $MAVENMETAFILE
+
+    # Acquire the timestamp information from maven-metadata.xml
+    wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+}
 source $ODL_NETWORKING_DIR/devstack/release.$ODL_RELEASE
 
 # Entry Points
@@ -167,7 +182,9 @@ function install_opendaylight {
     # Download OpenDaylight
     cd $ODL_DIR
 
-    wget -N $ODL_URL/$ODL_PKG
+    if [[ "$OFFLINE" != "True" ]]; then
+	wget -N $ODL_URL/$ODL_PKG
+    fi
     unzip -u $ODL_PKG
 }
 
@@ -234,9 +251,8 @@ if is_service_enabled odl-server; then
         # no-op
         :
     elif [[ "$1" == "stack" && "$2" == "install" ]]; then
-        if [[ "$OFFLINE" != "True" ]]; then
-            install_opendaylight
-        fi
+        setup_opendaylight_package
+        install_opendaylight
         configure_opendaylight
         init_opendaylight
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
