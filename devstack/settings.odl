@@ -23,7 +23,7 @@ ODL_PASSWORD=${ODL_PASSWORD:-admin}
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
 # How long (in seconds) to pause after ODL starts to let it complete booting
-ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-90}
+ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-360}
 
 # The physical provider network to device mapping
 ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
@@ -32,10 +32,10 @@ ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
 ODL_L3=${ODL_L3:-False}
 
 # Enable debug logs for odl ovsdb
-ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
+ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-True}
 
 # The network virtualization feature used by opendaylight loaded by Karaf
-ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-ovsdb-openstack}
+ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-base-all,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-adsal-northbound,odl-nsf-all,odl-ovsdb-northbound,odl-ovsdb-openstack}
 
 # Karaf logfile information
 ODL_KARAF_LOG_DATE=$(date +%Y-%m-%d-%H%M%S)
