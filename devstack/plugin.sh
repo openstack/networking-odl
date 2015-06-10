@@ -185,7 +185,7 @@ function install_opendaylight {
     if [[ "$OFFLINE" != "True" ]]; then
 	wget -N $ODL_URL/$ODL_PKG
     fi
-    unzip -u $ODL_PKG
+    unzip -u -o $ODL_PKG
 }
 
 function install_opendaylight_neutron_thin_ml2_driver {
