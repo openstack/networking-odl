@@ -39,7 +39,7 @@ ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-ovsdb-openstack}
 
 # Karaf logfile information
 ODL_KARAF_LOG_DATE=$(date +%Y-%m-%d-%H%M%S)
-ODL_KARAF_LOG_BASE=${ODL_KARAF_LOG_BASE:screen-karaf.log}
+ODL_KARAF_LOG_BASE=${ODL_KARAF_LOG_BASE:-screen-karaf.log}
 ODL_KARAF_LOG_NAME=$ODL_KARAF_LOG_BASE.$ODL_KARAF_LOG_DATE
 
 # The bridge to configure
