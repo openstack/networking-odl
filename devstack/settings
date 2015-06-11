@@ -20,7 +20,7 @@ ODL_MODE=${ODL_MODE:-allinone}
 #   lithium-snapshot-0.3.0
 #   helium-snapshot
 #   helium
-ODL_RELEASE=${ODL_RELEASE:-helium-snapshot}
+ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.0}
 
 # ODL_MODE is used to configure how devstack works with OpenDaylight. You
 # can configure this three ways:

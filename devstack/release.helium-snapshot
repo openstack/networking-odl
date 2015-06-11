@@ -16,4 +16,7 @@ function setup_opendaylight_package {
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
     export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
     export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+
+    # The network virtualization feature used by opendaylight loaded by Karaf
+    ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-base-all,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-adsal-northbound,odl-nsf-all,odl-ovsdb-northbound,odl-ovsdb-openstack}
 }
