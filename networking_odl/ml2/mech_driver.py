@@ -83,6 +83,20 @@ class OpenDaylightDriver(object):
         port['mac_address'] = port['mac_address'].upper()
         odl_utils.try_del(port, ['status'])
 
+        # NOTE(yamahata): work around for port creation for router
+        # tenant_id=''(empty string) is passed when port is created
+        # by l3 plugin internally for router.
+        # On the other hand, ODL doesn't accept empty string for tenant_id.
+        # In that case, deduce tenant_id from network_id for now.
+        # Right fix: modify Neutron so that don't allow empty string
+        # for tenant_id even for port for internal use.
+        # TODO(yamahata): eliminate this work around when neutron side
+        # is fixed
+        # assert port['tenant_id'] != ''
+        if port['tenant_id'] == '':
+            LOG.debug('empty string was passed for tenant_id: %s(port)', port)
+            port['tenant_id'] = context._network_context._network['tenant_id']
+
     @classmethod
     def filter_create_security_group_attributes(cls, sg, context):
         """Filter out security-group attributes not required for a create."""
