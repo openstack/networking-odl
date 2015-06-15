@@ -149,6 +149,8 @@ function configure_opendaylight {
                 echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
             fi
         fi
+        # Bump up how man logfiles we save after rotation if debug is turned on
+        sed -i "/^log4j.appender.out.maxBackupIndex=/ s/10/$ODL_LOGFILES_TO_SAVE/" $ODL_LOGGING_CONFIG
     fi
 }
 
