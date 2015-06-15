@@ -26,6 +26,7 @@ from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
+from networking_odl.openstack.common._i18n import _LE
 
 LOG = logging.getLogger(__name__)
 
@@ -201,6 +202,11 @@ class OpenDaylightDriver(object):
                                      {object_type_url[:-1]: resource})
         except Exception:
             with excutils.save_and_reraise_exception():
+                LOG.error(_LE("Unable to perform %(operation)s on "
+                              "%(object_type)s %(object_id)s"),
+                          {'operation': operation,
+                           'object_type': object_type,
+                           'object_id': obj_id})
                 self.out_of_sync = True
 
     def sync_from_callback(self, operation, object_type, res_id,
