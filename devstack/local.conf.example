@@ -17,7 +17,7 @@ enable_service q-fwaas
 enable_service neutron
 enable_service tempest
 
-enable_plugin networking-odl http://git.openstack.org/stackforge/networking-odl
+enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
 
 ENABLE_TENANT_TUNNELS=True
 

@@ -14,7 +14,7 @@
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin networking-odl http://git.openstack.org/stackforge/networking-odl
+     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
 
 4. Optionally, to enable support for OpenDaylight L3 router functionality, add the
    below::
@@ -51,5 +51,5 @@
    to the local.conf file::
 
      > cat local.conf
-     enable_plugin networking-odl http://git.openstack.org/stackforge/networking-odl
+     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
      ODL_MODE=compute

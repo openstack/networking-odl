@@ -11,7 +11,7 @@ External Resources:
 The OpenDaylight homepage:
    http://www.opendaylight.org/
 
-The Launchpad page for stackforge/networking-odl:
+The Launchpad page for openstack/networking-odl:
    https://launchpad.net/networking-odl
 
 File bugs for this project here:
