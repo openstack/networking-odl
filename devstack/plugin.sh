@@ -330,6 +330,7 @@ if is_service_enabled odl-compute; then
             # Add public interface to public bridge, if provided
             if [ -n "$PUBLIC_INTERFACE" ]; then
                 sudo ovs-vsctl add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
+                sudo ip link set $PUBLIC_INTERFACE up
             fi
         fi
     elif [[ "$1" == "stack" && "$2" == "post-extra" ]]; then
