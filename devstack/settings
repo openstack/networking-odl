@@ -56,6 +56,10 @@ Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
 # to program OVS on each compute and network node host.
 disable_service q-agt
 
+# Be explicit about what services we enable
+enable_service q-svc q-dhcp q-meta quantum tempest n-api n-cond n-cpu n-crt \
+               n-obj n-sch g-api g-reg mysql rabbit key
+
 case $ODL_MODE in
     allinone)
         enable_service odl-server odl-compute
