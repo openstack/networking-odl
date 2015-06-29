@@ -28,7 +28,7 @@ XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 # OpenDaylight directories
-ODL_NETWORKING_DIR=$DEST/networking-odl
+NETWORKING_ODL_DIR=$DEST/networking-odl
 ODL_DIR=$DEST/opendaylight
 
 # Make sure $ODL_DIR exists
@@ -41,7 +41,7 @@ source $TOP_DIR/functions
 source $TOP_DIR/lib/neutron_plugins/ovs_base
 
 # Source global ODL settings
-source $ODL_NETWORKING_DIR/devstack/settings.odl
+source $NETWORKING_ODL_DIR/devstack/settings.odl
 
 # Source specicic ODL release settings
 function odl_update_maven_metadata_xml {
@@ -59,7 +59,7 @@ function odl_update_maven_metadata_xml {
     # Acquire the timestamp information from maven-metadata.xml
     wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
 }
-source $ODL_NETWORKING_DIR/devstack/release.$ODL_RELEASE
+source $NETWORKING_ODL_DIR/devstack/release.$ODL_RELEASE
 
 # Entry Points
 # ------------
@@ -190,7 +190,7 @@ function install_opendaylight {
 }
 
 function install_opendaylight_neutron_thin_ml2_driver {
-    cd $ODL_NETWORKING_DIR
+    cd $NETWORKING_ODL_DIR
     echo "Installing the Networking-ODL driver for OpenDaylight"
     sudo python setup.py install
 }
