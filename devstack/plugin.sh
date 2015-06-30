@@ -59,7 +59,8 @@ function odl_update_maven_metadata_xml {
     # Acquire the timestamp information from maven-metadata.xml
     wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
 }
-source $NETWORKING_ODL_DIR/devstack/release.$ODL_RELEASE
+
+source $NETWORKING_ODL_DIR/devstack/odl-releases/$ODL_RELEASE
 
 # Entry Points
 # ------------
