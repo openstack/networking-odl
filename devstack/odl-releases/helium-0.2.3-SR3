@@ -1,9 +1,9 @@
+# Short name of ODL package
+export ODL_NAME=distribution-karaf-0.2.3-Helium-SR3
+
 function setup_opendaylight_package {
     # The OpenDaylight URL
     export ODL_URL=${ODL_URL_PREFIX}/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.3-Helium-SR3
-
-    # Short name of ODL package
-    export ODL_NAME=distribution-karaf-0.2.3-Helium-SR3
 
     # The OpenDaylight Package
     export ODL_PKG=distribution-karaf-0.2.3-Helium-SR3.zip
