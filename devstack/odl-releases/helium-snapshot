@@ -1,6 +1,8 @@
+BUNDLEVERSION='0.2.4-SNAPSHOT'
+export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+
 function setup_opendaylight_package {
     NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
-    BUNDLEVERSION='0.2.4-SNAPSHOT'
     MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
 
     odl_update_maven_metadata_xml ${MAVENMETAFILE} ${NEXUSPATH} ${BUNDLEVERSION}
@@ -14,7 +16,6 @@ function setup_opendaylight_package {
     fi
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
-    export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
     export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
 
     # The network virtualization feature used by opendaylight loaded by Karaf
