@@ -15,6 +15,7 @@
 #
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.api.rpc.handlers import l3_rpc
@@ -40,6 +41,7 @@ except ImportError as e:
     from neutron.db import common_db_mixin
 
 
+LOG = logging.getLogger(__name__)
 ROUTERS = 'routers'
 FLOATINGIPS = 'floatingips'
 
@@ -169,3 +171,16 @@ class OpenDaylightL3RouterPlugin(
                        'tenant_id': new_router['tenant_id']}
 
         return router_dict
+
+    dvr_deletens_if_no_port_warned = False
+
+    def dvr_deletens_if_no_port(self, context, port_id):
+        # TODO(yamahata): implement this method or delete this logging
+        # For now, this is defined to avoid attribute exception
+        # Since ODL L3 does not create namespaces, this is always going to
+        # be a noop. When it is confirmed, delete this comment and logging
+        if not self.dvr_deletens_if_no_port_warned:
+            LOG.debug('dvr is not suported yet. '
+                      'this method needs to be implemented')
+            self.dvr_deletens_if_no_port_warned = True
+        return []
