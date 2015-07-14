@@ -108,14 +108,14 @@ class OpenDaylightL3RouterPlugin(
         return router_dict
 
     def delete_router(self, context, id):
-        super(OpenDaylightL3RouterPlugin, self).update_router(context, id)
+        super(OpenDaylightL3RouterPlugin, self).delete_router(context, id)
         url = ROUTERS + "/" + id
         self.client.sendjson('delete', url, None)
 
     def create_floatingip(self, context, floatingip,
                           initial_status=q_const.FLOATINGIP_STATUS_ACTIVE):
         fip_dict = super(OpenDaylightL3RouterPlugin, self).create_floatingip(
-            context, floatingip)
+            context, floatingip, initial_status)
         url = FLOATINGIPS
         self.client.sendjson('post', url, {FLOATINGIPS[:-1]: fip_dict})
         return fip_dict
@@ -128,7 +128,7 @@ class OpenDaylightL3RouterPlugin(
         return fip_dict
 
     def delete_floatingip(self, context, id):
-        super(OpenDaylightL3RouterPlugin, self).update_floatingip(context, id)
+        super(OpenDaylightL3RouterPlugin, self).delete_floatingip(context, id)
         url = FLOATINGIPS + "/" + id
         self.client.sendjson('delete', url, None)
 
