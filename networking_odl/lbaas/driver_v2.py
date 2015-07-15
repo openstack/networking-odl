@@ -57,7 +57,7 @@ class OpenDaylightManager(object):
     """OpenDaylight LBaaS Driver for the V2 API
 
     This code is the backend implementation for the OpenDaylight
-    LBaaS V1 driver for Openstack Neutron.
+    LBaaS V2 driver for Openstack Neutron.
     """
 
     @log_helpers.log_method_call
@@ -67,15 +67,15 @@ class OpenDaylightManager(object):
 
     @log_helpers.log_method_call
     def create(self, context, obj):
-        self.client.sendjson('post', self.obj_type, None)
+        self.client.sendjson('post', self.url_path, None)
 
     @log_helpers.log_method_call
     def update(self, context, obj):
-        self.client.sendjson('put', self.obj_type + '/' + obj.id, None)
+        self.client.sendjson('put', self.url_path + '/' + obj.id, None)
 
     @log_helpers.log_method_call
     def delete(self, context, obj):
-        self.client.sendjson('delete', self.obj_type + '/' + obj.id, None)
+        self.client.sendjson('delete', self.url_path + '/' + obj.id, None)
 
 
 class ODLLoadBalancerManager(OpenDaylightManager,
