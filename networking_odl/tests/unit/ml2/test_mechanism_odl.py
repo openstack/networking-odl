@@ -14,6 +14,7 @@
 #    under the License.
 
 from networking_odl.common import client
+from networking_odl.common import constants as odl_const
 from networking_odl.ml2 import mech_driver
 
 import mock
@@ -123,9 +124,9 @@ class DataMatcher(object):
     def __init__(self, operation, object_type, context):
         self._data = context.current.copy()
         self._object_type = object_type
-        filter_map = getattr(mech_driver.OpenDaylightDriver,
-                             '%s_object_map' % operation)
-        attr_filter = filter_map["%ss" % object_type]
+        filter_cls = mech_driver.OpenDaylightDriver.FILTER_MAP[
+            '%ss' % object_type]
+        attr_filter = getattr(filter_cls, 'filter_%s_attributes' % operation)
         attr_filter(self._data, context)
 
     def __eq__(self, s):
@@ -395,5 +396,6 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         with mock.patch.object(driver_context.db, 'get_network_segments'):
             context = driver_context.PortContext(
                 plugin, plugin_context, port, network, {}, 0, None)
-            self.mech.odl_drv.filter_create_port_attributes(port, context)
+            self.mech.odl_drv.FILTER_MAP[
+                odl_const.ODL_PORTS].filter_create_attributes(port, context)
             self.assertEqual(tenant_id, port['tenant_id'])
