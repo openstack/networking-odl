@@ -13,6 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import abc
+import six
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -20,7 +23,9 @@ import requests
 
 from neutron.common import exceptions as n_exc
 from neutron.common import utils
+from neutron import context
 from neutron.extensions import securitygroup as sg
+from neutron.plugins.ml2 import driver_context
 
 from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
@@ -38,46 +43,72 @@ not_found_exception_map = {odl_const.ODL_NETWORKS: n_exc.NetworkNotFound,
                                sg.SecurityGroupRuleNotFound}
 
 
-class OpenDaylightDriver(object):
-
-    """OpenDaylight Python Driver for Neutron.
-
-    This code is the backend implementation for the OpenDaylight ML2
-    MechanismDriver for OpenStack Neutron.
-    """
-    out_of_sync = True
-
-    def __init__(self):
-        LOG.debug("Initializing OpenDaylight ML2 driver")
-        self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.ml2_odl.url,
-            cfg.CONF.ml2_odl.username,
-            cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout
-        )
-        self.sec_handler = odl_call.OdlSecurityGroupsHandler(self)
-
-    def synchronize(self, operation, object_type, context):
-        """Synchronize ODL with Neutron following a configuration change."""
-        if self.out_of_sync:
-            self.sync_full(context)
-        else:
-            self.sync_single_resource(operation, object_type, context)
+@six.add_metaclass(abc.ABCMeta)
+class ResourceFilterBase(object):
+    @staticmethod
+    @abc.abstractmethod
+    def filter_create_attributes(resource, context):
+        pass
 
     @staticmethod
-    def filter_create_network_attributes(network, context):
+    @abc.abstractmethod
+    def filter_update_attributes(resource, context):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def filter_create_attributes_with_plugin(resource, plugin, dbcontext):
+        pass
+
+
+class NetworkFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(network, context):
         """Filter out network attributes not required for a create."""
         odl_utils.try_del(network, ['status', 'subnets'])
 
     @staticmethod
-    def filter_create_subnet_attributes(subnet, context):
+    def filter_update_attributes(network, context):
+        """Filter out network attributes for an update operation."""
+        odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
+
+    @classmethod
+    def filter_create_attributes_with_plugin(cls, network, plugin, dbcontext):
+        context = driver_context.NetworkContext(plugin, dbcontext, network)
+        cls.filter_create_attributes(network, context)
+
+
+class SubnetFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(subnet, context):
         """Filter out subnet attributes not required for a create."""
         pass
 
+    @staticmethod
+    def filter_update_attributes(subnet, context):
+        """Filter out subnet attributes for an update operation."""
+        odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
+                          'allocation_pools', 'tenant_id'])
+
     @classmethod
-    def filter_create_port_attributes(cls, port, context):
+    def filter_create_attributes_with_plugin(cls, subnet, plugin, dbcontext):
+        context = driver_context.SubnetContext(subnet, plugin, dbcontext)
+        cls.filter_create_attributes(subnet, context)
+
+
+class PortFilter(ResourceFilterBase):
+    @staticmethod
+    def _add_security_groups(port, context):
+        """Populate the 'security_groups' field with entire records."""
+        dbcontext = context._plugin_context
+        groups = [context._plugin.get_security_group(dbcontext, sg)
+                  for sg in port['security_groups']]
+        port['security_groups'] = groups
+
+    @classmethod
+    def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
-        cls.add_security_groups(port, context)
+        cls._add_security_groups(port, context)
         # TODO(kmestery): Converting to uppercase due to ODL bug
         # https://bugs.opendaylight.org/show_bug.cgi?id=477
         port['mac_address'] = port['mac_address'].upper()
@@ -98,25 +129,97 @@ class OpenDaylightDriver(object):
             port['tenant_id'] = context._network_context._network['tenant_id']
 
     @classmethod
-    def filter_create_security_group_attributes(cls, sg, context):
+    def filter_update_attributes(cls, port, context):
+        """Filter out port attributes for an update operation."""
+        cls._add_security_groups(port, context)
+        odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
+                          'tenant_id', 'fixed_ips'])
+
+    @classmethod
+    def filter_create_attributes_with_plugin(cls, port, plugin, dbcontext):
+        network = plugin.get_network(dbcontext, port['network_id'])
+        # TODO(yamahata): port binding
+        binding = {}
+        context = driver_context.PortContext(
+            plugin, dbcontext, port, network, binding, None)
+        cls.filter_create_attributes(port, context)
+
+
+class SecurityGroupFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(sg, context):
         """Filter out security-group attributes not required for a create."""
         pass
 
-    @classmethod
-    def filter_create_security_group_rule_attributes(cls, sg_rule, context):
+    @staticmethod
+    def filter_update_attributes(sg, context):
+        """Filter out security-group attributes for an update operation."""
+        pass
+
+    @staticmethod
+    def filter_create_attributes_with_plugin(sg, plugin, dbcontext):
+        pass
+
+
+class SecurityGroupRuleFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(sg_rule, context):
         """Filter out sg-rule attributes not required for a create."""
         pass
 
-    def sync_resources(self, collection_name, context):
+    @staticmethod
+    def filter_update_attributes(sg_rule, context):
+        """Filter out sg-rule attributes for an update operation."""
+        pass
+
+    @staticmethod
+    def filter_create_attributes_with_plugin(sg_rule, plugin, dbcontext):
+        pass
+
+
+class OpenDaylightDriver(object):
+
+    """OpenDaylight Python Driver for Neutron.
+
+    This code is the backend implementation for the OpenDaylight ML2
+    MechanismDriver for OpenStack Neutron.
+    """
+    FILTER_MAP = {
+        odl_const.ODL_NETWORKS: NetworkFilter,
+        odl_const.ODL_SUBNETS: SubnetFilter,
+        odl_const.ODL_PORTS: PortFilter,
+        odl_const.ODL_SGS: SecurityGroupFilter,
+        odl_const.ODL_SG_RULES: SecurityGroupRuleFilter,
+    }
+    out_of_sync = True
+
+    def __init__(self):
+        LOG.debug("Initializing OpenDaylight ML2 driver")
+        self.client = odl_client.OpenDaylightRestClient(
+            cfg.CONF.ml2_odl.url,
+            cfg.CONF.ml2_odl.username,
+            cfg.CONF.ml2_odl.password,
+            cfg.CONF.ml2_odl.timeout
+        )
+        self.sec_handler = odl_call.OdlSecurityGroupsHandler(self)
+
+    def synchronize(self, operation, object_type, context):
+        """Synchronize ODL with Neutron following a configuration change."""
+        if self.out_of_sync:
+            self.sync_full(context._plugin)
+        else:
+            self.sync_single_resource(operation, object_type, context)
+
+    def sync_resources(self, plugin, dbcontext, collection_name):
         """Sync objects from Neutron over to OpenDaylight.
 
         This will handle syncing networks, subnets, and ports from Neutron to
         OpenDaylight. It also filters out the requisite items which are not
         valid for create API operations.
         """
+        filter_cls = self.FILTER_MAP[collection_name]
         to_be_synced = []
-        dbcontext = context._plugin_context
-        obj_getter = getattr(context._plugin, 'get_%s' % collection_name)
+        obj_getter = getattr(plugin, 'get_%s' % collection_name)
         if collection_name == odl_const.ODL_SGS:
             resources = obj_getter(dbcontext, default_sg=True)
         else:
@@ -130,18 +233,28 @@ class OpenDaylightDriver(object):
             except requests.exceptions.HTTPError as e:
                 with excutils.save_and_reraise_exception() as ctx:
                     if e.response.status_code == requests.codes.not_found:
-                        attr_filter = self.create_object_map[collection_name]
-                        attr_filter(resource, context)
+                        filter_cls.filter_create_attributes_with_plugin(
+                            resource, plugin, dbcontext)
                         to_be_synced.append(resource)
                         ctx.reraise = False
+            else:
+                # TODO(yamahata): compare result with resource.
+                # If they don't match, update it below
+                pass
+
         key = collection_name[:-1] if len(to_be_synced) == 1 else (
             collection_name)
         # Convert underscores to dashes in the URL for ODL
         collection_name_url = collection_name.replace('_', '-')
         self.client.sendjson('post', collection_name_url, {key: to_be_synced})
 
+        # https://bugs.launchpad.net/networking-odl/+bug/1371115
+        # TODO(yamahata): update resources with unsyned attributes
+        # TODO(yamahata): find dangling ODL resouce that was deleted in
+        # neutron db
+
     @utils.synchronized('odl-sync-full')
-    def sync_full(self, context):
+    def sync_full(self, plugin):
         """Resync the entire database to ODL.
 
         Transition to the in-sync state on success.
@@ -149,41 +262,14 @@ class OpenDaylightDriver(object):
         """
         if not self.out_of_sync:
             return
+        dbcontext = context.get_admin_context()
         for collection_name in [odl_const.ODL_NETWORKS,
                                 odl_const.ODL_SUBNETS,
                                 odl_const.ODL_PORTS,
                                 odl_const.ODL_SGS,
                                 odl_const.ODL_SG_RULES]:
-            self.sync_resources(collection_name, context)
+            self.sync_resources(plugin, dbcontext, collection_name)
         self.out_of_sync = False
-
-    @staticmethod
-    def filter_update_network_attributes(network, context):
-        """Filter out network attributes for an update operation."""
-        odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
-
-    @staticmethod
-    def filter_update_subnet_attributes(subnet, context):
-        """Filter out subnet attributes for an update operation."""
-        odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
-                          'allocation_pools', 'tenant_id'])
-
-    @classmethod
-    def filter_update_port_attributes(cls, port, context):
-        """Filter out port attributes for an update operation."""
-        cls.add_security_groups(port, context)
-        odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
-                          'tenant_id', 'fixed_ips'])
-
-    @classmethod
-    def filter_update_security_group_attributes(cls, sg, context):
-        """Filter out security-group attributes for an update operation."""
-        pass
-
-    @classmethod
-    def filter_update_security_group_rule_attributes(cls, sg_rule, context):
-        """Filter out sg-rule attributes for an update operation."""
-        pass
 
     def sync_single_resource(self, operation, object_type, context):
         """Sync over a single resource from Neutron to OpenDaylight.
@@ -200,14 +286,15 @@ class OpenDaylightDriver(object):
                 self.client.sendjson('delete', object_type_url + '/' + obj_id,
                                      None)
             else:
+                filter_cls = self.FILTER_MAP[object_type]
                 if operation == odl_const.ODL_CREATE:
                     urlpath = object_type_url
                     method = 'post'
-                    attr_filter = self.create_object_map[object_type]
+                    attr_filter = filter_cls.filter_create_attributes
                 elif operation == odl_const.ODL_UPDATE:
                     urlpath = object_type_url + '/' + obj_id
                     method = 'put'
-                    attr_filter = self.update_object_map[object_type]
+                    attr_filter = filter_cls.filter_update_attributes
                 resource = context.current.copy()
                 attr_filter(resource, context)
                 self.client.sendjson(method, urlpath,
@@ -233,36 +320,3 @@ class OpenDaylightDriver(object):
                 urlpath = object_type + '/' + res_id
                 method = 'put'
             self.client.sendjson(method, urlpath, resource_dict)
-
-    @staticmethod
-    def add_security_groups(port, context):
-        """Populate the 'security_groups' field with entire records."""
-        dbcontext = context._plugin_context
-        groups = [context._plugin.get_security_group(dbcontext, sg)
-                  for sg in port['security_groups']]
-        port['security_groups'] = groups
-
-OpenDaylightDriver.create_object_map = {
-    odl_const.ODL_NETWORKS:
-        OpenDaylightDriver.filter_create_network_attributes,
-    odl_const.ODL_SUBNETS:
-        OpenDaylightDriver.filter_create_subnet_attributes,
-    odl_const.ODL_PORTS:
-        OpenDaylightDriver.filter_create_port_attributes,
-    odl_const.ODL_SGS:
-        OpenDaylightDriver.filter_create_security_group_attributes,
-    odl_const.ODL_SG_RULES:
-        OpenDaylightDriver.filter_create_security_group_rule_attributes}
-
-
-OpenDaylightDriver.update_object_map = {
-    odl_const.ODL_NETWORKS:
-        OpenDaylightDriver.filter_update_network_attributes,
-    odl_const.ODL_SUBNETS:
-        OpenDaylightDriver.filter_update_subnet_attributes,
-    odl_const.ODL_PORTS:
-        OpenDaylightDriver.filter_update_port_attributes,
-    odl_const.ODL_SGS:
-        OpenDaylightDriver.filter_update_security_group_attributes,
-    odl_const.ODL_SG_RULES:
-        OpenDaylightDriver.filter_update_security_group_rule_attributes}
