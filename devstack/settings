@@ -58,7 +58,7 @@ Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
 # to program OVS on each compute and network node host.
 disable_service q-agt
 
-IS_GATE=$(trueorfalse True IS_GATE)
+IS_GATE=$(trueorfalse False IS_GATE)
 if [[ "$IS_GATE" == "True" ]]
 then
     NETWORKING_ODL_DIR=$DEST/networking-odl

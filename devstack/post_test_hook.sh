@@ -11,7 +11,7 @@ NETWORKING_ODL_DIR="$BASE/new/networking-odl"
 source $DEVSTACK_PATH/functions
 source $DEVSTACK_PATH/localrc
 
-IS_GATE=$(trueorfalse True IS_GATE)
+IS_GATE=$(trueorfalse False IS_GATE)
 if [[ "$IS_GATE" == "True" ]]
 then
     source $NETWORKING_ODL_DIR/devstack/devstackgaterc
