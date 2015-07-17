@@ -43,6 +43,21 @@ source $TOP_DIR/lib/neutron_plugins/ovs_base
 # Source global ODL settings
 source $NETWORKING_ODL_DIR/devstack/settings.odl
 
+# Test with a finite retry loop.
+# NOTE: ONLY NEEDED in stable/kilo, already in
+# devstack master (commit: 442e4e96)
+#
+function odl_test_with_retry {
+    local testcmd=$1
+    local failmsg=$2
+    local until=${3:-10}
+    local sleep=${4:-0.5}
+
+    if ! timeout $until sh -c "while ! $testcmd; do sleep $sleep; done"; then
+        die $LINENO "$failmsg"
+    fi
+}
+
 # Source specicic ODL release settings
 function odl_update_maven_metadata_xml {
     local MAVENMETAFILE=$1
@@ -223,8 +238,17 @@ function start_opendaylight {
     export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
     run_process odl-server "$ODL_DIR/$ODL_NAME/bin/start"
 
-    # Sleep a bit to let OpenDaylight finish starting up
-    sleep $ODL_BOOT_WAIT
+    if [ -n "$ODL_BOOT_WAIT_URL" ]; then
+        echo "Waiting for Opendaylight to start via $ODL_BOOT_WAIT_URL ..."
+        # Probe ODL restconf for netvirt until it is operational
+        local sleep_interval=3
+        local testcmd="curl -o /dev/null --fail --silent --head -u ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_IP}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}"
+        odl_test_with_retry "$testcmd" "Opendaylight did not start after $ODL_BOOT_WAIT" $ODL_BOOT_WAIT $sleep_interval
+    else
+        echo "Waiting for Opendaylight to start ..."
+        # Sleep a bit to let OpenDaylight finish starting up
+        sleep $ODL_BOOT_WAIT
+    fi
 }
 
 # stop_opendaylight() - Stop running processes (non-screen)
