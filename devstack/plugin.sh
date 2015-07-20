@@ -211,8 +211,8 @@ function start_opendaylight {
         JHOME=/usr/lib/jvm/java-1.7.0-openjdk
     fi
 
-    # Wipe out the data directory ... grumble grumble grumble
-    rm -rf $ODL_DIR/$ODL_NAME/data
+    # Wipe out the data and journal directories ... grumble grumble grumble
+    rm -rf $ODL_DIR/$ODL_NAME/{data,journal}
 
     # The following variables are needed by the running karaf process.
     # See the "bin/setenv" file in the OpenDaylight distribution for
