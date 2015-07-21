@@ -31,6 +31,9 @@ ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
 # Enable OpenDaylight l3 forwarding
 ODL_L3=${ODL_L3:-False}
 
+# MAC address for next hop gateway at external network
+ODL_L3GW_MAC=${ODL_L3GW_MAC:-''}
+
 # Enable debug logs for odl ovsdb
 ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-True}
 
@@ -49,3 +52,9 @@ ODL_JAVA_MAX_PERM_MEM=${ODL_JAVA_MAX_PERM_MEM:-512m}
 
 # How many logfiles to save
 ODL_LOGFILES_TO_SAVE=${ODL_LOGFILES_TO_SAVE:-40}
+
+# Interval in test_with_retry calls
+ODL_RETRY_SLEEP_INTERVAL=${ODL_RETRY_SLEEP_INTERVAL:-5}
+
+# Dictate whether stack must wait for bridge creation
+ODL_WAIT_FOR_BRIDGES=${ODL_WAIT_FOR_BRIDGES:-True}

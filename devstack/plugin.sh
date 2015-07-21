@@ -37,7 +37,7 @@ mkdir -p $ODL_DIR
 # Import common functions
 source $TOP_DIR/functions
 
-# For OVS_BRIDGE and PUBLIC_BRIDGE
+# For PUBLIC_BRIDGE
 source $TOP_DIR/lib/neutron_plugins/ovs_base
 
 # Source global ODL settings
@@ -82,6 +82,8 @@ function cleanup_opendaylight {
 function configure_opendaylight {
     echo "Configuring OpenDaylight"
 
+    # Note: $OVS_BR is expected to be created by ODL; no need to do it here.
+    # TODO: However, neutron expects it to be present before ODL is started up!
     sudo ovs-vsctl --no-wait -- --may-exist add-br $OVS_BR
     sudo ovs-vsctl --no-wait br-set-external-id $OVS_BR bridge-id $OVS_BR
 
@@ -115,6 +117,12 @@ function configure_opendaylight {
         if [ "$L3FWD" == "" ]; then
             echo "ovsdb.l3.fwd.enabled=yes" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
         fi
+
+        # Configure L3 GW MAC if it's not there
+        local L3GW_MAC=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | grep ^ovsdb.l3gateway.mac)
+        if [[ -z "$L3GW_MAC" && -n "$ODL_L3GW_MAC" ]]; then
+            echo "ovsdb.l3gateway.mac=$ODL_L3GW_MAC" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
+        fi
     fi
 
     # Remove existing logfiles
@@ -137,6 +145,7 @@ function configure_opendaylight {
             echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.providers.openflow13.services.arp.GatewayMacResolverService = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
         if [[ "$ODL_RELEASE" =~ "helium" ]]; then
@@ -226,9 +235,8 @@ function start_opendaylight {
     if [ -n "$ODL_BOOT_WAIT_URL" ]; then
         echo "Waiting for Opendaylight to start via $ODL_BOOT_WAIT_URL ..."
         # Probe ODL restconf for netvirt until it is operational
-        local sleep_interval=3
         local testcmd="curl -o /dev/null --fail --silent --head -u ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_IP}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}"
-        test_with_retry "$testcmd" "Opendaylight did not start after $ODL_BOOT_WAIT" $ODL_BOOT_WAIT $sleep_interval
+        test_with_retry "$testcmd" "Opendaylight did not start after $ODL_BOOT_WAIT" $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
     else
         echo "Waiting for Opendaylight to start ..."
         # Sleep a bit to let OpenDaylight finish starting up
@@ -250,8 +258,8 @@ function stop_opendaylight-compute {
         sudo ovs-vsctl del-port ${port}
     done
 
-    # remove all OVS bridges created by Neutron
-    for bridge in $(sudo ovs-vsctl list-br | grep -o -e ${OVS_BRIDGE} -e ${PUBLIC_BRIDGE}); do
+    # remove all OVS bridges created by ODL
+    for bridge in $(sudo ovs-vsctl list-br | grep -o -e ${OVS_BR} -e ${PUBLIC_BRIDGE}); do
         sudo ovs-vsctl del-br ${bridge}
     done
 }
@@ -332,13 +340,27 @@ if is_service_enabled odl-compute; then
         fi
         sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
 
+        if [ "${ODL_WAIT_FOR_BRIDGES}" == "True" ]; then
+            echo "Waiting for $OVS_BR creation..."
+            local until=$ODL_BOOT_WAIT
+            local testcmd="sudo ovs-vsctl list Bridge | grep $OVS_BR"
+            test_with_retry "$testcmd" "OpenDaylight did not create $OVS_BR after $until s" $until $ODL_RETRY_SLEEP_INTERVAL
+        fi
+
         # Configure public bridge to be used by ODL_L3
         if [ "${ODL_L3}" == "True" ]; then
-            sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
-            sudo ovs-vsctl --no-wait br-set-external-id $PUBLIC_BRIDGE bridge-id $PUBLIC_BRIDGE
+            # Note: $PUBLIC_BRIDGE is expected to be created by ODL; no need to do it here
+
+            if [ "${ODL_WAIT_FOR_BRIDGES}" == "True" ]; then
+                echo "Waiting for $PUBLIC_BRIDGE creation..."
+                local until2=30
+                local testcmd2="sudo ovs-vsctl list Bridge | grep $PUBLIC_BRIDGE"
+                test_with_retry "$testcmd2" "OpenDaylight did not create $PUBLIC_BRIDGE after $until2 s" $until2 $ODL_RETRY_SLEEP_INTERVAL
+            fi
 
             # Add public interface to public bridge, if provided
             if [ -n "$PUBLIC_INTERFACE" ]; then
+                echo "Adding $PUBLIC_INTERFACE to $PUBLIC_BRIDGE"
                 sudo ovs-vsctl add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
                 sudo ip link set $PUBLIC_INTERFACE up
             fi
