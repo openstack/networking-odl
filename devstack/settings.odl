@@ -46,7 +46,7 @@ ODL_L3=${ODL_L3:-False}
 ODL_L3GW_MAC=${ODL_L3GW_MAC:-''}
 
 # Enable debug logs for odl ovsdb
-ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-True}
+ODL_NETVIRT_DEBUG_LOGS=${ODL_NETVIRT_DEBUG_LOGS:-False}
 
 # Karaf logfile information
 ODL_KARAF_LOG_DATE=$(date +%Y-%m-%d-%H%M%S)
