@@ -15,15 +15,6 @@
 # This can be overridden in the localrc file
 ODL_MODE=${ODL_MODE:-allinone}
 
-# What release to use. Choices are:
-#
-#   beryllium-snapshot-0.4.0 (master)
-#   lithium-snapshot-0.3.1 (stable)
-#   lithium-snapshot-0.3.0
-#   helium-snapshot
-#   helium
-ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.1}
-
 # ODL_MODE is used to configure how devstack works with OpenDaylight. You
 # can configure this three ways:
 #
@@ -46,25 +37,6 @@ ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.1}
 # You're on your own here, and are enabling services outside the scope of
 # the ODL_MODE variable.
 
-# Set a few things up for Neutron here
-
-# We are explicitly enabling the opendaylight ML2 MechanismDriver here.
-# Note we are also enabling the logger driver, which is helpful for
-# debugging things on the Neutron side.
-Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
-
-# We have to disable the neutron L2 agent. OpenDaylight does not use the
-# L2 agent, it instead uses a combination of OpenFlow and OVSDB commands
-# to program OVS on each compute and network node host.
-disable_service q-agt
-
-IS_GATE=$(trueorfalse False IS_GATE)
-if [[ "$IS_GATE" == "True" ]]
-then
-    NETWORKING_ODL_DIR=$DEST/networking-odl
-    source $NETWORKING_ODL_DIR/devstack/devstackgaterc
-fi
-
 case $ODL_MODE in
     allinone)
         enable_service odl-server odl-compute
@@ -79,3 +51,11 @@ case $ODL_MODE in
         echo "Manual mode: Enabling services explicitly."
         ;;
 esac
+
+
+IS_GATE=$(trueorfalse False IS_GATE)
+if [[ "$IS_GATE" == "True" ]]
+then
+    NETWORKING_ODL_DIR=$DEST/networking-odl
+    source $NETWORKING_ODL_DIR/devstack/devstackgaterc
+fi

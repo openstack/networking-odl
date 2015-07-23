@@ -19,6 +19,11 @@
 
 export OVERRIDE_ENABLED_SERVICES=q-svc,q-dhcp,q-meta,quantum,tempest,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,g-api,g-reg,mysql,rabbit,key,dstat
 
+# By default this variable is set to br100, and it is used to determine the value of PUBLIC_INTERFACE.
+# PUBLIC_INTERFACE is wired to PUBLIC_BRIDGE to route traffic externally. Since, we don't currently
+# need to route external traffic in the gate (no multi-node testing), this can be unset.
+unset PUBLIC_INTERFACE
+
 # Begin list of exclusions.
 r="^(?!.*"
 

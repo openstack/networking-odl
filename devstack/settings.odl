@@ -1,6 +1,15 @@
 # Add here any global default values that apply for any ODL release
 # -----------------------------------------------------------------
 
+# What release to use. Choices are:
+#
+#   beryllium-snapshot-0.4.0 (master)
+#   lithium-snapshot-0.3.1 (stable)
+#   lithium-snapshot-0.3.0
+#   helium-snapshot
+#   helium
+ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.1}
+
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
 
@@ -30,6 +39,8 @@ ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
 
 # Enable OpenDaylight l3 forwarding
 ODL_L3=${ODL_L3:-False}
+# If you need to route the traffic out of the box, set your public interface
+# $PUBLIC_INTERFACE, so that it is wired to your $PUBLIC_BRIDGE
 
 # MAC address for next hop gateway at external network
 ODL_L3GW_MAC=${ODL_L3GW_MAC:-''}
@@ -55,6 +66,3 @@ ODL_LOGFILES_TO_SAVE=${ODL_LOGFILES_TO_SAVE:-40}
 
 # Interval in test_with_retry calls
 ODL_RETRY_SLEEP_INTERVAL=${ODL_RETRY_SLEEP_INTERVAL:-5}
-
-# Dictate whether stack must wait for bridge creation
-ODL_WAIT_FOR_BRIDGES=${ODL_WAIT_FOR_BRIDGES:-True}

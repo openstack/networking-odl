@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# functions - OpenDaylight driver utility functions
+
+# Get build information
+function odl_update_maven_metadata_xml {
+    local MAVENMETAFILE=$1
+    local NEXUSPATH=$2
+    local BUNDLEVERSION=$3
+    local OFFLINE=$4
+
+    if [[ "$OFFLINE" == "True" ]]; then
+        return
+    fi
+
+    # Remove stale MAVENMETAFILE for cases where you switch releases
+    rm -f $MAVENMETAFILE
+
+    # Acquire the timestamp information from maven-metadata.xml
+    wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+}
+
+
+# Test if OpenDaylight is enabled
+function is_opendaylight_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"odl-" ]] && return 0
+    return 1
+}
+
+
+# Check that the bridge is up and running
+function wait_for_active_bridge {
+    local BRIDGE=$1
+    local SLEEP_INTERVAL=$2
+    local MAX_WAIT=$3
+
+    echo "Waiting for bridge $BRIDGE to be available..."
+    local testcmd="sudo ovs-vsctl list Bridge | grep $BRIDGE"
+    test_with_retry "$testcmd" \
+        "$BRIDGE did not become available in $MAX_WAIT seconds." \
+        $MAX_WAIT $SLEEP_INTERVAL
+    echo "Bridge $BRIDGE is avaialable."
+}

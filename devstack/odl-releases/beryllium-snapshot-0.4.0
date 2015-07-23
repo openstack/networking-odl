@@ -5,7 +5,7 @@ function setup_opendaylight_package {
     NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
     MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
 
-    odl_update_maven_metadata_xml ${MAVENMETAFILE} ${NEXUSPATH} ${BUNDLEVERSION}
+    odl_update_maven_metadata_xml ${MAVENMETAFILE} ${NEXUSPATH} ${BUNDLEVERSION} ${OFFLINE}
 
     if is_ubuntu; then
         install_package libxml-xpath-perl

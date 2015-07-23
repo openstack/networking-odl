@@ -1,0 +1,23 @@
+# Override few things here as early as we can
+
+# We are explicitly enabling the opendaylight ML2 MechanismDriver here.
+# Note we are also enabling the logger driver, which is helpful for
+# debugging things on the Neutron side.
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
+
+# This triggers the provisioning of L3 resources like routers and
+# external network, if not overriden.
+Q_L3_ENABLED=${Q_L3_ENABLED:-True}
+
+# We have to disable the neutron L2 agent. OpenDaylight does not use the
+# L2 agent, it instead uses a combination of OpenFlow and OVSDB commands
+# to program OVS on each compute and network node host.
+disable_service q-agt
+
+# If ODL_L3 is enabled, then we don't need the L3 agent and OpenDaylight
+# is going to act as the ML2's L3 service plugin.
+if [[ "$ODL_L3" == "True" ]]
+then
+    disable_service q-l3
+    ML2_L3_PLUGIN="networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin"
+fi
