@@ -9,3 +9,6 @@ echo "IS_GATE=True" >> $DEVSTACK_PATH/localrc
 
 # Set here the ODL release to use for the Gate job
 echo "ODL_RELEASE=lithium-snapshot-0.3.1" >> $DEVSTACK_PATH/localrc
+
+# Switch to using the ODL's L3 implementation
+echo "ODL_L3=True" >> $DEVSTACK_PATH/localrc
