@@ -14,6 +14,10 @@
 #    under the License.
 
 import gettext
+import six
 
 
-gettext.install('networking_odl', unicode=1)
+if six.PY2:
+    gettext.install('networking_odl', unicode=1)
+else:
+    gettext.install('networking_odl')
