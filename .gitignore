@@ -12,9 +12,6 @@ networking_odl.egg-info/
 networking_odl/vcsversion.py
 networking_odl/versioninfo
 pbr*.egg/
-quantum.egg-info/
-quantum/vcsversion.py
-quantum/versioninfo
 run_tests.err.log
 run_tests.log
 setuptools*.egg/
