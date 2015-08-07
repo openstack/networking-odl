@@ -166,6 +166,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                                     "376da547-b977-4cfe-9cba-275c80debf57",
                                     "tenant_id": "test-tenant",
                                     "fixed_ip_address": "10.0.0.3",
+                                    "subnet_id": port['subnets'][0]['id'],
                                     "port_id": port_id,
                                     "floating_ip_address": "172.24.4.228"
                                     }
