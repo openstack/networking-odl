@@ -14,13 +14,13 @@
 #    under the License.
 
 from oslo_config import cfg
-from oslo_log import log as logging
+from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
 import requests
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class OpenDaylightRestClient(object):
@@ -38,34 +38,48 @@ class OpenDaylightRestClient(object):
         self.timeout = timeout
         self.auth = (username, password)
 
+    def get(self, urlpath='', data=None):
+        return self.request('get', urlpath, data)
+
+    def put(self, urlpath='', data=None):
+        return self.request('put', urlpath, data)
+
+    def delete(self, urlpath='', data=None):
+        return self.request('delete', urlpath, data)
+
+    def request(self, method, urlpath='', data=None):
+        headers = {'Content-Type': 'application/json'}
+        url = '/'.join([self.url, urlpath])
+        LOG.debug(
+            "Sending METHOD (%(method)s) URL (%(url)s) JSON (%(data)s)",
+            {'method': method, 'url': url, 'data': data})
+        return requests.request(
+            method, url=url, headers=headers, data=data, auth=self.auth,
+            timeout=self.timeout)
+
     def sendjson(self, method, urlpath, obj):
         """Send json to the OpenDaylight controller."""
-
-        headers = {'Content-Type': 'application/json'}
         data = jsonutils.dumps(obj, indent=2) if obj else None
-        url = '/'.join([self.url, urlpath])
-        LOG.debug("Sending METHOD (%(method)s) URL (%(url)s) JSON (%(obj)s)",
-                  {'method': method, 'url': url, 'obj': obj})
-        r = requests.request(method, url=url,
-                             headers=headers, data=data,
-                             auth=self.auth, timeout=self.timeout)
-
-        try:
-            r.raise_for_status()
-        except requests.HTTPError as e:
-            with excutils.save_and_reraise_exception():
-                LOG.debug("Exception from ODL: %(e)s %(text)s",
-                          {'e': e, 'text': r.text}, exc_info=1)
-        else:
-            LOG.debug("Got response (%(response)s)", {'response': r.text})
+        return self._check_rensponse(self.request(method, urlpath, data))
 
     def try_delete(self, urlpath):
-        try:
-            self.sendjson('delete', urlpath, None)
-        except requests.HTTPError as e:
+        rensponse = self.delete(urlpath)
+        if rensponse.status_code == requests.codes.not_found:
             # The resource is already removed. ignore 404 gracefully
-            if e.response.status_code != 404:
-                raise
             LOG.debug("%(urlpath)s doesn't exist", {'urlpath': urlpath})
             return False
-        return True
+        else:
+            self._check_rensponse(rensponse)
+            return True
+
+    def _check_rensponse(self, rensponse):
+        try:
+            rensponse.raise_for_status()
+        except requests.HTTPError as error:
+            with excutils.save_and_reraise_exception():
+                LOG.debug("Exception from ODL: %(e)s %(text)s",
+                          {'e': error, 'text': rensponse.text}, exc_info=1)
+        else:
+            LOG.debug("Got response:\n"
+                      "(%(response)s)", {'response': rensponse.text})
+            return rensponse

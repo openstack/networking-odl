@@ -17,14 +17,13 @@ import copy
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron.common import constants as n_const
 from neutron.extensions import portbindings
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api as api
 
 from networking_odl.common import config as odl_conf
 from networking_odl.common import journal
 from networking_odl.db import db
+from networking_odl.ml2 import network_topology
 
 LOG = logging.getLogger(__name__)
 
@@ -41,6 +40,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.vif_details = {portbindings.CAP_PORT_FILTER: True}
         self.journal = journal.OpendaylightJournalThread()
+        self._network_topology = network_topology.NetworkTopologyManager()
 
     @journal.call_thread_on_end
     def create_network_precommit(self, context):
@@ -129,45 +129,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                               context.current['id'], 'delete', context.current)
 
     def bind_port(self, port_context):
-        """Set binding for all valid segments
+        """Set binding for a valid segments
 
         """
-
-        valid_segment = None
-        for segment in port_context.segments_to_bind:
-            if self._check_segment(segment):
-                valid_segment = segment
-                break
-
-        if valid_segment:
-            vif_type = self._get_vif_type(port_context)
-            LOG.debug("Bind port %(port)s on network %(network)s with valid "
-                      "segment %(segment)s and VIF type %(vif_type)r.",
-                      {'port': port_context.current['id'],
-                       'network': port_context.network.current['id'],
-                       'segment': valid_segment, 'vif_type': vif_type})
-
-            port_context.set_binding(
-                segment[api.ID], vif_type,
-                self.vif_details,
-                status=n_const.PORT_STATUS_ACTIVE)
-
-    def _check_segment(self, segment):
-        """Verify a segment is valid for the OpenDaylight MechanismDriver.
-
-        Verify the requested segment is supported by ODL and return True or
-        False to indicate this to callers.
-        """
-
-        network_type = segment[api.NETWORK_TYPE]
-        return network_type in [constants.TYPE_LOCAL, constants.TYPE_GRE,
-                                constants.TYPE_VXLAN, constants.TYPE_VLAN]
-
-    def _get_vif_type(self, port_context):
-        """Get VIF type string for given PortContext
-
-        Dummy implementation: it always returns following constant.
-        neutron.extensions.portbindings.VIF_TYPE_OVS
-        """
-
-        return portbindings.VIF_TYPE_OVS
+        return self._network_topology.bind_port(port_context)

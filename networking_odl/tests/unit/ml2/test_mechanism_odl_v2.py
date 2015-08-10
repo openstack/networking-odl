@@ -26,9 +26,7 @@ from oslo_serialization import jsonutils
 import requests
 
 from neutron.db import api as neutron_db_api
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
-from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
@@ -378,20 +376,3 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
     def test_port_processing_network(self):
         self._test_object_type_processing_network(odl_const.ODL_PORT)
-
-    def test_check_segment(self):
-        """Validate the check_segment call."""
-        segment = {'api.NETWORK_TYPE': ""}
-        segment[api.NETWORK_TYPE] = constants.TYPE_LOCAL
-        self.assertTrue(self.mech._check_segment(segment))
-        segment[api.NETWORK_TYPE] = constants.TYPE_FLAT
-        self.assertFalse(self.mech._check_segment(segment))
-        segment[api.NETWORK_TYPE] = constants.TYPE_VLAN
-        self.assertTrue(self.mech._check_segment(segment))
-        segment[api.NETWORK_TYPE] = constants.TYPE_GRE
-        self.assertTrue(self.mech._check_segment(segment))
-        segment[api.NETWORK_TYPE] = constants.TYPE_VXLAN
-        self.assertTrue(self.mech._check_segment(segment))
-        # Validate a network type not currently supported
-        segment[api.NETWORK_TYPE] = 'mpls'
-        self.assertFalse(self.mech._check_segment(segment))

@@ -1,0 +1,182 @@
+{
+    "network-topology": {
+        "topology": [
+            {
+                "topology-id": "flow:1"
+            },
+            {
+                "node": [
+                    {
+                        "node-id": "ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-int",
+                        "ovsdb:bridge-external-ids": [
+                            {
+                                "bridge-external-id-key": "opendaylight-iid",
+                                "bridge-external-id-value": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-int']"
+                            }
+                        ],
+                        "ovsdb:bridge-name": "br-int",
+                        "ovsdb:bridge-uuid": "e92ec02d-dba8-46d8-8047-680cab5ee8b0",
+                        "ovsdb:controller-entry": [
+                            {
+                                "controller-uuid": "8521e6df-54bd-48ac-a249-3bb810fd812c",
+                                "is-connected": false,
+                                "target": "tcp:192.168.66.1:6653"
+                            }
+                        ],
+                        "ovsdb:datapath-type": "ovsdb:datapath-type-netdev",
+                        "ovsdb:fail-mode": "ovsdb:ovsdb-fail-mode-secure",
+                        "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c']",
+                        "ovsdb:protocol-entry": [
+                            {
+                                "protocol": "ovsdb:ovsdb-bridge-protocol-openflow-13"
+                            }
+                        ],
+                        "termination-point": [
+                            {
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "d21472db-5c3c-4b38-bf18-6ed3a32edff1",
+                                "ovsdb:name": "br-int",
+                                "ovsdb:port-uuid": "30adf59e-ff0d-478f-b37a-e37ea20dddd3",
+                                "tp-id": "br-int"
+                            }
+                        ]
+                    },
+                    {
+                        "node-id": "ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-nian1_1",
+                        "ovsdb:bridge-name": "br-nian1_1",
+                        "ovsdb:bridge-uuid": "243e01cb-e413-4615-a044-b254141e407d",
+                        "ovsdb:datapath-id": "00:00:ca:01:3e:24:15:46",
+                        "ovsdb:datapath-type": "ovsdb:datapath-type-netdev",
+                        "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c']",
+                        "termination-point": [
+                            {
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "45184fd2-31eb-4c87-a071-2d64a0893662",
+                                "ovsdb:name": "br-nian1_1",
+                                "ovsdb:ofport": 65534,
+                                "ovsdb:port-uuid": "f5952c1b-6b6d-4fd2-b2cd-201b8c9e0779",
+                                "tp-id": "br-nian1_1"
+                            }
+                        ]
+                    },
+                    {
+                        "node-id": "ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-ex",
+                        "ovsdb:bridge-external-ids": [
+                            {
+                                "bridge-external-id-key": "bridge-id",
+                                "bridge-external-id-value": "br-ex"
+                            }
+                        ],
+                        "ovsdb:bridge-name": "br-ex",
+                        "ovsdb:bridge-other-configs": [
+                            {
+                                "bridge-other-config-key": "disable-in-band",
+                                "bridge-other-config-value": "true"
+                            }
+                        ],
+                        "ovsdb:bridge-uuid": "43f7768e-c2f9-4ae7-8099-8aee5a17add7",
+                        "ovsdb:datapath-id": "00:00:8e:76:f7:43:e7:4a",
+                        "ovsdb:datapath-type": "ovsdb:datapath-type-netdev",
+                        "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c']",
+                        "termination-point": [
+                            {
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "bdec1830-e6a5-4476-adff-569c455adb33",
+                                "ovsdb:name": "br-ex",
+                                "ovsdb:ofport": 65534,
+                                "ovsdb:port-uuid": "7ba5939b-ff13-409d-86de-67556021ddff",
+                                "tp-id": "br-ex"
+                            }
+                        ]
+                    },
+                    {
+                        "node-id": "ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c",
+                        "ovsdb:connection-info": {
+                            "local-ip": "192.168.66.1",
+                            "local-port": 6640,
+                            "remote-ip": "192.168.66.1",
+                            "remote-port": 41817
+                        },
+                        "ovsdb:datapath-type-entry": [
+                            {
+                                "datapath-type": "ovsdb:datapath-type-netdev"
+                            },
+                            {
+                                "datapath-type": "ovsdb:datapath-type-system"
+                            }
+                        ],
+                        "ovsdb:interface-type-entry": [
+                            {
+                                "interface-type": "ovsdb:interface-type-ipsec-gre"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-gre"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-gre64"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-dpdkr"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-vxlan"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-dpdkvhostuser"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-tap"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-geneve"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-dpdk"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-internal"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-system"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-lisp"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-patch"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-ipsec-gre64"
+                            },
+                            {
+                                "interface-type": "ovsdb:interface-type-stt"
+                            }
+                        ],
+                        "ovsdb:managed-node-entry": [
+                            {
+                                "bridge-ref": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-ex']"
+                            },
+                            {
+                                "bridge-ref": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-int']"
+                            },
+                            {
+                                "bridge-ref": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c805d82d-a5d8-419d-bc89-6e3713ff9f6c/bridge/br-nian1_1']"
+                            }
+                        ],
+                        "ovsdb:openvswitch-other-configs": [
+                            {
+                                "other-config-key": "local_ip",
+                                "other-config-value": "192.168.66.1"
+                            },
+                            {
+                                "other-config-key": "pmd-cpu-mask",
+                                "other-config-value": "400004"
+                            }
+                        ]
+                    }
+                ],
+                "topology-id": "ovsdb:1"
+            }
+        ]
+    }
+}

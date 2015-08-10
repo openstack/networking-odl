@@ -88,7 +88,7 @@ class TestODLShim(test_plugin.Ml2PluginV2TestCase):
         # given front-end with attached back-end
         front_end = self.driver
         front_end.odl_drv = back_end = mock.MagicMock(
-            spec=driver.OpenDaylightMechanismDriver)
+            spec=driver.OpenDaylightDriver)
         # given PortContext to be forwarded to back-end without using
         context = object()
 

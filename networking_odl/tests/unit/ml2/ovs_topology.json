@@ -1,0 +1,171 @@
+{
+    "network-topology": {
+        "topology": [
+            {
+                "topology-id": "flow:1"
+            },
+            {
+                "node": [
+                    {
+                        "node-id": "ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2/bridge/br-ex",
+                        "ovsdb:bridge-external-ids": [
+                            {
+                                "bridge-external-id-key": "bridge-id",
+                                "bridge-external-id-value": "br-ex"
+                            }
+                        ],
+                        "ovsdb:bridge-name": "br-ex",
+                        "ovsdb:bridge-other-configs": [
+                            {
+                                "bridge-other-config-key": "disable-in-band",
+                                "bridge-other-config-value": "true"
+                            }
+                        ],
+                        "ovsdb:bridge-uuid": "4ba78705-3ac2-4e36-a2e1-32f1647d97a7",
+                        "ovsdb:datapath-id": "00:00:06:87:a7:4b:36:4e",
+                        "ovsdb:datapath-type": "ovsdb:datapath-type-netdev",
+                        "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2']",
+                        "termination-point": [
+                            {
+                                "ovsdb:interface-external-ids": [
+                                    {
+                                        "external-id-key": "iface-id",
+                                        "external-id-value": "c44000c6-f199-4609-9325-afd8c72b6777"
+                                    },
+                                    {
+                                        "external-id-key": "iface-status",
+                                        "external-id-value": "active"
+                                    },
+                                    {
+                                        "external-id-key": "attached-mac",
+                                        "external-id-value": "fa:16:3e:a0:d5:49"
+                                    }
+                                ],
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "c1081aa3-607f-404e-a71e-ea1dd334b263",
+                                "ovsdb:name": "qg-c44000c6-f1",
+                                "ovsdb:ofport": 1,
+                                "ovsdb:port-uuid": "1a2ef41e-4836-420c-977f-7a662c7abe62",
+                                "tp-id": "qg-c44000c6-f1"
+                            },
+                            {
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "54439f6a-7a88-4cf6-84b7-0645642618f9",
+                                "ovsdb:name": "br-ex",
+                                "ovsdb:ofport": 65534,
+                                "ovsdb:port-uuid": "9bf4c1ab-d111-479d-84ab-1874f166153b",
+                                "tp-id": "br-ex"
+                            }
+                        ]
+                    },
+                    {
+                        "node-id": "ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2",
+                        "ovsdb:connection-info": {
+                            "local-ip": "10.237.214.247",
+                            "local-port": 6640,
+                            "remote-ip": "10.237.214.247",
+                            "remote-port": 43247
+                        },
+                        "ovsdb:managed-node-entry": [
+                            {
+                                "bridge-ref": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2/bridge/br-int']"
+                            },
+                            {
+                                "bridge-ref": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2/bridge/br-ex']"
+                            }
+                        ],
+                        "ovsdb:openvswitch-external-ids": [
+                            {
+                                "external-id-key": "system-id",
+                                "external-id-value": "c4dcfd6c-8f0e-43a6-9cf5-d2a0c37f5c52"
+                            }
+                        ],
+                        "ovsdb:openvswitch-other-configs": [
+                            {
+                                "other-config-key": "local_ip",
+                                "other-config-value": "10.237.214.247"
+                            },
+                            {
+                                "other-config-key": "provider_mappings",
+                                "other-config-value": "default:ens786f0"
+                            }
+                        ],
+                        "ovsdb:ovs-version": "2.3.2"
+                    },
+                    {
+                        "node-id": "ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2/bridge/br-int",
+                        "ovsdb:bridge-external-ids": [
+                            {
+                                "bridge-external-id-key": "bridge-id",
+                                "bridge-external-id-value": "br-int"
+                            }
+                        ],
+                        "ovsdb:bridge-name": "br-int",
+                        "ovsdb:bridge-uuid": "d3acbe7f-cdab-4ef1-80b8-68e5db3b3b7b",
+                        "ovsdb:datapath-id": "00:00:7e:be:ac:d3:f1:4e",
+                        "ovsdb:datapath-type": "ovsdb:datapath-type-system",
+                        "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb://uuid/c4ad780f-8f91-4fa4-804e-dd16beb191e2']",
+                        "termination-point": [
+                            {
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "8164bb4f-2b8c-4405-b8de-4b6b776baa27",
+                                "ovsdb:name": "br-int",
+                                "ovsdb:ofport": 65534,
+                                "ovsdb:port-uuid": "c34e1347-6757-4770-a05e-66cfb4b65167",
+                                "tp-id": "br-int"
+                            },
+                            {
+                                "ovsdb:interface-external-ids": [
+                                    {
+                                        "external-id-key": "iface-id",
+                                        "external-id-value": "1d5780fc-da03-4c98-8082-089d70cb65e3"
+                                    },
+                                    {
+                                        "external-id-key": "iface-status",
+                                        "external-id-value": "active"
+                                    },
+                                    {
+                                        "external-id-key": "attached-mac",
+                                        "external-id-value": "fa:16:3e:ee:3e:36"
+                                    }
+                                ],
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "00d8d482-abf9-4459-8cb1-9c8e80df4943",
+                                "ovsdb:name": "tap1d5780fc-da",
+                                "ovsdb:ofport": 1,
+                                "ovsdb:port-uuid": "743a236a-a34c-4084-a5ed-8dac56371ca8",
+                                "tp-id": "tap1d5780fc-da"
+                            },
+                            {
+                                "ovsdb:interface-external-ids": [
+                                    {
+                                        "external-id-key": "iface-id",
+                                        "external-id-value": "674fd914-74c0-4065-a88a-929919446555"
+                                    },
+                                    {
+                                        "external-id-key": "iface-status",
+                                        "external-id-value": "active"
+                                    },
+                                    {
+                                        "external-id-key": "attached-mac",
+                                        "external-id-value": "fa:16:3e:62:0c:d3"
+                                    }
+                                ],
+                                "ovsdb:interface-type": "ovsdb:interface-type-internal",
+                                "ovsdb:interface-uuid": "41bde142-61bc-4297-a39d-8b0ee86a0731",
+                                "ovsdb:name": "qr-674fd914-74",
+                                "ovsdb:ofport": 2,
+                                "ovsdb:port-uuid": "1c505a53-ccfd-4745-9526-211016d9cbb3",
+                                "tp-id": "qr-674fd914-74"
+                            }
+                        ]
+                    }
+                ],
+                "topology-id": "ovsdb:1"
+            },
+            {
+                "topology-id": "netvirt:1"
+            }
+        ]
+    }
+}
