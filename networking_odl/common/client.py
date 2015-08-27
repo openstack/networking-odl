@@ -40,3 +40,14 @@ class OpenDaylightRestClient(object):
                              headers=headers, data=data,
                              auth=self.auth, timeout=self.timeout)
         r.raise_for_status()
+
+    def try_delete(self, urlpath):
+        try:
+            self.sendjson('delete', urlpath, None)
+        except requests.HTTPError as e:
+            # The resource is already removed. ignore 404 gracefully
+            if e.response.status_code != 404:
+                raise
+            LOG.debug("%(urlpath)s doesn't exist", {'urlpath': urlpath})
+            return False
+        return True
