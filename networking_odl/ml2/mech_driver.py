@@ -310,13 +310,24 @@ class OpenDaylightDriver(object):
 
     def sync_from_callback(self, operation, object_type, res_id,
                            resource_dict):
-        if operation == odl_const.ODL_DELETE:
-            self.client.sendjson('delete', object_type + '/' + res_id, None)
-        else:
-            if operation == odl_const.ODL_CREATE:
-                urlpath = object_type
-                method = 'post'
-            elif operation == odl_const.ODL_UPDATE:
-                urlpath = object_type + '/' + res_id
-                method = 'put'
-            self.client.sendjson(method, urlpath, resource_dict)
+        try:
+            if operation == odl_const.ODL_DELETE:
+                self.client.sendjson('delete', object_type + '/' + res_id,
+                                     None)
+            else:
+                if operation == odl_const.ODL_CREATE:
+                    urlpath = object_type
+                    method = 'post'
+                elif operation == odl_const.ODL_UPDATE:
+                    urlpath = object_type + '/' + res_id
+                    method = 'put'
+                self.client.sendjson(method, urlpath, resource_dict)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                LOG.error(_LE("Unable to perform %(operation)s on "
+                              "%(object_type)s %(res_id)s %(resource_dict)s"),
+                          {'operation': operation,
+                           'object_type': object_type,
+                           'res_id': res_id,
+                           'resource_dict': resource_dict})
+                self.out_of_sync = True
