@@ -25,6 +25,9 @@ source $TOP_DIR/lib/neutron_plugins/ovs_base
 source $NETWORKING_ODL_DIR/devstack/settings.odl
 source $NETWORKING_ODL_DIR/devstack/odl-releases/$ODL_RELEASE
 
+# Utilities functions for setting up Java
+source $NETWORKING_ODL_DIR/devstack/setup_java.sh
+
 # Import Entry Points
 # -------------------
 source $NETWORKING_ODL_DIR/devstack/entry_points
