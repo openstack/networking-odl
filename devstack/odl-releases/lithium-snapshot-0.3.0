@@ -1,6 +1,9 @@
 BUNDLEVERSION='0.3.0-SNAPSHOT'
 export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
 
+# Java major version required to run OpenDaylight: 7, 8, ...
+ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-7}
+
 function setup_opendaylight_package {
     NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.snapshot/org/opendaylight/integration/distribution-karaf"
     MAVENMETAFILE=$ODL_DIR/maven-metadata.xml

@@ -1,6 +1,9 @@
 # Short name of ODL package
 export ODL_NAME=distribution-karaf-0.2.3-Helium-SR3
 
+# Java major version required to run OpenDaylight: 7, 8, ...
+ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-7}
+
 function setup_opendaylight_package {
     # The OpenDaylight URL
     export ODL_URL=${ODL_URL_PREFIX}/content/repositories/public/org/opendaylight/integration/distribution-karaf/0.2.3-Helium-SR3

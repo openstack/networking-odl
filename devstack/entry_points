@@ -125,10 +125,8 @@ function init_opendaylight {
 function install_opendaylight {
     echo "Installing OpenDaylight and dependent packages"
 
-    if is_ubuntu; then
-        install_package maven openjdk-7-jre openjdk-7-jdk
-    else
-        yum_install maven java-1.7.0-openjdk
+    if ! setup_java "${ODL_REQUIRED_JAVA_VERSION:-7}"; then
+        exit 1
     fi
 
     install_opendaylight_neutron_thin_ml2_driver
@@ -161,11 +159,6 @@ function install_opendaylight_compute {
 # start_opendaylight() - Start running processes, including screen
 function start_opendaylight {
     echo "Starting OpenDaylight"
-    if is_ubuntu; then
-        JHOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
-    else
-        JHOME=/usr/lib/jvm/java-1.7.0-openjdk
-    fi
 
     # Wipe out the data and journal directories ... grumble grumble grumble
     rm -rf $ODL_DIR/$ODL_NAME/{data,journal}
@@ -173,7 +166,7 @@ function start_opendaylight {
     # The following variables are needed by the running karaf process.
     # See the "bin/setenv" file in the OpenDaylight distribution for
     # their individual meaning.
-    export JAVA_HOME=$JHOME
+    setup_java_env
     export JAVA_MIN_MEM=$ODL_JAVA_MIN_MEM
     export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
     export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
