@@ -36,6 +36,68 @@ from neutron.tests.unit import testlib_api
 
 HOST = 'fake-host'
 PLUGIN_NAME = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+FAKE_NETWORK = {'status': 'ACTIVE',
+                'subnets': [],
+                'name': 'net1',
+                'provider:physical_network': None,
+                'admin_state_up': True,
+                'tenant_id': 'test-tenant',
+                'provider:network_type': 'local',
+                'router:external': False,
+                'shared': False,
+                'id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
+                'provider:segmentation_id': None}
+
+FAKE_SUBNET = {'ipv6_ra_mode': None,
+               'allocation_pools': [{'start': '10.0.0.2',
+                                     'end': '10.0.1.254'}],
+               'host_routes': [],
+               'ipv6_address_mode': None,
+               'cidr': '10.0.0.0/23',
+               'id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839',
+               'name': '',
+               'enable_dhcp': True,
+               'network_id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
+               'tenant_id': 'test-tenant',
+               'dns_nameservers': [],
+               'gateway_ip': '10.0.0.1',
+               'ip_version': 4,
+               'shared': False}
+
+FAKE_PORT = {'status': 'DOWN',
+             'binding:host_id': '',
+             'allowed_address_pairs': [],
+             'device_owner': 'fake_owner',
+             'binding:profile': {},
+             'fixed_ips': [],
+             'id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839',
+             'security_groups': [],
+             'device_id': 'fake_device',
+             'name': '',
+             'admin_state_up': True,
+             'network_id': 'c13bba05-eb07-45ba-ace2-765706b2d701',
+             'tenant_id': 'bad_tenant_id',
+             'binding:vif_details': {},
+             'binding:vnic_type': 'normal',
+             'binding:vif_type': 'unbound',
+             'mac_address': '12:34:56:78:21:b6'}
+
+FAKE_SECURITY_GROUP = {'description': 'Default security group',
+                       'id': '6875fc07-853f-4230-9ab9-23d1af894240',
+                       'name': 'default',
+                       'security_group_rules': [],
+                       'tenant_id': '04bb5f9a0fa14ad18203035c791ffae2'}
+
+FAKE_SECURITY_GROUP_RULE = {'direction': 'ingress',
+                            'ethertype': 'IPv4',
+                            'id': '399029df-cefe-4a7a-b6d6-223558627d23',
+                            'port_range_max': 0,
+                            'port_range_min': 0,
+                            'protocol': 0,
+                            'remote_group_id': '6875fc07-853f-4230-9ab9',
+                            'remote_ip_prefix': 0,
+                            'security_group_id': '6875fc07-853f-4230-9ab9',
+                            'tenant_id': '04bb5f9a0fa14ad18203035c791ffae2'}
 
 
 class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
@@ -135,6 +197,56 @@ class DataMatcher(object):
         return self._data == data[self._object_type]
 
 
+class OpenDaylightSyncTestCase(OpenDaylightTestCase):
+
+    def setUp(self):
+        super(OpenDaylightSyncTestCase, self).setUp()
+        self.given_back_end = mech_driver.OpenDaylightDriver()
+
+    def test_simple_sync_all_with_HTTPError_not_found(self):
+        self.given_back_end.out_of_sync = True
+        ml2_plugin = plugin.Ml2Plugin()
+
+        response = mock.Mock(status_code=requests.codes.not_found)
+        fake_exception = requests.exceptions.HTTPError('Test',
+                                                       response=response)
+
+        def side_eff(*args, **kwargs):
+            # HTTP ERROR exception with 404 status code will be raised when use
+            # sendjson to get the object in ODL DB
+            if args[0] == 'get':
+                raise fake_exception
+
+        with mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
+                               side_effect=side_eff), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_networks',
+                              return_value=[FAKE_NETWORK]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_network',
+                              return_value=FAKE_NETWORK), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_subnets',
+                              return_value=[FAKE_SUBNET]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_ports',
+                              return_value=[FAKE_PORT]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_security_groups',
+                              return_value=[FAKE_SECURITY_GROUP]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_security_group_rules',
+                              return_value=[FAKE_SECURITY_GROUP_RULE]):
+            self.given_back_end.sync_full(ml2_plugin)
+
+            sync_id_list = [FAKE_NETWORK['id'], FAKE_SUBNET['id'],
+                            FAKE_PORT['id'],
+                            FAKE_SECURITY_GROUP['id'],
+                            FAKE_SECURITY_GROUP_RULE['id']]
+
+            act = []
+            for args, kwargs in \
+                client.OpenDaylightRestClient.sendjson.call_args_list:
+                if args[0] == 'post':
+                    for key in args[2]:
+                        act.append(args[2][key][0]['id'])
+            self.assertEqual(act, sync_id_list)
+
+
 class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     def setUp(self):
@@ -149,60 +261,17 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     @staticmethod
     def _get_mock_network_operation_context():
-        current = {'status': 'ACTIVE',
-                   'subnets': [],
-                   'name': 'net1',
-                   'provider:physical_network': None,
-                   'admin_state_up': True,
-                   'tenant_id': 'test-tenant',
-                   'provider:network_type': 'local',
-                   'router:external': False,
-                   'shared': False,
-                   'id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
-                   'provider:segmentation_id': None}
-        context = mock.Mock(current=current)
+        context = mock.Mock(current=FAKE_NETWORK)
         return context
 
     @staticmethod
     def _get_mock_subnet_operation_context():
-        current = {'ipv6_ra_mode': None,
-                   'allocation_pools': [{'start': '10.0.0.2',
-                                         'end': '10.0.1.254'}],
-                   'host_routes': [],
-                   'ipv6_address_mode': None,
-                   'cidr': '10.0.0.0/23',
-                   'id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839',
-                   'name': '',
-                   'enable_dhcp': True,
-                   'network_id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
-                   'tenant_id': 'test-tenant',
-                   'dns_nameservers': [],
-                   'gateway_ip': '10.0.0.1',
-                   'ip_version': 4,
-                   'shared': False}
-        context = mock.Mock(current=current)
+        context = mock.Mock(current=FAKE_SUBNET)
         return context
 
     @staticmethod
     def _get_mock_port_operation_context():
-        current = {'status': 'DOWN',
-                   'binding:host_id': '',
-                   'allowed_address_pairs': [],
-                   'device_owner': 'fake_owner',
-                   'binding:profile': {},
-                   'fixed_ips': [],
-                   'id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839',
-                   'security_groups': ['2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'],
-                   'device_id': 'fake_device',
-                   'name': '',
-                   'admin_state_up': True,
-                   'network_id': 'c13bba05-eb07-45ba-ace2-765706b2d701',
-                   'tenant_id': 'bad_tenant_id',
-                   'binding:vif_details': {},
-                   'binding:vnic_type': 'normal',
-                   'binding:vif_type': 'unbound',
-                   'mac_address': '12:34:56:78:21:b6'}
-        context = mock.Mock(current=current)
+        context = mock.Mock(current=FAKE_PORT)
         context._plugin.get_security_group = mock.Mock(return_value={})
         return context
 
