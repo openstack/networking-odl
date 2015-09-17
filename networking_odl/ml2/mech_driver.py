@@ -96,7 +96,9 @@ class SubnetFilter(ResourceFilterBase):
 
     @classmethod
     def filter_create_attributes_with_plugin(cls, subnet, plugin, dbcontext):
-        context = driver_context.SubnetContext(subnet, plugin, dbcontext)
+        network = plugin.get_network(dbcontext, subnet['network_id'])
+        context = driver_context.SubnetContext(plugin, dbcontext, subnet,
+                                               network)
         cls.filter_create_attributes(subnet, context)
 
 
