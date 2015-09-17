@@ -229,7 +229,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         response = mock.Mock(status_code=status_code)
         response.raise_for_status = mock.Mock() if status_code < 400 else (
             mock.Mock(side_effect=requests.exceptions.HTTPError(
-                cls._status_code_msgs[status_code])))
+                cls._status_code_msgs[status_code], response=response)))
         return response
 
     def _test_single_operation(self, method, context, status_code,
@@ -342,8 +342,9 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
     def test_delete_network_postcommit(self):
         self._test_delete_resource_postcommit('network',
                                               requests.codes.no_content)
+        self._test_delete_resource_postcommit('network',
+                                              requests.codes.not_found)
         for status_code in (requests.codes.unauthorized,
-                            requests.codes.not_found,
                             requests.codes.conflict):
             self._test_delete_resource_postcommit(
                 'network', status_code, requests.exceptions.HTTPError)
@@ -351,8 +352,9 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
     def test_delete_subnet_postcommit(self):
         self._test_delete_resource_postcommit('subnet',
                                               requests.codes.no_content)
+        self._test_delete_resource_postcommit('subnet',
+                                              requests.codes.not_found)
         for status_code in (requests.codes.unauthorized,
-                            requests.codes.not_found,
                             requests.codes.conflict,
                             requests.codes.not_implemented):
             self._test_delete_resource_postcommit(
@@ -361,9 +363,10 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
     def test_delete_port_postcommit(self):
         self._test_delete_resource_postcommit('port',
                                               requests.codes.no_content)
+        self._test_delete_resource_postcommit('port',
+                                              requests.codes.not_found)
         for status_code in (requests.codes.unauthorized,
                             requests.codes.forbidden,
-                            requests.codes.not_found,
                             requests.codes.not_implemented):
             self._test_delete_resource_postcommit(
                 'port', status_code, requests.exceptions.HTTPError)
