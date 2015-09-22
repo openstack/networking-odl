@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
@@ -64,12 +63,7 @@ class OpenDaylightL3RouterPlugin(
 
     def __init__(self):
         self.setup_rpc()
-        self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.ml2_odl.url,
-            cfg.CONF.ml2_odl.username,
-            cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout
-        )
+        self.client = odl_client.OpenDaylightRestClient.create_client()
 
     def setup_rpc(self):
         self.topic = topics.L3PLUGIN

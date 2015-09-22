@@ -16,7 +16,6 @@
 import abc
 import six
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
@@ -201,12 +200,7 @@ class OpenDaylightDriver(object):
 
     def __init__(self):
         LOG.debug("Initializing OpenDaylight ML2 driver")
-        self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.ml2_odl.url,
-            cfg.CONF.ml2_odl.username,
-            cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout
-        )
+        self.client = odl_client.OpenDaylightRestClient.create_client()
         self.sec_handler = odl_call.OdlSecurityGroupsHandler(self)
         self.vif_details = {portbindings.CAP_PORT_FILTER: True}
 

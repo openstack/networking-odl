@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 import requests
@@ -22,6 +23,14 @@ LOG = logging.getLogger(__name__)
 
 
 class OpenDaylightRestClient(object):
+
+    @classmethod
+    def create_client(cls):
+        return cls(
+            cfg.CONF.ml2_odl.url,
+            cfg.CONF.ml2_odl.username,
+            cfg.CONF.ml2_odl.password,
+            cfg.CONF.ml2_odl.timeout)
 
     def __init__(self, url, username, password, timeout):
         self.url = url

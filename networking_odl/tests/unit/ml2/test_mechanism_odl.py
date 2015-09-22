@@ -472,7 +472,7 @@ class TestOpenDaylightDriver(base.DietTestCase):
         api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
-    @mock.patch.object(mech_driver, 'cfg')
+    @mock.patch.object(client, 'cfg')
     def test_get_vif_type(self, cfg):
         given_port_context = mock.MagicMock(spec=api.PortContext)
         given_back_end = mech_driver.OpenDaylightDriver()
