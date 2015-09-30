@@ -7,6 +7,10 @@
 #               Controller are on the same node.
 # odl-compute - Add this config flag for OpenStack Compute.
 #
+# odl-lightweight-testing - Add this config flag for testing neutron ODL ML2
+#                           driver and networking-odl without a real running
+#                           Opendaylight instance
+#
 # NOTE: odl-server includes odl-neutron.
 #
 # An example of enabling all-in-one ODL is below.
@@ -33,6 +37,10 @@ ODL_MODE=${ODL_MODE:-allinone}
 # which is not yet released, and thus don't want it managed by
 # devstack.
 #
+# ODL_MODE=lightweight-testing
+# Use this for testing neutron ML2 driver plus networking-odl without
+# a running Opendaylight instance.
+#
 # ODL_MODE=manual
 # You're on your own here, and are enabling services outside the scope of
 # the ODL_MODE variable.
@@ -46,6 +54,9 @@ case $ODL_MODE in
         ;;
     compute)
         enable_service odl-compute
+        ;;
+    lightweight-testing)
+        enable_service odl-lightweight-testing
         ;;
     manual)
         echo "Manual mode: Enabling services explicitly."

@@ -21,12 +21,21 @@ import requests
 
 
 LOG = log.getLogger(__name__)
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 
 class OpenDaylightRestClient(object):
 
     @classmethod
     def create_client(cls):
+        if cfg.CONF.ml2_odl.enable_lightweight_testing:
+            LOG.debug("ODL lightweight testing is enabled, ",
+                      "returning a OpenDaylightLwtClient instance")
+
+            """Have to import at here, otherwise we create a dependency loop"""
+            from networking_odl.common import lightweight_testing as lwt
+            cls = lwt.OpenDaylightLwtClient
+
         return cls(
             cfg.CONF.ml2_odl.url,
             cfg.CONF.ml2_odl.username,
