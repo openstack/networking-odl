@@ -78,8 +78,7 @@ if is_service_enabled odl-compute; then
     fi
 
     if [[ "$1" == "unstack" ]]; then
-        unbind_opendaylight_controller
-        stop_opendaylight_compute
+        cleanup_opendaylight_compute
     fi
 
     if [[ "$1" == "clean" ]]; then
