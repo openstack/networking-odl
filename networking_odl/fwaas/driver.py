@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron_fwaas.services.firewall.drivers import fwaas_base
@@ -35,12 +34,7 @@ class OpenDaylightFwaasDriver(fwaas_base.FwaasDriverBase):
 
     def __init__(self):
         LOG.debug("Initializing OpenDaylight FWaaS driver")
-        self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.ml2_odl.url,
-            cfg.CONF.ml2_odl.username,
-            cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout
-        )
+        self.client = odl_client.OpenDaylightRestClient.create_client()
 
     def create_firewall(self, apply_list, firewall):
         """Create the Firewall with default (drop all) policy.

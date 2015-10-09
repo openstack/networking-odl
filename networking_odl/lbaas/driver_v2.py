@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
@@ -35,12 +34,7 @@ class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
     def __init__(self, plugin):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         self.plugin = plugin
-        self.client = odl_client.OpenDaylightRestClient(
-            cfg.CONF.ml2_odl.url,
-            cfg.CONF.ml2_odl.username,
-            cfg.CONF.ml2_odl.password,
-            cfg.CONF.ml2_odl.timeout
-        )
+        self.client = odl_client.OpenDaylightRestClient.create_client()
         self._loadbalancer = ODLLoadBalancerManager(self.client)
         self._listener = ODLListenerManager(self.client)
         self._pool = ODLPoolManager(self.client)
