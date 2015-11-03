@@ -21,3 +21,9 @@ then
     disable_service q-l3
     ML2_L3_PLUGIN="networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin"
 fi
+
+# [networking-feature-enabled] api-extensions
+# api-extensions=all means any kind of extensions is enabled irrelevant of what plugin supports
+# ML2 plugin with ODL driver supports only the following extensions, not all
+# Those list must be maintained as ML2 plugin with ODL driver supports more extensions
+NETWORK_API_EXTENSIONS=${NETWORK_API_EXTENSIONS:-"dns-integration,address-scope,ext-gw-mode,binding,agent,subnet_allocation,dhcp_agent_scheduler,external-net,flavors,net-mtu,quotas,provider,multi-provider,extraroute,vlan-transparent,router,extra_dhcp_opt,security-group,rbac-policies,port-security,allowed-address-pairs,dvr"}
