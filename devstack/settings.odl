@@ -4,11 +4,13 @@
 # What release to use. Choices are:
 #
 #   beryllium-snapshot-0.4.0 (master)
-#   lithium-snapshot-0.3.1 (stable)
+#   lithium-snapshot-0.3.3 (stable/lithium, aka SR3)
+#   lithium-snapshot-0.3.2 (SR2)
+#   lithium-snapshot-0.3.1 (SR1)
 #   lithium-snapshot-0.3.0
 #   helium-snapshot
 #   helium
-ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.1}
+ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.3}
 
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
