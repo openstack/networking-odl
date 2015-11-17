@@ -18,6 +18,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.ml2 import mech_driver
 
 import mock
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 import requests
 import webob.exc
@@ -28,11 +29,13 @@ from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
-from neutron.plugins.ml2.drivers.opendaylight import driver
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
+
 
 HOST = 'fake-host'
 PLUGIN_NAME = 'neutron.plugins.ml2.plugin.Ml2Plugin'
@@ -112,7 +115,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
 
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
-        self.mech = driver.OpenDaylightMechanismDriver()
+        self.mech = mech_driver.OpenDaylightMechanismDriver()
         client.OpenDaylightRestClient.sendjson = (self.check_sendjson)
 
     def check_sendjson(self, method, urlpath, obj):
@@ -256,7 +259,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
         config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
         config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
-        self.mech = driver.OpenDaylightMechanismDriver()
+        self.mech = mech_driver.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
     @staticmethod
@@ -504,7 +507,7 @@ class TestOpenDaylightDriver(base.DietTestCase):
             constants.TYPE_VLAN}, valid_types)
 
     def test_bind_port_front_end(self):
-        given_front_end = driver.OpenDaylightMechanismDriver()
+        given_front_end = mech_driver.OpenDaylightMechanismDriver()
         if hasattr(given_front_end, 'check_segment'):
             self.skip(
                 "Old version of driver front-end doesn't delegate bind_port to"

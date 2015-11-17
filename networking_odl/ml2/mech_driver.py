@@ -37,6 +37,8 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 from networking_odl.openstack.common._i18n import _LE
 
+
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = logging.getLogger(__name__)
 
 not_found_exception_map = {odl_const.ODL_NETWORKS: n_exc.NetworkNotFound,

@@ -13,19 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
-
 import mock
 from neutron import context
 from neutron.tests.unit.plugins.ml2 import test_plugin
 
-
-with mock.patch.dict(sys.modules,
-                     {'networking_odl': mock.Mock(),
-                      'networking_odl.common': mock.Mock(),
-                      'networking_odl.ml2': mock.Mock()}):
-    from networking_odl.common import constants as const
-    from neutron.plugins.ml2.drivers.opendaylight import driver
+from networking_odl.common import constants as const
+from networking_odl.ml2 import mech_driver as driver
 
 
 class TestODLShim(test_plugin.Ml2PluginV2TestCase):

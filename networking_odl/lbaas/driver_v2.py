@@ -14,15 +14,16 @@
 #  under the License.
 #
 
+from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from neutron_lbaas.drivers import driver_base
 
 from networking_odl.common import client as odl_client
-from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const
 
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = logging.getLogger(__name__)
 
 LBAAS = "lbaas"
