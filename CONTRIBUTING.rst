@@ -1,7 +1,7 @@
 If you would like to contribute to the development of OpenStack,
 you must follow the steps documented at:
 
-   http://docs.openstack.org/infra/manual/developers.html#development-workflow
+   http://docs.openstack.org/infra/manual/developers.html
 
 Once those steps have been completed, changes to OpenStack
 should be submitted for review via the Gerrit tool, following
