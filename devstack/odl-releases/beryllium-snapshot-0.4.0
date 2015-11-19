@@ -20,4 +20,7 @@ function setup_opendaylight_package {
 
     # The network virtualization feature used by opendaylight loaded by Karaf
     ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack}
+
+    # The url that this version of ODL netvirt can use to know ODL is fully up
+    export ODL_BOOT_WAIT_URL='restconf/operational/network-topology:network-topology/topology/netvirt:1'
 }
