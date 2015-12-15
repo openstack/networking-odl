@@ -36,13 +36,19 @@ ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 # How long (in seconds) to pause after ODL starts to let it complete booting
 ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-600}
 
-# The physical provider network to device mapping
-ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1}
-
 # Enable OpenDaylight l3 forwarding
 ODL_L3=${ODL_L3:-False}
-# If you need to route the traffic out of the box, set your public interface
-# $PUBLIC_INTERFACE, so that it is wired to your $PUBLIC_BRIDGE
+
+# If you need to route the traffic out of the box, set
+# ODL_PROVIDER_MAPPINGS to map br-ex as shown below. Note
+# This used to be accomplished via PUBLIC_BRIDGE, but that
+# is no longer necessary.
+#
+# The physical provider network to device mapping. Use this
+# to instruct ODL to map ports into specific bridges
+# Examples:
+# ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:eth2}
+# ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth1,br-ex:eth2}
 
 # MAC address for next hop gateway at external network
 ODL_L3GW_MAC=${ODL_L3GW_MAC:-''}
