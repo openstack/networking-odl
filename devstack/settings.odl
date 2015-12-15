@@ -15,6 +15,14 @@ ODL_RELEASE=${ODL_RELEASE:-lithium-snapshot-0.3.3}
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
 
+# The list of IP addresses used as OVS manager, separated by a comma.
+# In non-clustering cases, this is normally the same as ODL_MGR_IP. However,
+# for HA deployments the southbound portion to ODL is expected to
+# use the ip addresses of the ODL instances instead of a single vip. That
+# enables OVS to simultaneouly connect to more than one ODL instance.
+# Example of expected format: ODL_OVS_MANAGERS=1.1.1.1,2.2.2.2,3.3.3.3
+ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_IP}
+
 # The default ODL port for Tomcat to use
 # NOTE: We make this configurable because by default, ODL uses port 8080 for
 # Tomcat (Helium releases) or Jetty (Lithium and later releases), and this
