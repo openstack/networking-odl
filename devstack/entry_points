@@ -262,4 +262,12 @@ function configure_opendaylight_l3 {
     # Note: as of Lithium-SR3 and Beryllium releases, ODL will add the OVS port(s)
     #       to the external bridge via the ODL_PROVIDER_MAPPINGS method. Being so,
     #       the usage of PUBLIC_INTERFACE is no longer necessary in ODL devstack.
+
+    # DEPRECATED: Add public interface to public bridge, if needed
+    if [[ -n "$PUBLIC_INTERFACE" && "$PUBLIC_INTERFACE" != "br100" ]]; then
+        deprecated "Adding $PUBLIC_INTERFACE to $PUBLIC_BRIDGE."
+        deprecated "Use ODL_PROVIDER_MAPPINGS instead of PUBLIC_INTERFACE."
+        sudo ovs-vsctl --no-wait -- --may-exist add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
+        sudo ip link set $PUBLIC_INTERFACE up
+    fi
 }
