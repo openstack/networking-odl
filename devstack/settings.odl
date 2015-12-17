@@ -72,6 +72,9 @@ ODL_KARAF_LOG_NAME=$ODL_KARAF_LOG_BASE.$ODL_KARAF_LOG_DATE
 # The bridge to configure
 OVS_BR=${OVS_BR:-br-int}
 
+# Use the existing ready java env
+ODL_USING_EXISTING_JAVA=${ODL_USING_EXISTING_JAVA:-False}
+
 # Allow the min/max/perm Java memory to be configurable
 ODL_JAVA_MIN_MEM=${ODL_JAVA_MIN_MEM:-256m}
 ODL_JAVA_MAX_MEM=${ODL_JAVA_MAX_MEM:-512m}

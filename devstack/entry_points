@@ -124,9 +124,11 @@ function init_opendaylight {
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
     echo "Installing OpenDaylight and dependent packages"
-
-    if ! setup_java "${ODL_REQUIRED_JAVA_VERSION:-7}"; then
-        exit 1
+    if [[ "$ODL_USING_EXISTING_JAVA" != "True" ]]
+    then
+        if ! setup_java "${ODL_REQUIRED_JAVA_VERSION:-7}"; then
+            exit 1
+        fi
     fi
 
     install_opendaylight_neutron_thin_ml2_driver

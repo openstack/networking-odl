@@ -33,6 +33,12 @@ source $NETWORKING_ODL_DIR/devstack/setup_java.sh
 source $NETWORKING_ODL_DIR/devstack/entry_points
 
 
+if [[ "$ODL_USING_EXISTING_JAVA" == "True" ]]
+then
+    echo 'Using installed java.'
+    java -version || exit 1
+fi
+
 # main loop
 if is_service_enabled odl-server; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
