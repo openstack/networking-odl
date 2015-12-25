@@ -153,8 +153,12 @@ function install_opendaylight_neutron_thin_ml2_driver {
 
 # install_opendaylight_compute() - Make sure OVS is installed
 function install_opendaylight_compute {
-    # packages are the same as for Neutron OVS agent
-    _neutron_ovs_base_install_agent_packages
+    if [[ "$SKIP_OVS_INSTALL" = "True" ]]; then
+        echo "Skipping OVS installation."
+    else
+        # packages are the same as for Neutron OVS agent
+        _neutron_ovs_base_install_agent_packages
+    fi
 }
 
 

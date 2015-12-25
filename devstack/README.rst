@@ -48,3 +48,18 @@
      [[local|localrc]]
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
      ODL_MODE=compute
+
+9. Note: In a node using a release of Open vSwitch provided from another source
+   than your Linux distribution you have to enable in your local.conf skipping
+   of OVS installation step by setting *SKIP_OVS_INSTALL=True*. For example when
+   stacking together with `networking-ovs-dpdk
+   <https://github.com/openstack/networking-ovs-dpdk/>`_ Neutron plug-in to
+   avoid conflicts between openvswitch and ovs-dpdk you have to add this to
+   the local.conf file::
+
+     > cat local.conf
+     [[local|localrc]]
+     enable_plugin networking-ovs-dpdk http://git.openstack.org/openstack/networking-ovs-dpdk
+     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
+     SKIP_OVS_INSTALL=True
+     Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight

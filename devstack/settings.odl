@@ -85,3 +85,6 @@ ODL_LOGFILES_TO_SAVE=${ODL_LOGFILES_TO_SAVE:-40}
 
 # Interval in test_with_retry calls
 ODL_RETRY_SLEEP_INTERVAL=${ODL_RETRY_SLEEP_INTERVAL:-5}
+
+# Skip installation of distribution provided Open vSwitch
+SKIP_OVS_INSTALL=$(trueorfalse False SKIP_OVS_INSTALL)
