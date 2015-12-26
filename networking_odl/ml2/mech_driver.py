@@ -14,8 +14,10 @@
 #    under the License.
 
 import abc
+import copy
 import six
 
+import netaddr
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -25,6 +27,7 @@ from neutron.common import constants as n_const
 from neutron.common import exceptions as n_exc
 from neutron.common import utils
 from neutron import context as neutron_context
+from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import portbindings
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.common import constants
@@ -113,13 +116,27 @@ class PortFilter(ResourceFilterBase):
                   for sg in port['security_groups']]
         port['security_groups'] = groups
 
+    @staticmethod
+    def _fixup_mac_address(port):
+        # TODO(kmestery): Converting to uppercase due to ODL bug
+        # https://bugs.opendaylight.org/show_bug.cgi?id=477
+        port['mac_address'] = port['mac_address'].upper()
+
+    @classmethod
+    def _fixup_allowed_ipaddress_pairs(cls, allowed_address_pairs):
+        """unify (ip address or network address) into network address"""
+        for address_pair in allowed_address_pairs:
+            ip_address = address_pair['ip_address']
+            network_address = str(netaddr.IPNetwork(ip_address))
+            address_pair['ip_address'] = network_address
+            cls._fixup_mac_address(address_pair)
+
     @classmethod
     def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
         cls._add_security_groups(port, context)
-        # TODO(kmestery): Converting to uppercase due to ODL bug
-        # https://bugs.opendaylight.org/show_bug.cgi?id=477
-        port['mac_address'] = port['mac_address'].upper()
+        cls._fixup_mac_address(port)
+        cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
         odl_utils.try_del(port, ['status'])
 
         # NOTE(yamahata): work around for port creation for router
@@ -140,6 +157,8 @@ class PortFilter(ResourceFilterBase):
     def filter_update_attributes(cls, port, context):
         """Filter out port attributes for an update operation."""
         cls._add_security_groups(port, context)
+        cls._fixup_mac_address(port)
+        cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
                           'tenant_id', 'fixed_ips'])
 
@@ -299,7 +318,7 @@ class OpenDaylightDriver(object):
                     urlpath = object_type_url + '/' + obj_id
                     method = 'put'
                     attr_filter = filter_cls.filter_update_attributes
-                resource = context.current.copy()
+                resource = copy.deepcopy(context.current)
                 attr_filter(resource, context)
                 self.client.sendjson(method, urlpath,
                                      {object_type_url[:-1]: resource})
