@@ -39,5 +39,5 @@ function wait_for_active_bridge {
     test_with_retry "$testcmd" \
         "$BRIDGE did not become available in $MAX_WAIT seconds." \
         $MAX_WAIT $SLEEP_INTERVAL
-    echo "Bridge $BRIDGE is avaialable."
+    echo "Bridge $BRIDGE is available."
 }
