@@ -24,7 +24,7 @@
      ODL_L3=True
 
 5. If you need to route the traffic out of the box (e.g. br-ex), set
-   ODL_PROVIDER_MAPPINGS to map the interface, as shown below.
+   ODL_PROVIDER_MAPPINGS to map the interface, as shown below::
 
      > cat local.conf
      [[local|localrc]]
@@ -34,6 +34,7 @@
 6. Optionally, to enable support for OpenDaylight with LBaaS V2, add this::
 
      > cat local.conf
+     [[local|localrc]]
      enable_plugin neutron-lbaas http://git.openstack.org/openstack/neutron-lbaas
      enable_service q-lbaasv2
      NEUTRON_LBAAS_SERVICE_PROVIDERV2="LOADBALANCERV2:opendaylight:networking_odl.lbaas.driver_v2.OpenDaylightLbaasDriverV2:default"
@@ -44,5 +45,6 @@
    to the local.conf file::
 
      > cat local.conf
+     [[local|localrc]]
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
      ODL_MODE=compute
