@@ -8,7 +8,13 @@ function cleanup_opendaylight {
     rm -rf $ODL_DIR/$ODL_NAME/{data,journal}
 
     # Remove existing logfiles
-    rm -f "/opt/stack/logs/$ODL_KARAF_LOG_BASE*"
+    if [[ -n "$LOGDIR" ]]; then
+        rm -f "$LOGDIR/$ODL_KARAF_LOG_BASE*"
+    fi
+    if [[ -n "$SCREEN_LOGDIR" ]]; then
+        rm -f "$SCREEN_LOGDIR/$ODL_KARAF_LOG_BASE*"
+    fi
+    rm -f "$DEST/logs/$ODL_KARAF_LOG_BASE*"
 
     unbind_opendaylight_controller
 }
@@ -64,15 +70,26 @@ function configure_opendaylight {
     fi
 
     # Remove existing logfiles
-    rm -f "/opt/stack/logs/$ODL_KARAF_LOG_BASE*"
+    local ODL_LOGDIR=$DEST/logs
+    if [[ -n "$LOGDIR" ]]; then
+        ODL_LOGDIR=$LOGDIR
+    fi
+
+    rm -f "$ODL_LOGDIR/$ODL_KARAF_LOG_BASE*"
     # Log karaf output to a file
-    _LF=/opt/stack/logs/$ODL_KARAF_LOG_NAME
+    _LF=$ODL_LOGDIR/$ODL_KARAF_LOG_NAME
     LF=$(echo $_LF | sed 's/\//\\\//g')
     # Soft link for easy consumption
-    ln -sf $_LF "/opt/stack/logs/screen-karaf.txt"
+    sudo mkdir -p "$ODL_LOGDIR"
+    ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
+    if [[ -n $SCREEN_LOGDIR ]]; then
+        ln -sf $_LF "$SCREEN_LOGDIR/screen-karaf.log"
+    fi
 
     # Change the karaf logfile
-    sed -i "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
+    # disable log rotation by setting max fiel size large enough
+    sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
+           -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
     $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
 
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
@@ -99,8 +116,6 @@ function configure_opendaylight {
                 echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
             fi
         fi
-        # Bump up how man logfiles we save after rotation if debug is turned on
-        sed -i "/^log4j.appender.out.maxBackupIndex=/ s/10/$ODL_LOGFILES_TO_SAVE/" $ODL_LOGGING_CONFIG
     fi
 }
 
