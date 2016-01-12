@@ -34,9 +34,10 @@ LOG = logging.getLogger(__name__)
 
 
 def call_thread_on_end(func):
-    def new_func(obj, *args):
-        func(obj, *args)
+    def new_func(obj, *args, **kwargs):
+        return_value = func(obj, *args, **kwargs)
         obj.journal.start_odl_sync_thread()
+        return return_value
     return new_func
 
 
@@ -97,6 +98,20 @@ class OpendaylightJournalThread(object):
             data = None
             urlpath = row.object_type + 's/' + row.object_uuid
             to_send = None
+        elif row.operation == odl_const.ODL_ADD:
+            method = 'put'
+            attr_filter = filter_cls.filter_add_attributes
+            data = copy.deepcopy(row.data)
+            attr_filter(data)
+            urlpath = 'routers/' + data['id'] + '/add_router_interface'
+            to_send = data
+        elif row.operation == odl_const.ODL_REMOVE:
+            method = 'put'
+            attr_filter = filter_cls.filter_remove_attributes
+            data = copy.deepcopy(row.data)
+            attr_filter(data)
+            urlpath = 'routers/' + data['id'] + '/remove_router_interface'
+            to_send = data
 
         return method, urlpath, to_send
 
