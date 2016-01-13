@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import excutils
 import requests
 
 
@@ -48,8 +49,15 @@ class OpenDaylightRestClient(object):
         r = requests.request(method, url=url,
                              headers=headers, data=data,
                              auth=self.auth, timeout=self.timeout)
-        LOG.debug("Got response (%(response)s)", {'response': r.text})
-        r.raise_for_status()
+
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            with excutils.save_and_reraise_exception():
+                LOG.debug("Exception from ODL: %(e)s %(text)s",
+                          {'e': e, 'text': r.text}, exc_info=1)
+        else:
+            LOG.debug("Got response (%(response)s)", {'response': r.text})
 
     def try_delete(self, urlpath):
         try:
