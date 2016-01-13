@@ -159,8 +159,7 @@ class PortFilter(ResourceFilterBase):
         cls._add_security_groups(port, context)
         cls._fixup_mac_address(port)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
-        odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
-                          'tenant_id', 'fixed_ips'])
+        odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
 
     @classmethod
     def filter_create_attributes_with_plugin(cls, port, plugin, dbcontext):

@@ -17,6 +17,7 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.ml2 import mech_driver
 
+import copy
 import mock
 from oslo_config import cfg
 from oslo_serialization import jsonutils
@@ -461,6 +462,27 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
             self.mech.odl_drv.FILTER_MAP[
                 odl_const.ODL_PORTS].filter_create_attributes(port, context)
             self.assertEqual(tenant_id, port['tenant_id'])
+
+    def test_update_port_filter(self):
+        """Validate the filter code on update port operation"""
+        items_to_filter = ['network_id', 'id', 'status', 'tenant_id']
+        plugin_context = mock.Mock()
+        network = self._get_mock_operation_context('network').current
+        subnet = self._get_mock_operation_context('subnet').current
+        port = self._get_mock_operation_context('port').current
+        port['fixed_ips'] = [{'subnet_id': subnet['id'],
+                              'ip_address': '10.0.0.10'}]
+        port['mac_address'] = port['mac_address'].upper()
+        orig_port = copy.deepcopy(port)
+
+        with mock.patch.object(driver_context.db, 'get_network_segments'):
+            context = driver_context.PortContext(
+                plugin, plugin_context, port, network, {}, 0, None)
+            self.mech.odl_drv.FILTER_MAP[
+                odl_const.ODL_PORTS].filter_update_attributes(port, context)
+            for key, value in port.items():
+                if key not in items_to_filter:
+                    self.assertEqual(orig_port[key], value)
 
 
 class TestOpenDaylightDriver(base.DietTestCase):
