@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -56,7 +57,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         dbcontext = context._plugin_context
         groups = [context._plugin.get_security_group(dbcontext, sg)
                   for sg in context.current['security_groups']]
-        context.current['security_groups'] = groups
+        new_context = copy.deepcopy(context.current)
+        new_context['security_groups'] = groups
         # NOTE(yamahata): work around for port creation for router
         # tenant_id=''(empty string) is passed when port is created
         # by l3 plugin internally for router.
@@ -70,9 +72,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if ('tenant_id' not in context.current or
                 context.current['tenant_id'] == ''):
             tenant_id = context._network_context._network['tenant_id']
-            context.current['tenant_id'] = tenant_id
+            new_context['tenant_id'] = tenant_id
         db.create_pending_row(context._plugin_context.session, 'port',
-                              context.current['id'], 'create', context.current)
+                              context.current['id'], 'create', new_context)
 
     @journal.call_thread_on_end
     def update_network_precommit(self, context):
@@ -89,11 +91,12 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         port = context._plugin.get_port(context._plugin_context,
                                         context.current['id'])
         dbcontext = context._plugin_context
+        new_context = copy.deepcopy(context.current)
         groups = [context._plugin.get_security_group(dbcontext, sg)
                   for sg in port['security_groups']]
-        context.current['security_groups'] = groups
+        new_context['security_groups'] = groups
         # Add the network_id in for validation
-        context.current['network_id'] = port['network_id']
+        new_context['network_id'] = port['network_id']
         # NOTE(yamahata): work around for port creation for router
         # tenant_id=''(empty string) is passed when port is created
         # by l3 plugin internally for router.
@@ -108,7 +111,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 context.current['tenant_id'] == ''):
             port['tenant_id'] = context._network_context._network['tenant_id']
         db.create_pending_row(context._plugin_context.session, 'port',
-                              context.current['id'], 'update', context.current)
+                              context.current['id'], 'update', new_context)
 
     @journal.call_thread_on_end
     def delete_network_precommit(self, context):
