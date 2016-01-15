@@ -264,11 +264,13 @@ class OpenDaylightDriver(object):
                 # If they don't match, update it below
                 pass
 
-        key = collection_name[:-1] if len(to_be_synced) == 1 else (
-            collection_name)
-        # Convert underscores to dashes in the URL for ODL
-        collection_name_url = collection_name.replace('_', '-')
-        self.client.sendjson('post', collection_name_url, {key: to_be_synced})
+        if to_be_synced:
+            key = collection_name[:-1] if len(to_be_synced) == 1 else (
+                collection_name)
+            # Convert underscores to dashes in the URL for ODL
+            collection_name_url = collection_name.replace('_', '-')
+            self.client.sendjson('post', collection_name_url,
+                                 {key: to_be_synced})
 
         # https://bugs.launchpad.net/networking-odl/+bug/1371115
         # TODO(yamahata): update resources with unsyned attributes

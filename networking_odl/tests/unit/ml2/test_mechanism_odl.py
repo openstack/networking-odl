@@ -253,6 +253,29 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
                         act.append(args[2][key][0]['id'])
             self.assertEqual(act, sync_id_list)
 
+    def test_simple_sync_all_with_all_synced(self):
+        self.given_back_end.out_of_sync = True
+        ml2_plugin = plugin.Ml2Plugin()
+
+        with mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
+                               return_value=None), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_networks',
+                              return_value=[FAKE_NETWORK]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_subnets',
+                              return_value=[FAKE_SUBNET]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_ports',
+                              return_value=[FAKE_PORT]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_security_groups',
+                              return_value=[FAKE_SECURITY_GROUP]), \
+            mock.patch.object(plugin.Ml2Plugin, 'get_security_group_rules',
+                              return_value=[FAKE_SECURITY_GROUP_RULE]):
+            self.given_back_end.sync_full(ml2_plugin)
+
+            # it's only called for GET, there is no call for PUT
+            # 5 = network, subnet, port, security_group, security_group_rule
+            self.assertEqual(5,
+                             client.OpenDaylightRestClient.sendjson.call_count)
+
 
 class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
