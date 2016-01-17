@@ -220,17 +220,17 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
         with mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
                                side_effect=side_eff), \
             mock.patch.object(plugin.Ml2Plugin, 'get_networks',
-                              return_value=[FAKE_NETWORK]), \
+                              return_value=[FAKE_NETWORK.copy()]), \
             mock.patch.object(plugin.Ml2Plugin, 'get_network',
-                              return_value=FAKE_NETWORK), \
+                              return_value=FAKE_NETWORK.copy()), \
             mock.patch.object(plugin.Ml2Plugin, 'get_subnets',
-                              return_value=[FAKE_SUBNET]), \
+                              return_value=[FAKE_SUBNET.copy()]), \
             mock.patch.object(plugin.Ml2Plugin, 'get_ports',
-                              return_value=[FAKE_PORT]), \
+                              return_value=[FAKE_PORT.copy()]), \
             mock.patch.object(plugin.Ml2Plugin, 'get_security_groups',
-                              return_value=[FAKE_SECURITY_GROUP]), \
+                              return_value=[FAKE_SECURITY_GROUP.copy()]), \
             mock.patch.object(plugin.Ml2Plugin, 'get_security_group_rules',
-                              return_value=[FAKE_SECURITY_GROUP_RULE]):
+                              return_value=[FAKE_SECURITY_GROUP_RULE.copy()]):
             self.given_back_end.sync_full(ml2_plugin)
 
             sync_id_list = [FAKE_NETWORK['id'], FAKE_SUBNET['id'],
@@ -261,17 +261,17 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     @staticmethod
     def _get_mock_network_operation_context():
-        context = mock.Mock(current=FAKE_NETWORK)
+        context = mock.Mock(current=FAKE_NETWORK.copy())
         return context
 
     @staticmethod
     def _get_mock_subnet_operation_context():
-        context = mock.Mock(current=FAKE_SUBNET)
+        context = mock.Mock(current=FAKE_SUBNET.copy())
         return context
 
     @staticmethod
     def _get_mock_port_operation_context():
-        context = mock.Mock(current=FAKE_PORT)
+        context = mock.Mock(current=FAKE_PORT.copy())
         context._plugin.get_security_group = mock.Mock(return_value={})
         return context
 
