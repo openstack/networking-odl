@@ -16,6 +16,8 @@ function cleanup_opendaylight {
     fi
     rm -f "$DEST/logs/$ODL_KARAF_LOG_BASE*"
 
+    move_interface_addresses "outof_bridge"
+
     unbind_opendaylight_controller
 }
 
@@ -289,4 +291,6 @@ function configure_opendaylight_l3 {
         sudo ovs-vsctl --no-wait -- --may-exist add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
         sudo ip link set $PUBLIC_INTERFACE up
     fi
+
+    move_interface_addresses "into_bridge"
 }

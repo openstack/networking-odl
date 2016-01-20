@@ -41,3 +41,39 @@ function wait_for_active_bridge {
         $MAX_WAIT $SLEEP_INTERVAL
     echo "Bridge $BRIDGE is available."
 }
+
+# Move the public IP addresses to the OVS bridge on startup,
+# or back to the public interface on cleanup
+function move_interface_addresses {
+    local direction=$1
+
+    if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
+        local VETH_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
+        local PHYSICAL_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f2)
+
+        if [[ "$direction" == "into_bridge" ]]; then
+            _move_neutron_addresses_route "$PHYSICAL_INTERFACE" "$VETH_INTERFACE" True False "inet"
+            if _has_public_ipv6_address "$PHYSICAL_INTERFACE"; then
+                _move_neutron_addresses_route "$PHYSICAL_INTERFACE" "$VETH_INTERFACE" False False "inet6"
+            fi
+        elif [[ "$direction" == "outof_bridge" ]]; then
+            _move_neutron_addresses_route "$VETH_INTERFACE" "$PHYSICAL_INTERFACE" False True "inet"
+            if _has_public_ipv6_address "$VETH_INTERFACE"; then
+                _move_neutron_addresses_route "$VETH_INTERFACE" "$PHYSICAL_INTERFACE" False False "inet6"
+            fi
+        fi
+    fi
+}
+
+# Check that the interface has an IP v6 address which
+# is routable on external network
+function _has_public_ipv6_address {
+    local interface=$1
+    local interface_public_ipv6_addresses=$(ip -f inet6 a s dev "$interface" | grep -c 'global')
+    echo "$interface public IPv6 address count: $interface_public_ipv6_addresses"
+    if [[ "$interface_public_ipv6_addresses" != 0 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
