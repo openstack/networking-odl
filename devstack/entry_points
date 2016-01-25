@@ -4,8 +4,8 @@
 # cleanup_opendaylight() - Remove residual data files, anything left over
 # from previous runs that a clean run would need to clean up
 function cleanup_opendaylight {
-    # Wipe out the data and journal directories ... grumble grumble grumble
-    rm -rf $ODL_DIR/$ODL_NAME/{data,journal}
+    # Wipe out the data, journal and snapshots directories ... grumble grumble grumble
+    rm -rf $ODL_DIR/$ODL_NAME/{data,journal,snapshots}
 
     # Remove existing logfiles
     if [[ -n "$LOGDIR" ]]; then
