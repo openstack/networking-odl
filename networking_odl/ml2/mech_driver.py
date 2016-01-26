@@ -138,8 +138,7 @@ class PortFilter(ResourceFilterBase):
     def filter_update_attributes(cls, port, context):
         """Filter out port attributes for an update operation."""
         cls._add_security_groups(port, context)
-        odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
-                          'tenant_id', 'fixed_ips'])
+        odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
 
     @classmethod
     def filter_create_attributes_with_plugin(cls, port, plugin, dbcontext):
