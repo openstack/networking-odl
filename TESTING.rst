@@ -1,19 +1,15 @@
-Testing Neutron
-===============
+Testing Networking-odl + neutron
+================================
 
 Overview
 --------
 
-The unit tests (neutron/test/unit/) are meant to cover as much code as
+The unit tests (networking_odl/tests/unit/) are meant to cover as much code as
 possible and should be executed without the service running. They are
 designed to test the various pieces of the neutron tree to make sure
 any new changes don't break existing functionality.
 
-The functional tests (neutron/tests/functional/) are intended to
-validate actual system interaction.  Mocks should be used sparingly,
-if at all.  Care should be taken to ensure that existing system
-resources are not modified and that resources created in tests are
-properly cleaned up.
+# TODO (Manjeet): Update functional testing doc.
 
 Development process
 -------------------
@@ -76,7 +72,7 @@ interactive debugging session while using testr.
 With `tox`
 ~~~~~~~~~~
 
-Neutron, like other OpenStack projects, uses `tox`_ for managing the virtual
+Networking-odl, like other OpenStack projects, uses `tox`_ for managing the virtual
 environments for running test cases. It uses `Testr`_ for managing the running
 of the test cases.
 
@@ -90,6 +86,10 @@ Running unit tests is as easy as executing this in the root directory of the
 Neutron source code::
 
     tox
+
+Running tests for syntax and style check for written code::
+
+    tox -e pep8
 
 For more information on the standard Tox-based test infrastructure used by
 OpenStack and how to do some common test/debugging procedures with Testr,
@@ -111,21 +111,21 @@ the dot-separated path to the module you want as an argument to it.
 For executing a specific test case, specify the name of the test case
 class separating it from the module path with a colon.
 
-For example, the following would run only the JSONV2TestCase tests from
-neutron/tests/unit/test_api_v2.py::
+For example, the following would run only the Testodll3 tests from
+networking_odl/tests/unit/l3/test_odl_l3.py ::
 
-      $ tox -e py27 neutron.tests.unit.test_api_v2.JSONV2TestCase
+      $ tox -e py27 networking_odl.tests.unit.l3.test_l3_odl.Testodll3
 
 Adding more tests
 ~~~~~~~~~~~~~~~~~
 
-Neutron has a fast growing code base and there is plenty of areas that
-need to be covered by unit and functional tests.
+There might not be full coverage yet. New patches for adding tests
+which are not there are always welcome.
 
 To get a grasp of the areas where tests are needed, you can check
 current coverage by running::
 
-    $ tox -ecover
+    $ tox -e cover
 
 Debugging
 ---------
