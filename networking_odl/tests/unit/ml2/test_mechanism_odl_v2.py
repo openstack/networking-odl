@@ -345,9 +345,14 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                                      object_type,
                                      expected_calls=0)
 
-        # Verify that network and object rows are still in the database.
+        # Verify that network row is still set at 'processing'.
         rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
-        self.assertEqual(2, len(rows))
+        self.assertEqual(1, len(rows))
+
+        # Verify that the test row was processed and set back to 'pending'
+        # to be processed again.
+        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        self.assertEqual(1, len(rows))
 
     def test_driver(self):
         for operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE,
