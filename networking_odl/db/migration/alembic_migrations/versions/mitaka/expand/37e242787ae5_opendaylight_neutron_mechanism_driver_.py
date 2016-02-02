@@ -20,8 +20,6 @@ Revises: 247501328046
 Create Date: 2015-10-30 22:09:27.221767
 
 """
-import datetime
-
 # revision identifiers, used by Alembic.
 revision = '37e242787ae5'
 down_revision = '247501328046'
@@ -42,7 +40,7 @@ def upgrade():
                   sa.Enum('pending', 'processing', 'failed', 'completed'),
                   nullable=False, default='pending'),
         sa.Column('retry_count', sa.Integer, default=0),
-        sa.Column('created_at', sa.DateTime),
-        sa.Column('last_retried', sa.TIMESTAMP, nullable=False,
-                  default=datetime.datetime.utcnow())
+        sa.Column('created_at', sa.DateTime, default=sa.func.now()),
+        sa.Column('last_retried', sa.TIMESTAMP, server_default=sa.func.now(),
+                  onupdate=sa.func.now())
     )
