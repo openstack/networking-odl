@@ -116,17 +116,27 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
     @journal.call_thread_on_end
     def delete_network_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'network',
-                              context.current['id'], 'delete', context.current)
+                              context.current['id'], 'delete', None)
 
     @journal.call_thread_on_end
     def delete_subnet_precommit(self, context):
+        # Use the journal row's data field to store parent object
+        # uuids. This information is required for validation checking
+        # when deleting parent objects.
+        new_context = [context.current['network_id']]
         db.create_pending_row(context._plugin_context.session, 'subnet',
-                              context.current['id'], 'delete', context.current)
+                              context.current['id'], 'delete', new_context)
 
     @journal.call_thread_on_end
     def delete_port_precommit(self, context):
+        # Use the journal row's data field to store parent object
+        # uuids. This information is required for validation checking
+        # when deleting parent objects.
+        new_context = [context.current['network_id']]
+        for subnet in context.current['fixed_ips']:
+            new_context.append(subnet['subnet_id'])
         db.create_pending_row(context._plugin_context.session, 'port',
-                              context.current['id'], 'delete', context.current)
+                              context.current['id'], 'delete', new_context)
 
     def bind_port(self, port_context):
         """Set binding for a valid segments
