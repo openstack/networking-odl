@@ -52,7 +52,7 @@ class OpenDaylightManager(object):
     """OpenDaylight LBaaS Driver for the V2 API
 
     This code is the backend implementation for the OpenDaylight
-    LBaaS V2 driver for Openstack Neutron.
+    LBaaS V2 driver for OpenStack Neutron.
     """
 
     @log_helpers.log_method_call

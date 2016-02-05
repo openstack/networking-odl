@@ -29,7 +29,7 @@ class OpenDaylightFwaasDriver(fwaas_base.FwaasDriverBase):
     """OpenDaylight FWaaS Driver
 
     This code is the backend implementation for the OpenDaylight FWaaS
-    driver for Openstack Neutron.
+    driver for OpenStack Neutron.
     """
 
     def __init__(self):
