@@ -13,4 +13,4 @@ oslotest<1.6.0,>=1.5.1 # Apache-2.0
 testrepository>=0.0.18
 testscenarios>=0.4
 WebTest>=2.0
-testtools!=1.2.0,>=0.9.36
+testtools!=1.2.0,<2.0.0,>=0.9.36
