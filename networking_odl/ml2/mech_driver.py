@@ -35,6 +35,7 @@ from networking_odl._i18n import _LE
 from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
+from networking_odl.common import filters
 from networking_odl.common import utils as odl_utils
 from networking_odl.ml2 import port_binding
 
@@ -218,16 +219,16 @@ class SecurityGroupRuleFilter(ResourceFilterBase):
     @staticmethod
     def filter_create_attributes(sg_rule, context):
         """Filter out sg-rule attributes not required for a create."""
-        pass
+        filters.filter_security_group_rule(sg_rule)
 
     @staticmethod
     def filter_update_attributes(sg_rule, context):
         """Filter out sg-rule attributes for an update operation."""
-        pass
+        filters.filter_security_group_rule(sg_rule)
 
     @staticmethod
     def filter_create_attributes_with_plugin(sg_rule, plugin, dbcontext):
-        pass
+        filters.filter_security_group_rule(sg_rule)
 
 
 class OpenDaylightDriver(object):

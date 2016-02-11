@@ -14,12 +14,12 @@
 #    under the License.
 
 from neutron.tests import base
+from neutron_lib import constants as n_const
 
 from networking_odl.common import filters
 
 
 class TestFilters(base.DietTestCase):
-
     def _check_id(self, resource, project_id):
         filters._populate_project_id_and_tenant_id(resource)
         self.assertIn(resource['project_id'], project_id)
@@ -57,3 +57,18 @@ class TestFilters(base.DietTestCase):
         resource1 = resource0[:]
         filters._populate_project_id_and_tenant_id(resource1)
         self.assertEqual(resource0, resource1)
+
+    def test_sgrule_scrub_unknown_protocol_name(self):
+        KNOWN_PROTO_NAMES = (n_const.PROTO_NAME_TCP,
+                             n_const.PROTO_NAME_UDP,
+                             n_const.PROTO_NAME_ICMP,
+                             n_const.PROTO_NAME_IPV6_ICMP_LEGACY)
+        for protocol_name in KNOWN_PROTO_NAMES:
+            self.assertEqual(
+                protocol_name,
+                filters._sgrule_scrub_unknown_protocol_name(protocol_name))
+
+        self.assertEqual(
+            n_const.PROTO_NUM_AH,
+            filters._sgrule_scrub_unknown_protocol_name(n_const.PROTO_NAME_AH))
+        self.assertEqual("1", filters._sgrule_scrub_unknown_protocol_name("1"))

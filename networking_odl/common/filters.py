@@ -12,6 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+from neutron_lib import constants as n_const
+
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 
@@ -105,6 +108,37 @@ def _filter_router_update(router):
     odl_utils.try_del(router, ['id', 'tenant_id', 'project_id', 'status'])
 
 
+# ODL boron neturon northbound knows the following protocol names.
+# It's safe to pass those names
+_ODL_KNOWN_PROTOCOL_NAMES = (
+    n_const.PROTO_NAME_TCP,
+    n_const.PROTO_NAME_UDP,
+    n_const.PROTO_NAME_ICMP,
+    n_const.PROTO_NAME_IPV6_ICMP_LEGACY,
+    )
+
+
+def _sgrule_scrub_unknown_protocol_name(protocol):
+    """Convert unknown protocol name to actual interger.
+
+    OpenDaylight does't want to keep catching up list of protocol names.
+    So networking-odl converts unknown protcol name into integer
+    """
+    if protocol in _ODL_KNOWN_PROTOCOL_NAMES:
+        return protocol
+    if protocol in n_const.IP_PROTOCOL_MAP:
+        return n_const.IP_PROTOCOL_MAP[protocol]
+    return protocol
+
+
+# TODO(yamahata): used by mech_driver.
+#                 make this private when v1 mech_driver is removed
+def filter_security_group_rule(sg_rule):
+    if sg_rule.get('protocol'):
+        sg_rule['protocol'] = _sgrule_scrub_unknown_protocol_name(
+            sg_rule['protocol'])
+
+
 _FILTER_MAP = {
     (odl_const.ODL_NETWORK, odl_const.ODL_CREATE): _filter_network_create,
     (odl_const.ODL_NETWORK, odl_const.ODL_UPDATE): _filter_network_update,
@@ -113,6 +147,8 @@ _FILTER_MAP = {
     (odl_const.ODL_PORT, odl_const.ODL_CREATE): _filter_port_create,
     (odl_const.ODL_PORT, odl_const.ODL_UPDATE): _filter_port_update,
     (odl_const.ODL_ROUTER, odl_const.ODL_UPDATE): _filter_router_update,
+    (odl_const.ODL_SG_RULE, odl_const.ODL_CREATE): filter_security_group_rule,
+    (odl_const.ODL_SG_RULE, odl_const.ODL_UPDATE): filter_security_group_rule,
 }
 
 
