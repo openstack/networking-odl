@@ -13,12 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_odl.common import client
-from networking_odl.common import constants as odl_const
-from networking_odl.ml2 import mech_driver
 
 import copy
 import mock
+import socket
+
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 import requests
@@ -35,6 +34,12 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+
+from networking_odl.common import client
+from networking_odl.common import constants as odl_const
+from networking_odl.ml2 import mech_driver
+from networking_odl.ml2 import network_topology
+
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
@@ -122,6 +127,19 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
             client.OpenDaylightRestClient,
             'sendjson',
             new=self.check_sendjson).start()
+
+        # Prevent test from accidentally connecting to any web service
+        mock.patch.object(
+            network_topology, 'NetworkTopologyClient',
+            return_value=mock.Mock(
+                specs=network_topology.NetworkTopologyClient,
+                get=mock.Mock(side_effect=requests.HTTPError))).start()
+
+        # Prevent hosts resolution from changing the behaviour of tests
+        mock.patch.object(
+            network_topology.utils,
+            'get_addresses_by_name',
+            side_effect=socket.gaierror).start()
 
     def check_sendjson(self, method, urlpath, obj):
         self.assertFalse(urlpath.startswith("http://"))
