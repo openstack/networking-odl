@@ -78,25 +78,26 @@ class OpendaylightJournalThread(object):
 
     def _json_data(self, row):
         filter_cls = filters.FILTER_MAP[row.object_type]
+        url_object = row.object_type.replace('_', '-')
 
         if row.operation == odl_const.ODL_CREATE:
             method = 'post'
             attr_filter = filter_cls.filter_create_attributes
             data = copy.deepcopy(row.data)
-            urlpath = row.object_type + 's'
+            urlpath = url_object + 's'
             attr_filter(data)
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_UPDATE:
             method = 'put'
             attr_filter = filter_cls.filter_update_attributes
             data = copy.deepcopy(row.data)
-            urlpath = row.object_type + 's/' + row.object_uuid
+            urlpath = url_object + 's/' + row.object_uuid
             attr_filter(data)
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_DELETE:
             method = 'delete'
             data = None
-            urlpath = row.object_type + 's/' + row.object_uuid
+            urlpath = url_object + 's/' + row.object_uuid
             to_send = None
         elif row.operation == odl_const.ODL_ADD:
             method = 'put'

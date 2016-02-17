@@ -36,6 +36,8 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 HOST = 'fake-host'
 PLUGIN_NAME = 'neutron.plugins.ml2.plugin.Ml2Plugin'
 SECURITY_GROUP = '2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'
+SG_FAKE_ID = 'sg_fake_uuid'
+SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
 
 
 class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase):
@@ -115,7 +117,10 @@ class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
 class DataMatcher(object):
 
     def __init__(self, operation, object_type, context):
-        self._data = context.current.copy()
+        if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
+            self._data = context[object_type].copy()
+        else:
+            self._data = context.current.copy()
         self._object_type = object_type
         filter_cls = filters.FILTER_MAP[object_type]
         attr_filter = getattr(filter_cls, 'filter_%s_attributes' % operation)
@@ -204,6 +209,18 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             _get_mock_network_operation_context().current)
         return context
 
+    @staticmethod
+    def _get_mock_security_group_operation_context():
+        context = {odl_const.ODL_SG: {'name': 'test_sg',
+                                      'id': SG_FAKE_ID}}
+        return context
+
+    @staticmethod
+    def _get_mock_security_group_rule_operation_context():
+        context = {odl_const.ODL_SG_RULE: {'security_group_id': SG_FAKE_ID,
+                                           'id': SG_RULE_FAKE_ID}}
+        return context
+
     @classmethod
     def _get_mock_operation_context(cls, object_type):
         getter = getattr(cls, '_get_mock_%s_operation_context' % object_type)
@@ -235,7 +252,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                 cls._status_code_msgs[status_code])))
         return response
 
-    def _test_operation(self, method, context, status_code, expected_calls,
+    def _test_operation(self, method, status_code, expected_calls,
                         *args, **kwargs):
         request_response = self._get_mock_request_response(status_code)
         with mock.patch('requests.request',
@@ -252,9 +269,14 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
     def _call_operation_object(self, operation, object_type):
         context = self._get_mock_operation_context(object_type)
-        method = getattr(self.mech, '%s_%s_precommit' % (operation,
-                                                         object_type))
-        method(context)
+
+        if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
+            self.mech.sync_from_callback(operation, object_type + 's',
+                                         context[object_type]['id'], context)
+        else:
+            method = getattr(self.mech, '%s_%s_precommit' % (operation,
+                                                             object_type))
+            method(context)
 
     def _test_operation_object(self, operation, object_type):
         self._call_operation_object(operation, object_type)
@@ -280,11 +302,16 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self._call_operation_object(operation, object_type)
 
         context = self._get_mock_operation_context(object_type)
+        url_object_type = object_type.replace('_', '-')
         if operation in [odl_const.ODL_UPDATE, odl_const.ODL_DELETE]:
-            url = '%s/%ss/%s' % (config.cfg.CONF.ml2_odl.url,
-                                 object_type, context.current['id'])
+            if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
+                uuid = context[object_type]['id']
+            else:
+                uuid = context.current['id']
+            url = '%s/%ss/%s' % (config.cfg.CONF.ml2_odl.url, url_object_type,
+                                 uuid)
         else:
-            url = '%s/%ss' % (config.cfg.CONF.ml2_odl.url, object_type)
+            url = '%s/%ss' % (config.cfg.CONF.ml2_odl.url, url_object_type)
 
         if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE]:
             kwargs = {
@@ -294,9 +321,8 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             kwargs = {'url': url, 'data': None}
         with mock.patch.object(self.thread.event, 'wait',
                                return_value=False):
-            self._test_operation(self.thread.sync_pending_row, context,
-                                 status_code, expected_calls, http_request,
-                                 **kwargs)
+            self._test_operation(self.thread.sync_pending_row, status_code,
+                                 expected_calls, http_request, **kwargs)
 
     def _test_object_type(self, object_type):
         # Add and process create request.
@@ -387,3 +413,9 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
         # Verify that the thread call was made.
         self.assertTrue(self.mock_sync_thread.called)
+
+    def test_sg(self):
+        self._test_object_type(odl_const.ODL_SG)
+
+    def test_sg_rule(self):
+        self._test_object_type(odl_const.ODL_SG_RULE)
