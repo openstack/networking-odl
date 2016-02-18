@@ -130,12 +130,39 @@ class PortFilter(ResourceFilterBase):
             address_pair['ip_address'] = network_address
             cls._fixup_mac_address(address_pair)
 
+    @staticmethod
+    def _filter_unmapped_null(port):
+        # NOTE(yamahata): bug work around
+        # https://bugs.eclipse.org/bugs/show_bug.cgi?id=475475
+        #   Null-value for an unmapped element causes next mapped
+        #   collection to contain a null value
+        #   JSON: { "unmappedField": null, "mappedCollection": [ "a" ] }
+        #
+        #   Java Object:
+        #   class Root {
+        #     Collection<String> mappedCollection = new ArrayList<String>;
+        #   }
+        #
+        #   Result:
+        #   Field B contains one element; null
+        #
+        # TODO(yamahata): update along side with neutron and ODL
+        #   add when neutron adds more extensions
+        #   delete when ODL neutron northbound supports it
+        # TODO(yamahata): do same thing for other resources
+        unmapped_keys = ['dns_name', 'port_security_enabled',
+                         'binding:profile']
+        keys_to_del = [key for key in unmapped_keys if port.get(key) is None]
+        if keys_to_del:
+            odl_utils.try_del(port, keys_to_del)
+
     @classmethod
     def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
         cls._add_security_groups(port, context)
         cls._fixup_mac_address(port)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
+        cls._filter_unmapped_null(port)
         odl_utils.try_del(port, ['status'])
 
         # NOTE(yamahata): work around for port creation for router
@@ -158,6 +185,7 @@ class PortFilter(ResourceFilterBase):
         cls._add_security_groups(port, context)
         cls._fixup_mac_address(port)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
+        cls._filter_unmapped_null(port)
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
 
     @classmethod
