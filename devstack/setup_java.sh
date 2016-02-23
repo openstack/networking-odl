@@ -12,7 +12,7 @@ function setup_java {
     local VERSION="${1:-8}"
 
     echo "Setup Java version: $VERSION"
-    if test_java_version java "$VERSION"; then
+    if test_java_version "$VERSION" && setup_java_env; then
         echo "Current Java version is already $VERSION."
     elif select_java "$VERSION"; then
         echo "Java version $VERSION has been selected."
@@ -29,7 +29,7 @@ function setup_java {
 }
 
 function setup_java_env() {
-    local JAVA_COMMAND="${1:-java}"
+    local JAVA_COMMAND="${1:-${JAVA:-java}}"
 
     JAVA_LINK="$(which $JAVA_COMMAND)"
     if [[ "$JAVA_LINK" == "" ]]; then
@@ -38,13 +38,18 @@ function setup_java_env() {
 
     export JAVA="$(readlink -f $JAVA_LINK)"
     export JAVA_HOME=$(echo $JAVA | sed "s:/bin/java::" | sed "s:/jre::")
+    if [ "$JAVA" != "$(readlink -f $(which java))" ]; then
+        export PATH="$(dirname $JAVA):$PATH"
+        if [ "$JAVA" != "$(readlink -f $(which java))" ]; then
+            echo "Unable to set $JAVA as current."
+            return 1
+        fi
+    fi
 
     echo "JAVA is: $JAVA"
     echo "JAVA_HOME is: $JAVA_HOME"
     echo "Java version is:"
     $JAVA -version 2>&1
-
-    return 0
 }
 
 function select_java {
@@ -52,23 +57,28 @@ function select_java {
     local COMMAND
 
     for COMMAND in $(list_java_commands); do
-        if test_java_version "$COMMAND" "$VERSION"; then
-            if select_installed_java_command "$COMMAND"; then
-                if test_java_version java "$VERSION"; then
-                    return 0
-                fi
+        if test_java_version "$VERSION" "$COMMAND"; then
+            if setup_java_env "$COMMAND"; then
+                return 0
             fi
         fi
     done
 
+    echo 'Required java version not found.'
     return 1
 }
 
 function test_java_version {
-    local COMMAND="$1"
-    local VERSION="$2"
+    local EXPECTED_VERSION="'"*' version "1.'$1'.'*'"'"'"
+    local COMMAND="${2:-${JAVA:-java}}"
+    local ACTUAL_VERSION="'"$($COMMAND -version 2>&1 | head -n 1)"'"
 
-    $COMMAND -version 2>&1 | grep -q 'version "1\.'$VERSION'\..*"'
+    if [[ $ACTUAL_VERSION == $EXPECTED_VERSION ]]; then
+        echo "Found matching java version: $ACTUAL_VERSION"
+        return 0
+    else
+        return 1
+    fi
 }
 
 if is_ubuntu; then
@@ -76,10 +86,6 @@ if is_ubuntu; then
 
     function list_java_commands {
         update-alternatives --list java
-    }
-
-    function select_installed_java_command {
-        sudo update-alternatives --set java "$1"
     }
 
     function install_openjdk {
@@ -156,7 +162,7 @@ else
         fi
 
         local NEW_JAVA="/usr/java/$TARGET/jre/bin/java"
-        if test_java_version "$NEW_JAVA" "$VERSION"; then
+        if test_java_version "$VERSION" "$NEW_JAVA"; then
             if sudo alternatives --install /usr/bin/java java "$NEW_JAVA" 200000; then
                 return 0
             fi
@@ -183,7 +189,7 @@ else
                         ;;
                 esac
 
-                if test_java_version "$NEW_JAVA" "$VERSION"; then
+                if test_java_version "$VERSION" "$NEW_JAVA"; then
                     if sudo alternatives --install /usr/bin/java java "$NEW_JAVA" 200000; then
                         return 0
                     fi
@@ -200,7 +206,4 @@ else
         return 1
     }
 
-    function select_installed_java_command {
-        sudo alternatives --set java "$1"
-    }
 fi
