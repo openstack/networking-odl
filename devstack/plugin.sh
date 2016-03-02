@@ -119,6 +119,28 @@ if is_service_enabled odl-neutron; then
     fi
 fi
 
+if is_service_enabled odl-lightweight-testing; then
+    if [[ "$1" == "stack" && "$2" == "install" ]]; then
+        install_opendaylight_neutron_thin_ml2_driver
+    elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+        configure_neutron_odl
+        configure_neutron_odl_lightweight_testing
+    elif [[ "$1" == "stack" && "$2" == "post-extra" ]]; then
+        # no-op
+        :
+    fi
+
+    if [[ "$1" == "unstack" ]]; then
+        # no-op
+        :
+    fi
+
+    if [[ "$1" == "clean" ]]; then
+        # no-op
+        :
+    fi
+fi
+
 # Tell emacs to use shell-script-mode
 ## Local variables:
 ## mode: shell-script

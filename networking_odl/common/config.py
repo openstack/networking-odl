@@ -31,6 +31,9 @@ odl_opts = [
     cfg.IntOpt('retry_count', default=5,
                help=_("(V2 driver) Number of times to retry a row "
                       "before failing.")),
+    cfg.BoolOpt('enable_lightweight_testing',
+                default=False,
+                help='Test without real ODL'),
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")
