@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
-
 import sqlalchemy as sa
 
 from neutron.db import model_base
@@ -31,6 +29,6 @@ class OpendaylightJournal(model_base.BASEV2, HasId):
     state = sa.Column(sa.Enum('pending', 'failed', 'processing', 'completed'),
                       nullable=False, default='pending')
     retry_count = sa.Column(sa.Integer, default=0)
-    created_at = sa.Column(sa.DateTime)
-    last_retried = sa.Column(sa.TIMESTAMP, nullable=False,
-                             default=datetime.datetime.utcnow())
+    created_at = sa.Column(sa.DateTime, server_default=sa.func.now())
+    last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),
+                             onupdate=sa.func.now())
