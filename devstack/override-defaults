@@ -1,9 +1,9 @@
 # Override few things here as early as we can
 
-# We are explicitly enabling the opendaylight ML2 MechanismDriver here.
+# We will enable the opendaylight ML2 MechanismDriver v1 version by default.
 # Note we are also enabling the logger driver, which is helpful for
 # debugging things on the Neutron side.
-Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=${Q_ML2_PLUGIN_MECHANISM_DRIVERS:-"opendaylight,logger"}
 
 # This triggers the provisioning of L3 resources like routers and
 # external network, if not overriden.
