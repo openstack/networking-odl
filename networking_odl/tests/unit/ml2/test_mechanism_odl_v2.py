@@ -131,8 +131,8 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
-        mock.patch.object(journal.OpendaylightJournalThread,
-                          'start_odl_sync_thread').start()
+        self.mock_sync_thread = mock.patch.object(
+            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mech.initialize()
         self.thread = journal.OpendaylightJournalThread()
         self.addCleanup(self._db_cleanup)
@@ -376,3 +376,14 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
     def test_port_processing_network(self):
         self._test_object_type_processing_network(odl_const.ODL_PORT)
+
+    def test_thread_call(self):
+        """Verify that the sync thread method is called."""
+
+        # Create any object that would spin up the sync thread via the
+        # decorator call_thread_on_end() used by all the event handlers.
+        self._call_operation_object(odl_const.ODL_CREATE,
+                                    odl_const.ODL_NETWORK)
+
+        # Verify that the thread call was made.
+        self.assertTrue(self.mock_sync_thread.called)

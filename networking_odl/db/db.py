@@ -114,8 +114,8 @@ def create_pending_row(session, object_type, object_uuid,
                                      operation=operation, data=data,
                                      created_at=func.now(), state='pending')
     session.add(row)
-    # Session flush required for L3 events. NOOP for L2 events since ML2
-    # precommit calls are made inside database session transaction.
+    # Keep session flush for unit tests. NOOP for L2/L3 events since calls are
+    # made inside database session transaction with subtransactions=True.
     session.flush()
 
 
@@ -167,8 +167,76 @@ def validate_port_operation(session, object_uuid, operation, data):
 
     return True
 
+
+def validate_router_operation(session, object_uuid, operation, data):
+    """Validate router operation based on dependencies.
+
+    Validate router operation depending on whether it's dependencies
+    are still in 'pending' or 'processing' state.
+    """
+    if operation in ('create', 'update'):
+        if data['external_gateway_info'] is not None:
+            network_id = data['external_gateway_info']['network_id']
+            # Check for pending or processing network operations
+            if _check_for_pending_or_processing_ops(session, network_id):
+                return False
+    else:
+        # TODO(rcurran): Check for outstanding router interface.
+        pass
+
+    return True
+
+
+def validate_floatingip_operation(session, object_uuid, operation, data):
+    """Validate floatingip operation based on dependencies.
+
+    Validate floating IP operation depending on whether it's dependencies
+    are still in 'pending' or 'processing' state.
+    """
+    if operation in ('create', 'update'):
+        network_id = data.get('floating_network_id')
+        if network_id is not None:
+            if not _check_for_pending_or_processing_ops(session, network_id):
+                port_id = data.get('port_id')
+                if port_id is not None:
+                    if _check_for_pending_or_processing_ops(session, port_id):
+                        return False
+            else:
+                return False
+
+        router_id = data.get('router_id')
+        if router_id is not None:
+            if _check_for_pending_or_processing_ops(session, router_id):
+                return False
+
+    return True
+
+
+def validate_router_interface_operation(session, object_uuid, operation, data):
+    """Validate router_interface operation based on dependencies.
+
+    Validate router_interface operation depending on whether it's dependencies
+    are still in 'pending' or 'processing' state.
+    """
+    if operation == 'add':
+        # Verify that router event has been completed.
+        if _check_for_pending_or_processing_ops(session, data['id']):
+            return False
+
+        # TODO(rcurran): Check for port_id?
+        if _check_for_pending_or_processing_ops(session, data['subnet_id']):
+            return False
+    else:
+        # TODO(rcurran)
+        pass
+
+    return True
+
 VALIDATION_MAP = {
     odl_const.ODL_NETWORK: validate_network_operation,
     odl_const.ODL_SUBNET: validate_subnet_operation,
     odl_const.ODL_PORT: validate_port_operation,
+    odl_const.ODL_ROUTER: validate_router_operation,
+    odl_const.ODL_ROUTER_INTF: validate_router_interface_operation,
+    odl_const.ODL_FLOATINGIP: validate_floatingip_operation,
 }

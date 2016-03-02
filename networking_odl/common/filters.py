@@ -96,8 +96,47 @@ class SecurityGroupRuleFilter(ResourceFilterBase):
         """Filter out sg-rule attributes for an update operation."""
         pass
 
+
+class RouterFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(router):
+        """Filter out attributes not required for a create."""
+        pass
+
+    @staticmethod
+    def filter_update_attributes(router):
+        """Filter out attributes for an update operation."""
+        odl_utils.try_del(router, ['id', 'tenant_id', 'status'])
+
+
+class FloatingIPFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_create_attributes(floatingip):
+        """Filter out attributes not required for a create."""
+        pass
+
+    @staticmethod
+    def filter_update_attributes(floatingip):
+        """Filter out attributes for an update operation."""
+        pass
+
+
+class RouterIntfFilter(ResourceFilterBase):
+    @staticmethod
+    def filter_add_attributes(routerintf):
+        """Filter out attributes not required for a create."""
+        pass
+
+    @staticmethod
+    def filter_remove_attributes(routerintf):
+        """Filter out attributes for an update operation."""
+        pass
+
 FILTER_MAP = {
     odl_const.ODL_NETWORK: NetworkFilter,
     odl_const.ODL_SUBNET: SubnetFilter,
     odl_const.ODL_PORT: PortFilter,
+    odl_const.ODL_ROUTER: RouterFilter,
+    odl_const.ODL_ROUTER_INTF: RouterIntfFilter,
+    odl_const.ODL_FLOATINGIP: FloatingIPFilter,
 }
