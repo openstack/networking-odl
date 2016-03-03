@@ -14,12 +14,11 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=beryllium-snapshot-0.4.1
         ;;
     lithium-snapshot)
-        ODL_RELEASE=lithium-snapshot-0.3.3
+        ODL_RELEASE=lithium-snapshot-0.3.4
         ;;
     *)
-        # for compatibility before updating
-        # project-config/jenkins/jobs/networking-odl.yaml
-        ODL_RELEASE=lithium-snapshot-0.3.3
+        echo "Unknown ODL release base: $ODL_RELEASE_BASE"
+        exit 1
         ;;
 esac
 
