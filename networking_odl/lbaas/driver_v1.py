@@ -31,7 +31,7 @@ class OpenDaylightLbaasDriverV1(abstract_driver.LoadBalancerAbstractDriver):
     """OpenDaylight LBaaS Driver for the V1 API
 
     This code is the backend implementation for the OpenDaylight
-    LBaaS V1 driver for Openstack Neutron.
+    LBaaS V1 driver for OpenStack Neutron.
     """
 
     def __init__(self, plugin):
