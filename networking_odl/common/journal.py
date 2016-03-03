@@ -140,6 +140,11 @@ class OpendaylightJournalThread(object):
                              {'operation': row.operation,
                               'type': row.object_type,
                               'uuid': row.object_uuid})
+
+                    # Set row back to pending.
+                    db.update_db_row_pending(session, row)
+                    if exit_after_run:
+                        break
                     continue
 
                 LOG.info(_LI("Syncing %(operation)s %(type)s %(uuid)s"),

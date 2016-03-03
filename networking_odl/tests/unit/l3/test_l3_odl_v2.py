@@ -325,10 +325,14 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                                return_value=False):
             self.thread.sync_pending_row(exit_after_run=True)
 
-        # Verify that the test row was not processed because the
-        # dependent row is not marked 'completed'.
+        # Verify that dependency row is still set at 'processing'.
         rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
-        self.assertEqual(2, len(rows))
+        self.assertEqual(1, len(rows))
+
+        # Verify that the test row was processed and set back to 'pending'
+        # to be processed again.
+        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        self.assertEqual(1, len(rows))
 
         # Verify that _json_data was not called.
         self.assertFalse(mock_json_data.call_count)
