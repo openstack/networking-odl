@@ -1,0 +1,18 @@
+export BUNDLEVERSION='0.3.3-Lithium-SR3'
+export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+
+# Java major version required to run OpenDaylight: 7, 8, ...
+ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-7}
+
+function setup_opendaylight_package {
+    NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/opendaylight.release/org/opendaylight/integration/distribution-karaf/"
+
+    export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+    export ODL_PKG=distribution-karaf-${BUNDLEVERSION}.zip
+
+    # The network virtualization feature used by opendaylight loaded by Karaf
+    ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack}
+
+    # The url that this version of ODL netvirt can use to know ODL is fully up
+    export ODL_BOOT_WAIT_URL='restconf/operational/network-topology:network-topology/topology/netvirt:1'
+}
