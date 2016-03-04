@@ -27,9 +27,7 @@ from oslo_serialization import jsonutils
 from networking_odl.common import cache
 from networking_odl.common import client
 from networking_odl.common import utils
-from networking_odl.openstack.common._i18n import _LE
-from networking_odl.openstack.common._i18n import _LI
-from networking_odl.openstack.common._i18n import _LW
+from networking_odl.common._i18n import _LI, _LW, _LE
 
 
 LOG = log.getLogger(__name__)

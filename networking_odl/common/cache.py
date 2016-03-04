@@ -19,7 +19,7 @@ import time
 
 from oslo_log import log
 
-from networking_odl.openstack.common._i18n import _LW
+from networking_odl.common._i18n import _LW
 
 
 LOG = log.getLogger(__name__)

@@ -26,9 +26,8 @@ from neutron.db import api as neutron_db_api
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
+from networking_odl.common._i18n import _LI, _LE
 from networking_odl.db import db
-from networking_odl.openstack.common._i18n import _LE
-from networking_odl.openstack.common._i18n import _LI
 
 LOG = logging.getLogger(__name__)
 

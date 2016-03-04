@@ -32,12 +32,12 @@ from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 
+from networking_odl.common._i18n import _LE
 from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 from networking_odl.ml2 import network_topology
-from networking_odl.openstack.common._i18n import _LE
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
