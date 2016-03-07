@@ -87,9 +87,6 @@ class PortFilter(ResourceFilterBase):
     @classmethod
     def filter_create_attributes(cls, port):
         """Filter out port attributes not required for a create."""
-        # TODO(kmestery): Converting to uppercase due to ODL bug
-        # https://bugs.opendaylight.org/show_bug.cgi?id=477
-        port['mac_address'] = port['mac_address'].upper()
         cls._filter_unmapped_null(port)
         odl_utils.try_del(port, ['status'])
 
