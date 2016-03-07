@@ -1,11 +1,10 @@
 #!/bin/bash
 
 ORACLE_JAVA_URL="http://download.oracle.com/otn-pub/java/jdk"
-ORACLE_JAVA7_URL="${LAST_ORACLE_JAVA7_URL:-$ORACLE_JAVA_URL/7u80-b15/jdk-7u80}"
+ORACLE_JAVA7_URL="${ORACLE_JAVA7_URL:-$ORACLE_JAVA_URL/7u80-b15/jdk-7u80}"
 ORACLE_JAVA7_NAME="jdk1.7.0_80"
-ORACLE_JAVA8_URL="${LAST_ORACLE_JAVA8_URL:-$ORACLE_JAVA_URL/8u66-b17/jdk-8u66}"
-ORACLE_JAVA8_NAME="jdk1.8.0_66"
-
+ORACLE_JAVA8_URL="${ORACLE_JAVA8_URL:-$ORACLE_JAVA_URL/8u74-b02/jdk-8u74}"
+ORACLE_JAVA8_NAME="jdk1.8.0_74"
 
 function setup_java {
     # Java version 8 is the last stable one
@@ -144,10 +143,10 @@ else
             local ARCH=linux-i586
         fi
 
-        if [[ "$VERSION" == 7 ]]; then
+        if [[ "$VERSION" == "7" ]]; then
             ORIGIN=$ORACLE_JAVA7_URL
             TARGET=$ORACLE_JAVA7_NAME
-        elif [[ "$VERSION" == 8 ]]; then
+        elif [[ "$VERSION" == "8" ]]; then
             ORIGIN=$ORACLE_JAVA8_URL
             TARGET=$ORACLE_JAVA8_NAME
         else
