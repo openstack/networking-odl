@@ -182,8 +182,9 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                    'allowed_address_pairs': [],
                    'device_owner': 'fake_owner',
                    'binding:profile': {},
-                   'fixed_ips': [],
-                   'id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839',
+                   'fixed_ips': [{
+                       'subnet_id': '72c56c48-e9b8-4dcf-b3a7-0813bb3bd839'}],
+                   'id': '83d56c48-e9b8-4dcf-b3a7-0813bb3bd940',
                    'security_groups': [SECURITY_GROUP],
                    'device_id': 'fake_device',
                    'name': '',
@@ -339,18 +340,63 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         db.update_pending_db_row_processing(self.db_session, row[0])
 
         # Create the object_type database row and process.
-        # Verify that object create request is not processed because the
-        # dependent network row has not been marked as 'completed'.
+        # Verify that object request is not processed because the
+        # dependent row has not been marked as 'completed'.
         self._test_thread_processing(odl_const.ODL_CREATE,
                                      object_type,
                                      expected_calls=0)
 
-        # Verify that network row is still set at 'processing'.
+        # Verify that row is still set at 'processing'.
         rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
         self.assertEqual(1, len(rows))
 
         # Verify that the test row was processed and set back to 'pending'
         # to be processed again.
+        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        self.assertEqual(1, len(rows))
+
+    def _test_object_operation_pending_object_operation(
+        self, object_type, operation, pending_operation):
+        # Create the object_type (creates db row in pending state).
+        self._call_operation_object(pending_operation,
+                                    object_type)
+
+        # Get pending row and mark as processing so that
+        # this row will not be processed by journal thread.
+        row = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        db.update_pending_db_row_processing(self.db_session, row[0])
+
+        # Create the object_type database row and process.
+        # Verify that object request is not processed because the
+        # dependent object operation has not been marked as 'completed'.
+        self._test_thread_processing(operation,
+                                     object_type,
+                                     expected_calls=0)
+
+        # Verify that all rows are still in the database.
+        rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
+        self.assertEqual(1, len(rows))
+        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        self.assertEqual(1, len(rows))
+
+    def _test_parent_delete_pending_child_delete(self, parent, child):
+        # Delete a child (creates db row in pending state).
+        self._call_operation_object(odl_const.ODL_DELETE, child)
+
+        # Get pending child delete row and mark as processing so that
+        # this row will not be processed by journal thread.
+        row = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        db.update_pending_db_row_processing(self.db_session, row[0])
+
+        # Verify that parent delete request is not processed because the
+        # dependent child delete row has not been marked as 'completed'.
+        self._test_thread_processing(odl_const.ODL_DELETE,
+                                     parent,
+                                     expected_calls=0)
+
+        # Verify that all rows are still in the database.
+        rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
+        self.assertEqual(1, len(rows))
         rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
         self.assertEqual(1, len(rows))
 
@@ -364,8 +410,40 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     def test_network(self):
         self._test_object_type(odl_const.ODL_NETWORK)
 
+    def test_network_update_pending_network_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_NETWORK, odl_const.ODL_UPDATE, odl_const.ODL_CREATE)
+
+    def test_network_delete_pending_network_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_NETWORK, odl_const.ODL_DELETE, odl_const.ODL_CREATE)
+
+    def test_network_delete_pending_network_update(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_NETWORK, odl_const.ODL_DELETE, odl_const.ODL_UPDATE)
+
+    def test_network_delete_pending_subnet_delete(self):
+        self._test_parent_delete_pending_child_delete(
+            odl_const.ODL_NETWORK, odl_const.ODL_SUBNET)
+
+    def test_network_delete_pending_port_delete(self):
+        self._test_parent_delete_pending_child_delete(
+            odl_const.ODL_NETWORK, odl_const.ODL_PORT)
+
     def test_subnet(self):
         self._test_object_type(odl_const.ODL_SUBNET)
+
+    def test_subnet_update_pending_subnet_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_SUBNET, odl_const.ODL_UPDATE, odl_const.ODL_CREATE)
+
+    def test_subnet_delete_pending_subnet_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_SUBNET, odl_const.ODL_DELETE, odl_const.ODL_CREATE)
+
+    def test_subnet_delete_pending_subnet_update(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_SUBNET, odl_const.ODL_DELETE, odl_const.ODL_UPDATE)
 
     def test_subnet_pending_network(self):
         self._test_object_type_pending_network(odl_const.ODL_SUBNET)
@@ -373,8 +451,24 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     def test_subnet_processing_network(self):
         self._test_object_type_processing_network(odl_const.ODL_SUBNET)
 
+    def test_subnet_delete_pending_port_delete(self):
+        self._test_parent_delete_pending_child_delete(
+            odl_const.ODL_SUBNET, odl_const.ODL_PORT)
+
     def test_port(self):
         self._test_object_type(odl_const.ODL_PORT)
+
+    def test_port_update_pending_port_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_PORT, odl_const.ODL_UPDATE, odl_const.ODL_CREATE)
+
+    def test_port_delete_pending_port_create(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_PORT, odl_const.ODL_DELETE, odl_const.ODL_CREATE)
+
+    def test_port_delete_pending_port_update(self):
+        self._test_object_operation_pending_object_operation(
+            odl_const.ODL_PORT, odl_const.ODL_DELETE, odl_const.ODL_UPDATE)
 
     def test_port_pending_network(self):
         self._test_object_type_pending_network(odl_const.ODL_PORT)

@@ -24,12 +24,33 @@ from neutron.db import api as db_api
 from oslo_db import api as oslo_db_api
 
 
-def _check_for_pending_or_processing_ops(session, object_uuid):
+def _check_for_pending_or_processing_ops(session, object_uuid, operation=None):
     q = session.query(models.OpendaylightJournal).filter(
         or_(models.OpendaylightJournal.state == 'pending',
             models.OpendaylightJournal.state == 'processing'),
         models.OpendaylightJournal.object_uuid == object_uuid)
+    if operation:
+        if isinstance(operation, (list, tuple)):
+            q = q.filter(models.OpendaylightJournal.operation.in_(operation))
+        else:
+            q = q.filter(models.OpendaylightJournal.operation == operation)
     return session.query(q.exists()).scalar()
+
+
+def _check_for_pending_delete_ops_with_parent(session, object_type,
+                                              parent_id):
+    rows = session.query(models.OpendaylightJournal).filter(
+        or_(models.OpendaylightJournal.state == 'pending',
+            models.OpendaylightJournal.state == 'processing'),
+        models.OpendaylightJournal.object_type == object_type,
+        models.OpendaylightJournal.operation == odl_const.ODL_DELETE
+    ).all()
+
+    for row in rows:
+        if parent_id in row.data:
+            return True
+
+    return False
 
 
 def get_all_db_rows(session):
@@ -125,6 +146,25 @@ def validate_network_operation(session, object_uuid, operation, data):
     Validate network operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state. e.g.
     """
+    if operation == odl_const.ODL_DELETE:
+        # Check for any pending or processing create or update
+        # ops on this uuid itself
+        if _check_for_pending_or_processing_ops(
+            session, object_uuid, [odl_const.ODL_UPDATE,
+                                   odl_const.ODL_CREATE]):
+            return False
+        # Check for dependent operations
+        if _check_for_pending_delete_ops_with_parent(
+            session, odl_const.ODL_SUBNET, object_uuid):
+            return False
+        if _check_for_pending_delete_ops_with_parent(
+            session, odl_const.ODL_PORT, object_uuid):
+            return False
+    elif operation == odl_const.ODL_UPDATE:
+        # Check for a pending create operation on this uuid
+        if _check_for_pending_or_processing_ops(
+            session, object_uuid, odl_const.ODL_CREATE):
+            return False
     return True
 
 
@@ -134,14 +174,27 @@ def validate_subnet_operation(session, object_uuid, operation, data):
     Validate subnet operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state. e.g.
     """
-    if operation in ('create', 'update'):
+    if operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = data['network_id']
         # Check for pending or processing network operations
         if _check_for_pending_or_processing_ops(session, network_id):
             return False
-    elif operation == 'delete':
-        # TODO(asomya):Check for pending port operations
-        pass
+        if operation == odl_const.ODL_UPDATE:
+            # Check for a pending or processing create operation on this uuid
+            if _check_for_pending_or_processing_ops(
+                session, object_uuid, odl_const.ODL_CREATE):
+                return False
+    elif operation == odl_const.ODL_DELETE:
+        # Check for any pending or processing create or update
+        # ops on this uuid itself
+        if _check_for_pending_or_processing_ops(
+            session, object_uuid, [odl_const.ODL_UPDATE,
+                                   odl_const.ODL_CREATE]):
+            return False
+        # Check for dependent operations
+        if _check_for_pending_delete_ops_with_parent(
+            session, odl_const.ODL_PORT, object_uuid):
+            return False
 
     return True
 
@@ -152,7 +205,7 @@ def validate_port_operation(session, object_uuid, operation, data):
     Validate port operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state. e.g.
     """
-    if operation in ('create', 'update'):
+    if operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = data['network_id']
         # Check for pending or processing network operations
         ops = _check_for_pending_or_processing_ops(session, network_id)
@@ -164,6 +217,19 @@ def validate_port_operation(session, object_uuid, operation, data):
 
         if ops:
             return False
+        if operation == odl_const.ODL_UPDATE:
+            # Check for any pending or processing create or update
+            # ops on this uuid itself
+            if _check_for_pending_or_processing_ops(
+                session, object_uuid, odl_const.ODL_CREATE):
+                return False
+    elif operation == odl_const.ODL_DELETE:
+        # Check for any pending or processing create or update
+        # ops on this uuid itself
+        if _check_for_pending_or_processing_ops(
+            session, object_uuid, [odl_const.ODL_UPDATE,
+                                   odl_const.ODL_CREATE]):
+            return False
 
     return True
 
@@ -174,7 +240,7 @@ def validate_router_operation(session, object_uuid, operation, data):
     Validate router operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state.
     """
-    if operation in ('create', 'update'):
+    if operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         if data['external_gateway_info'] is not None:
             network_id = data['external_gateway_info']['network_id']
             # Check for pending or processing network operations
@@ -193,7 +259,7 @@ def validate_floatingip_operation(session, object_uuid, operation, data):
     Validate floating IP operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state.
     """
-    if operation in ('create', 'update'):
+    if operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = data.get('floating_network_id')
         if network_id is not None:
             if not _check_for_pending_or_processing_ops(session, network_id):
