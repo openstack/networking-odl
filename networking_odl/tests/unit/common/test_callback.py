@@ -18,6 +18,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.ml2.mech_driver import OpenDaylightDriver
 
 import mock
+import testscenarios
 import testtools
 
 from neutron.callbacks import events
@@ -27,11 +28,18 @@ from neutron.callbacks import resources
 FAKE_ID = 'fakeid'
 
 
-class ODLCallbackTestCase(testtools.TestCase):
+class ODLCallbackTestCase(testscenarios.WithScenarios, testtools.TestCase):
+    odl_client = OpenDaylightDriver()
+    scenarios = [
+        ('after', {
+            'sgh': callback.OdlSecurityGroupsHandler(odl_client,
+                                                     "AFTER")}),
+        ('precommit', {
+            'sgh': callback.OdlSecurityGroupsHandler(odl_client,
+                                                     "PRECOMMIT")}),
+    ]
 
     def setUp(self):
-        self.odl_client = OpenDaylightDriver()
-        self.sgh = callback.OdlSecurityGroupsHandler(self.odl_client)
         super(ODLCallbackTestCase, self).setUp()
 
     @mock.patch.object(OpenDaylightDriver, 'sync_from_callback')

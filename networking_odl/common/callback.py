@@ -26,9 +26,9 @@ LOG = logging.getLogger(__name__)
 
 class OdlSecurityGroupsHandler(object):
 
-    def __init__(self, odl_client):
+    def __init__(self, odl_client, event_type="AFTER"):
         self.odl_client = odl_client
-        self.subscribe()
+        self.subscribe(event_type)
 
     def sg_callback(self, resource, event, trigger, **kwargs):
 
@@ -44,6 +44,9 @@ class OdlSecurityGroupsHandler(object):
             events.AFTER_CREATE: odl_const.ODL_CREATE,
             events.AFTER_UPDATE: odl_const.ODL_UPDATE,
             events.AFTER_DELETE: odl_const.ODL_DELETE,
+            events.PRECOMMIT_CREATE: odl_const.ODL_CREATE,
+            events.PRECOMMIT_UPDATE: odl_const.ODL_UPDATE,
+            events.PRECOMMIT_DELETE: odl_const.ODL_DELETE,
         }
 
         # Loop up the ODL's counterpart resource label
@@ -80,16 +83,19 @@ class OdlSecurityGroupsHandler(object):
         self.odl_client.sync_from_callback(odl_ops, odl_res_type_uri, res_id,
                                            odl_res_dict)
 
-    def subscribe(self):
+    def subscribe(self, event_type):
         registry.subscribe(
-            self.sg_callback, resources.SECURITY_GROUP, events.AFTER_CREATE)
+            self.sg_callback, resources.SECURITY_GROUP,
+            getattr(events, "%s_CREATE" % event_type))
         registry.subscribe(
-            self.sg_callback, resources.SECURITY_GROUP, events.AFTER_UPDATE)
+            self.sg_callback, resources.SECURITY_GROUP,
+            getattr(events, "%s_UPDATE" % event_type))
         registry.subscribe(
-            self.sg_callback, resources.SECURITY_GROUP, events.AFTER_DELETE)
+            self.sg_callback, resources.SECURITY_GROUP,
+            getattr(events, "%s_DELETE" % event_type))
         registry.subscribe(
             self.sg_callback, resources.SECURITY_GROUP_RULE,
-            events.AFTER_CREATE)
+            getattr(events, "%s_CREATE" % event_type))
         registry.subscribe(
             self.sg_callback, resources.SECURITY_GROUP_RULE,
-            events.AFTER_DELETE)
+            getattr(events, "%s_DELETE" % event_type))
