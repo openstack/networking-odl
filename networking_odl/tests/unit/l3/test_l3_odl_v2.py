@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.common import journal
@@ -33,6 +34,13 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit import testlib_api
+
+EMPTY_DEP = []
+FLOATINGIP_ID = 'floatingip_uuid'
+NETWORK_ID = 'network_uuid'
+ROUTER_ID = 'router_uuid'
+SUBNET_ID = 'subnet_uuid'
+PORT_ID = 'port_uuid'
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
@@ -103,6 +111,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.plugin._network_is_external = mock.Mock(return_value=True)
         self.driver = l3_odl_v2.OpenDaylightL3RouterPlugin()
         self.thread = journal.OpendaylightJournalThread()
+        self.driver.get_floatingip = mock.Mock(
+            return_value={'router_id': ROUTER_ID,
+                          'floating_network_id': NETWORK_ID})
         self.addCleanup(self._db_cleanup)
 
     @staticmethod
@@ -300,19 +311,18 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 self._test_db_results(object_id, odl_const.ODL_DELETE,
                                       object_type)
 
-    def _test_dependency_processing(self, test_object, test_id, test_context,
-                                    dep_object, dep_id):
-        test_operation = (odl_const.ODL_ADD if test_object is
-                          odl_const.ODL_ROUTER_INTF else odl_const.ODL_CREATE)
+    def _test_dependency_processing(
+            self, test_operation, test_object, test_id, test_context,
+            dep_operation, dep_object, dep_id, dep_context):
 
         # Mock sendjson to verify that it never gets called.
-        mock_json_data = mock.patch.object(journal.OpendaylightJournalThread,
-                                           '_json_data').start()
+        mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
+                                          'sendjson').start()
 
         # Create dependency db row and mark as 'processing' so it won't
         # be processed by the journal thread.
         db.create_pending_row(self.db_session, dep_object,
-                              dep_id, odl_const.ODL_CREATE, None)
+                              dep_id, dep_operation, dep_context)
         row = db.get_all_db_rows_by_state(self.db_session, 'pending')
         db.update_pending_db_row_processing(self.db_session, row[0])
 
@@ -335,7 +345,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.assertEqual(1, len(rows))
 
         # Verify that _json_data was not called.
-        self.assertFalse(mock_json_data.call_count)
+        self.assertFalse(mock_sendjson.call_count)
 
     def test_router_db(self):
         self._test_object_db(odl_const.ODL_ROUTER)
@@ -415,37 +425,101 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                                                    'completed')
                 self.assertEqual(3, len(rows))
 
-    def test_router_validate_dependency(self):
-        network_id = 'network_uuid'
-        router_context = {'external_gateway_info': {'network_id': network_id}}
+    def test_delete_network_validate_ext_delete_router_dep(self):
+        router_context = [NETWORK_ID]
         self._test_dependency_processing(
-            odl_const.ODL_ROUTER, 'router_uuid', router_context,
-            odl_const.ODL_NETWORK, network_id)
+            odl_const.ODL_DELETE, odl_const.ODL_NETWORK, NETWORK_ID, None,
+            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID,
+            router_context)
 
-    def test_floatingip_validate_dependency(self):
-        network_id = 'network_uuid'
-        floatingip_context = {'floating_network_id': network_id}
+    def test_create_router_validate_ext_create_port_dep(self):
+        router_context = {'gw_port_id': PORT_ID}
         self._test_dependency_processing(
-            odl_const.ODL_FLOATINGIP, 'floatingip_uuid', floatingip_context,
-            odl_const.ODL_NETWORK, network_id)
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID,
+            router_context,
+            odl_const.ODL_CREATE, odl_const.ODL_PORT, PORT_ID, None)
 
-    def test_router_intf_validate_dependency(self):
-        router_id = 'router_uuid'
-        subnet_id = 'subnet_uuid'
-        router_intf_context = {'subnet_id': subnet_id,
-                               'id': router_id}
-
-        # Check for dependent router.
+    def test_delete_router_validate_ext_delete_floatingip_dep(self):
+        floatingip_context = [ROUTER_ID]
         self._test_dependency_processing(
-            odl_const.ODL_ROUTER_INTF, odl_const.ODL_UUID_NOT_USED,
-            router_intf_context,
-            odl_const.ODL_ROUTER, router_id)
+            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, None,
+            odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            floatingip_context)
 
-        # Clear db for next test.
-        self._db_cleanup()
-
-        # Check for dependent subnet.
+    def test_delete_router_validate_ext_remove_routerintf_dep(self):
+        router_intf_dict = {'id': ROUTER_ID}
         self._test_dependency_processing(
-            odl_const.ODL_ROUTER_INTF, odl_const.ODL_UUID_NOT_USED,
-            router_intf_context,
-            odl_const.ODL_SUBNET, subnet_id)
+            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, None,
+            odl_const.ODL_REMOVE, odl_const.ODL_ROUTER_INTF,
+            odl_const.ODL_UUID_NOT_USED, router_intf_dict)
+
+    def test_delete_router_validate_self_create_dep(self):
+        self._test_dependency_processing(
+            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP,
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+
+    def test_delete_router_validate_self_update_dep(self):
+        self._test_dependency_processing(
+            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP,
+            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+
+    def test_update_router_validate_self_create_dep(self):
+        router_context = {'gw_port_id': None}
+        self._test_dependency_processing(
+            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID,
+            router_context,
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+
+    def test_create_floatingip_validate_ext_create_network_dep(self):
+        floatingip_context = {'floating_network_id': NETWORK_ID}
+        self._test_dependency_processing(
+            odl_const.ODL_CREATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            floatingip_context,
+            odl_const.ODL_CREATE, odl_const.ODL_NETWORK, NETWORK_ID, None)
+
+    def test_update_floatingip_validate_self_create_dep(self):
+        floatingip_context = {'floating_network_id': NETWORK_ID}
+        self._test_dependency_processing(
+            odl_const.ODL_UPDATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            floatingip_context,
+            odl_const.ODL_CREATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            EMPTY_DEP)
+
+    def test_delete_floatingip_validate_self_create_dep(self):
+        self._test_dependency_processing(
+            odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            EMPTY_DEP,
+            odl_const.ODL_CREATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            None)
+
+    def test_delete_floatingip_validate_self_update_dep(self):
+        self._test_dependency_processing(
+            odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            EMPTY_DEP,
+            odl_const.ODL_UPDATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
+            None)
+
+    def test_add_router_intf_validate_ext_create_router_dep(self):
+        router_intf_context = {'subnet_id': SUBNET_ID,
+                               'id': ROUTER_ID}
+        self._test_dependency_processing(
+            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
+            odl_const.ODL_UUID_NOT_USED, router_intf_context,
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+
+    def test_add_router_intf_validate_ext_create_subnet_dep(self):
+        router_intf_context = {'subnet_id': SUBNET_ID,
+                               'id': ROUTER_ID}
+        self._test_dependency_processing(
+            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
+            odl_const.ODL_UUID_NOT_USED, router_intf_context,
+            odl_const.ODL_CREATE, odl_const.ODL_SUBNET, SUBNET_ID, None)
+
+    def test_remove_router_intf_validate_self_remove_router_intf_dep(self):
+        router_intf_context = {'subnet_id': SUBNET_ID,
+                               'id': ROUTER_ID}
+        self._test_dependency_processing(
+            odl_const.ODL_REMOVE, odl_const.ODL_ROUTER_INTF,
+            odl_const.ODL_UUID_NOT_USED, router_intf_context,
+            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
+            odl_const.ODL_UUID_NOT_USED, router_intf_context)

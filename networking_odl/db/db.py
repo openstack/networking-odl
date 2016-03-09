@@ -53,6 +53,36 @@ def _check_for_pending_delete_ops_with_parent(session, object_type,
     return False
 
 
+def _check_for_pending_or_processing_add(session, router_id, subnet_id):
+    rows = session.query(models.OpendaylightJournal).filter(
+        or_(models.OpendaylightJournal.state == 'pending',
+            models.OpendaylightJournal.state == 'processing'),
+        models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
+        models.OpendaylightJournal.operation == odl_const.ODL_ADD
+    ).all()
+
+    for row in rows:
+        if router_id in row.data.values() and subnet_id in row.data.values():
+            return True
+
+    return False
+
+
+def _check_for_pending_remove_ops_with_parent(session, parent_id):
+    rows = session.query(models.OpendaylightJournal).filter(
+        or_(models.OpendaylightJournal.state == 'pending',
+            models.OpendaylightJournal.state == 'processing'),
+        models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
+        models.OpendaylightJournal.operation == odl_const.ODL_REMOVE
+    ).all()
+
+    for row in rows:
+        if parent_id in row.data.values():
+            return True
+
+    return False
+
+
 def get_all_db_rows(session):
     return session.query(models.OpendaylightJournal).all()
 
@@ -160,6 +190,9 @@ def validate_network_operation(session, object_uuid, operation, data):
         if _check_for_pending_delete_ops_with_parent(
             session, odl_const.ODL_PORT, object_uuid):
             return False
+        if _check_for_pending_delete_ops_with_parent(
+            session, odl_const.ODL_ROUTER, object_uuid):
+            return False
     elif operation == odl_const.ODL_UPDATE:
         # Check for a pending create operation on this uuid
         if _check_for_pending_or_processing_ops(
@@ -241,14 +274,36 @@ def validate_router_operation(session, object_uuid, operation, data):
     are still in 'pending' or 'processing' state.
     """
     if operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
-        if data['external_gateway_info'] is not None:
-            network_id = data['external_gateway_info']['network_id']
-            # Check for pending or processing network operations
-            if _check_for_pending_or_processing_ops(session, network_id):
+        if data['gw_port_id'] is not None:
+            if _check_for_pending_or_processing_ops(session,
+                                                    data['gw_port_id']):
                 return False
-    else:
-        # TODO(rcurran): Check for outstanding router interface.
-        pass
+        if operation == odl_const.ODL_UPDATE:
+            # Check for a pending or processing create operation on this uuid.
+            if _check_for_pending_or_processing_ops(
+                session, object_uuid, odl_const.ODL_CREATE):
+                return False
+    elif operation == odl_const.ODL_DELETE:
+        # Check for any pending or processing create or update
+        # operations on this uuid.
+        if _check_for_pending_or_processing_ops(session, object_uuid,
+                                                [odl_const.ODL_UPDATE,
+                                                 odl_const.ODL_CREATE]):
+            return False
+
+        # Check that dependent port delete operation has completed.
+        if _check_for_pending_delete_ops_with_parent(
+            session, odl_const.ODL_PORT, object_uuid):
+            return False
+
+        # Check that dependent floatingip delete operation has completed.
+        if _check_for_pending_delete_ops_with_parent(
+                session, odl_const.ODL_FLOATINGIP, object_uuid):
+            return False
+
+        # Check that dependent router interface remove operation has completed.
+        if _check_for_pending_remove_ops_with_parent(session, object_uuid):
+            return False
 
     return True
 
@@ -275,6 +330,19 @@ def validate_floatingip_operation(session, object_uuid, operation, data):
             if _check_for_pending_or_processing_ops(session, router_id):
                 return False
 
+        if operation == odl_const.ODL_UPDATE:
+            # Check for a pending or processing create operation on this uuid
+            if _check_for_pending_or_processing_ops(
+                session, object_uuid, odl_const.ODL_CREATE):
+                return False
+    elif operation == odl_const.ODL_DELETE:
+        # Check for any pending or processing create or update
+        # ops on this uuid itself
+        if _check_for_pending_or_processing_ops(session, object_uuid,
+                                                [odl_const.ODL_UPDATE,
+                                                 odl_const.ODL_CREATE]):
+            return False
+
     return True
 
 
@@ -284,7 +352,7 @@ def validate_router_interface_operation(session, object_uuid, operation, data):
     Validate router_interface operation depending on whether it's dependencies
     are still in 'pending' or 'processing' state.
     """
-    if operation == 'add':
+    if operation == odl_const.ODL_ADD:
         # Verify that router event has been completed.
         if _check_for_pending_or_processing_ops(session, data['id']):
             return False
@@ -292,9 +360,10 @@ def validate_router_interface_operation(session, object_uuid, operation, data):
         # TODO(rcurran): Check for port_id?
         if _check_for_pending_or_processing_ops(session, data['subnet_id']):
             return False
-    else:
-        # TODO(rcurran)
-        pass
+    elif operation == odl_const.ODL_REMOVE:
+        if _check_for_pending_or_processing_add(session, data['id'],
+                                                data['subnet_id']):
+            return False
 
     return True
 
