@@ -166,9 +166,8 @@ function install_opendaylight {
 
 # install_opendaylight_neutron_thin_ml2_driver() - Install the ML2 driver
 function install_opendaylight_neutron_thin_ml2_driver {
-    cd $NETWORKING_ODL_DIR
     echo "Installing the Networking-ODL driver for OpenDaylight"
-    sudo python setup.py install
+    setup_develop $NETWORKING_ODL_DIR
 }
 
 
