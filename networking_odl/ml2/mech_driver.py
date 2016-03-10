@@ -115,12 +115,6 @@ class PortFilter(ResourceFilterBase):
                   for sg in port['security_groups']]
         port['security_groups'] = groups
 
-    @staticmethod
-    def _fixup_mac_address(port):
-        # TODO(kmestery): Converting to uppercase due to ODL bug
-        # https://bugs.opendaylight.org/show_bug.cgi?id=477
-        port['mac_address'] = port['mac_address'].upper()
-
     @classmethod
     def _fixup_allowed_ipaddress_pairs(cls, allowed_address_pairs):
         """unify (ip address or network address) into network address"""
@@ -128,7 +122,6 @@ class PortFilter(ResourceFilterBase):
             ip_address = address_pair['ip_address']
             network_address = str(netaddr.IPNetwork(ip_address))
             address_pair['ip_address'] = network_address
-            cls._fixup_mac_address(address_pair)
 
     @staticmethod
     def _filter_unmapped_null(port):
@@ -160,7 +153,6 @@ class PortFilter(ResourceFilterBase):
     def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
         cls._add_security_groups(port, context)
-        cls._fixup_mac_address(port)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
         cls._filter_unmapped_null(port)
         odl_utils.try_del(port, ['status'])
@@ -183,7 +175,6 @@ class PortFilter(ResourceFilterBase):
     def filter_update_attributes(cls, port, context):
         """Filter out port attributes for an update operation."""
         cls._add_security_groups(port, context)
-        cls._fixup_mac_address(port)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
         cls._filter_unmapped_null(port)
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
