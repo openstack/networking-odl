@@ -136,8 +136,7 @@ else
 
     function install_openjdk {
         local VERSION="$1"
-        # Can't use yum_install because it would exit in case of failure
-        sudo yum install -y java-1.$VERSION.*-openjdk-headless
+        yum_install java-1.$VERSION.*-openjdk-headless
     }
 
     function install_other_java {
