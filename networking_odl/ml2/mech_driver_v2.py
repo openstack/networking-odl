@@ -17,9 +17,11 @@ import copy
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from neutron.db import api as db_api
 from neutron.extensions import portbindings
 from neutron.plugins.ml2 import driver_api as api
 
+from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import journal
 from networking_odl.db import db
@@ -38,6 +40,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
     def initialize(self):
         LOG.debug("Initializing OpenDaylight ML2 driver")
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
+        self.sg_handler = callback.OdlSecurityGroupsHandler(self)
         self.vif_details = {portbindings.CAP_PORT_FILTER: True}
         self.journal = journal.OpendaylightJournalThread()
         self._network_topology = network_topology.NetworkTopologyManager()
@@ -137,6 +140,17 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             new_context.append(subnet['subnet_id'])
         db.create_pending_row(context._plugin_context.session, 'port',
                               context.current['id'], 'delete', new_context)
+
+    @journal.call_thread_on_end
+    def sync_from_callback(self, operation, res_type_uri, res_id,
+                           resource_dict):
+        object_type = res_type_uri.replace('-', '_')[:-1]
+        object_uuid = (resource_dict[object_type]['id']
+                       if operation == 'create' else res_id)
+        if resource_dict is not None:
+            resource_dict = resource_dict[object_type]
+        db.create_pending_row(db_api.get_session(), object_type, object_uuid,
+                              operation, resource_dict)
 
     def bind_port(self, port_context):
         """Set binding for a valid segments

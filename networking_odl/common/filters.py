@@ -100,24 +100,24 @@ class PortFilter(ResourceFilterBase):
 
 class SecurityGroupFilter(ResourceFilterBase):
     @staticmethod
-    def filter_create_attributes(sg, context):
+    def filter_create_attributes(sg):
         """Filter out security-group attributes not required for a create."""
         pass
 
     @staticmethod
-    def filter_update_attributes(sg, context):
+    def filter_update_attributes(sg):
         """Filter out security-group attributes for an update operation."""
         pass
 
 
 class SecurityGroupRuleFilter(ResourceFilterBase):
     @staticmethod
-    def filter_create_attributes(sg_rule, context):
+    def filter_create_attributes(sg_rule):
         """Filter out sg-rule attributes not required for a create."""
         pass
 
     @staticmethod
-    def filter_update_attributes(sg_rule, context):
+    def filter_update_attributes(sg_rule):
         """Filter out sg-rule attributes for an update operation."""
         pass
 
@@ -164,4 +164,6 @@ FILTER_MAP = {
     odl_const.ODL_ROUTER: RouterFilter,
     odl_const.ODL_ROUTER_INTF: RouterIntfFilter,
     odl_const.ODL_FLOATINGIP: FloatingIPFilter,
+    odl_const.ODL_SG: SecurityGroupFilter,
+    odl_const.ODL_SG_RULE: SecurityGroupRuleFilter,
 }

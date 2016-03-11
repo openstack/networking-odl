@@ -367,6 +367,25 @@ def validate_router_interface_operation(session, object_uuid, operation, data):
 
     return True
 
+
+def validate_security_group_operation(session, object_uuid, operation, data):
+    """Validate security_group operation based on dependencies.
+
+    Validate security_group operation depending on whether it's dependencies
+    are still in 'pending' or 'processing' state. e.g.
+    """
+    return True
+
+
+def validate_security_group_rule_operation(session, object_uuid, operation,
+                                           data):
+    """Validate security_group_rule operation based on dependencies.
+
+    Validate security_group_rule operation depending on whether it's
+    dependencies are still in 'pending' or 'processing' state. e.g.
+    """
+    return True
+
 VALIDATION_MAP = {
     odl_const.ODL_NETWORK: validate_network_operation,
     odl_const.ODL_SUBNET: validate_subnet_operation,
@@ -374,4 +393,6 @@ VALIDATION_MAP = {
     odl_const.ODL_ROUTER: validate_router_operation,
     odl_const.ODL_ROUTER_INTF: validate_router_interface_operation,
     odl_const.ODL_FLOATINGIP: validate_floatingip_operation,
+    odl_const.ODL_SG: validate_security_group_operation,
+    odl_const.ODL_SG_RULE: validate_security_group_rule_operation,
 }
