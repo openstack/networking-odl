@@ -90,11 +90,14 @@ class OpenDaylightL3RouterPlugin(
     @journal.call_thread_on_end
     def delete_router(self, context, router_id):
         session = db_api.get_session()
+        router_dict = self.get_router(context, router_id)
+        dependency_list = [router_dict['gw_port_id']]
         with session.begin(subtransactions=True):
             super(OpenDaylightL3RouterPlugin, self).delete_router(context,
                                                                   router_id)
             db.create_pending_row(context.session, odl_const.ODL_ROUTER,
-                                  router_id, odl_const.ODL_DELETE, None)
+                                  router_id, odl_const.ODL_DELETE,
+                                  dependency_list)
 
     @journal.call_thread_on_end
     def create_floatingip(self, context, floatingip,
@@ -133,11 +136,15 @@ class OpenDaylightL3RouterPlugin(
     @journal.call_thread_on_end
     def delete_floatingip(self, context, floatingip_id):
         session = db_api.get_session()
+        floatingip_dict = self.get_floatingip(context, floatingip_id)
+        dependency_list = [floatingip_dict['router_id']]
+        dependency_list.append(floatingip_dict['floating_network_id'])
         with session.begin(subtransactions=True):
             super(OpenDaylightL3RouterPlugin, self).delete_floatingip(
                 context, floatingip_id)
             db.create_pending_row(context.session, odl_const.ODL_FLOATINGIP,
-                                  floatingip_id, odl_const.ODL_DELETE, None)
+                                  floatingip_id, odl_const.ODL_DELETE,
+                                  dependency_list)
 
     @journal.call_thread_on_end
     def add_router_interface(self, context, router_id, interface_info):
