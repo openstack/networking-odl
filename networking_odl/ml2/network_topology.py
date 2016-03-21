@@ -28,12 +28,13 @@ from networking_odl.common import cache
 from networking_odl.common import client
 from networking_odl.common import utils
 from networking_odl._i18n import _LI, _LW, _LE
+from networking_odl.ml2 import port_binding
 
 
 LOG = log.getLogger(__name__)
 
 
-class NetworkTopologyManager(object):
+class NetworkTopologyManager(port_binding.PortBindingController):
 
     # the first valid vif type will be chosed following the order
     # on this list. This list can be modified to adapt to user preferences.
@@ -47,7 +48,7 @@ class NetworkTopologyManager(object):
 
     def __init__(self, vif_details=None, client=None):
         # Details for binding port
-        self._vif_details = vif_details or {}
+        self._vif_details = vif_details or {portbindings.CAP_PORT_FILTER: True}
 
         # Rest client used for getting network topology from ODL
         self._client = client or NetworkTopologyClient.create_client()
@@ -274,18 +275,10 @@ class NetworkTopologyElement(object):
 
     @abc.abstractmethod
     def bind_port(self, port_context, vif_type, vif_details):
-        '''Bind port context using given vif type and vit details
+        '''Bind port context using given vif type and vif details
 
         This method is expected to search for a valid segment and then
-        call following method:
-
-            from neutron.common import constants
-            from neutron.plugins.ml2 import driver_api
-
-            port_context.set_binding(
-                valid_segment[driver_api.ID], vif_type, vif_details,
-                status=constants.PORT_STATUS_ACTIVE)
-
+        call port_context.set_binding()
         '''
 
     def to_dict(self):

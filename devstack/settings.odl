@@ -90,3 +90,6 @@ ODL_RETRY_SLEEP_INTERVAL=${ODL_RETRY_SLEEP_INTERVAL:-5}
 
 # Skip installation of distribution provided Open vSwitch
 SKIP_OVS_INSTALL=$(trueorfalse False SKIP_OVS_INSTALL)
+
+# Port binding controller
+ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-network-topology}

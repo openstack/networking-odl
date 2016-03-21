@@ -127,6 +127,7 @@ function configure_neutron_odl {
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD
+    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl port_binding_controller=$ODL_PORT_BINDING_CONTROLLER
 }
 
 function configure_neutron_odl_lightweight_testing {

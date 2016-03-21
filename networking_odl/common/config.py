@@ -36,7 +36,10 @@ odl_opts = [
                       "before failing.")),
     cfg.BoolOpt('enable_lightweight_testing',
                 default=False,
-                help='Test without real ODL'),
+                help='Test without real ODL.'),
+    cfg.StrOpt('port_binding_controller',
+               default='network-topology',
+               help=_('Name of the controller to be used for port binding.'))
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")

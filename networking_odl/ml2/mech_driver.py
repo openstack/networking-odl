@@ -27,7 +27,6 @@ from neutron.common import exceptions as n_exc
 from neutron.common import utils
 from neutron import context as neutron_context
 from neutron.extensions import allowedaddresspairs as addr_pair
-from neutron.extensions import portbindings
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
@@ -37,7 +36,7 @@ from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
-from networking_odl.ml2 import network_topology
+from networking_odl.ml2 import port_binding
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -241,9 +240,15 @@ class OpenDaylightDriver(object):
         LOG.debug("Initializing OpenDaylight ML2 driver")
         self.client = odl_client.OpenDaylightRestClient.create_client()
         self.sec_handler = odl_call.OdlSecurityGroupsHandler(self)
-        self.vif_details = {portbindings.CAP_PORT_FILTER: True}
-        self._network_topology = network_topology.NetworkTopologyManager(
-            vif_details=self.vif_details)
+        self.port_binding_controller = port_binding.PortBindingManager.create()
+        # TODO(rzang): Each port binding controller should have any necessary
+        # parameter passed in from configuration files.
+        # BTW, CAP_PORT_FILTER seems being obsoleted.
+        # Leave the code commmeted out for now for future reference.
+        #
+        # self.vif_details = {portbindings.CAP_PORT_FILTER: True}
+        # self._network_topology = network_topology.NetworkTopologyManager(
+        #     vif_details=self.vif_details)
 
     def synchronize(self, operation, object_type, context):
         """Synchronize ODL with Neutron following a configuration change."""
@@ -380,7 +385,7 @@ class OpenDaylightDriver(object):
         """Set binding for a valid segments
 
         """
-        self._network_topology.bind_port(port_context)
+        self.port_binding_controller.bind_port(port_context)
 
 
 class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
