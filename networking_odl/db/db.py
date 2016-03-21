@@ -92,11 +92,6 @@ def get_all_db_rows_by_state(session, state):
         state=state).all()
 
 
-def get_untried_db_row_with_lock(session):
-    return session.query(models.OpendaylightJournal).filter_by(
-        state='pending', retry_count=0).with_for_update().first()
-
-
 def get_oldest_pending_db_row_with_lock(session):
     row = session.query(models.OpendaylightJournal).filter_by(
         state='pending').order_by(
