@@ -356,36 +356,20 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self.assertEqual(2, len(rows))
 
     def _test_object_type_processing_network(self, object_type):
-        # Create a network (creates db row in pending state).
-        self._call_operation_object(odl_const.ODL_CREATE,
-                                    odl_const.ODL_NETWORK)
-
-        # Get pending network row and mark as processing so that
-        # this row will not be processed by journal thread.
-        row = db.get_all_db_rows_by_state(self.db_session, 'pending')
-        db.update_pending_db_row_processing(self.db_session, row[0])
-
-        # Create the object_type database row and process.
-        # Verify that object request is not processed because the
-        # dependent row has not been marked as 'completed'.
-        self._test_thread_processing(odl_const.ODL_CREATE,
-                                     object_type,
-                                     expected_calls=0)
-
-        # Verify that row is still set at 'processing'.
-        rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
-        self.assertEqual(1, len(rows))
-
-        # Verify that the test row was processed and set back to 'pending'
-        # to be processed again.
-        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
-        self.assertEqual(1, len(rows))
+        self._test_object_operation_pending_another_object_operation(
+            object_type, odl_const.ODL_CREATE, odl_const.ODL_NETWORK,
+            odl_const.ODL_CREATE)
 
     def _test_object_operation_pending_object_operation(
         self, object_type, operation, pending_operation):
+        self._test_object_operation_pending_another_object_operation(
+            object_type, operation, object_type, pending_operation)
+
+    def _test_object_operation_pending_another_object_operation(
+        self, object_type, operation, pending_type, pending_operation):
         # Create the object_type (creates db row in pending state).
         self._call_operation_object(pending_operation,
-                                    object_type)
+                                    pending_type)
 
         # Get pending row and mark as processing so that
         # this row will not be processed by journal thread.
@@ -406,25 +390,8 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self.assertEqual(1, len(rows))
 
     def _test_parent_delete_pending_child_delete(self, parent, child):
-        # Delete a child (creates db row in pending state).
-        self._call_operation_object(odl_const.ODL_DELETE, child)
-
-        # Get pending child delete row and mark as processing so that
-        # this row will not be processed by journal thread.
-        row = db.get_all_db_rows_by_state(self.db_session, 'pending')
-        db.update_pending_db_row_processing(self.db_session, row[0])
-
-        # Verify that parent delete request is not processed because the
-        # dependent child delete row has not been marked as 'completed'.
-        self._test_thread_processing(odl_const.ODL_DELETE,
-                                     parent,
-                                     expected_calls=0)
-
-        # Verify that all rows are still in the database.
-        rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
-        self.assertEqual(1, len(rows))
-        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
-        self.assertEqual(1, len(rows))
+        self._test_object_operation_pending_another_object_operation(
+            parent, odl_const.ODL_DELETE, child, odl_const.ODL_DELETE)
 
     def test_driver(self):
         for operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE,
