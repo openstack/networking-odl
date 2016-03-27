@@ -23,8 +23,8 @@ from neutron.plugins.ml2 import driver_api as api
 
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
-from networking_odl.common import journal
 from networking_odl.db import db
+from networking_odl.journal import journal
 from networking_odl.ml2 import network_topology
 
 LOG = logging.getLogger(__name__)
