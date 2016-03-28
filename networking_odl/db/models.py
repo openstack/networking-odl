@@ -15,6 +15,7 @@
 
 import sqlalchemy as sa
 
+from networking_odl.common import constants as odl_const
 from neutron.db import model_base
 from neutron.db.models_v2 import HasId
 
@@ -26,8 +27,9 @@ class OpendaylightJournal(model_base.BASEV2, HasId):
     object_uuid = sa.Column(sa.String(36), nullable=False)
     operation = sa.Column(sa.String(36), nullable=False)
     data = sa.Column(sa.PickleType, nullable=True)
-    state = sa.Column(sa.Enum('pending', 'failed', 'processing', 'completed'),
-                      nullable=False, default='pending')
+    state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.FAILED,
+                              odl_const.PROCESSING, odl_const.COMPLETED),
+                      nullable=False, default=odl_const.PENDING)
     retry_count = sa.Column(sa.Integer, default=0)
     created_at = sa.Column(sa.DateTime, server_default=sa.func.now())
     last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),

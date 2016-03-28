@@ -45,3 +45,9 @@ ODL_ADD = 'add'
 ODL_REMOVE = 'remove'
 
 ODL_UUID_NOT_USED = '0'
+
+# Constants for journal operation states
+PENDING = 'pending'
+PROCESSING = 'processing'
+FAILED = 'failed'
+COMPLETED = 'completed'
