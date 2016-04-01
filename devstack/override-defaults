@@ -19,7 +19,7 @@ disable_service q-agt
 if [[ "$ODL_L3" == "True" ]]
 then
     disable_service q-l3
-    ML2_L3_PLUGIN="networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin"
+    ML2_L3_PLUGIN="${ML2_L3_PLUGIN:-odl-router}"
 fi
 
 # [networking-feature-enabled] api-extensions
