@@ -27,7 +27,7 @@ from oslo_serialization import jsonutils
 from networking_odl.common import cache
 from networking_odl.common import client
 from networking_odl.common import utils
-from networking_odl.common._i18n import _LI, _LW, _LE
+from networking_odl._i18n import _LI, _LW, _LE
 
 
 LOG = log.getLogger(__name__)
@@ -160,7 +160,7 @@ class NetworkTopologyManager(object):
 
         yield_elements = set()
         try:
-            for _, element in self._elements_by_ip.fetch_all(
+            for __, element in self._elements_by_ip.fetch_all(
                     host_addresses, cache_timeout):
                 # yields every element only once
                 if element not in yield_elements:

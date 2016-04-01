@@ -65,7 +65,7 @@ class OvsdbNetworkTopologyParser(network_topology.NetworkTopologyParser):
 
         # There can be more OVS instances connected beside the same IP address
         # Cache will yield more instaces for the same key
-        for _, element in six.iteritems(elements_by_uuid):
+        for __, element in six.iteritems(elements_by_uuid):
             yield element
 
     def _update_element_from_json_ovsdb_topology_node(

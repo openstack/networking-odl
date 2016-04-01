@@ -19,7 +19,7 @@ import time
 
 from oslo_log import log
 
-from networking_odl.common._i18n import _LW
+from networking_odl._i18n import _LW
 
 
 LOG = log.getLogger(__name__)
@@ -74,7 +74,7 @@ class Cache(object):
         self._entries = collections.OrderedDict()
 
     def fetch(self, key, timeout):
-        _, value = self.fetch_any([key], timeout=timeout)
+        __, value = self.fetch_any([key], timeout=timeout)
         return value
 
     def fetch_any(self, keys, timeout):

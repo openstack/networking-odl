@@ -15,6 +15,9 @@
 
 from oslo_config import cfg
 
+from networking_odl._i18n import _
+
+
 odl_opts = [
     cfg.StrOpt('url',
                help=_("HTTP URL of OpenDaylight REST interface.")),
