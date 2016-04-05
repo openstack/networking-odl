@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from datetime import timedelta
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -490,3 +491,31 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
     def test_sg_rule(self):
         self._test_object_type(odl_const.ODL_SG_RULE)
+
+    def _decrease_row_created_time(self, row):
+        row.created_at -= timedelta(hours=1)
+        self.db_session.merge(row)
+        self.db_session.flush()
+
+    def test_sync_multiple_updates(self):
+        # add 2 updates
+        for i in range(2):
+            self._call_operation_object(odl_const.ODL_UPDATE,
+                                        odl_const.ODL_NETWORK)
+
+        # get the last update row
+        last_row = db.get_all_db_rows(self.db_session)[-1]
+
+        # change the last update created time
+        self._decrease_row_created_time(last_row)
+
+        # create 1 more operation to trigger the sync thread
+        # verify that there are no calls to ODL controller, because the
+        # first row was not valid (exit_after_run = true)
+        self._test_thread_processing(odl_const.ODL_UPDATE,
+                                     odl_const.ODL_NETWORK, expected_calls=0)
+
+        # validate that all the rows are in 'pending' state
+        # first row should be set back to 'pending' because it was not valid
+        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        self.assertEqual(3, len(rows))

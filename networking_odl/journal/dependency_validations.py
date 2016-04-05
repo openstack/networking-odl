@@ -18,6 +18,10 @@ from networking_odl.db import db
 
 
 def _is_valid_update_operation(session, row):
+    # Check if there are older updates in the queue
+    if db.check_for_older_ops(session, row):
+        return False
+
     # Check for a pending or processing create operation on this uuid
     if db.check_for_pending_or_processing_ops(
             session, row.object_uuid, odl_const.ODL_CREATE):

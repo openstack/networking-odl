@@ -82,6 +82,17 @@ def check_for_pending_remove_ops_with_parent(session, parent_id):
     return False
 
 
+def check_for_older_ops(session, row):
+    q = session.query(models.OpendaylightJournal).filter(
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING),
+        models.OpendaylightJournal.operation == row.operation,
+        models.OpendaylightJournal.object_uuid == row.object_uuid,
+        models.OpendaylightJournal.created_at < row.created_at,
+        models.OpendaylightJournal.id != row.id)
+    return session.query(q.exists()).scalar()
+
+
 def get_all_db_rows(session):
     return session.query(models.OpendaylightJournal).all()
 
