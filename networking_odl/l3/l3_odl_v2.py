@@ -27,8 +27,8 @@ from neutron.plugins.common import constants
 
 from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const
-from networking_odl.common import journal
 from networking_odl.db import db
+from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
 

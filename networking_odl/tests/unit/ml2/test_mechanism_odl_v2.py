@@ -16,8 +16,8 @@
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
-from networking_odl.common import journal
 from networking_odl.db import db
+from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
 
 import mock
