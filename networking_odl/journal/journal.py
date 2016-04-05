@@ -135,8 +135,7 @@ class OpendaylightJournalThread(object):
                 # Validate the operation
                 validate_func = (dependency_validations.
                                  VALIDATION_MAP[row.object_type])
-                valid = validate_func(session, row.object_uuid,
-                                      row.operation, row.data)
+                valid = validate_func(session, row)
                 if not valid:
                     LOG.info(_LI("%(operation)s %(type)s %(uuid)s is not a "
                                  "valid operation yet, skipping for now"),
