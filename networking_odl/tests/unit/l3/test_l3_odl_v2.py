@@ -251,7 +251,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                     object_type, odl_const.ODL_CREATE, network, None, None)
                 object_id = new_object_dict['id']
                 rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   'completed')
+                                                   odl_const.COMPLETED)
                 self.assertEqual(1, len(rows))
 
                 # Add and process 'update' request. Adds to database.
@@ -259,7 +259,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                     object_type, odl_const.ODL_UPDATE, network, None,
                     object_id)
                 rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   'completed')
+                                                   odl_const.COMPLETED)
                 self.assertEqual(2, len(rows))
 
                 # Add and process 'delete' request. Adds to database.
@@ -267,7 +267,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                     object_type, odl_const.ODL_DELETE, network, None,
                     object_id)
                 rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   'completed')
+                                                   odl_const.COMPLETED)
                 self.assertEqual(3, len(rows))
 
     def _test_db_results(self, object_id, operation, object_type):
@@ -323,7 +323,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         # be processed by the journal thread.
         db.create_pending_row(self.db_session, dep_object,
                               dep_id, dep_operation, dep_context)
-        row = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
         db.update_pending_db_row_processing(self.db_session, row[0])
 
         # Create test row with dependent ID.
@@ -336,12 +336,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             self.thread.sync_pending_row(exit_after_run=True)
 
         # Verify that dependency row is still set at 'processing'.
-        rows = db.get_all_db_rows_by_state(self.db_session, 'processing')
+        rows = db.get_all_db_rows_by_state(self.db_session,
+                                           odl_const.PROCESSING)
         self.assertEqual(1, len(rows))
 
         # Verify that the test row was processed and set back to 'pending'
         # to be processed again.
-        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
         self.assertEqual(1, len(rows))
 
         # Verify that _json_data was not called.
@@ -414,7 +415,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                     object_type, odl_const.ODL_ADD, network, subnet, router_id,
                     expected_calls=2)
                 rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   'completed')
+                                                   odl_const.COMPLETED)
                 self.assertEqual(2, len(rows))
 
                 # Add and process 'remove' request. Adds to database.
@@ -422,7 +423,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                     object_type, odl_const.ODL_REMOVE, network, subnet,
                     router_id)
                 rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   'completed')
+                                                   odl_const.COMPLETED)
                 self.assertEqual(3, len(rows))
 
     def test_delete_network_validate_ext_delete_router_dep(self):

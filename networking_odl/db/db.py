@@ -26,8 +26,8 @@ from oslo_db import api as oslo_db_api
 
 def check_for_pending_or_processing_ops(session, object_uuid, operation=None):
     q = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == 'pending',
-            models.OpendaylightJournal.state == 'processing'),
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.object_uuid == object_uuid)
     if operation:
         if isinstance(operation, (list, tuple)):
@@ -39,8 +39,8 @@ def check_for_pending_or_processing_ops(session, object_uuid, operation=None):
 
 def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
     rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == 'pending',
-            models.OpendaylightJournal.state == 'processing'),
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.object_type == object_type,
         models.OpendaylightJournal.operation == odl_const.ODL_DELETE
     ).all()
@@ -54,8 +54,8 @@ def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
 
 def check_for_pending_or_processing_add(session, router_id, subnet_id):
     rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == 'pending',
-            models.OpendaylightJournal.state == 'processing'),
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
         models.OpendaylightJournal.operation == odl_const.ODL_ADD
     ).all()
@@ -69,8 +69,8 @@ def check_for_pending_or_processing_add(session, router_id, subnet_id):
 
 def check_for_pending_remove_ops_with_parent(session, parent_id):
     rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == 'pending',
-            models.OpendaylightJournal.state == 'processing'),
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
         models.OpendaylightJournal.operation == odl_const.ODL_REMOVE
     ).all()
@@ -93,7 +93,7 @@ def get_all_db_rows_by_state(session, state):
 
 def get_oldest_pending_db_row_with_lock(session):
     row = session.query(models.OpendaylightJournal).filter_by(
-        state='pending').order_by(
+        state=odl_const.PENDING).order_by(
         asc(models.OpendaylightJournal.last_retried)).with_for_update().first()
     if row:
         update_pending_db_row_processing(session, row)
@@ -104,7 +104,7 @@ def get_oldest_pending_db_row_with_lock(session):
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
                            retry_on_request=True)
 def update_pending_db_row_processing(session, row):
-    row.state = 'processing'
+    row.state = odl_const.PROCESSING
     session.merge(row)
     session.flush()
 
@@ -113,10 +113,10 @@ def update_pending_db_row_processing(session, row):
                            retry_on_request=True)
 def update_pending_db_row_retry(session, row, retry_count):
     if row.retry_count >= retry_count:
-        row.state = 'failed'
+        row.state = odl_const.FAILED
     else:
         row.retry_count = row.retry_count + 1
-        row.state = 'pending'
+        row.state = odl_const.PENDING
     session.merge(row)
     session.flush()
 
@@ -124,7 +124,7 @@ def update_pending_db_row_retry(session, row, retry_count):
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
                            retry_on_request=True)
 def update_processing_db_row_passed(session, row):
-    row.state = 'completed'
+    row.state = odl_const.COMPLETED
     session.merge(row)
     session.flush()
 
@@ -132,7 +132,7 @@ def update_processing_db_row_passed(session, row):
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
                            retry_on_request=True)
 def update_db_row_pending(session, row):
-    row.state = 'pending'
+    row.state = odl_const.PENDING
     session.merge(row)
     session.flush()
 
@@ -157,7 +157,8 @@ def create_pending_row(session, object_type, object_uuid,
     row = models.OpendaylightJournal(object_type=object_type,
                                      object_uuid=object_uuid,
                                      operation=operation, data=data,
-                                     created_at=func.now(), state='pending')
+                                     created_at=func.now(),
+                                     state=odl_const.PENDING)
     session.add(row)
     # Keep session flush for unit tests. NOOP for L2/L3 events since calls are
     # made inside database session transaction with subtransactions=True.
