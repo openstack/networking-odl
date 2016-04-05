@@ -28,6 +28,8 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl._i18n import _LI, _LE
 from networking_odl.db import db
+from networking_odl.journal import dependency_validations
+
 
 LOG = logging.getLogger(__name__)
 
@@ -131,7 +133,8 @@ class OpendaylightJournalThread(object):
                     break
 
                 # Validate the operation
-                validate_func = db.VALIDATION_MAP[row.object_type]
+                validate_func = (dependency_validations.
+                                 VALIDATION_MAP[row.object_type])
                 valid = validate_func(session, row.object_uuid,
                                       row.operation, row.data)
                 if not valid:
