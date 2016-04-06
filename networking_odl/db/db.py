@@ -114,45 +114,25 @@ def get_oldest_pending_db_row_with_lock(session):
             asc(models.OpendaylightJournal.last_retried)).with_for_update(
         ).first()
         if row:
-            update_pending_db_row_processing(session, row)
+            update_db_row_state(session, row, odl_const.PROCESSING)
 
     return row
 
 
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
                            retry_on_request=True)
-def update_pending_db_row_processing(session, row):
-    row.state = odl_const.PROCESSING
+def update_db_row_state(session, row, state):
+    row.state = state
     session.merge(row)
     session.flush()
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
 def update_pending_db_row_retry(session, row, retry_count):
     if row.retry_count >= retry_count:
-        row.state = odl_const.FAILED
+        update_db_row_state(session, row, odl_const.FAILED)
     else:
-        row.retry_count = row.retry_count + 1
-        row.state = odl_const.PENDING
-    session.merge(row)
-    session.flush()
-
-
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
-def update_processing_db_row_passed(session, row):
-    row.state = odl_const.COMPLETED
-    session.merge(row)
-    session.flush()
-
-
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
-def update_db_row_pending(session, row):
-    row.state = odl_const.PENDING
-    session.merge(row)
-    session.flush()
+        row.retry_count += 1
+        update_db_row_state(session, row, odl_const.PENDING)
 
 
 # This function is currently not used.

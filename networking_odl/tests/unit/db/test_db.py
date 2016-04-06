@@ -62,6 +62,34 @@ class DbTestCase(SqlTestCaseLight, TestCase):
             valid = not db.check_for_older_ops(self.db_session, row)
             self.assertEqual(expected_valid, valid)
 
+    def _test_retry_count(self, retry_num, max_retry,
+                          expected_retry_count, expected_state):
+        # add new pending row
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+
+        # update the row with the requested retry_num
+        row = db.get_all_db_rows(self.db_session)[0]
+        row.retry_count = retry_num - 1
+        db.update_pending_db_row_retry(self.db_session, row, max_retry)
+
+        # validate the state and the retry_count of the row
+        row = db.get_all_db_rows(self.db_session)[0]
+        self.assertEqual(expected_state, row.state)
+        self.assertEqual(expected_retry_count, row.retry_count)
+
+    def _test_update_row_state(self, from_state, to_state):
+        # add new pending row
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+
+        row = db.get_all_db_rows(self.db_session)[0]
+        for state in [from_state, to_state]:
+            # update the row state
+            db.update_db_row_state(self.db_session, row, state)
+
+            # validate the new state
+            row = db.get_all_db_rows(self.db_session)[0]
+            self.assertEqual(state, row.state)
+
     def test_validate_updates_same_object_uuid(self):
         self._test_validate_updates(
             [self.UPDATE_ROW, self.UPDATE_ROW], [1, 0], [True, False])
@@ -127,9 +155,26 @@ class DbTestCase(SqlTestCaseLight, TestCase):
 
         # Mocking is mandatory to achieve a deadlock regardless of the DB
         # backend being used when running the tests
-        with mock.patch.object(db, 'update_pending_db_row_processing',
-                               new=update_mock):
+        with mock.patch.object(db, 'update_db_row_state', new=update_mock):
             row = db.get_oldest_pending_db_row_with_lock(self.db_session)
             self.assertIsNotNone(row)
 
         self.assertEqual(2, update_mock.call_count)
+
+    def test_valid_retry_count(self):
+        self._test_retry_count(1, 1, 1, odl_const.PENDING)
+
+    def test_invalid_retry_count(self):
+        self._test_retry_count(2, 1, 1, odl_const.FAILED)
+
+    def test_update_row_state_to_pending(self):
+        self._test_update_row_state(odl_const.PROCESSING, odl_const.PENDING)
+
+    def test_update_row_state_to_processing(self):
+        self._test_update_row_state(odl_const.PENDING, odl_const.PROCESSING)
+
+    def test_update_row_state_to_failed(self):
+        self._test_update_row_state(odl_const.PROCESSING, odl_const.FAILED)
+
+    def test_update_row_state_to_completed(self):
+        self._test_update_row_state(odl_const.PROCESSING, odl_const.COMPLETED)

@@ -144,7 +144,7 @@ class OpendaylightJournalThread(object):
                               'uuid': row.object_uuid})
 
                     # Set row back to pending.
-                    db.update_db_row_pending(session, row)
+                    db.update_db_row_state(session, row, odl_const.PENDING)
                     if exit_after_run:
                         break
                     continue
@@ -158,13 +158,13 @@ class OpendaylightJournalThread(object):
 
                 try:
                     self.client.sendjson(method, urlpath, to_send)
-                    db.update_processing_db_row_passed(session, row)
+                    db.update_db_row_state(session, row, odl_const.COMPLETED)
                 except exceptions.ConnectionError as e:
                     # Don't raise the retry count, just log an error
                     LOG.error(_LE("Cannot connect to the Opendaylight "
                                   "Controller"))
                     # Set row back to pending
-                    db.update_db_row_pending(session, row)
+                    db.update_db_row_state(session, row, odl_const.PENDING)
                     # Break our of the loop and retry with the next
                     # timer interval
                     break

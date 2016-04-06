@@ -379,7 +379,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         # Get pending row and mark as processing so that
         # this row will not be processed by journal thread.
         row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
-        db.update_pending_db_row_processing(self.db_session, row[0])
+        db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
 
         # Create the object_type database row and process.
         # Verify that object request is not processed because the

@@ -324,7 +324,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         db.create_pending_row(self.db_session, dep_object,
                               dep_id, dep_operation, dep_context)
         row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
-        db.update_pending_db_row_processing(self.db_session, row[0])
+        db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
 
         # Create test row with dependent ID.
         db.create_pending_row(self.db_session, test_object,
