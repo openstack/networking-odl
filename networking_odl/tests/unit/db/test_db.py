@@ -14,6 +14,8 @@
 #  under the License.
 #
 
+import mock
+
 from datetime import datetime
 from datetime import timedelta
 
@@ -23,6 +25,7 @@ from networking_odl.db import models
 
 from neutron.db import api as neutron_db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
+from oslo_db.exception import DBDeadlock
 from unittest2.case import TestCase
 
 
@@ -79,3 +82,54 @@ class DbTestCase(SqlTestCaseLight, TestCase):
         other_row[1] += 'a'
         self._test_validate_updates(
             [self.UPDATE_ROW, other_row], [1, 0], [True, True])
+
+    def test_get_oldest_pending_row_none_when_no_rows(self):
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertIsNone(row)
+
+    def _test_get_oldest_pending_row_none(self, state):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        row = db.get_all_db_rows(self.db_session)[0]
+        row.state = state
+        self._update_row(row)
+
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertIsNone(row)
+
+    def test_get_oldest_pending_row_none_when_row_processing(self):
+        self._test_get_oldest_pending_row_none(odl_const.PROCESSING)
+
+    def test_get_oldest_pending_row_none_when_row_failed(self):
+        self._test_get_oldest_pending_row_none(odl_const.FAILED)
+
+    def test_get_oldest_pending_row_none_when_row_completed(self):
+        self._test_get_oldest_pending_row_none(odl_const.COMPLETED)
+
+    def test_get_oldest_pending_row(self):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertIsNotNone(row)
+        self.assertEqual(odl_const.PROCESSING, row.state)
+
+    def test_get_oldest_pending_row_order(self):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        older_row = db.get_all_db_rows(self.db_session)[0]
+        older_row.last_retried -= timedelta(minutes=1)
+        self._update_row(older_row)
+
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertEqual(older_row, row)
+
+    def test_get_oldest_pending_row_when_deadlock(self):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        update_mock = mock.MagicMock(side_effect=(DBDeadlock, mock.DEFAULT))
+
+        # Mocking is mandatory to achieve a deadlock regardless of the DB
+        # backend being used when running the tests
+        with mock.patch.object(db, 'update_pending_db_row_processing',
+                               new=update_mock):
+            row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+            self.assertIsNotNone(row)
+
+        self.assertEqual(2, update_mock.call_count)

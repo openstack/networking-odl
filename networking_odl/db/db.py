@@ -102,12 +102,19 @@ def get_all_db_rows_by_state(session, state):
         state=state).all()
 
 
+# Retry deadlock exception for Galera DB.
+# If two (or more) different threads call this method at the same time, they
+# might both succeed in changing the same row to pending, but at least one
+# of them will get a deadlock from Galera and will have to retry the operation.
+@db_api.retry_db_errors
 def get_oldest_pending_db_row_with_lock(session):
-    row = session.query(models.OpendaylightJournal).filter_by(
-        state=odl_const.PENDING).order_by(
-        asc(models.OpendaylightJournal.last_retried)).with_for_update().first()
-    if row:
-        update_pending_db_row_processing(session, row)
+    with session.begin():
+        row = session.query(models.OpendaylightJournal).filter_by(
+            state=odl_const.PENDING).order_by(
+            asc(models.OpendaylightJournal.last_retried)).with_for_update(
+        ).first()
+        if row:
+            update_pending_db_row_processing(session, row)
 
     return row
 
