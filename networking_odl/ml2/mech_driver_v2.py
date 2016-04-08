@@ -50,9 +50,13 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         # start the maintenance thread and register all the maintenance
         # operations :
         # (1) JournalCleanup - Delete completed rows from journal
+        # (2) CleanupProcessing - Mark orphaned processing rows to pending
+        cleanup_obj = cleanup.JournalCleanup()
         self._maintenance_thread = maintenance.MaintenanceThread()
         self._maintenance_thread.register_operation(
-            cleanup.JournalCleanup().delete_completed_rows)
+            cleanup_obj.delete_completed_rows)
+        self._maintenance_thread.register_operation(
+            cleanup_obj.cleanup_processing_rows)
         self._maintenance_thread.start()
 
     def create_network_precommit(self, context):

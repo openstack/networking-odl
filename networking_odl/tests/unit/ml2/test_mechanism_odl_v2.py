@@ -12,12 +12,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from datetime import timedelta
+import datetime
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.db import db
+from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
 
@@ -399,6 +400,26 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self._test_object_operation_pending_another_object_operation(
             parent, odl_const.ODL_DELETE, child, odl_const.ODL_DELETE)
 
+    def _test_cleanup_processing_rows(self, last_retried, expected_state):
+        # Create a dummy network (creates db row in pending state).
+        self._call_operation_object(odl_const.ODL_CREATE,
+                                    odl_const.ODL_NETWORK)
+
+        # Get pending row and mark as processing and update
+        # the last_retried time
+        row = db.get_all_db_rows_by_state(self.db_session,
+                                          odl_const.PENDING)[0]
+        row.last_retried = last_retried
+        db.update_db_row_state(self.db_session, row, odl_const.PROCESSING)
+
+        # Test if the cleanup marks this in the desired state
+        # based on the last_retried timestamp
+        cleanup.JournalCleanup().cleanup_processing_rows(self.db_session)
+
+        # Verify that the Db row is in the desired state
+        rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
+        self.assertEqual(1, len(rows))
+
     def test_driver(self):
         for operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE,
                           odl_const.ODL_DELETE]:
@@ -475,6 +496,14 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     def test_port_processing_network(self):
         self._test_object_type_processing_network(odl_const.ODL_PORT)
 
+    def test_cleanup_processing_rows_time_not_expired(self):
+        self._test_cleanup_processing_rows(datetime.datetime.utcnow(),
+                                           odl_const.PROCESSING)
+
+    def test_cleanup_processing_rows_time_expired(self):
+        old_time = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        self._test_cleanup_processing_rows(old_time, odl_const.PENDING)
+
     def test_thread_call(self):
         """Verify that the sync thread method is called."""
 
@@ -493,7 +522,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self._test_object_type(odl_const.ODL_SG_RULE)
 
     def _decrease_row_created_time(self, row):
-        row.created_at -= timedelta(hours=1)
+        row.created_at -= datetime.timedelta(hours=1)
         self.db_session.merge(row)
         self.db_session.flush()
 
