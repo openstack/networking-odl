@@ -24,6 +24,7 @@ from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.db import db
 from networking_odl.journal import journal
+from networking_odl.journal import maintenance
 from networking_odl.ml2 import port_binding
 
 LOG = logging.getLogger(__name__)
@@ -42,6 +43,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.sg_handler = callback.OdlSecurityGroupsHandler(self)
         self.journal = journal.OpendaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
+        self._maintenance_thread = maintenance.MaintenanceThread()
+        self._maintenance_thread.start()
 
     def create_network_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'network',

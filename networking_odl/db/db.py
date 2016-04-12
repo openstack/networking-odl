@@ -161,3 +161,40 @@ def create_pending_row(session, object_type, object_uuid,
     # Keep session flush for unit tests. NOOP for L2/L3 events since calls are
     # made inside database session transaction with subtransactions=True.
     session.flush()
+
+
+@db_api.retry_db_errors
+def _update_maintenance_state(session, expected_state, state):
+    with session.begin():
+        row = session.query(models.OpendaylightMaintenance).filter_by(
+            state=expected_state).with_for_update().one_or_none()
+        if row is None:
+            return False
+
+        row.state = state
+        return True
+
+
+def lock_maintenance(session):
+    return _update_maintenance_state(session, odl_const.PENDING,
+                                     odl_const.PROCESSING)
+
+
+def unlock_maintenance(session):
+    return _update_maintenance_state(session, odl_const.PROCESSING,
+                                     odl_const.PENDING)
+
+
+def update_maintenance_operation(session, operation=None):
+    """Update the current maintenance operation details.
+
+    The function assumes the lock is held, so it mustn't be run outside of a
+    locked context.
+    """
+    op_text = None
+    if operation:
+        op_text = operation.__name__
+
+    with session.begin():
+        row = session.query(models.OpendaylightMaintenance).one_or_none()
+        row.processing_operation = op_text

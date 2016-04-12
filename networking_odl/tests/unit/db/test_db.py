@@ -41,6 +41,7 @@ class DbTestCase(SqlTestCaseLight, TestCase):
 
     def _db_cleanup(self):
         self.db_session.query(models.OpendaylightJournal).delete()
+        self.db_session.query(models.OpendaylightMaintenance).delete()
 
     def _update_row(self, row):
         self.db_session.merge(row)
@@ -178,3 +179,38 @@ class DbTestCase(SqlTestCaseLight, TestCase):
 
     def test_update_row_state_to_completed(self):
         self._test_update_row_state(odl_const.PROCESSING, odl_const.COMPLETED)
+
+    def _test_maintenance_lock_unlock(self, db_func, existing_state,
+                                      expected_state, expected_result):
+        row = models.OpendaylightMaintenance(id='test',
+                                             state=existing_state)
+        self.db_session.add(row)
+        self.db_session.flush()
+
+        self.assertEqual(expected_result, db_func(self.db_session))
+        row = self.db_session.query(models.OpendaylightMaintenance).one()
+        self.assertEqual(expected_state, row['state'])
+
+    def test_lock_maintenance(self):
+        self._test_maintenance_lock_unlock(db.lock_maintenance,
+                                           odl_const.PENDING,
+                                           odl_const.PROCESSING,
+                                           True)
+
+    def test_lock_maintenance_fails_when_processing(self):
+        self._test_maintenance_lock_unlock(db.lock_maintenance,
+                                           odl_const.PROCESSING,
+                                           odl_const.PROCESSING,
+                                           False)
+
+    def test_unlock_maintenance(self):
+        self._test_maintenance_lock_unlock(db.unlock_maintenance,
+                                           odl_const.PROCESSING,
+                                           odl_const.PENDING,
+                                           True)
+
+    def test_unlock_maintenance_fails_when_pending(self):
+        self._test_maintenance_lock_unlock(db.unlock_maintenance,
+                                           odl_const.PENDING,
+                                           odl_const.PENDING,
+                                           False)
