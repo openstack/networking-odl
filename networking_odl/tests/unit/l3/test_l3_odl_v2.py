@@ -166,7 +166,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                         return_value=request_response) as mock_method:
             with mock.patch.object(self.thread.event, 'wait',
                                    return_value=False):
-                self.thread.sync_pending_row(exit_after_run=True)
+                self.thread.run_sync_thread(exit_after_run=True)
 
         if expected_calls:
             mock_method.assert_called_with(
@@ -333,7 +333,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         # Call journal thread.
         with mock.patch.object(self.thread.event, 'wait',
                                return_value=False):
-            self.thread.sync_pending_row(exit_after_run=True)
+            self.thread.run_sync_thread(exit_after_run=True)
 
         # Verify that dependency row is still set at 'processing'.
         rows = db.get_all_db_rows_by_state(self.db_session,

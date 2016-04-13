@@ -323,7 +323,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             kwargs = {'url': url, 'data': None}
         with mock.patch.object(self.thread.event, 'wait',
                                return_value=False):
-            self._test_operation(self.thread.sync_pending_row, status_code,
+            self._test_operation(self.thread.run_sync_thread, status_code,
                                  expected_calls, http_request, **kwargs)
 
     def _test_object_type(self, object_type):
