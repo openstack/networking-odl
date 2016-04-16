@@ -1,0 +1,9 @@
+BUNDLEVERSION='0.4.2-SNAPSHOT'
+export ODL_NAME=distribution-karaf-${BUNDLEVERSION}
+
+# Java major version required to run OpenDaylight: 7, 8, ...
+ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-8}
+
+function setup_opendaylight_package {
+    odl_export_snapshot_url_pkg ${ODL_DIR} ${ODL_URL_PREFIX} ${BUNDLEVERSION} ${OFFLINE}
+}

@@ -12,11 +12,14 @@ IS_GATE=True
 
 # Set here the ODL release to use for the Gate job
 case "$ODL_RELEASE_BASE" in
+    carbon-snapshot)
+        ODL_RELEASE=carbon-snapshot-0.6.0
+        ;;
     boron-snapshot)
-        ODL_RELEASE=boron-snapshot-0.5.0
+        ODL_RELEASE=boron-snapshot-0.5.2
         ;;
     beryllium-snapshot)
-        ODL_RELEASE=beryllium-snapshot-0.4.1
+        ODL_RELEASE=beryllium-snapshot-0.4.4
         ;;
     lithium-snapshot)
         ODL_RELEASE=lithium-snapshot-0.3.5
