@@ -45,17 +45,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.journal = journal.OpendaylightJournalThread()
         self._network_topology = network_topology.NetworkTopologyManager()
 
-    @journal.call_thread_on_end
     def create_network_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'network',
                               context.current['id'], 'create', context.current)
 
-    @journal.call_thread_on_end
     def create_subnet_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'subnet',
                               context.current['id'], 'create', context.current)
 
-    @journal.call_thread_on_end
     def create_port_precommit(self, context):
         dbcontext = context._plugin_context
         groups = [context._plugin.get_security_group(dbcontext, sg)
@@ -79,17 +76,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         db.create_pending_row(context._plugin_context.session, 'port',
                               context.current['id'], 'create', new_context)
 
-    @journal.call_thread_on_end
     def update_network_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'network',
                               context.current['id'], 'update', context.current)
 
-    @journal.call_thread_on_end
     def update_subnet_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'subnet',
                               context.current['id'], 'update', context.current)
 
-    @journal.call_thread_on_end
     def update_port_precommit(self, context):
         port = context._plugin.get_port(context._plugin_context,
                                         context.current['id'])
@@ -116,12 +110,10 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         db.create_pending_row(context._plugin_context.session, 'port',
                               context.current['id'], 'update', new_context)
 
-    @journal.call_thread_on_end
     def delete_network_precommit(self, context):
         db.create_pending_row(context._plugin_context.session, 'network',
                               context.current['id'], 'delete', None)
 
-    @journal.call_thread_on_end
     def delete_subnet_precommit(self, context):
         # Use the journal row's data field to store parent object
         # uuids. This information is required for validation checking
@@ -130,7 +122,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         db.create_pending_row(context._plugin_context.session, 'subnet',
                               context.current['id'], 'delete', new_context)
 
-    @journal.call_thread_on_end
     def delete_port_precommit(self, context):
         # Use the journal row's data field to store parent object
         # uuids. This information is required for validation checking
@@ -151,6 +142,19 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             resource_dict = resource_dict[object_type]
         db.create_pending_row(db_api.get_session(), object_type, object_uuid,
                               operation, resource_dict)
+
+    def _postcommit(self, context):
+        self.journal.set_sync_event()
+
+    create_network_postcommit = _postcommit
+    create_subnet_postcommit = _postcommit
+    create_port_postcommit = _postcommit
+    update_network_postcommit = _postcommit
+    update_subnet_postcommit = _postcommit
+    update_port_postcommit = _postcommit
+    delete_network_postcommit = _postcommit
+    delete_subnet_postcommit = _postcommit
+    delete_port_postcommit = _postcommit
 
     def bind_port(self, port_context):
         """Set binding for a valid segments
