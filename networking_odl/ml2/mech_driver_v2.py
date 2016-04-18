@@ -23,6 +23,7 @@ from neutron.plugins.ml2 import driver_api as api
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.db import db
+from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.journal import maintenance
 from networking_odl.ml2 import port_binding
@@ -43,7 +44,15 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.sg_handler = callback.OdlSecurityGroupsHandler(self)
         self.journal = journal.OpendaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
+        self._start_maintenance_thread()
+
+    def _start_maintenance_thread(self):
+        # start the maintenance thread and register all the maintenance
+        # operations :
+        # (1) JournalCleanup - Delete completed rows from journal
         self._maintenance_thread = maintenance.MaintenanceThread()
+        self._maintenance_thread.register_operation(
+            cleanup.JournalCleanup().delete_completed_rows)
         self._maintenance_thread.start()
 
     def create_network_precommit(self, context):

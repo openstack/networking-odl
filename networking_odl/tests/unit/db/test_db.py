@@ -162,6 +162,33 @@ class DbTestCase(SqlTestCaseLight, TestCase):
 
         self.assertEqual(2, update_mock.call_count)
 
+    def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
+                                            state, expected_rows):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+
+        # update state and last retried
+        row = db.get_all_db_rows(self.db_session)[0]
+        row.state = state
+        row.last_retried = row.last_retried - timedelta(seconds=last_retried)
+        self._update_row(row)
+
+        db.delete_rows_by_state_and_time(self.db_session,
+                                         odl_const.COMPLETED,
+                                         timedelta(seconds=row_retention))
+
+        # validate the number of rows in the journal
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertEqual(expected_rows, len(rows))
+
+    def test_delete_completed_rows_no_new_rows(self):
+        self._test_delete_rows_by_state_and_time(0, 10, odl_const.COMPLETED, 1)
+
+    def test_delete_completed_rows_one_new_row(self):
+        self._test_delete_rows_by_state_and_time(6, 5, odl_const.COMPLETED, 0)
+
+    def test_delete_completed_rows_wrong_state(self):
+        self._test_delete_rows_by_state_and_time(10, 8, odl_const.PENDING, 1)
+
     def test_valid_retry_count(self):
         self._test_retry_count(1, 1, 1, odl_const.PENDING)
 

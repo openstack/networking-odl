@@ -198,3 +198,13 @@ def update_maintenance_operation(session, operation=None):
     with session.begin():
         row = session.query(models.OpendaylightMaintenance).one_or_none()
         row.processing_operation = op_text
+
+
+def delete_rows_by_state_and_time(session, state, time_delta):
+    with session.begin():
+        now = session.execute(func.now()).scalar()
+        session.query(models.OpendaylightJournal).filter(
+            models.OpendaylightJournal.state == state,
+            models.OpendaylightJournal.last_retried < now - time_delta).delete(
+            synchronize_session=False)
+        session.expire_all()
