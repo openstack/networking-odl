@@ -166,6 +166,16 @@ def create_pending_row(session, object_type, object_uuid,
 
 
 @db_api.retry_db_errors
+def delete_pending_rows(session, operations_to_delete):
+    with session.begin():
+        session.query(models.OpendaylightJournal).filter(
+            models.OpendaylightJournal.operation.in_(operations_to_delete),
+            models.OpendaylightJournal.state == odl_const.PENDING).delete(
+            synchronize_session=False)
+        session.expire_all()
+
+
+@db_api.retry_db_errors
 def _update_maintenance_state(session, expected_state, state):
     with session.begin():
         row = session.query(models.OpendaylightMaintenance).filter_by(
