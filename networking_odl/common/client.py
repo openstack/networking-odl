@@ -27,7 +27,7 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 class OpenDaylightRestClient(object):
 
     @classmethod
-    def create_client(cls):
+    def create_client(cls, url=None):
         if cfg.CONF.ml2_odl.enable_lightweight_testing:
             LOG.debug("ODL lightweight testing is enabled, "
                       "returning a OpenDaylightLwtClient instance")
@@ -37,7 +37,7 @@ class OpenDaylightRestClient(object):
             cls = lwt.OpenDaylightLwtClient
 
         return cls(
-            cfg.CONF.ml2_odl.url,
+            url or cfg.CONF.ml2_odl.url,
             cfg.CONF.ml2_odl.username,
             cfg.CONF.ml2_odl.password,
             cfg.CONF.ml2_odl.timeout)

@@ -52,6 +52,12 @@ odl_opts = [
     cfg.IntOpt('processing_timeout', default='100',
                help=_("(V2 driver) Time in seconds to wait before a "
                       "processing row is marked back to pending.")),
+    cfg.StrOpt('odl_hostconf_uri',
+               help=_("Path for ODL host configuration REST interface"),
+               default="/restconf/operational/neutron:neutron/hostconfigs"),
+    cfg.IntOpt('restconf_poll_interval', default=30,
+               help=_("Poll interval in seconds for getting ODL hostconfig")),
+
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")
