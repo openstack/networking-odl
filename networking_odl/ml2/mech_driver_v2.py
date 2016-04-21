@@ -18,14 +18,13 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron.db import api as db_api
-from neutron.extensions import portbindings
 from neutron.plugins.ml2 import driver_api as api
 
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.db import db
 from networking_odl.journal import journal
-from networking_odl.ml2 import network_topology
+from networking_odl.ml2 import port_binding
 
 LOG = logging.getLogger(__name__)
 
@@ -41,9 +40,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         LOG.debug("Initializing OpenDaylight ML2 driver")
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.sg_handler = callback.OdlSecurityGroupsHandler(self)
-        self.vif_details = {portbindings.CAP_PORT_FILTER: True}
         self.journal = journal.OpendaylightJournalThread()
-        self._network_topology = network_topology.NetworkTopologyManager()
+        self.port_binding_controller = port_binding.PortBindingManager.create()
 
     @journal.call_thread_on_end
     def create_network_precommit(self, context):
@@ -156,4 +154,4 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         """Set binding for a valid segments
 
         """
-        return self._network_topology.bind_port(port_context)
+        return self.port_binding_controller.bind_port(port_context)

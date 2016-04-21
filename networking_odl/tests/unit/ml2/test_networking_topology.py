@@ -216,11 +216,14 @@ class TestNetworkTopologyManager(base.DietTestCase):
         given_network_topology = network_topology.NetworkTopologyManager(
             vif_details={'some': 'detail'},
             client=given_client)
+        self.patch(
+            network_topology, 'NetworkTopologyManager',
+            return_value=given_network_topology)
 
         given_driver = mech_driver_v2.OpenDaylightMechanismDriver()
-        given_driver._network_topology = given_network_topology
         given_port_context = self.given_port_context()
 
+        given_driver.initialize()
         # when port is bound
         given_driver.bind_port(given_port_context)
 
@@ -244,6 +247,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         given_driver._network_topology = given_network_topology
         given_port_context = self.given_port_context()
 
+        given_driver.initialize()
         # when port is bound
         given_driver.bind_port(given_port_context)
 
@@ -331,7 +335,8 @@ class TestNetworkTopologyManager(base.DietTestCase):
             current={'id': 'CURRENT_CONTEXT_ID'},
             host='some_host',
             segments_to_bind=given_segments,
-            network=network)
+            network=network,
+            _new_bound_segment=self.valid_segment)
 
     NETOWORK_TOPOLOGY_URL =\
         'http://localhost:8181/'\

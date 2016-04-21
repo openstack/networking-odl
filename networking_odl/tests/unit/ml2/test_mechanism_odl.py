@@ -36,6 +36,7 @@ from neutron.tests.unit import testlib_api
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
+from networking_odl.ml2 import legacy_port_binding
 from networking_odl.ml2 import mech_driver
 from networking_odl.ml2 import network_topology
 
@@ -546,6 +547,8 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
         given_port_context = self.given_port_context()
         given_back_end = mech_driver.OpenDaylightDriver()
         given_front_end.odl_drv = given_back_end
+        given_back_end.port_binding_controller = \
+            legacy_port_binding.LegacyPortBindingManager()
 
         # when port is bound
         given_front_end.bind_port(given_port_context)
@@ -554,7 +557,8 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
         # segment API ID
         given_port_context.set_binding.assert_called_once_with(
             self.valid_segment[api.ID], portbindings.VIF_TYPE_OVS,
-            given_back_end.vif_details, status=n_constants.PORT_STATUS_ACTIVE)
+            given_back_end.port_binding_controller.vif_details,
+            status=n_constants.PORT_STATUS_ACTIVE)
 
     def given_port_context(self):
         from neutron.plugins.ml2 import driver_context as ctx
@@ -566,4 +570,5 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
         return mock.MagicMock(
             spec=ctx.PortContext, current={'id': 'CURRENT_CONTEXT_ID'},
             segments_to_bind=[self.valid_segment, self.invalid_segment],
-            network=network)
+            network=network,
+            _new_bound_segment=self.valid_segment)
