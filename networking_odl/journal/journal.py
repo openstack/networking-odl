@@ -37,7 +37,7 @@ LOG = logging.getLogger(__name__)
 def call_thread_on_end(func):
     def new_func(obj, *args, **kwargs):
         return_value = func(obj, *args, **kwargs)
-        obj.journal.start_odl_sync_thread()
+        obj.journal.set_sync_event()
         return return_value
     return new_func
 
@@ -49,33 +49,31 @@ class OpendaylightJournalThread(object):
         self._odl_sync_timeout = cfg.CONF.ml2_odl.sync_timeout
         self._row_retry_count = cfg.CONF.ml2_odl.retry_count
         self.event = threading.Event()
-        self.start_odl_sync_thread()
+        self.lock = threading.Lock()
+        self._odl_sync_thread = self.start_odl_sync_thread()
+        self._start_sync_timer()
 
     def start_odl_sync_thread(self):
-        # Reset timer
-        if hasattr(self, 'timer'):
-            LOG.debug("Resetting thread timer")
-            self.timer.cancel()
-            self.timer = None
-        self.timer = threading.Timer(self._odl_sync_timeout,
-                                     self.start_odl_sync_thread)
-        self.timer.start()
-
-        # Don't start a second thread if there is one alive already
-        # Only trigger the event
-        if (hasattr(self, '_odl_sync_thread') and
-           self._odl_sync_thread.isAlive()):
-            LOG.debug("Thread alive, sending event")
-            self.event.set()
-            return
-
-        # Start the sync thread if there isn't one
+        # Start the sync thread
         LOG.debug("Starting a new sync thread")
-        self._odl_sync_thread = threading.Thread(
+        odl_sync_thread = threading.Thread(
             name='sync',
-            target=self.sync_pending_row)
+            target=self.run_sync_thread)
+        odl_sync_thread.start()
+        return odl_sync_thread
 
-        self._odl_sync_thread.start()
+    def set_sync_event(self):
+        # Prevent race when starting the timer
+        with self.lock:
+            LOG.debug("Resetting thread timer")
+            self._timer.cancel()
+            self._start_sync_timer()
+        self.event.set()
+
+    def _start_sync_timer(self):
+        self._timer = threading.Timer(self._odl_sync_timeout,
+                                      self.set_sync_event)
+        self._timer.start()
 
     def _json_data(self, row):
         filter_cls = filters.FILTER_MAP[row.object_type]
@@ -117,68 +115,73 @@ class OpendaylightJournalThread(object):
 
         return method, urlpath, to_send
 
-    def sync_pending_row(self, exit_after_run=False):
-        # Block until all pending rows are processed
-        session = neutron_db_api.get_session()
-        while not self.event.is_set():
-            self.event.wait()
-            # Clear the event and go back to waiting after
-            # the sync block exits
-            self.event.clear()
-            while True:
-                LOG.debug("Thread walking database")
-                row = db.get_oldest_pending_db_row_with_lock(session)
-                if not row:
-                    LOG.debug("No rows to sync")
+    def run_sync_thread(self, exit_after_run=False):
+        while True:
+            try:
+                self.event.wait()
+                self.event.clear()
+
+                session = neutron_db_api.get_session()
+                self._sync_pending_rows(session, exit_after_run)
+
+                LOG.debug("Clearing sync thread event")
+                if exit_after_run:
+                    # Permanently waiting thread model breaks unit tests
+                    # Adding this arg to exit here only for unit tests
                     break
+            except Exception:
+                # Catch exceptions to protect the thread while running
+                LOG.exception(_LE("Error on run_sync_thread"))
 
-                # Validate the operation
-                validate_func = (dependency_validations.
-                                 VALIDATION_MAP[row.object_type])
-                valid = validate_func(session, row)
-                if not valid:
-                    LOG.info(_LI("%(operation)s %(type)s %(uuid)s is not a "
-                                 "valid operation yet, skipping for now"),
-                             {'operation': row.operation,
-                              'type': row.object_type,
-                              'uuid': row.object_uuid})
+    def _sync_pending_rows(self, session, exit_after_run):
+        while True:
+            LOG.debug("Thread walking database")
+            row = db.get_oldest_pending_db_row_with_lock(session)
+            if not row:
+                LOG.debug("No rows to sync")
+                break
 
-                    # Set row back to pending.
-                    db.update_db_row_state(session, row, odl_const.PENDING)
-                    if exit_after_run:
-                        break
-                    continue
-
-                LOG.info(_LI("Syncing %(operation)s %(type)s %(uuid)s"),
-                         {'operation': row.operation, 'type': row.object_type,
+            # Validate the operation
+            validate_func = (dependency_validations.
+                             VALIDATION_MAP[row.object_type])
+            valid = validate_func(session, row)
+            if not valid:
+                LOG.info(_LI("%(operation)s %(type)s %(uuid)s is not a "
+                             "valid operation yet, skipping for now"),
+                         {'operation': row.operation,
+                          'type': row.object_type,
                           'uuid': row.object_uuid})
 
-                # Add code to sync this to ODL
-                method, urlpath, to_send = self._json_data(row)
-
-                try:
-                    self.client.sendjson(method, urlpath, to_send)
-                    db.update_db_row_state(session, row, odl_const.COMPLETED)
-                except exceptions.ConnectionError as e:
-                    # Don't raise the retry count, just log an error
-                    LOG.error(_LE("Cannot connect to the Opendaylight "
-                                  "Controller"))
-                    # Set row back to pending
-                    db.update_db_row_state(session, row, odl_const.PENDING)
-                    # Break our of the loop and retry with the next
-                    # timer interval
+                # Set row back to pending.
+                db.update_db_row_state(session, row, odl_const.PENDING)
+                if exit_after_run:
                     break
-                except Exception as e:
-                    LOG.error(_LE("Error syncing %(type)s %(operation)s,"
-                                  " id %(uuid)s Error: %(error)s"),
-                              {'type': row.object_type,
-                               'uuid': row.object_uuid,
-                               'operation': row.operation,
-                               'error': e.message})
-                    db.update_pending_db_row_retry(session, row,
-                                                   self._row_retry_count)
-            LOG.debug("Clearing sync thread event")
-            if exit_after_run:
-                # Permanently waiting thread model breaks unit tests
-                # Adding this arg to exit here only for unit tests
+                continue
+
+            LOG.info(_LI("Syncing %(operation)s %(type)s %(uuid)s"),
+                     {'operation': row.operation, 'type': row.object_type,
+                      'uuid': row.object_uuid})
+
+            # Add code to sync this to ODL
+            method, urlpath, to_send = self._json_data(row)
+
+            try:
+                self.client.sendjson(method, urlpath, to_send)
+                db.update_db_row_state(session, row, odl_const.COMPLETED)
+            except exceptions.ConnectionError as e:
+                # Don't raise the retry count, just log an error
+                LOG.error(_LE("Cannot connect to the Opendaylight Controller"))
+                # Set row back to pending
+                db.update_db_row_state(session, row, odl_const.PENDING)
+                # Break our of the loop and retry with the next
+                # timer interval
                 break
+            except Exception as e:
+                LOG.error(_LE("Error syncing %(type)s %(operation)s,"
+                              " id %(uuid)s Error: %(error)s"),
+                          {'type': row.object_type,
+                           'uuid': row.object_uuid,
+                           'operation': row.operation,
+                           'error': e.message})
+                db.update_pending_db_row_retry(session, row,
+                                               self._row_retry_count)
