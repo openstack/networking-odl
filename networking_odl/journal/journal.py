@@ -76,40 +76,28 @@ class OpendaylightJournalThread(object):
         self._timer.start()
 
     def _json_data(self, row):
-        filter_cls = filters.FILTER_MAP[row.object_type]
+        data = copy.deepcopy(row.data)
+        filters.filter_for_odl(row.object_type, row.operation, data)
         url_object = row.object_type.replace('_', '-')
 
         if row.operation == odl_const.ODL_CREATE:
             method = 'post'
-            attr_filter = filter_cls.filter_create_attributes
-            data = copy.deepcopy(row.data)
             urlpath = url_object + 's'
-            attr_filter(data)
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_UPDATE:
             method = 'put'
-            attr_filter = filter_cls.filter_update_attributes
-            data = copy.deepcopy(row.data)
             urlpath = url_object + 's/' + row.object_uuid
-            attr_filter(data)
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_DELETE:
             method = 'delete'
-            data = None
             urlpath = url_object + 's/' + row.object_uuid
             to_send = None
         elif row.operation == odl_const.ODL_ADD:
             method = 'put'
-            attr_filter = filter_cls.filter_add_attributes
-            data = copy.deepcopy(row.data)
-            attr_filter(data)
             urlpath = 'routers/' + data['id'] + '/add_router_interface'
             to_send = data
         elif row.operation == odl_const.ODL_REMOVE:
             method = 'put'
-            attr_filter = filter_cls.filter_remove_attributes
-            data = copy.deepcopy(row.data)
-            attr_filter(data)
             urlpath = 'routers/' + data['id'] + '/remove_router_interface'
             to_send = data
 

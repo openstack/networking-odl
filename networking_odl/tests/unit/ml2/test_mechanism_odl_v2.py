@@ -124,9 +124,7 @@ class DataMatcher(object):
         else:
             self._data = context.current.copy()
         self._object_type = object_type
-        filter_cls = filters.FILTER_MAP[object_type]
-        attr_filter = getattr(filter_cls, 'filter_%s_attributes' % operation)
-        attr_filter(self._data)
+        filters.filter_for_odl(object_type, operation, self._data)
 
     def __eq__(self, s):
         data = jsonutils.loads(s)
