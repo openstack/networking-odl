@@ -34,6 +34,9 @@ odl_opts = [
     cfg.IntOpt('retry_count', default=5,
                help=_("(V2 driver) Number of times to retry a row "
                       "before failing.")),
+    cfg.IntOpt('maintenance_interval', default=300,
+               help=_("(V2 driver) Journal maintenance operations interval "
+                      "in seconds.")),
     cfg.BoolOpt('enable_lightweight_testing',
                 default=False,
                 help=_('Test without real ODL.')),
