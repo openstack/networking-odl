@@ -1,0 +1,8 @@
+---
+prelude: >
+    QoS Driver V2 for networking-odl
+features:
+  - A new version of QoS driver that integrate OpenStack
+    neutron QoS API with OpenDaylight backend. This driver
+    uses journaling mechanism unlike v1 driver, which will
+    first log the operation in journal table before execution.

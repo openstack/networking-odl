@@ -62,7 +62,7 @@ class OpenDaylightRestClient(object):
         self.auth = (username, password)
 
     def get_resource(self, resource_type, resource_id):
-        response = self.get(utils.neutronify(resource_type) + 's/' +
+        response = self.get(utils.make_url_object(resource_type) + '/' +
                             resource_id)
         if response.status_code == requests.codes.not_found:
             return None

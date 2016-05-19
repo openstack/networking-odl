@@ -33,6 +33,9 @@ class OdlTestsBase(object):
         config.cfg.CONF.set_override('mechanism_drivers',
                                      self._mechanism_drivers,
                                      group='ml2')
+        config.cfg.CONF.set_override('extension_drivers',
+                                     ['qos', 'port_security'],
+                                     group='ml2')
         self.client = client.OpenDaylightRestClient.create_client()
         super(OdlTestsBase, self).setUp()
 
@@ -51,14 +54,14 @@ class OdlTestsBase(object):
         self.assertNotEqual(update_value,
                             resource[resource_type][update_field])
 
-        self._update(odl_utils.neutronify(resource_type + 's'),
+        self._update(odl_utils.make_url_object(resource_type),
                      resource[resource_type]['id'],
                      {resource_type: {update_field: update_value}})
         resource = self.get_odl_resource(resource_type, resource)
         self.assertEqual(update_value, resource[resource_type][update_field])
 
     def resource_delete_test(self, resource_type, resource):
-        self._delete(odl_utils.neutronify(resource_type + 's'),
+        self._delete(odl_utils.make_url_object(resource_type),
                      resource[resource_type]['id'])
         self.assertIsNone(self.get_odl_resource(resource_type, resource))
 

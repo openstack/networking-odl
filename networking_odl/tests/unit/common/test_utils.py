@@ -23,11 +23,24 @@ from networking_odl.common import utils
 
 class TestUtils(base.DietTestCase):
 
+    # TODO(manjeets) remove this test once neutronify is
+    # consolidated with make_plural
     def test_neutronify(self):
         self.assertEqual('a-b-c', utils.neutronify('a_b_c'))
 
     def test_neutronify_empty(self):
         self.assertEqual('', utils.neutronify(''))
+
+    def test_make_url_object_with_prefix(self):
+        url_object = utils.make_url_object('policy')
+        self.assertEqual('qos/policies', url_object)
+
+    def test_make_url_object_without_prefix(self):
+        self.assertEqual('networks', utils.make_url_object('network'))
+
+    def test_make_url_object_conversion(self):
+        self.assertEqual('net-ip-availabilities',
+                         utils.make_url_object('net_ip_availability'))
 
 
 class TestGetAddressesByName(base.DietTestCase):

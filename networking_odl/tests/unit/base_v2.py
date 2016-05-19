@@ -33,6 +33,8 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         super(OpenDaylightConfigBase, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
+        cfg.CONF.set_override('extension_drivers',
+                              ['port_security', 'qos'], 'ml2')
         self.mock_sync_thread = mock.patch.object(
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(

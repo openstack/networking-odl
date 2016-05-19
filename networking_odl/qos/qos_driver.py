@@ -57,7 +57,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
                 method = 'put'
             policy_data = qos_utils.convert_rules_format(data)
             self.client.sendjson(method, urlpath,
-                                 {odl_const.ODL_POLICY: policy_data})
+                                 {odl_const.ODL_QOS_POLICY: policy_data})
 
     def get_description(self):
         pass

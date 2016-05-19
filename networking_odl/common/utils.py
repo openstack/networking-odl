@@ -19,6 +19,7 @@ import socket
 from oslo_log import log
 
 from networking_odl.common import cache
+from networking_odl.common import constants as odl_const
 
 LOG = log.getLogger(__name__)
 
@@ -60,6 +61,19 @@ def get_addresses_by_name(name, time_to_live=60.0):
         error.reraise_cause()
 
 
+def make_url_object(object_type):
+    if object_type[-1:] == 'y':
+        obj_pl = neutronify(object_type[:-1] + 'ies')
+    else:
+        obj_pl = neutronify(object_type + 's')
+
+    prefix = odl_const.PREFIXES.get(object_type, None)
+    if prefix is not None:
+        obj_pl = prefix + '/' + obj_pl
+    return obj_pl
+
+
+# TODO(manjeets) consolidate this method with make_url_object
 def neutronify(name):
     """Adjust the resource name for use with Neutron's API"""
     return name.replace('_', '-')

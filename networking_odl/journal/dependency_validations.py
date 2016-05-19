@@ -84,8 +84,16 @@ def _generate_subnet_deps(row):
 
 
 def _generate_port_deps(row):
-    subnet_ids = [fixed_ip['subnet_id'] for fixed_ip in row.data['fixed_ips']]
-    return [row.data['network_id']] + subnet_ids
+    object_ids = [fixed_ip['subnet_id'] for fixed_ip in row.data['fixed_ips']]
+    object_ids.append(row.data['network_id'])
+    qos_policy_id = row.data.get('qos_policy_id')
+    if qos_policy_id is not None:
+        object_ids.append(qos_policy_id)
+    return object_ids
+
+
+def _generate_network_deps(row):
+    return row.data.get('qos_policy_id')
 
 
 def _generate_router_deps(row):
@@ -171,6 +179,7 @@ def _generate_bgpvpn_deps(row):
 
 
 _CREATE_OR_UPDATE_DEP_GENERATOR = {
+    odl_const.ODL_NETWORK: _generate_network_deps,
     odl_const.ODL_SUBNET: _generate_subnet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
     odl_const.ODL_ROUTER: _generate_router_deps,
@@ -197,6 +206,7 @@ _DELETE_DEPENDENCIES = {
     odl_const.ODL_SFC_FLOW_CLASSIFIER: (odl_const.ODL_SFC_PORT_CHAIN,),
     odl_const.ODL_SFC_PORT_PAIR: (odl_const.ODL_SFC_PORT_PAIR_GROUP,),
     odl_const.ODL_SFC_PORT_PAIR_GROUP: (odl_const.ODL_SFC_PORT_CHAIN,),
+    odl_const.ODL_QOS_POLICY: (odl_const.ODL_PORT, odl_const.ODL_NETWORK),
 }
 
 

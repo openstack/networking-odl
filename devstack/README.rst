@@ -91,6 +91,10 @@
       [qos]
       notification_drivers = odl-qos
 
+      or v2 driver can also be used, but one at a time.
+
+     > notification_drivers = odl-qos-v2
+
     enable qos extension driver in ml2 conf::
 
       > in /etc/neutron/plugins/ml2/ml2_conf.ini

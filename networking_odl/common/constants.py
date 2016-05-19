@@ -39,8 +39,8 @@ ODL_MEMBERS = 'members'
 ODL_HEALTHMONITOR = 'healthmonitor'
 ODL_HEALTHMONITORS = 'healthmonitors'
 
+ODL_QOS_POLICY = 'policy'
 ODL_QOS_POLICIES = 'qos/policies'
-ODL_POLICY = 'policy'
 
 ODL_SFC = 'sfc'
 ODL_SFC_FLOW_CLASSIFIER = 'flowclassifier'
@@ -77,3 +77,6 @@ PENDING = 'pending'
 PROCESSING = 'processing'
 FAILED = 'failed'
 COMPLETED = 'completed'
+
+# dict to store url prefixes
+PREFIXES = {ODL_QOS_POLICY: 'qos'}

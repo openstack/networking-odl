@@ -28,7 +28,7 @@ def enforce_policy_format(policy):
 # qos data in qos_utils for code reuse.
 def convert_rules_format(data):
     policy = copy.deepcopy(data)
-    policy.pop('tenant_id')
+    policy.pop('tenant_id', None)
     policy.pop('rules', None)
     for rule in data.get('rules', []):
         rule_type = rule['type'] + '_rules'
