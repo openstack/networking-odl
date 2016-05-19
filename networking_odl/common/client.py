@@ -29,7 +29,7 @@ class OpenDaylightRestClient(object):
     @classmethod
     def create_client(cls):
         if cfg.CONF.ml2_odl.enable_lightweight_testing:
-            LOG.debug("ODL lightweight testing is enabled, ",
+            LOG.debug("ODL lightweight testing is enabled, "
                       "returning a OpenDaylightLwtClient instance")
 
             """Have to import at here, otherwise we create a dependency loop"""
