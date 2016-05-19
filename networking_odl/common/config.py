@@ -48,7 +48,10 @@ odl_opts = [
                 help=_('Test without real ODL.')),
     cfg.StrOpt('port_binding_controller',
                default='network-topology',
-               help=_('Name of the controller to be used for port binding.'))
+               help=_('Name of the controller to be used for port binding.')),
+    cfg.IntOpt('processing_timeout', default='100',
+               help=_("(V2 driver) Time in seconds to wait before a "
+                      "processing row is marked back to pending.")),
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")

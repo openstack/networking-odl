@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import datetime
+
 from sqlalchemy import asc
 from sqlalchemy import func
 from sqlalchemy import or_
@@ -208,3 +210,15 @@ def delete_rows_by_state_and_time(session, state, time_delta):
             models.OpendaylightJournal.last_retried < now - time_delta).delete(
             synchronize_session=False)
         session.expire_all()
+
+
+def reset_processing_rows(session, max_timedelta):
+    with session.begin():
+        now = session.execute(func.now()).scalar()
+        max_timedelta = datetime.timedelta(seconds=max_timedelta)
+        rows = session.query(models.OpendaylightJournal).filter(
+            models.OpendaylightJournal.last_retried < now - max_timedelta,
+            models.OpendaylightJournal.state == odl_const.PROCESSING,
+            ).update({'state': odl_const.PENDING})
+
+    return rows
