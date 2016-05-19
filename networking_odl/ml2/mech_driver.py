@@ -412,31 +412,40 @@ class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
     # Postcommit hooks are used to trigger synchronization.
 
     def create_network_postcommit(self, context):
-        self.odl_drv.synchronize('create', odl_const.ODL_NETWORKS, context)
+        self.odl_drv.synchronize(odl_const.ODL_CREATE, odl_const.ODL_NETWORKS,
+                                 context)
 
     def update_network_postcommit(self, context):
-        self.odl_drv.synchronize('update', odl_const.ODL_NETWORKS, context)
+        self.odl_drv.synchronize(odl_const.ODL_UPDATE, odl_const.ODL_NETWORKS,
+                                 context)
 
     def delete_network_postcommit(self, context):
-        self.odl_drv.synchronize('delete', odl_const.ODL_NETWORKS, context)
+        self.odl_drv.synchronize(odl_const.ODL_DELETE, odl_const.ODL_NETWORKS,
+                                 context)
 
     def create_subnet_postcommit(self, context):
-        self.odl_drv.synchronize('create', odl_const.ODL_SUBNETS, context)
+        self.odl_drv.synchronize(odl_const.ODL_CREATE, odl_const.ODL_SUBNETS,
+                                 context)
 
     def update_subnet_postcommit(self, context):
-        self.odl_drv.synchronize('update', odl_const.ODL_SUBNETS, context)
+        self.odl_drv.synchronize(odl_const.ODL_UPDATE, odl_const.ODL_SUBNETS,
+                                 context)
 
     def delete_subnet_postcommit(self, context):
-        self.odl_drv.synchronize('delete', odl_const.ODL_SUBNETS, context)
+        self.odl_drv.synchronize(odl_const.ODL_DELETE, odl_const.ODL_SUBNETS,
+                                 context)
 
     def create_port_postcommit(self, context):
-        self.odl_drv.synchronize('create', odl_const.ODL_PORTS, context)
+        self.odl_drv.synchronize(odl_const.ODL_CREATE, odl_const.ODL_PORTS,
+                                 context)
 
     def update_port_postcommit(self, context):
-        self.odl_drv.synchronize('update', odl_const.ODL_PORTS, context)
+        self.odl_drv.synchronize(odl_const.ODL_UPDATE, odl_const.ODL_PORTS,
+                                 context)
 
     def delete_port_postcommit(self, context):
-        self.odl_drv.synchronize('delete', odl_const.ODL_PORTS, context)
+        self.odl_drv.synchronize(odl_const.ODL_DELETE, odl_const.ODL_PORTS,
+                                 context)
 
     def bind_port(self, context):
         self.odl_drv.bind_port(context)
