@@ -147,9 +147,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                               context.current['id'], 'delete', new_context)
 
     @journal.call_thread_on_end
-    def sync_from_callback(self, operation, res_type_uri, res_id,
-                           resource_dict):
-        object_type = res_type_uri.replace('-', '_')[:-1]
+    def sync_from_callback(self, operation, res_type, res_id, resource_dict):
+        object_type = res_type.singular
         object_uuid = (resource_dict[object_type]['id']
                        if operation == 'create' else res_id)
         if resource_dict is not None:
