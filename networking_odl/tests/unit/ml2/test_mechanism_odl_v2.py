@@ -28,6 +28,7 @@ from oslo_serialization import jsonutils
 import requests
 
 from neutron.db import api as neutron_db_api
+from neutron import manager
 from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -204,6 +205,10 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         context._plugin.get_security_group = mock.Mock(
             return_value=SECURITY_GROUP)
         context._plugin.get_port = mock.Mock(return_value=current)
+        plugin_mock = mock.patch.object(manager.NeutronManager,
+                                        'get_plugin').start()
+        plugin_mock.get_security_group = context._plugin.get_security_group
+        plugin_mock.get_port = context._plugin.get_port
         context._plugin_context.session = neutron_db_api.get_session()
         context._network_context = mock.Mock(
             _network=OpenDaylightMechanismDriverTestCase.
