@@ -23,6 +23,7 @@ from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import cleanup
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.journal import maintenance
 from networking_odl.ml2 import port_binding
@@ -50,12 +51,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         # operations :
         # (1) JournalCleanup - Delete completed rows from journal
         # (2) CleanupProcessing - Mark orphaned processing rows to pending
+        # (3) Full sync - Re-sync when detecting an ODL "cold reboot"
         cleanup_obj = cleanup.JournalCleanup()
         self._maintenance_thread = maintenance.MaintenanceThread()
         self._maintenance_thread.register_operation(
             cleanup_obj.delete_completed_rows)
         self._maintenance_thread.register_operation(
             cleanup_obj.cleanup_processing_rows)
+        self._maintenance_thread.register_operation(full_sync.full_sync)
         self._maintenance_thread.start()
 
     @staticmethod
