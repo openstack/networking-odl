@@ -35,6 +35,8 @@ class FullSyncTestCase(SqlTestCaseLight):
         full_sync._CLIENT = mock.MagicMock()
         self.plugin_mock = mock.patch.object(manager.NeutronManager,
                                              'get_plugin').start()
+        self.l3_plugin_mock = mock.patch.object(manager.NeutronManager,
+                                                'get_service_plugins').start()
 
         self.addCleanup(self._db_cleanup)
 
@@ -45,28 +47,26 @@ class FullSyncTestCase(SqlTestCaseLight):
         full_sync.full_sync(self.db_session)
         self.assertEqual([], db.get_all_db_rows(self.db_session))
 
-    def _mock_plugin_resources(self):
-        resources = {odl_const.ODL_NETWORK: '1', odl_const.ODL_SUBNET: '2',
-                     odl_const.ODL_PORT: '3'}
+    def _mock_l2_resources(self):
+        expected_journal = {odl_const.ODL_NETWORK: '1',
+                            odl_const.ODL_SUBNET: '2',
+                            odl_const.ODL_PORT: '3'}
         plugin_instance = self.plugin_mock.return_value
         plugin_instance.get_networks.return_value = [
-            {'id': resources[odl_const.ODL_NETWORK]}]
+            {'id': expected_journal[odl_const.ODL_NETWORK]}]
         plugin_instance.get_subnets.return_value = [
-            {'id': resources[odl_const.ODL_SUBNET]}]
-        plugin_instance.get_ports.return_value = [
-            {'id': resources[odl_const.ODL_PORT]}]
-        return resources
+            {'id': expected_journal[odl_const.ODL_SUBNET]}]
+        plugin_instance.get_ports.side_effect = ([
+            {'id': expected_journal[odl_const.ODL_PORT]}], [])
+        return expected_journal
 
     def _filter_out_canary(self, rows):
         return [row for row in rows if row['object_uuid'] !=
                 full_sync._CANARY_NETWORK_ID]
 
-    def _assert_no_journal_rows(self, rows):
-        self.assertEqual([], self._filter_out_canary(rows))
-
     def _test_no_full_sync_when_canary_in_journal(self, state):
         self._mock_canary_missing()
-        self._mock_plugin_resources()
+        self._mock_l2_resources()
         db.create_pending_row(self.db_session, odl_const.ODL_NETWORK,
                               full_sync._CANARY_NETWORK_ID,
                               odl_const.ODL_CREATE, {})
@@ -76,7 +76,7 @@ class FullSyncTestCase(SqlTestCaseLight):
         full_sync.full_sync(self.db_session)
 
         rows = db.get_all_db_rows(self.db_session)
-        self._assert_no_journal_rows(rows)
+        self.assertEqual([], self._filter_out_canary(rows))
 
     def test_no_full_sync_when_canary_pending_creation(self):
         self._test_no_full_sync_when_canary_in_journal(odl_const.PENDING)
@@ -103,31 +103,50 @@ class FullSyncTestCase(SqlTestCaseLight):
                             for r in rows))
         return rows
 
-    def test_full_sync_removes_pending_rows(self):
+    def _test_full_sync_resources(self, expected_journal):
         self._mock_canary_missing()
-        db.create_pending_row(self.db_session, odl_const.ODL_NETWORK, "uuid",
-                              odl_const.ODL_CREATE, {'foo': 'bar'})
-        full_sync.full_sync(self.db_session)
-
-        rows = self._assert_canary_created()
-        self._assert_no_journal_rows(rows)
-
-    def test_full_sync_no_resources(self):
-        self._mock_canary_missing()
-        full_sync.full_sync(self.db_session)
-
-        rows = self._assert_canary_created()
-        self._assert_no_journal_rows(rows)
-
-    def test_full_sync_resources(self):
-        self._mock_canary_missing()
-        resources = self._mock_plugin_resources()
 
         full_sync.full_sync(self.db_session)
 
         rows = self._assert_canary_created()
         rows = self._filter_out_canary(rows)
-        self.assertItemsEqual(resources.keys(),
+        self.assertItemsEqual(expected_journal.keys(),
                               [row['object_type'] for row in rows])
         for row in rows:
-            self.assertEqual(resources[row['object_type']], row['object_uuid'])
+            self.assertEqual(expected_journal[row['object_type']],
+                             row['object_uuid'])
+
+    def test_full_sync_removes_pending_rows(self):
+        db.create_pending_row(self.db_session, odl_const.ODL_NETWORK, "uuid",
+                              odl_const.ODL_CREATE, {'foo': 'bar'})
+        self._test_full_sync_resources({})
+
+    def test_full_sync_no_resources(self):
+        self._test_full_sync_resources({})
+
+    def test_full_sync_l2_resources(self):
+        self._test_full_sync_resources(self._mock_l2_resources())
+
+    def _mock_router_port(self, port_id):
+        router_port = {'id': port_id,
+                       'device_id': '1',
+                       'tenant_id': '1',
+                       'fixed_ips': [{'subnet_id': '1'}]}
+        plugin_instance = self.plugin_mock.return_value
+        plugin_instance.get_ports.side_effect = ([], [router_port])
+
+    def _mock_l3_resources(self):
+        expected_journal = {odl_const.ODL_ROUTER: '1',
+                            odl_const.ODL_FLOATINGIP: '2',
+                            odl_const.ODL_ROUTER_INTF: '3'}
+        plugin_instance = self.l3_plugin_mock.return_value.get.return_value
+        plugin_instance.get_routers.return_value = [
+            {'id': expected_journal[odl_const.ODL_ROUTER]}]
+        plugin_instance.get_floatingips.return_value = [
+            {'id': expected_journal[odl_const.ODL_FLOATINGIP]}]
+        self._mock_router_port(expected_journal[odl_const.ODL_ROUTER_INTF])
+
+        return expected_journal
+
+    def test_full_sync_l3_resources(self):
+        self._test_full_sync_resources(self._mock_l3_resources())
