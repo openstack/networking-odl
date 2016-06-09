@@ -207,12 +207,6 @@ class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
             expected_status=webob.exc.HTTPConflict.code,
             expected_error='PortBound')
 
-    def test_create_router_port_and_fail_create_postcommit(self):
-        # Skip this test case for now as a workaround.
-        # TODO(rzang): remove this once [1] gets in.
-        # [1]https://review.openstack.org/#/c/310682/
-        self.skipTest("skip as a workaround")
-
 
 class DataMatcher(object):
 
