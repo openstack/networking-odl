@@ -44,7 +44,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
     # List of class names of registered implementations of interface
     # NetworkTopologyParser
     network_topology_parsers = [
-        'networking_odl.ml2.ovsdb_topology.OvsdbNetworkTopologyParser']
+        'networking_odl.ml2.ovsdb_topology.OvsdbNetworkTopologyParser',
+        'networking_odl.ml2.vpp_topology.VppNetworkTopologyParser']
 
     def __init__(self, vif_details=None, client=None):
         # Details for binding port
@@ -65,6 +66,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
 
         """
         host_name = port_context.host
+        LOG.debug('Processing port for host: %s', host_name)
         elements = list()
         try:
             # Append to empty list to add as much elements as possible
@@ -85,6 +87,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                 {'host_name': host_name})
 
             # Imported here to avoid cyclic module dependencies
+            # TODO (wdec): Add vpp topology import
             from networking_odl.ml2 import ovsdb_topology
             elements = [ovsdb_topology.OvsdbNetworkTopologyElement()]
 
@@ -100,7 +103,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                     # it is invalid for at least one element: discard it
                     vif_type_is_valid_for_all = False
                     break
-
+        #TODO (wdec): This needs to deal with not all network elements
+        # supporting all binding types.
             if vif_type_is_valid_for_all:
                 # This is the best VIF type valid for all elements
                 LOG.debug(
@@ -211,6 +215,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                             "'NetworkTopologyElement': {!r}".format(element))
                     # the same element can be known by more host addresses
                     for host_address in element.host_addresses:
+                        LOG.debug
                         if host_address in addresses:
                             at_least_one_element_for_asked_addresses = True
                         yield host_address, element
