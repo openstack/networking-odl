@@ -101,6 +101,19 @@ see this wiki page:
 .. _tox: http://tox.readthedocs.org/en/latest/
 .. _virtualenvs: https://pypi.python.org/pypi/virtualenv
 
+Tests written can also be debugged by adding pdb break points. Normally if you add
+a break point and just run the tests with normal flags they will end up in failing.
+There is debug flag you can use to run after adding pdb break points in the tests.
+
+Set break points in your test code and run::
+
+    tox -e debug networking_odl.tests.unit.db.test_db.DbTestCase.test_validate_updates_same_object_uuid
+
+The package oslotest was used to enable debugging in the tests. For more
+information see the link:
+
+  http://docs.openstack.org/developer/oslotest/features.html
+
 
 Running individual tests
 ~~~~~~~~~~~~~~~~~~~~~~~~
