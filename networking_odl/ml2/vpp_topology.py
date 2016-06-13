@@ -51,23 +51,28 @@ class VppNetworkTopologyParser(network_topology.NetworkTopologyParser):
                     # "netconf-node-topology:available-capabilities": {
                     #       "available-capability" : contains the v3po model
                     node_name = node['node-id']
-                    LOG.debug("Examining capabilities for node: \n%s",
+                    LOG.debug("Examining capabilities for node: %s\n",
                               node_name)
-                    capabilities = node[
+                    try:
+                        capabilities = node[
                         'netconf-node-topology:available-capabilities']
-                    LOG.debug("Parsing node napabilities: \n%s", capabilities)
-                    for item in capabilities['available-capability']:
-                        if HC_VPP_CAPABILITY in item:
-                            LOG.debug("Found VPP matching capability for node: "
-                                      "%s\n", node_name)
-                            element = elements_by_name.get(node_name)
-                            if element is None:
-                                elements_by_name[node_name] = element =\
-                                    self.new_element(node_name)
+                        LOG.debug("Node's capabilities: %s\n",
+                                  capabilities)
+                        for item in capabilities['available-capability']:
+                            if HC_VPP_CAPABILITY in item:
+                                LOG.debug("Found VPP matching capability for "
+                                          "node: %s\n", node_name)
+                                element = elements_by_name.get(node_name)
+                                if element is None:
+                                    elements_by_name[node_name] = element =\
+                                        self.new_element(node_name)
 
-                            self.\
-                                _update_element_from_json_netconf_topology_node(
-                                node, element, node_name, capabilities)
+                                self.\
+                                    _update_element_from_json_netconf_topology_node(
+                                    node, element, node_name, capabilities)
+                    except KeyError:
+                        LOG.debug("No netconf available capabilities found for"
+                                  ": %s\n", node_name)
 
         # Can there can be more VPP instances connected beside the same IP
         # address?

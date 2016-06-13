@@ -215,9 +215,9 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                             "'NetworkTopologyElement': {!r}".format(element))
                     # the same element can be known by more host addresses
                     for host_address in element.host_addresses:
-                        LOG.debug
                         if host_address in addresses:
                             at_least_one_element_for_asked_addresses = True
+                            LOG.debug("Found Host: %s in cache\n", host_address)
                         yield host_address, element
             except Exception:
                 LOG.exception(
