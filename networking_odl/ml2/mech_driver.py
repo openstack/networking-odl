@@ -67,17 +67,46 @@ class ResourceFilterBase(object):
     def filter_create_attributes_with_plugin(resource, plugin, dbcontext):
         pass
 
+    @staticmethod
+    def _filter_unmapped_null(resource_dict, unmapped_keys):
+        # NOTE(yamahata): bug work around
+        # https://bugs.eclipse.org/bugs/show_bug.cgi?id=475475
+        #   Null-value for an unmapped element causes next mapped
+        #   collection to contain a null value
+        #   JSON: { "unmappedField": null, "mappedCollection": [ "a" ] }
+        #
+        #   Java Object:
+        #   class Root {
+        #     Collection<String> mappedCollection = new ArrayList<String>;
+        #   }
+        #
+        #   Result:
+        #   Field B contains one element; null
+        #
+        # TODO(yamahata): update along side with neutron and ODL
+        #   add when neutron adds more extensions
+        #   delete when ODL neutron northbound supports it
+        # TODO(yamahata): do same thing for other resources
+        keys_to_del = [key for key in unmapped_keys
+                       if resource_dict.get(key) is None]
+        if keys_to_del:
+            odl_utils.try_del(resource_dict, keys_to_del)
+
 
 class NetworkFilter(ResourceFilterBase):
-    @staticmethod
-    def filter_create_attributes(network, context):
+    _UNMAPPED_KEYS = ['qos_policy_id']
+
+    @classmethod
+    def filter_create_attributes(cls, network, context):
         """Filter out network attributes not required for a create."""
         odl_utils.try_del(network, ['status', 'subnets'])
+        cls._filter_unmapped_null(network, cls._UNMAPPED_KEYS)
 
-    @staticmethod
-    def filter_update_attributes(network, context):
+    @classmethod
+    def filter_update_attributes(cls, network, context):
         """Filter out network attributes for an update operation."""
         odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
+        cls._filter_unmapped_null(network, cls._UNMAPPED_KEYS)
 
     @classmethod
     def filter_create_attributes_with_plugin(cls, network, plugin, dbcontext):
@@ -106,6 +135,9 @@ class SubnetFilter(ResourceFilterBase):
 
 
 class PortFilter(ResourceFilterBase):
+    _UNMAPPED_KEYS = ['binding:profile', 'dns_name',
+                      'port_security_enabled', 'qos_policy_id']
+
     @staticmethod
     def _add_security_groups(port, context):
         """Populate the 'security_groups' field with entire records."""
@@ -122,38 +154,12 @@ class PortFilter(ResourceFilterBase):
             network_address = str(netaddr.IPNetwork(ip_address))
             address_pair['ip_address'] = network_address
 
-    @staticmethod
-    def _filter_unmapped_null(port):
-        # NOTE(yamahata): bug work around
-        # https://bugs.eclipse.org/bugs/show_bug.cgi?id=475475
-        #   Null-value for an unmapped element causes next mapped
-        #   collection to contain a null value
-        #   JSON: { "unmappedField": null, "mappedCollection": [ "a" ] }
-        #
-        #   Java Object:
-        #   class Root {
-        #     Collection<String> mappedCollection = new ArrayList<String>;
-        #   }
-        #
-        #   Result:
-        #   Field B contains one element; null
-        #
-        # TODO(yamahata): update along side with neutron and ODL
-        #   add when neutron adds more extensions
-        #   delete when ODL neutron northbound supports it
-        # TODO(yamahata): do same thing for other resources
-        unmapped_keys = ['dns_name', 'port_security_enabled',
-                         'binding:profile']
-        keys_to_del = [key for key in unmapped_keys if port.get(key) is None]
-        if keys_to_del:
-            odl_utils.try_del(port, keys_to_del)
-
     @classmethod
     def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
         cls._add_security_groups(port, context)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
-        cls._filter_unmapped_null(port)
+        cls._filter_unmapped_null(port, cls._UNMAPPED_KEYS)
         odl_utils.try_del(port, ['status'])
 
         # NOTE(yamahata): work around for port creation for router
@@ -175,7 +181,7 @@ class PortFilter(ResourceFilterBase):
         """Filter out port attributes for an update operation."""
         cls._add_security_groups(port, context)
         cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
-        cls._filter_unmapped_null(port)
+        cls._filter_unmapped_null(port, cls._UNMAPPED_KEYS)
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
 
     @classmethod

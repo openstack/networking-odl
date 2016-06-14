@@ -16,20 +16,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 
 
-def _filter_network_create(network):
-    odl_utils.try_del(network, ['status', 'subnets'])
-
-
-def _filter_network_update(network):
-    odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
-
-
-def _filter_subnet_update(subnet):
-    odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
-                      'allocation_pools', 'tenant_id'])
-
-
-def _filter_port_unmapped_null(port):
+def _filter_unmapped_null(resource_dict, unmapped_keys):
     # NOTE(yamahata): bug work around
     # https://bugs.eclipse.org/bugs/show_bug.cgi?id=475475
     #   Null-value for an unmapped element causes next mapped
@@ -48,24 +35,43 @@ def _filter_port_unmapped_null(port):
     #   add when neutron adds more extensions
     #   delete when ODL neutron northbound supports it
     # TODO(yamahata): do same thing for other resources
-    unmapped_keys = ['dns_name', 'port_security_enabled',
-                     'binding:profile']
-    keys_to_del = [key for key in unmapped_keys if port.get(key) is None]
+    keys_to_del = [key for key in unmapped_keys
+                   if resource_dict.get(key) is None]
     if keys_to_del:
-        odl_utils.try_del(port, keys_to_del)
+        odl_utils.try_del(resource_dict, keys_to_del)
+
+
+_NETWORK_UNMAPPED_KEYS = ['qos_policy_id']
+_PORT_UNMAPPED_KEYS = ['binding:profile', 'dns_name',
+                       'port_security_enabled', 'qos_policy_id']
+
+
+def _filter_network_create(network):
+    odl_utils.try_del(network, ['status', 'subnets'])
+    _filter_unmapped_null(network, _NETWORK_UNMAPPED_KEYS)
+
+
+def _filter_network_update(network):
+    odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
+    _filter_unmapped_null(network, _NETWORK_UNMAPPED_KEYS)
+
+
+def _filter_subnet_update(subnet):
+    odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
+                      'allocation_pools', 'tenant_id'])
 
 
 def _filter_port_create(port):
     """Filter out port attributes not required for a create."""
-    _filter_port_unmapped_null(port)
     odl_utils.try_del(port, ['status'])
+    _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
 
 
 def _filter_port_update(port):
     """Filter out port attributes for an update operation."""
-    _filter_port_unmapped_null(port)
     odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
                       'tenant_id', 'fixed_ips'])
+    _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
 
 
 def _filter_router_update(router):
