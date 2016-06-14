@@ -206,13 +206,14 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                    'binding:vnic_type': 'normal',
                    'binding:vif_type': 'unbound',
                    'mac_address': '12:34:56:78:21:b6'}
+        _network = OpenDaylightMechanismDriverTestCase.\
+            _get_mock_network_operation_context().current
         _plugin = manager.NeutronManager.get_plugin()
         _plugin.get_security_group = mock.Mock(return_value=SECURITY_GROUP)
         _plugin.get_port = mock.Mock(return_value=current)
+        _plugin.get_network = mock.Mock(return_value=_network)
         _plugin_context_mock = {'session': neutron_db_api.get_session()}
-        _network_context_mock = {
-            '_network': OpenDaylightMechanismDriverTestCase.
-            _get_mock_network_operation_context().current}
+        _network_context_mock = {'_network': _network}
         context = {'current': AttributeDict(current),
                    '_plugin': _plugin,
                    '_plugin_context': AttributeDict(_plugin_context_mock),
@@ -435,6 +436,20 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             for object_type in [odl_const.ODL_NETWORK, odl_const.ODL_SUBNET,
                                 odl_const.ODL_PORT]:
                 self._test_operation_object(operation, object_type)
+
+    def test_port_precommit_no_tenant(self):
+        context = self._get_mock_operation_context(odl_const.ODL_PORT)
+        context.current['tenant_id'] = ''
+
+        method = getattr(self.mech, 'create_port_precommit')
+        method(context)
+
+        # Verify that the Db row has a tenant
+        rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
+        self.assertEqual(1, len(rows))
+        _network = OpenDaylightMechanismDriverTestCase.\
+            _get_mock_network_operation_context().current
+        self.assertEqual(_network['tenant_id'], rows[0]['data']['tenant_id'])
 
     def test_network(self):
         self._test_object_type(odl_const.ODL_NETWORK)

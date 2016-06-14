@@ -72,7 +72,7 @@ def _enrich_port(db_session, context, object_type, operation, data):
         if context:
             tenant_id = context._network_context._network['tenant_id']
         else:
-            network = plugin.get_network(dbcontext)
+            network = plugin.get_network(dbcontext, new_data['network_id'])
             tenant_id = network['tenant_id']
         new_data['tenant_id'] = tenant_id
 
