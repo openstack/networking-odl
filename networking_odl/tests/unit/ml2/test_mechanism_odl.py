@@ -23,7 +23,6 @@ from oslo_serialization import jsonutils
 import requests
 import webob.exc
 
-from neutron.common import constants as n_constants
 from neutron.db import segments_db
 from neutron.extensions import portbindings
 from neutron.plugins.common import constants
@@ -34,6 +33,7 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+from neutron_lib import constants as n_constants
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const

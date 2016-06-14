@@ -21,10 +21,10 @@ from oslo_log import log
 import six
 from six.moves.urllib import parse
 
-from neutron.common import constants as n_const
 from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
+from neutron_lib import constants as n_const
 
 from networking_odl.ml2 import network_topology
 

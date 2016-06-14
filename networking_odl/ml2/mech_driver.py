@@ -23,13 +23,13 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
-from neutron.common import exceptions as n_exc
 from neutron.common import utils
 from neutron import context as neutron_context
 from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
+from neutron_lib import exceptions as n_exc
 
 from networking_odl._i18n import _LE
 from networking_odl.common import callback as odl_call

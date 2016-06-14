@@ -16,7 +16,6 @@
 
 from oslo_log import log as logging
 
-from neutron.common import constants as q_const
 from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
@@ -24,6 +23,7 @@ from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
 from neutron.plugins.common import constants
+from neutron_lib import constants as q_const
 
 from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const

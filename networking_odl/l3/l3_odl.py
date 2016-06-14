@@ -19,7 +19,6 @@ from oslo_log import log as logging
 
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.api.rpc.handlers import l3_rpc
-from neutron.common import constants as q_const
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
 from neutron.db import extraroute_db
@@ -27,6 +26,7 @@ from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
 from neutron.plugins.common import constants
+from neutron_lib import constants as q_const
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import utils as odl_utils
