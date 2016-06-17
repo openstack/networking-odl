@@ -36,8 +36,6 @@ from neutron.tests.unit import testlib_api
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
-HOST = 'fake-host'
-PLUGIN_NAME = 'neutron.plugins.ml2.plugin.Ml2Plugin'
 SECURITY_GROUP = '2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'
 SG_FAKE_ID = 'sg_fake_uuid'
 SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
