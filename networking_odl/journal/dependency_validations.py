@@ -235,7 +235,7 @@ def validate_security_group_rule_operation(session, row):
     """
     return True
 
-VALIDATION_MAP = {
+_VALIDATION_MAP = {
     odl_const.ODL_NETWORK: validate_network_operation,
     odl_const.ODL_SUBNET: validate_subnet_operation,
     odl_const.ODL_PORT: validate_port_operation,
@@ -245,3 +245,23 @@ VALIDATION_MAP = {
     odl_const.ODL_SG: validate_security_group_operation,
     odl_const.ODL_SG_RULE: validate_security_group_rule_operation,
 }
+
+
+def validate(session, row):
+    """Validate resource dependency in journaled operations.
+
+    :param session: db session
+    :param row: entry in journal entry to be validated
+    """
+    return _VALIDATION_MAP[row.object_type](session, row)
+
+
+def register_validator(object_type, validator):
+    """Register validator function for given resource.
+
+    :param object_type: neutron resource type
+    :param validator: function to be registered which validates resource
+         dependencies
+    """
+    assert object_type not in _VALIDATION_MAP
+    _VALIDATION_MAP[object_type] = validator
