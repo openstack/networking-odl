@@ -363,8 +363,8 @@ class OpenDaylightDriver(object):
                            'object_id': obj_id})
                 self.out_of_sync = True
 
-    def sync_from_callback(self, operation, object_type, res_id,
-                           resource_dict):
+    def sync_from_callback(self, operation, res_type, res_id, resource_dict):
+        object_type = res_type.plural.replace('_', '-')
         try:
             if operation == odl_const.ODL_DELETE:
                 self.out_of_sync |= not self.client.try_delete(
@@ -380,7 +380,8 @@ class OpenDaylightDriver(object):
         except Exception:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE("Unable to perform %(operation)s on "
-                              "%(object_type)s %(res_id)s %(resource_dict)s"),
+                              "%(object_type)s %(res_id)s "
+                              "%(resource_dict)s"),
                           {'operation': operation,
                            'object_type': object_type,
                            'res_id': res_id,

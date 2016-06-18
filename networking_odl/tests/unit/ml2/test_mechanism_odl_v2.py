@@ -14,6 +14,7 @@
 #    under the License.
 import datetime
 
+from networking_odl.common import callback
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
@@ -277,7 +278,9 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         context = self._get_mock_operation_context(object_type)
 
         if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
-            self.mech.sync_from_callback(operation, object_type + 's',
+            res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
+                        if rt.singular == object_type][0]
+            self.mech.sync_from_callback(operation, res_type,
                                          context[object_type]['id'], context)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
