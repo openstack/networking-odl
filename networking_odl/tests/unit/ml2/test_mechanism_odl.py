@@ -24,6 +24,7 @@ import requests
 import webob.exc
 
 from neutron.common import constants as n_constants
+from neutron.db import segments_db
 from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
@@ -504,7 +505,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         tenant_id = network['tenant_id']
         port['tenant_id'] = ''
 
-        with mock.patch.object(driver_context.db, 'get_network_segments'):
+        with mock.patch.object(segments_db, 'get_network_segments'):
             context = driver_context.PortContext(
                 plugin, plugin_context, port, network, {}, 0, None)
             self.mech.odl_drv.FILTER_MAP[
@@ -523,7 +524,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         port['mac_address'] = port['mac_address'].upper()
         orig_port = copy.deepcopy(port)
 
-        with mock.patch.object(driver_context.db, 'get_network_segments'):
+        with mock.patch.object(segments_db, 'get_network_segments'):
             context = driver_context.PortContext(
                 plugin, plugin_context, port, network, {}, 0, None)
             self.mech.odl_drv.FILTER_MAP[
