@@ -94,3 +94,8 @@ SKIP_OVS_INSTALL=$(trueorfalse False SKIP_OVS_INSTALL)
 
 # Port binding controller
 ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-network-topology}
+
+# Configure bridges using devstack, instead of waiting for ODL to configure bridges.
+# This is currently required for loading netvirt-vpnservice-openstack feature.
+ODL_CONFIG_BRIDGES=${ODL_CONFIG_BRIDGES:-False}
+ODL_BRIDGES_CTL_PORT=${ODL_BRIDGES_CTL_PORT:-6653}

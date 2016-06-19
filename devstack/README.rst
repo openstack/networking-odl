@@ -63,3 +63,15 @@
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
      SKIP_OVS_INSTALL=True
      Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight
+
+10. Note: Optionally, to use the new netvirt implementation (netvirt-vpnservice-openstack),
+    add the following to the local.conf file (only allinone topology is currently supported
+    by devstack, since tunnel endpoints are not automatically configured).
+    For tunnel configurations after loading devstack, please refer to this guide
+    https://wiki.opendaylight.org/view/Netvirt:_L2Gateway_HowTo#Configuring_Tunnels::
+
+    > cat local.conf
+    [[local|localrc]]
+    ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
+    ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
+    ODL_CONFIG_BRIDGES=True
