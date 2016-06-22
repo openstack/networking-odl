@@ -40,6 +40,9 @@ ODL_MEMBERS = 'members'
 ODL_HEALTHMONITOR = 'healthmonitor'
 ODL_HEALTHMONITORS = 'healthmonitors'
 
+ODL_QOS_POLICIES = 'qos/policies'
+ODL_POLICY = 'policy'
+
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
