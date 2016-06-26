@@ -1,0 +1,11 @@
+---
+prelude: >
+    Eliminate network topology based port binding
+upgrade:
+  - If network topology based port binding,
+    network-topology, is used, migrate to pseodu agent
+    based port binding, pseudo-agentdb-binding.
+deprecations:
+  - network topology based port binding was removed.
+    So is network-topology value for port_binding_controllers.
+    Migrate pseudo-agentdb-binding port binding.
