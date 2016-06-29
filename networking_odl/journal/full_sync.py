@@ -14,12 +14,16 @@
 #  under the License.
 #
 
+import requests
+
+from neutron import context as neutron_context
+from neutron import manager
+from neutron.plugins.common import constants
+from neutron_lib import constants as l3_constants
+
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
-from neutron import context as neutron_context
-from neutron import manager
-import requests
 
 # Define which pending operation types should be deleted
 _CANARY_NETWORK_ID = "bd8db3a8-2b30-4083-a8b3-b3fd46401142"
@@ -29,11 +33,13 @@ _CANARY_NETWORK_DATA = {'id': _CANARY_NETWORK_ID,
                         'name': 'Sync Canary Network',
                         'admin_state_up': False}
 _OPS_TO_DELETE_ON_SYNC = (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)
-_RESOURCES_TO_SYNC = [(odl_const.ODL_SG, odl_const.ODL_SGS),
-                      (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
-                      (odl_const.ODL_NETWORK, odl_const.ODL_NETWORKS),
-                      (odl_const.ODL_SUBNET, odl_const.ODL_SUBNETS),
-                      (odl_const.ODL_PORT, odl_const.ODL_PORTS)]
+_L2_RESOURCES_TO_SYNC = [(odl_const.ODL_SG, odl_const.ODL_SGS),
+                         (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
+                         (odl_const.ODL_NETWORK, odl_const.ODL_NETWORKS),
+                         (odl_const.ODL_SUBNET, odl_const.ODL_SUBNETS),
+                         (odl_const.ODL_PORT, odl_const.ODL_PORTS)]
+_L3_RESOURCES_TO_SYNC = [(odl_const.ODL_ROUTER, odl_const.ODL_ROUTERS),
+                         (odl_const.ODL_FLOATINGIP, odl_const.ODL_FLOATINGIPS)]
 _CLIENT = client.OpenDaylightRestClient.create_client()
 
 
@@ -45,9 +51,17 @@ def full_sync(session):
 
     dbcontext = neutron_context.get_admin_context()
     plugin = manager.NeutronManager.get_plugin()
-    for resource_type, collection_name in _RESOURCES_TO_SYNC:
+    for resource_type, collection_name in _L2_RESOURCES_TO_SYNC:
         _sync_resources(session, plugin, dbcontext, resource_type,
                         collection_name)
+
+    l3plugin = manager.NeutronManager.get_service_plugins().get(
+        constants.L3_ROUTER_NAT)
+    for resource_type, collection_name in _L3_RESOURCES_TO_SYNC:
+        _sync_resources(session, l3plugin, dbcontext, resource_type,
+                        collection_name)
+    _sync_router_ports(session, plugin, dbcontext)
+
     db.create_pending_row(session, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
                           odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
 
@@ -86,3 +100,15 @@ def _sync_resources(session, plugin, dbcontext, object_type, collection_name):
     for resource in resources:
         db.create_pending_row(session, object_type, resource['id'],
                               odl_const.ODL_CREATE, resource)
+
+
+def _sync_router_ports(session, plugin, dbcontext):
+    filters = {'device_owner': [l3_constants.DEVICE_OWNER_ROUTER_INTF]}
+    router_ports = plugin.get_ports(dbcontext, filters=filters)
+    for port in router_ports:
+        resource = {'subnet_id': port['fixed_ips'][0]['subnet_id'],
+                    'port_id': port['id'],
+                    'id': port['device_id'],
+                    'tenant_id': port['tenant_id']}
+        db.create_pending_row(session, odl_const.ODL_ROUTER_INTF, port['id'],
+                              odl_const.ODL_ADD, resource)
