@@ -36,7 +36,8 @@ def upgrade():
     maint_table = op.create_table(
         'opendaylight_maintenance',
         sa.Column('id', sa.String(36), primary_key=True),
-        sa.Column('state', sa.Enum(odl_const.PENDING, odl_const.PROCESSING),
+        sa.Column('state', sa.Enum(odl_const.PENDING, odl_const.PROCESSING,
+                                   name='state'),
                   nullable=False),
         sa.Column('processing_operation', sa.String(70)),
         sa.Column('lock_updated', sa.TIMESTAMP, nullable=False,
