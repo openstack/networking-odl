@@ -16,7 +16,7 @@
 #   lithium-0.3.1-SR1      (SR1)
 #   helium-0.2.3-SR3
 
-ODL_RELEASE=${ODL_RELEASE:-beryllium-snapshot-0.4.3}
+ODL_RELEASE=${ODL_RELEASE:-boron-snapshot-0.5.0}
 
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
@@ -91,6 +91,9 @@ ODL_RETRY_SLEEP_INTERVAL=${ODL_RETRY_SLEEP_INTERVAL:-5}
 
 # Skip installation of distribution provided Open vSwitch
 SKIP_OVS_INSTALL=$(trueorfalse False SKIP_OVS_INSTALL)
+
+# The ODL Restconf URL
+ODL_RESTCONF_URI=${ODL_RESTCONF_URI:-/restconf/operational/neutron:neutron/hostconfigs}
 
 # Port binding controller
 ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-network-topology}
