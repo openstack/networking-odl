@@ -223,6 +223,9 @@ class DataMatcher(object):
         data = jsonutils.loads(s)
         return self._data == data[self._object_type]
 
+    def __ne__(self, s):
+        return not self.__eq__(s)
+
 
 class OpenDaylightSyncTestCase(OpenDaylightTestCase):
 
