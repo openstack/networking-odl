@@ -96,3 +96,13 @@
       extensions_drivers = qos, port_security
 
     restart neutron service q-svc
+
+12. Note: To enable networking-sfc driver to use with OpenDaylight controller
+    please add following configuration::
+
+      > in /etc/neutron/neutron.conf
+      [sfc]
+      drivers = odl
+
+      [flowclassifier]
+      drivers = odl

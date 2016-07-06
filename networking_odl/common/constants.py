@@ -42,6 +42,12 @@ ODL_HEALTHMONITORS = 'healthmonitors'
 ODL_QOS_POLICIES = 'qos/policies'
 ODL_POLICY = 'policy'
 
+ODL_SFC = 'sfc'
+ODL_SFC_FLOW_CLASSIFIER = 'flowclassifier'
+ODL_SFC_PORT_PAIR = 'portpair'
+ODL_SFC_PORT_PAIR_GROUP = 'portpairgroup'
+ODL_SFC_PORT_CHAIN = 'portchain'
+
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
