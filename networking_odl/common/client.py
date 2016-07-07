@@ -20,6 +20,8 @@ from oslo_utils import excutils
 import requests
 import threading
 
+from networking_odl._i18n import _LE
+from networking_odl.common import constants as odl_const
 
 LOG = log.getLogger(__name__)
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -88,7 +90,33 @@ class OpenDaylightRestClient(object):
     def sendjson(self, method, urlpath, obj):
         """Send json to the OpenDaylight controller."""
         data = jsonutils.dumps(obj, indent=2) if obj else None
-        return self._check_rensponse(self.request(method, urlpath, data))
+        try:
+            return self._check_rensponse(
+                self.request(method, urlpath, data))
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                LOG.error(_LE("REST request ( %(method)s ) to "
+                              "url ( %(urlpath)s ) is failed."
+                              "Request body : [%(body)s] service"),
+                          {'method': method,
+                           'urlpath': urlpath,
+                           'body': obj})
+
+    def send_request(self, operation, service_type, object_type, data):
+        """Wrapper method for sendjson()"""
+        obj_id = data['id']
+        base_path = service_type + '/' + object_type + 's'
+        if operation == odl_const.ODL_DELETE:
+            urlpath = base_path + '/' + obj_id
+            self.try_delete(urlpath)
+            return
+        elif operation == odl_const.ODL_CREATE:
+            urlpath = base_path
+            method = 'post'
+        elif operation == odl_const.ODL_UPDATE:
+            urlpath = base_path + '/' + obj_id
+            method = 'put'
+        self.sendjson(method, urlpath, {object_type: data})
 
     def try_delete(self, urlpath):
         rensponse = self.delete(urlpath)
