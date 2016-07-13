@@ -70,8 +70,8 @@
     For tunnel configurations after loading devstack, please refer to this guide
     https://wiki.opendaylight.org/view/Netvirt:_L2Gateway_HowTo#Configuring_Tunnels::
 
-    > cat local.conf
-    [[local|localrc]]
-    ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
-    ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
-    ODL_CONFIG_BRIDGES=True
+      > cat local.conf
+      [[local|localrc]]
+      ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
+      ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
+      ODL_CONFIG_BRIDGES=True
