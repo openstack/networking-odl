@@ -74,4 +74,3 @@
       [[local|localrc]]
       ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
       ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
-      ODL_CONFIG_BRIDGES=True
