@@ -131,6 +131,12 @@ class DataMatcher(object):
         return self._data == data[self._object_type]
 
 
+class AttributeDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
 class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     def setUp(self):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
@@ -200,19 +206,18 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                    'binding:vnic_type': 'normal',
                    'binding:vif_type': 'unbound',
                    'mac_address': '12:34:56:78:21:b6'}
-        context = mock.Mock(current=current)
-        context._plugin.get_security_group = mock.Mock(
-            return_value=SECURITY_GROUP)
-        context._plugin.get_port = mock.Mock(return_value=current)
-        plugin_mock = mock.patch.object(manager.NeutronManager,
-                                        'get_plugin').start()
-        plugin_mock.get_security_group = context._plugin.get_security_group
-        plugin_mock.get_port = context._plugin.get_port
-        context._plugin_context.session = neutron_db_api.get_session()
-        context._network_context = mock.Mock(
-            _network=OpenDaylightMechanismDriverTestCase.
-            _get_mock_network_operation_context().current)
-        return context
+        _plugin = manager.NeutronManager.get_plugin()
+        _plugin.get_security_group = mock.Mock(return_value=SECURITY_GROUP)
+        _plugin.get_port = mock.Mock(return_value=current)
+        _plugin_context_mock = {'session': neutron_db_api.get_session()}
+        _network_context_mock = {
+            '_network': OpenDaylightMechanismDriverTestCase.
+            _get_mock_network_operation_context().current}
+        context = {'current': AttributeDict(current),
+                   '_plugin': _plugin,
+                   '_plugin_context': AttributeDict(_plugin_context_mock),
+                   '_network_context': AttributeDict(_network_context_mock)}
+        return AttributeDict(context)
 
     @staticmethod
     def _get_mock_security_group_operation_context():

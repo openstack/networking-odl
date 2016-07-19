@@ -58,9 +58,6 @@ def _enrich_port(db_session, context, object_type, operation, data):
     new_data = copy.deepcopy(data)
     new_data['security_groups'] = groups
 
-    # Add the network_id in for validation
-    new_data['network_id'] = data['network_id']
-
     # NOTE(yamahata): work around for port creation for router
     # tenant_id=''(empty string) is passed when port is created
     # by l3 plugin internally for router.
@@ -77,14 +74,16 @@ def _enrich_port(db_session, context, object_type, operation, data):
         else:
             network = plugin.get_network(dbcontext)
             tenant_id = network['tenant_id']
-        data['tenant_id'] = tenant_id
+        new_data['tenant_id'] = tenant_id
+
+    return new_data
 
 
 def record(db_session, object_type, object_uuid, operation, data,
            context=None):
     if (object_type == odl_const.ODL_PORT and
             operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)):
-        _enrich_port(db_session, context, object_type, operation, data)
+        data = _enrich_port(db_session, context, object_type, operation, data)
 
     db.create_pending_row(db_session, object_type, object_uuid, operation,
                           data)
