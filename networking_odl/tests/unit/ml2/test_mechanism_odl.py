@@ -17,6 +17,7 @@
 import copy
 import mock
 import socket
+import testscenarios
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
@@ -24,7 +25,9 @@ import requests
 import webob.exc
 
 from neutron.db import segments_db
+from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import portbindings
+from neutron.extensions import providernet
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import driver_api as api
@@ -42,6 +45,9 @@ from networking_odl.ml2 import mech_driver
 from networking_odl.ml2 import network_topology
 from networking_odl.tests import base as odl_base
 
+
+# Required to generate tests from scenarios. Not compatible with nose.
+load_tests = testscenarios.load_tests_apply_scenarios
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
@@ -599,3 +605,61 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
             segments_to_bind=[self.valid_segment, self.invalid_segment],
             network=network,
             _new_bound_segment=self.valid_segment)
+
+
+class _OpenDaylightDriverVlanTransparencyBase(OpenDaylightTestCase):
+    def setUp(self):
+        super(_OpenDaylightDriverVlanTransparencyBase, self).setUp()
+        self.mech.initialize()
+
+    def _driver_context(self, network):
+        return mock.MagicMock(current=network)
+
+
+class TestOpenDaylightDriverVlanTransparencyNetwork(
+        _OpenDaylightDriverVlanTransparencyBase):
+    def _test_network_type(self, expected, network_type):
+        context = self._driver_context({providernet.NETWORK_TYPE:
+                                        network_type})
+        self.assertEqual(expected,
+                         self.mech.check_vlan_transparency(context))
+
+    def test_vlan_transparency(self):
+        context = self._driver_context({})
+        self.assertEqual(True,
+                         self.mech.check_vlan_transparency(context))
+
+        for network_type in [constants.TYPE_VXLAN]:
+            self._test_network_type(True, network_type)
+        for network_type in [constants.TYPE_FLAT, constants.TYPE_GENEVE,
+                             constants.TYPE_GRE, constants.TYPE_LOCAL,
+                             constants.TYPE_VLAN]:
+            self._test_network_type(False, network_type)
+
+
+class TestOpenDaylightDriverVlanTransparency(
+        _OpenDaylightDriverVlanTransparencyBase):
+    scenarios = [
+        ('vxlan_vxlan',
+         {'expected': True,
+          'network_types': [constants.TYPE_VXLAN, constants.TYPE_VXLAN]}),
+        ('gre_vxlan',
+         {'expected': False,
+          'network_types': [constants.TYPE_GRE, constants.TYPE_VXLAN]}),
+        ('vxlan_vlan',
+         {'expected': False,
+          'network_types': [constants.TYPE_VXLAN, constants.TYPE_VLAN]}),
+        ('vxlan_flat',
+         {'expected': False,
+          'network_types': [constants.TYPE_VXLAN, constants.TYPE_FLAT]}),
+        ('vlan_vlan',
+         {'expected': False,
+          'network_types': [constants.TYPE_VLAN, constants.TYPE_VLAN]}),
+    ]
+
+    def test_network_segments(self):
+        segments = [{providernet.NETWORK_TYPE: type_}
+                    for type_ in self.network_types]
+        context = self._driver_context({mpnet.SEGMENTS: segments})
+        self.assertEqual(self.expected,
+                         self.mech.check_vlan_transparency(context))

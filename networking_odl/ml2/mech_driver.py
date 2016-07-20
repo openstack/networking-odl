@@ -26,7 +26,10 @@ import requests
 from neutron.common import utils
 from neutron import context as neutron_context
 from neutron.extensions import allowedaddresspairs as addr_pair
+from neutron.extensions import multiprovidernet as mpnet
+from neutron.extensions import providernet
 from neutron.extensions import securitygroup as sg
+from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib import exceptions as n_exc
@@ -406,6 +409,28 @@ class OpenDaylightDriver(object):
         """
         self.port_binding_controller.bind_port(port_context)
 
+    def check_vlan_transparency(self, context):
+        """Check VLAN transparency
+
+        """
+        # VLAN and FLAT cases, we don't know if the underlying network
+        # supports QinQ or VLAN.
+        # For now, netvirt supports only vxlan tunneling.
+        VLAN_TRANSPARENT_NETWORK_TYPES = [p_const.TYPE_VXLAN]
+        network = context.current
+        # see TypeManager._extend_network_dict_provider()
+        # single providernet
+        if providernet.NETWORK_TYPE in network:
+            return (network[providernet.NETWORK_TYPE] in
+                    VLAN_TRANSPARENT_NETWORK_TYPES)
+        # multi providernet
+        segments = network.get(mpnet.SEGMENTS)
+        if segments is None:
+            return True
+        return all(segment[providernet.NETWORK_TYPE]
+                   in VLAN_TRANSPARENT_NETWORK_TYPES
+                   for segment in segments)
+
 
 class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
 
@@ -463,3 +488,6 @@ class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
 
     def bind_port(self, context):
         self.odl_drv.bind_port(context)
+
+    def check_vlan_transparency(self, context):
+        return self.odl_drv.check_vlan_transparency(context)

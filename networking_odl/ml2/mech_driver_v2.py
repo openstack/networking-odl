@@ -16,6 +16,9 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from neutron.extensions import multiprovidernet as mpnet
+from neutron.extensions import providernet
+from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api as api
 
 from networking_odl.common import callback
@@ -146,3 +149,28 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
 
         """
         return self.port_binding_controller.bind_port(port_context)
+
+    def check_vlan_transparency(self, context):
+        """Check VLAN transparency
+
+        """
+        # TODO(yamahata): This should be odl service provider dependent
+        # introduce ODL yang model for ODL to report which network types
+        # are vlan-transparent.
+        # VLAN and FLAT cases, we don't know if the underlying network
+        # supports QinQ or VLAN.
+        # For now, netvirt supports only vxlan tunneling.
+        VLAN_TRANSPARENT_NETWORK_TYPES = [p_const.TYPE_VXLAN]
+        network = context.current
+        # see TypeManager._extend_network_dict_provider()
+        # single providernet
+        if providernet.NETWORK_TYPE in network:
+            return (network[providernet.NETWORK_TYPE] in
+                    VLAN_TRANSPARENT_NETWORK_TYPES)
+        # multi providernet
+        segments = network.get(mpnet.SEGMENTS)
+        if segments is None:
+            return True
+        return all(segment[providernet.NETWORK_TYPE]
+                   in VLAN_TRANSPARENT_NETWORK_TYPES
+                   for segment in segments)
