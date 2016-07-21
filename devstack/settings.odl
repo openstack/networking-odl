@@ -44,6 +44,10 @@ ODL_USERNAME=${ODL_USERNAME:-admin}
 # The ODL password
 ODL_PASSWORD=${ODL_PASSWORD:-admin}
 
+# use v2 type driver
+# this requires post mitaka
+ODL_V2DRIVER=${ODL_V2DRIVER:-False}
+
 # The OpenDaylight URL PREFIX
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
