@@ -101,3 +101,9 @@ ODL_RESTCONF_URI=${ODL_RESTCONF_URI:-/restconf/operational/neutron:neutron/hostc
 
 # Port binding controller
 ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-network-topology}
+
+# Snapshot version - allows using a specific version e.g. 0.5.0-20160719.101233-3643
+# latest: check the latest snapshot
+# specific version: the specific version of the snapshot
+# "": odl release
+ODL_SNAPSHOT_VERSION=${ODL_SNAPSHOT_VERSION:-}
