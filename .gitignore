@@ -8,6 +8,7 @@ dist/
 doc/build
 *.DS_Store
 *.pyc
+etc/neutron/plugins/ml2/ml2_conf_odl.ini.sample
 networking_odl.egg-info/
 networking_odl/vcsversion.py
 networking_odl/versioninfo
