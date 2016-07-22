@@ -111,13 +111,13 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                             content_type='application/%s' % self.fmt)
 
         instance.create_router.assert_called_once_with(mock.ANY, router=router)
-        self.assertEqual(res.status_int, exc.HTTPCreated.code)
+        self.assertEqual(exc.HTTPCreated.code, res.status_int)
         res = self.deserialize(res)
         self.assertIn('router', res)
         router = res['router']
-        self.assertEqual(router['id'], router_id)
-        self.assertEqual(router['status'], "ACTIVE")
-        self.assertEqual(router['admin_state_up'], True)
+        self.assertEqual(router_id, router['id'])
+        self.assertEqual("ACTIVE", router['status'])
+        self.assertEqual(True, router['admin_state_up'])
 
     def test_update_router(self):
         router_id, router = self._get_router_test()
@@ -139,14 +139,14 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         instance.update_router.assert_called_once_with(mock.ANY, router_id,
                                                        router=router_request)
 
-        self.assertEqual(res.status_int, exc.HTTPOk.code)
+        self.assertEqual(exc.HTTPOk.code, res.status_int)
         res = self.deserialize(res)
         self.assertIn('router', res)
         router = res['router']
-        self.assertEqual(router['id'], router_id)
-        self.assertEqual(router["external_gateway_info"]['network_id'],
-                         "3c5bcddd-6af9-4e6b-9c3e-c153e521cab8")
-        self.assertEqual(router["external_gateway_info"]['enable_snat'], True)
+        self.assertEqual(router_id, router['id'])
+        self.assertEqual("3c5bcddd-6af9-4e6b-9c3e-c153e521cab8",
+                         router["external_gateway_info"]['network_id'])
+        self.assertEqual(True, router["external_gateway_info"]['enable_snat'])
 
     def test_delete_router(self):
         router_id, router = self._get_router_test()
@@ -156,7 +156,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         res = self.api.delete(_get_path('routers', id=router_id, fmt=self.fmt))
         instance.delete_router.assert_called_once_with(mock.ANY, router_id)
 
-        self.assertEqual(res.status_int, exc.HTTPNoContent.code)
+        self.assertEqual(exc.HTTPNoContent.code, res.status_int)
 
     def test_create_floating_ip(self):
         floating_ip_id, floating_ip = self._get_floating_ip_test()
@@ -189,12 +189,12 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
             assert_called_once_with(mock.ANY,
                                     floatingip=floating_ip_request)
 
-        self.assertEqual(res.status_int, exc.HTTPCreated.code)
+        self.assertEqual(exc.HTTPCreated.code, res.status_int)
         res = self.deserialize(res)
         self.assertIn('floatingip', res)
         floatingip = res['floatingip']
-        self.assertEqual(floatingip['id'], floating_ip_id)
-        self.assertEqual(floatingip['status'], "ACTIVE")
+        self.assertEqual(floating_ip_id, floatingip['id'])
+        self.assertEqual("ACTIVE", floatingip['status'])
 
     def test_update_floating_ip(self):
         floating_ip_id, floating_ip = self._get_floating_ip_test()
@@ -227,13 +227,13 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                                     floating_ip_id,
                                     floatingip=floating_ip_request)
 
-        self.assertEqual(res.status_int, exc.HTTPOk.code)
+        self.assertEqual(exc.HTTPOk.code, res.status_int)
         res = self.deserialize(res)
         self.assertIn('floatingip', res)
         floatingip = res['floatingip']
-        self.assertEqual(floatingip['id'], floating_ip_id)
-        self.assertEqual(floatingip['port_id'], None)
-        self.assertEqual(floatingip['fixed_ip_address'], None)
+        self.assertEqual(floating_ip_id, floatingip['id'])
+        self.assertEqual(None, floatingip['port_id'])
+        self.assertEqual(None, floatingip['fixed_ip_address'])
 
     def test_delete_floating_ip(self):
         floating_ip_id, floating_ip = self._get_floating_ip_test()
@@ -245,7 +245,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         instance.delete_floatingip.assert_called_once_with(mock.ANY,
                                                            floating_ip_id)
 
-        self.assertEqual(res.status_int, exc.HTTPNoContent.code)
+        self.assertEqual(exc.HTTPNoContent.code, res.status_int)
 
     def test_add_router_interface(self):
         router_id, router = self._get_router_test()
@@ -269,11 +269,11 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                                                               router_id,
                                                               interface_info)
 
-        self.assertEqual(res.status_int, exc.HTTPOk.code)
+        self.assertEqual(exc.HTTPOk.code, res.status_int)
         res = self.deserialize(res)
-        self.assertEqual(res['id'], router_id)
-        self.assertEqual(res['subnet_id'],
-                         "a2f1f29d-571b-4533-907f-5803ab96ead1")
+        self.assertEqual(router_id, res['id'])
+        self.assertEqual("a2f1f29d-571b-4533-907f-5803ab96ead1",
+                         res['subnet_id'])
 
     def test_remove_router_interface(self):
         router_id, router = self._get_router_test()
@@ -298,8 +298,8 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                                     router_id,
                                     interface_info)
 
-        self.assertEqual(res.status_int, exc.HTTPOk.code)
+        self.assertEqual(exc.HTTPOk.code, res.status_int)
         res = self.deserialize(res)
-        self.assertEqual(res['id'], router_id)
-        self.assertEqual(res['subnet_id'],
-                         "a2f1f29d-571b-4533-907f-5803ab96ead1")
+        self.assertEqual(router_id, res['id'])
+        self.assertEqual("a2f1f29d-571b-4533-907f-5803ab96ead1",
+                         res['subnet_id'])
