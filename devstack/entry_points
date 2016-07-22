@@ -250,7 +250,6 @@ function cleanup_opendaylight_compute {
     done
 }
 
-
 # bind_opendaylight_controller() - set control manager to OVS
 function bind_opendaylight_controller {
     echo_summary "Initializing OpenDaylight"
@@ -268,31 +267,6 @@ function bind_opendaylight_controller {
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
     fi
     sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
-
-    if [ "$ODL_CONFIG_BRIDGES" == "True" ]; then
-        echo_summary "Adding and configuring bridges (vpnservice workaround)"
-        bind_opendaylight_controller_configure_bridges
-    fi
-}
-
-# bind_opendaylight_controller_configure_bridges() - add bridges and set controllers
-# Note: this functionality should be removed from devstack once netvirt-vpnservice-openstack
-# supports adding this automatically via OVSDB
-function bind_opendaylight_controller_configure_bridges {
-    sudo ovs-vsctl --may-exist add-br $OVS_BR
-    sudo ovs-vsctl set bridge $OVS_BR protocols=OpenFlow13
-
-    local ODL_CONTROLLERS_PARAM=()
-    for controller in $(echo $ODL_OVS_MANAGERS | tr "," "\n"); do
-        ODL_CONTROLLERS_PARAM=( "${ODL_CONTROLLERS_PARAM[@]}" "tcp:$controller:$ODL_BRIDGES_CTL_PORT" )
-    done
-    sudo ovs-vsctl set-controller $OVS_BR ${ODL_CONTROLLERS_PARAM[@]}
-
-    if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
-        local EXT_BR=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
-        sudo ovs-vsctl --may-exist add-br $EXT_BR
-        sudo ovs-vsctl set-controller $EXT_BR ${ODL_CONTROLLERS_PARAM[@]}
-    fi
 }
 
 # unbind_opendaylight_controller() - disconnect controller from switch and clear bridges
