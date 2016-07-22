@@ -14,3 +14,6 @@ testresources>=0.2.4 # Apache-2.0/BSD
 testscenarios>=0.4 # Apache-2.0/BSD
 WebTest>=2.0 # MIT
 testtools>=1.4.0 # MIT
+
+# releasenotes
+reno>=1.8.0 # Apache2
