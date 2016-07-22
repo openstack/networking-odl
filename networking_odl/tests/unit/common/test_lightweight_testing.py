@@ -152,7 +152,7 @@ class LightweightTestingTestCase(base.DietTestCase):
         self.assertEqual(lwt.NO_CONTENT, response.status_code)
         lwt_dict = lwt.OpenDaylightLwtClient.lwt_dict
         network = lwt_dict['networks'].get('fakeid1')
-        self.assertEqual(None, network)
+        self.assertIsNone(network)
 
     @mock.patch.dict(lwt.OpenDaylightLwtClient.lwt_dict,
                      {'networks': {'fakeid1': {'id': 'fakeid1',
@@ -169,6 +169,6 @@ class LightweightTestingTestCase(base.DietTestCase):
         self.assertEqual(lwt.NO_CONTENT, response.status_code)
         lwt_dict = lwt.OpenDaylightLwtClient.lwt_dict
         network = lwt_dict['networks'].get('fakeid1')
-        self.assertEqual(None, network)
+        self.assertIsNone(network)
         network = lwt_dict['networks'].get('fakeid2')
-        self.assertEqual(None, network)
+        self.assertIsNone(network)

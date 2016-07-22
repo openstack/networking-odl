@@ -232,8 +232,8 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         self.assertIn('floatingip', res)
         floatingip = res['floatingip']
         self.assertEqual(floating_ip_id, floatingip['id'])
-        self.assertEqual(None, floatingip['port_id'])
-        self.assertEqual(None, floatingip['fixed_ip_address'])
+        self.assertIsNone(floatingip['port_id'])
+        self.assertIsNone(floatingip['fixed_ip_address'])
 
     def test_delete_floating_ip(self):
         floating_ip_id, floating_ip = self._get_floating_ip_test()
