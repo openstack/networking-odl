@@ -86,6 +86,7 @@ ODL_KARAF_LOG_NAME=$ODL_KARAF_LOG_BASE.$ODL_KARAF_LOG_DATE
 
 # The bridge to configure
 OVS_BR=${OVS_BR:-br-int}
+ODL_OVS_HOSTCONFIGS=${ODL_OVS_HOSTCONFIGS:-'{"ODL L2": { "supported_vnic_types":[{"vnic_type":"normal", "vif_type":"ovs","vif_details":{}}], "allowed_network_types":["local","vlan","vxlan","gre"], "bridge_mappings":{"physnet1":"br-ex"}},"ODL L3": {}}'}
 
 # Use the existing ready java env
 ODL_USING_EXISTING_JAVA=${ODL_USING_EXISTING_JAVA:-False}

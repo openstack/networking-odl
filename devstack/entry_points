@@ -267,6 +267,8 @@ function bind_opendaylight_controller {
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
     fi
     sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
+    # for pseudo agent port binding
+    sudo neutron-odl-ovs-hostconfig --config-file=$NEUTRON_CONF --ovs_hostconfigs="$ODL_OVS_HOSTCONFIGS"
 }
 
 # unbind_opendaylight_controller() - disconnect controller from switch and clear bridges
