@@ -45,6 +45,9 @@ class CacheEntry(collections.namedtuple('CacheEntry', ['timeout', 'values'])):
     def __eq__(self, other):
         return self is other
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Cache(object):
     '''Generic mapping class used to cache mapping

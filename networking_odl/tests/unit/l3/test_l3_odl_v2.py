@@ -87,6 +87,9 @@ class DataMatcher(object):
         else:
             return self._data == data[self._object_type]
 
+    def __ne__(self, s):
+        return not self.__eq__(s)
+
 
 class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                              base.BaseTestCase):
