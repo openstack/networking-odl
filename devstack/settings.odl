@@ -51,6 +51,11 @@ ODL_V2DRIVER=${ODL_V2DRIVER:-False}
 # The OpenDaylight URL PREFIX
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
+# OpenDaylight snapshot & release repositories paths
+# Can be overidden in case you host proxy repositories which have a different diretory structure than OpenDaylight's
+ODL_URL_SNAPSHOT_REPOSITORY_PATH=${ODL_URL_SNAPSHOT_REPOSITORY_PATH:-content/repositories/opendaylight.snapshot}
+ODL_URL_RELEASE_REPOSITORY_PATH=${ODL_URL_RELEASE_REPOSITORY_PATH:-content/repositories/opendaylight.release}
+
 # How long (in seconds) to pause after ODL starts to let it complete booting
 ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-600}
 
