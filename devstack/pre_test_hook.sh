@@ -11,7 +11,7 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=boron-snapshot-0.5.0
         ;;
     beryllium-snapshot)
-        ODL_RELEASE=beryllium-snapshot-0.4.3
+        ODL_RELEASE=beryllium-snapshot-0.4.4
         ;;
     lithium-snapshot)
         ODL_RELEASE=lithium-snapshot-0.3.5
