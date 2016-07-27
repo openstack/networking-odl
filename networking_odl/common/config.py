@@ -61,3 +61,7 @@ odl_opts = [
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")
+
+
+def list_opts():
+    return [('ml2_odl', odl_opts)]
