@@ -15,6 +15,7 @@
 
 import mock
 
+from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
@@ -73,3 +74,16 @@ class TestLegacyPortBindingManager(base.DietTestCase):
         port_context.set_binding.assert_called_once_with(
             self.valid_segment[api.ID], vif_type,
             mgr.vif_details, status=n_constants.PORT_STATUS_ACTIVE)
+
+    def test_bind_port_unsupported_vnic_type(self):
+        network = mock.MagicMock(spec=api.NetworkContext)
+        port_context = mock.MagicMock(
+            spec=ctx.PortContext,
+            current={'id': 'CURRENT_CONTEXT_ID',
+                     portbindings.VNIC_TYPE: portbindings.VNIC_DIRECT},
+            segments_to_bind=[self.valid_segment, self.invalid_segment],
+            network=network)
+
+        mgr = legacy_port_binding.LegacyPortBindingManager()
+        mgr.bind_port(port_context)
+        port_context.set_binding.assert_not_called()
