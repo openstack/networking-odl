@@ -26,6 +26,7 @@ from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
 from neutron_lib import constants as n_const
 
+from networking_odl._i18n import _
 from networking_odl.ml2 import network_topology
 
 
@@ -170,7 +171,8 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
                     status=n_const.PORT_STATUS_ACTIVE)
                 return
 
-        raise ValueError('Unable to find any valid segment in given context.')
+        raise ValueError(
+            _('Unable to find any valid segment in given context.'))
 
     def to_dict(self):
         data = super(OvsdbNetworkTopologyElement, self).to_dict()

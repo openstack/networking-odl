@@ -20,6 +20,7 @@ import six
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
+from networking_odl._i18n import _
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 
@@ -68,7 +69,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
         """No ID in URL, elements in resource_list must have ID"""
 
         if resource_list is None:
-            raise ValueError("resource_list can not be None")
+            raise ValueError(_("resource_list can not be None"))
 
         for resource in resource_list:
             if resource['id'] in resource_dict:
@@ -87,7 +88,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
         resource_id = cls._get_resource_id(urlpath)
 
         if resource_list is None:
-            raise ValueError("resource_list can not be None")
+            raise ValueError(_("resource_list can not be None"))
 
         if resource_id and len(resource_list) != 1:
             LOG.debug("Updating %s with multiple resources", urlpath)

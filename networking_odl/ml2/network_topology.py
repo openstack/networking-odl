@@ -27,7 +27,7 @@ from oslo_serialization import jsonutils
 from networking_odl.common import cache
 from networking_odl.common import client
 from networking_odl.common import utils
-from networking_odl._i18n import _LI, _LW, _LE
+from networking_odl._i18n import _, _LI, _LW, _LE
 from networking_odl.ml2 import port_binding
 
 
@@ -206,9 +206,9 @@ class NetworkTopologyManager(port_binding.PortBindingController):
             try:
                 for element in parser.parse_network_topology(network_topology):
                     if not isinstance(element, NetworkTopologyElement):
-                        raise TypeError(
+                        raise TypeError(_(
                             "Yield element doesn't implement interface "
-                            "'NetworkTopologyElement': {!r}".format(element))
+                            "'NetworkTopologyElement': {!r}").format(element))
                     # the same element can be known by more host addresses
                     for host_address in element.host_addresses:
                         if host_address in addresses:
@@ -224,8 +224,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
             # calling this method again as soon it is requested and avoid
             # waiting for cache expiration
             raise ValueError(
-                'No such topology element for given host addresses: {}'.format(
-                    ', '.join(addresses)))
+                _('No such topology element for given host addresses: {}')
+                .format(', '.join(addresses)))
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -240,9 +240,9 @@ class NetworkTopologyParser(object):
         module = importlib.import_module(module_name)
         clss = getattr(module, class_name)
         if not issubclass(clss, cls):
-            raise TypeError(
+            raise TypeError(_(
                 "Class {class_name!r} of module {module_name!r} doesn't "
-                "implement 'NetworkTopologyParser' interface.".format(
+                "implement 'NetworkTopologyParser' interface.").format(
                     class_name=class_name, module_name=module_name))
         return clss()
 

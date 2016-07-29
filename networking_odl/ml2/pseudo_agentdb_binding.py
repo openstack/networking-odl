@@ -126,7 +126,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         hostconfigs = self._rest_get_hostconfigs()
 
         if not hostconfigs:
-            LOG.warning(_LE("ODL hostconfigs REST/GET failed, "
+            LOG.warning(_LW("ODL hostconfigs REST/GET failed, "
                             "will retry on next poll"))
             return  # retry on next poll
 

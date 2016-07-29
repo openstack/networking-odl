@@ -22,6 +22,7 @@ import copy
 import mock
 
 from neutron.extensions import l3
+from neutron.extensions import l3_ext_gw_mode
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
 from webob import exc
@@ -35,11 +36,15 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
 
     def setUp(self):
         super(Testodll3, self).setUp()
+        # support ext-gw-mode
+        for key in l3.RESOURCE_ATTRIBUTE_MAP.keys():
+            l3.RESOURCE_ATTRIBUTE_MAP[key].update(
+                l3_ext_gw_mode.EXTENDED_ATTRIBUTES_2_0.get(key, {}))
         self._setUpExtension(
             'neutron.extensions.l3.RouterPluginBase', None,
             l3.RESOURCE_ATTRIBUTE_MAP, l3.L3, '',
             allow_pagination=True, allow_sorting=True,
-            supported_extension_aliases=['router'],
+            supported_extension_aliases=['router', 'ext-gw-mode'],
             use_quota=True)
 
     @staticmethod
