@@ -78,7 +78,10 @@ if is_service_enabled odl-compute; then
         fi
         bind_opendaylight_controller
         wait_for_active_bridge $OVS_BR $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
-        if [ "${ODL_L3}" == "True" ]; then
+
+        # L3 needs to be configured only for netvirt-ovsdb - in netvirt-vpnservice L3 is configured
+        # by provider_mappings, and the provider mappings are added to br-int by default
+        if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]] && [ "${ODL_L3}" == "True" ]; then
             configure_opendaylight_l3
         fi
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
