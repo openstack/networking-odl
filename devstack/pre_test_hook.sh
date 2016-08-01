@@ -13,9 +13,6 @@ case "$ODL_RELEASE_BASE" in
     beryllium-snapshot)
         ODL_RELEASE=beryllium-snapshot-0.4.3
         ;;
-    lithium-snapshot)
-        ODL_RELEASE=lithium-snapshot-0.3.5
-        ;;
     *)
         echo "Unknown ODL release base: $ODL_RELEASE_BASE"
         exit 1
