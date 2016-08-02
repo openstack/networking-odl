@@ -77,8 +77,11 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         # default: 30s (should be <=  agent keep-alive poll interval)
         self._start_maintenance_thread(cfg.CONF.ml2_odl.restconf_poll_interval)
 
-    def _make_hostconf_uri(self, odl_url='http://localhost:8080/', path=''):
+    def _make_hostconf_uri(self, odl_url=None, path=''):
         """Make ODL hostconfigs URI with host/port extraced from ODL_URL."""
+        # NOTE(yamahata): for unit test.
+        odl_url = odl_url or 'http://localhost:8080/'
+
         # extract ODL_IP and ODL_PORT from ODL_ENDPOINT and append path
         # urlsplit and urlunparse don't throw exceptions
         purl = urlparse.urlsplit(odl_url)
