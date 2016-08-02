@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
 import datetime
 
 from networking_odl.common import callback
@@ -120,9 +121,15 @@ class DataMatcher(object):
 
     def __init__(self, operation, object_type, context):
         if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
-            self._data = context[object_type].copy()
+            self._data = copy.deepcopy(context[object_type])
+        elif object_type == odl_const.ODL_PORT:
+            # NOTE(yamahata): work around for journal._enrich_port()
+            self._data = copy.deepcopy(context.current)
+            if self._data.get(odl_const.ODL_SGS):
+                self._data[odl_const.ODL_SGS] = [
+                    {'id': id_} for id_ in self._data[odl_const.ODL_SGS]]
         else:
-            self._data = context.current.copy()
+            self._data = copy.deepcopy(context.current)
         self._object_type = object_type
         filters.filter_for_odl(object_type, operation, self._data)
 
@@ -132,6 +139,12 @@ class DataMatcher(object):
 
     def __ne__(self, s):
         return not self.__eq__(s)
+
+    def __repr__(self):
+        # for debugging
+        return 'DataMatcher(%(object_type)s, %(data)s)' % {
+            'object_type': self._object_type,
+            'data': self._data}
 
 
 class AttributeDict(dict):
