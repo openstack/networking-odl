@@ -128,7 +128,10 @@ function configure_neutron_odl {
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl port_binding_controller=$ODL_PORT_BINDING_CONTROLLER
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl odl_hostconf_uri=$ODL_HOSTCONF_URI
+    # When it's not set, the default value is set by networking-odl
+    if [[ -n "$ODL_HOSTCONF_URI" ]]; then
+        populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl odl_hostconf_uri=$ODL_HOSTCONF_URI
+    fi
 }
 
 function configure_neutron_odl_lightweight_testing {
