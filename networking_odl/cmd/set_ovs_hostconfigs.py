@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import subprocess
-
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
@@ -22,6 +20,7 @@ from oslo_serialization import jsonutils
 from neutron._i18n import _
 from neutron._i18n import _LE
 from neutron._i18n import _LI
+from neutron.agent.common import utils
 from neutron.common import config
 
 LOG = log.getLogger(__name__)
@@ -46,33 +45,32 @@ class SetOvsHostconfigs(object):
     def __init__(self):
         self.ovs_uuid = self.get_ovs_uuid()
 
-    def subprocess_exec(self, cmd):
+    def ovs_exec_cmd(self, cmd):
         LOG.info(_LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(cmd))
-        return subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        return utils.execute(cmd, return_stderr=True, run_as_root=True)
 
     def get_ovs_uuid(self):
-        return self.subprocess_exec(self.ovs_cmd_get_uuid)[0].strip()
+        return self.ovs_exec_cmd(self.ovs_cmd_get_uuid)[0].strip()
 
     def set_extid_hostname(self, hname):
         self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
         self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
             self.odl_os_hostid_str, hname)
-        return self.subprocess_exec(self.ovs_cmd_set_extid)
+        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
 
     def set_extid_hosttype(self, htype):
         self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
         self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
             self.odl_os_hosttype_str, htype)
-        return self.subprocess_exec(self.ovs_cmd_set_extid)
+        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
 
     def set_extid_hostconfig(self, htype, hconfig):
         ext_htype = self.odl_os_hconf_str.format(
             htype.lower().replace(' ', '_'))
         self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
         self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
-            ext_htype, hconfig)
-        return self.subprocess_exec(self.ovs_cmd_set_extid)
+            ext_htype, jsonutils.dumps(hconfig))
+        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
 
     def set_ovs_extid_hostconfigs(self, conf):
         if not conf.ovs_hostconfigs:
