@@ -158,7 +158,7 @@ function install_opendaylight {
         fi
     fi
 
-    install_opendaylight_neutron_thin_ml2_driver
+    install_networking_odl
 
     # Download OpenDaylight
     cd $ODL_DIR
@@ -170,8 +170,8 @@ function install_opendaylight {
 }
 
 
-# install_opendaylight_neutron_thin_ml2_driver() - Install the ML2 driver
-function install_opendaylight_neutron_thin_ml2_driver {
+# install_networking_odl() - Install the ML2 driver and other plugins/drivers
+function install_networking_odl {
     echo "Installing the Networking-ODL driver for OpenDaylight"
     setup_develop $NETWORKING_ODL_DIR
 }
@@ -275,6 +275,8 @@ function bind_opendaylight_controller {
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
     fi
     sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
+    # for pseudo agent port binding
+    sudo neutron-odl-ovs-hostconfig --config-file=$NEUTRON_CONF $ODL_OVS_HOSTCONFIGS_OPTIONS
 }
 
 # unbind_opendaylight_controller() - disconnect controller from switch and clear bridges
