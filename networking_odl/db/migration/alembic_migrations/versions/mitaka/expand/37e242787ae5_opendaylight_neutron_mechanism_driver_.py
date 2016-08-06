@@ -20,9 +20,16 @@ Revises: 247501328046
 Create Date: 2015-10-30 22:09:27.221767
 
 """
+from neutron.db import migration
+
+
 # revision identifiers, used by Alembic.
 revision = '37e242787ae5'
 down_revision = '247501328046'
+
+# milestone identifier, used by neutron-db-manage
+neutron_milestone = [migration.MITAKA]
+
 
 from alembic import op
 import sqlalchemy as sa
