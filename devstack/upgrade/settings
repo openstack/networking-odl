@@ -1,0 +1,16 @@
+register_project_for_upgrade networking-odl
+
+export TARGET_RUN_SMOKE=False
+export BASE_RUN_SMOKE=False
+
+for w in base target; do
+    devstack_localrc $w enable_plugin networking-odl http://github.com/openstack/networking-odl.git
+    devstack_localrc $w disable_service q-agt
+    devstack_localrc $w disable_service q-l3
+    devstack_localrc $w enable_service q-dhcp
+    devstack_localrc $w enable_service q-meta
+    devstack_localrc $w Q_PLUGIN=ml2
+    devstack_localrc $w ODL_CONFIG_BRIDGES=True
+    devstack_localrc $w Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,openvswitch
+    devstack_localrc $w Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,gre,vxlan
+done
