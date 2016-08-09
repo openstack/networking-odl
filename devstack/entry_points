@@ -54,8 +54,9 @@ function configure_opendaylight {
         fi
     fi
 
-    # Configure L3 if the user wants it
-    if [ "${ODL_L3}" == "True" ]; then
+    # Configure L3 if the user wants it for NETVIRT_OVSDB
+    # L3 is always enabled in NETVIRT_VPNSERVICE
+    if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]] && [ "${ODL_L3}" == "True" ]; then
         # Configure L3 FWD if it's not there
         local L3FWD=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | \
                       grep ^ovsdb.l3.fwd.enabled)

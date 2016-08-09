@@ -17,19 +17,22 @@
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
 
 4. Optionally, to enable support for OpenDaylight L3 router functionality,
-   add the below::
+   add the below.
+   Note: This is only relevant when using old netvirt (ovsdb based, default)::
 
      > cat local.conf
      [[local|localrc]]
      ODL_L3=True
 
 5. If you need to route the traffic out of the box (e.g. br-ex), set
-   ODL_PROVIDER_MAPPINGS to map the interface, as shown below::
+   ODL_PROVIDER_MAPPINGS to map the physical provider network to device
+   mapping, as shown below::
 
      > cat local.conf
      [[local|localrc]]
      ODL_L3=True
-     ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:eth2}
+     ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:eth2}    # for old netvirt (ovsdb based)
+     ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth2} # for new netvirt (vpnservice based)
 
 6. Optionally, to enable support for OpenDaylight with LBaaS V2, add this::
 
