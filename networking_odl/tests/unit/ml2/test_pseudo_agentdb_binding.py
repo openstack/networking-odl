@@ -18,12 +18,12 @@ import mock
 from os import path as os_path
 from string import Template
 
-from neutron.common import constants as n_const
 from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
+from neutron_lib import constants as n_const
 
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
