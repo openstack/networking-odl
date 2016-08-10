@@ -7,6 +7,9 @@ GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
 
 case "$ODL_RELEASE_BASE" in
+    carbon-snapshot)
+        ODL_RELEASE=carbon-snapshot-0.6.0
+        ;;
     boron-snapshot)
         ODL_RELEASE=boron-snapshot-0.5.2
         ;;
