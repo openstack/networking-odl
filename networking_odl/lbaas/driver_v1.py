@@ -20,10 +20,13 @@ from oslo_log import log as logging
 from neutron_lbaas.services.loadbalancer.drivers import abstract_driver
 
 from networking_odl.common import client as odl_client
-
+from networking_odl.common import constants as odl_const
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = logging.getLogger(__name__)
+LBAAS = "lbaas"
+POOLS_URL_PATH = LBAAS + '/' + odl_const.ODL_POOLS
+HEALTHMONITORS_URL_PATH = LBAAS + '/' + odl_const.ODL_HEALTHMONITORS
 
 
 class OpenDaylightLbaasDriverV1(abstract_driver.LoadBalancerAbstractDriver):
@@ -40,53 +43,82 @@ class OpenDaylightLbaasDriverV1(abstract_driver.LoadBalancerAbstractDriver):
         self.client = odl_client.OpenDaylightRestClient.create_client()
 
     def create_vip(self, context, vip):
-        """Create a vip on the OpenDaylight Controller."""
+        """Create a vip on the OpenDaylight Controller.
+
+        No code related to vip in the OpenDayLight neutronNorthbound,
+        so pass this method.
+        """
         pass
 
     def update_vip(self, context, old_vip, vip):
-        """Update a vip on the OpenDaylight Controller."""
+        """Update a vip on the OpenDaylight Controller.
+
+        No code related to vip in the OpenDayLight neutronNorthbound,
+        so pass this method.
+        """
         pass
 
     def delete_vip(self, context, vip):
-        """Delete a vip on the OpenDaylight Controller."""
+        """Delete a vip on the OpenDaylight Controller.
+
+        No code related to vip in the OpenDayLight neutronNorthbound,
+        so pass this method.
+        """
         pass
 
     def create_pool(self, context, pool):
         """Create a pool on the OpenDaylight Controller."""
-        pass
+        url = POOLS_URL_PATH
+        self.client.sendjson('post', url, {odl_const.ODL_POOL: pool})
 
     def update_pool(self, context, old_pool, pool):
         """Update a pool on the OpenDaylight Controller."""
-        pass
+        url = POOLS_URL_PATH + "/" + old_pool['id']
+        self.client.sendjson('put', url, {odl_const.ODL_POOL: pool})
 
     def delete_pool(self, context, pool):
         """Delete a pool on the OpenDaylight Controller."""
-        pass
+        url = POOLS_URL_PATH + "/" + pool['id']
+        self.client.sendjson('delete', url, None)
 
     def create_member(self, context, member):
         """Create a pool member on the OpenDaylight Controller."""
-        pass
+        url = (
+            POOLS_URL_PATH + '/' + member['pool_id'] +
+            '/' + odl_const.ODL_MEMBERS)
+        self.client.sendjson('post', url, {odl_const.ODL_MEMBER: member})
 
     def update_member(self, context, old_member, member):
         """Update a pool member on the OpenDaylight Controller."""
-        pass
+        url = (
+            POOLS_URL_PATH + '/' + member['pool_id'] +
+            '/' + odl_const.ODL_MEMBERS + "/" + old_member['id'])
+        self.client.sendjson('put', url, {odl_const.ODL_MEMBER: member})
 
     def delete_member(self, context, member):
         """Delete a pool member on the OpenDaylight Controller."""
-        pass
+        url = (
+            POOLS_URL_PATH + '/' + member['pool_id'] +
+            '/' + odl_const.ODL_MEMBERS + "/" + member['id'])
+        self.client.sendjson('delete', url, None)
 
     def create_pool_health_monitor(self, context, health_monitor, pool_id):
         """Create a pool health monitor on the OpenDaylight Controller."""
-        pass
+        url = HEALTHMONITORS_URL_PATH
+        self.client.sendjson(
+            'post', url, {odl_const.ODL_HEALTHMONITOR: health_monitor})
 
     def update_pool_health_monitor(self, context, old_health_monitor,
                                    health_monitor, pool_id):
         """Update a pool health monitor on the OpenDaylight Controller."""
-        pass
+        url = HEALTHMONITORS_URL_PATH + "/" + old_health_monitor['id']
+        self.client.sendjson(
+            'put', url, {odl_const.ODL_HEALTHMONITOR: health_monitor})
 
     def delete_pool_health_monitor(self, context, health_monitor, pool_id):
         """Delete a pool health monitor on the OpenDaylight Controller."""
-        pass
+        url = HEALTHMONITORS_URL_PATH + "/" + health_monitor['id']
+        self.client.sendjson('delete', url, None)
 
     def stats(self, context, pool_id):
         """Retrieve pool statistics from the OpenDaylight Controller."""
