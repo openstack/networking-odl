@@ -47,6 +47,14 @@ class OpenDaylightRestClient(object):
         self.timeout = timeout
         self.auth = (username, password)
 
+    def get_resource(self, resource_type, resource_id):
+        response = self.get(resource_type.replace('_', '-') + 's/' +
+                            resource_id)
+        if response.status_code == requests.codes.not_found:
+            return None
+
+        return self._check_rensponse(response).json()
+
     def get(self, urlpath='', data=None):
         return self.request('get', urlpath, data)
 

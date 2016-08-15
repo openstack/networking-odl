@@ -25,6 +25,7 @@ from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.journal import maintenance
+from networking_odl.journal import recovery
 from networking_odl.ml2 import port_binding
 
 LOG = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self._maintenance_thread.register_operation(
             cleanup_obj.cleanup_processing_rows)
         self._maintenance_thread.register_operation(full_sync.full_sync)
+        self._maintenance_thread.register_operation(recovery.journal_recovery)
         self._maintenance_thread.start()
 
     @staticmethod
