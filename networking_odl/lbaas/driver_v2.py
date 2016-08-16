@@ -36,11 +36,11 @@ class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         self.plugin = plugin
         self.client = odl_client.OpenDaylightRestClient.create_client()
-        self._loadbalancer = ODLLoadBalancerManager(self.client)
-        self._listener = ODLListenerManager(self.client)
-        self._pool = ODLPoolManager(self.client)
-        self._member = ODLMemberManager(self.client)
-        self._healthmonitor = ODLHealthMonitorManager(self.client)
+        self.load_balancer = ODLLoadBalancerManager(self.client)
+        self.listener = ODLListenerManager(self.client)
+        self.pool = ODLPoolManager(self.client)
+        self.member = ODLMemberManager(self.client)
+        self.health_monitor = ODLHealthMonitorManager(self.client)
 
 
 class OpenDaylightManager(object):
