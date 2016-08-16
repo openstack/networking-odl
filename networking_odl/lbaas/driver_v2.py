@@ -58,7 +58,7 @@ class OpenDaylightManager(object):
     @log_helpers.log_method_call
     def __init__(self, client):
         self.client = client
-        self.url_path = LBAAS + self.obj_type
+        self.url_path = LBAAS + '/' + self.obj_type
 
     @log_helpers.log_method_call
     def create(self, context, obj):
