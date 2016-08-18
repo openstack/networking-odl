@@ -55,6 +55,7 @@ class OdlSecurityGroupsHandler(object):
                            events.AFTER_UPDATE)
 
     def sg_callback(self, resource, event, trigger, **kwargs):
+        context = kwargs['context']
         res = kwargs.get(resource)
         res_id = kwargs.get("%s_id" % resource)
         odl_res_type = _RESOURCE_MAPPING[resource]
@@ -69,5 +70,5 @@ class OdlSecurityGroupsHandler(object):
                    'res_id': res_id, 'odl_res_dict': odl_res_dict,
                    'kwargs': kwargs})
 
-        self.odl_driver.sync_from_callback(odl_ops, odl_res_type,
+        self.odl_driver.sync_from_callback(context, odl_ops, odl_res_type,
                                            res_id, odl_res_dict)
