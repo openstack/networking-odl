@@ -17,9 +17,9 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 
-from neutron._i18n import _
-from neutron._i18n import _LE
-from neutron._i18n import _LI
+from networking_odl._i18n import _
+from networking_odl._i18n import _LE
+from networking_odl._i18n import _LI
 from neutron.agent.common import utils
 from neutron.common import config
 
