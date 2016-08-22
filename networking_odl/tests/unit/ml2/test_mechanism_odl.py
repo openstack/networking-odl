@@ -159,8 +159,10 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)
-        self.assertRaises(config.cfg.RequiredOptError,
-                          plugin.Ml2Plugin)
+        self.assertRaisesRegex(config.cfg.RequiredOptError,
+                               'value required for option \w+ in group '
+                               '\[ml2_odl\]',
+                               plugin.Ml2Plugin)
 
     def test_valid_config(self):
         self._set_config()

@@ -412,7 +412,7 @@ class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
         required_opts = ('url', 'username', 'password')
         for opt in required_opts:
             if not getattr(self, opt):
-                raise cfg.RequiredOptError(opt, 'ml2_odl')
+                raise cfg.RequiredOptError(opt, cfg.OptGroup('ml2_odl'))
 
         self.odl_drv = OpenDaylightDriver()
 
