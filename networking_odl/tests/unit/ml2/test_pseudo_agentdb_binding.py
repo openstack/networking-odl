@@ -27,6 +27,7 @@ from neutron_lib import constants as n_const
 
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
+from requests.exceptions import HTTPError
 
 AGENTDB_BINARY = 'neutron-odlagent-portbinding'
 L2_TYPE = "ODL L2"
@@ -201,6 +202,29 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         self.mgr._update_agents_db(
             hostconfigs=self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
         self.mgr.agents_db.create_or_update_agent.assert_called_once()
+
+    def _get_raised_response(self, json_data, status_code):
+
+        class MockHTTPError(HTTPError):
+            def __init__(self, json_data, status_code):
+                self.json_data = json_data
+                self.status_code = status_code
+                self.response = self
+
+        class MockResponse(object):
+            def __init__(self, json_data, status_code):
+                self.raise_obj = MockHTTPError(json_data, status_code)
+
+            def raise_for_status(self):
+                raise self.raise_obj
+
+        return MockResponse(json_data, status_code)
+
+    def test_hostconfig_response_404(self):
+        with mock.patch.object(self.mgr.odl_rest_client,
+                               'get', return_value=self.
+                               _get_raised_response({}, 404)):
+                self.assertEqual(self.mgr._rest_get_hostconfigs(), [])
 
     def test_is_valid_segment(self):
         """Validate the _check_segment method."""

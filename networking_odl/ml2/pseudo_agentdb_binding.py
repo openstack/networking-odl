@@ -15,6 +15,7 @@
 
 import logging
 from neutron_lib import constants as nl_const
+from requests import codes
 from requests import exceptions
 import six.moves.urllib.parse as urlparse
 from string import Template
@@ -107,6 +108,16 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             LOG.error(_LE("Cannot connect to the Opendaylight Controller"),
                       exc_info=True)
             return None
+        except exceptions.HTTPError as e:
+            # restconf returns 404 on operation when there is no entry
+            if e.response.status_code == codes.not_found:
+                LOG.debug("Response code not_found (404)"
+                          " treated as an empty list")
+                return []
+            else:
+                LOG.warning(_LW("REST/GET odl hostconfig failed, "),
+                            exc_info=True)
+                return None
         except KeyError:
             LOG.error(_LE("got invalid hostconfigs"),
                       exc_info=True)
