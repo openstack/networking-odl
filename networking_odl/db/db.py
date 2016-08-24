@@ -121,8 +121,7 @@ def get_oldest_pending_db_row_with_lock(session):
     return row
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
+@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def update_db_row_state(session, row, state):
     row.state = state
     session.merge(row)
@@ -139,8 +138,7 @@ def update_pending_db_row_retry(session, row, retry_count):
 
 # This function is currently not used.
 # Deleted resources are marked as 'deleted' in the database.
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
+@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def delete_row(session, row=None, row_id=None):
     if row_id:
         row = session.query(models.OpendaylightJournal).filter_by(
@@ -150,8 +148,7 @@ def delete_row(session, row=None, row_id=None):
         session.flush()
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES,
-                           retry_on_request=True)
+@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def create_pending_row(session, object_type, object_uuid,
                        operation, data):
     row = models.OpendaylightJournal(object_type=object_type,
