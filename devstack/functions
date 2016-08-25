@@ -28,7 +28,7 @@ function _odl_export_snapshot_url_pkg {
     local BUNDLE_TIMESTAMP=$5
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
-    local NEXUSPATH="${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf"
+    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
 
     if [ "$BUNDLE_TIMESTAMP" == "latest" ]; then
         odl_update_maven_metadata_xml $MAVENMETAFILE $NEXUSPATH $BUNDLEVERSION $OFFLINE
@@ -48,7 +48,7 @@ function _odl_export_snapshot_url_pkg {
 function _odl_export_release_url_pkg {
     local ODL_URL_PREFIX=$1
     local BUNDLEVERSION=$2
-    local NEXUSPATH="${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf"
+    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
     export ODL_PKG=distribution-karaf-${BUNDLEVERSION}.zip
