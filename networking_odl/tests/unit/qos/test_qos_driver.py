@@ -1,0 +1,80 @@
+# Copyright (c) 2016 OpenStack Foundation
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+import mock
+
+from neutron.tests import base as base_test
+
+from networking_odl.common import constants as odl_const
+from networking_odl.qos import qos_driver
+
+FAKE_POLICY = {'description': 'qos_policy',
+               'rules': [{'max_kpbs': 30,
+                          'type': 'bandwidth_limit',
+                          'id': 'test-id',
+                          'max_burst_kpbs': 0,
+                          'qos_policy_id': 'fake_id'},
+                         {'dscp_mark': 12,
+                          'type': 'dscp_marking',
+                          'id': 'test-id2',
+                          'qos_policy_id': 'fake-id2'}],
+               'tenant_id': 'fake_tenant',
+               'shared': 'false',
+               'id': 'fake_id',
+               'name': 'fake_policy'}
+
+
+class MakeObjectofDictionary(object):
+    def __init__(self, **entries):
+            self.__dict__.update(entries)
+
+    def to_dict(self):
+        return self.__dict__
+
+
+class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
+
+    def setUp(self):
+        super(OpenDaylightQosDriverTestCase, self).setUp()
+
+    _driver = qos_driver.OpenDaylightDriver()
+    _qos_driver = qos_driver.OpenDaylightQosDriver()
+    context = context = mock.Mock(current=FAKE_POLICY.copy())
+
+    def _test_send_resource(self, operation, method):
+        with mock.patch.object(self._qos_driver.odl_drv,
+                               "send_resource") as res:
+            getattr(self._qos_driver, method)(
+                self.context,
+                MakeObjectofDictionary(**FAKE_POLICY))
+
+        res.assert_called_once_with(
+            operation,
+            odl_const.ODL_QOS_POLICIES,
+            FAKE_POLICY)
+
+    def test_qos_policy_create(self):
+        self._test_send_resource(odl_const.ODL_CREATE, 'create_policy')
+
+    def test_qos_policy_delete(self):
+        self._test_send_resource(odl_const.ODL_DELETE, 'delete_policy')
+
+    def test_qos_policy_update(self):
+        self._test_send_resource(odl_const.ODL_UPDATE, 'update_policy')
+
+    def test_format_policy_rules(self):
+        policy = self._driver.convert_rules_format(FAKE_POLICY)
+        self.assertIn("bandwidth_limit_rules", policy)
+        self.assertIn("dscp_marking_rules", policy)
