@@ -17,31 +17,23 @@
 import mock
 import requests
 
-from neutron.db import api as neutron_db_api
 from neutron import manager
-from neutron.tests.unit.testlib_api import SqlTestCaseLight
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
-from networking_odl.db import models
 from networking_odl.journal import full_sync
+from networking_odl.tests.unit import test_base_db
 
 
-class FullSyncTestCase(SqlTestCaseLight):
+class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(FullSyncTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
 
         full_sync._CLIENT = mock.MagicMock()
         self.plugin_mock = mock.patch.object(manager.NeutronManager,
                                              'get_plugin').start()
         self.l3_plugin_mock = mock.patch.object(manager.NeutronManager,
                                                 'get_service_plugins').start()
-
-        self.addCleanup(self._db_cleanup)
-
-    def _db_cleanup(self):
-        self.db_session.query(models.OpendaylightJournal).delete()
 
     def test_no_full_sync_when_canary_exists(self):
         full_sync.full_sync(self.db_session)
