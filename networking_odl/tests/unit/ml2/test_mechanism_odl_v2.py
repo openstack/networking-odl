@@ -14,6 +14,7 @@
 #    under the License.
 import copy
 import datetime
+import operator
 
 from networking_odl.common import callback
 from networking_odl.common import client
@@ -567,11 +568,6 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     def test_sg_rule(self):
         self._test_object_type(odl_const.ODL_SG_RULE)
 
-    def _decrease_row_created_time(self, row):
-        row.created_at -= datetime.timedelta(hours=1)
-        self.db_session.merge(row)
-        self.db_session.flush()
-
     def test_sync_multiple_updates(self):
         # add 2 updates
         for i in range(2):
@@ -579,18 +575,23 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                                         odl_const.ODL_NETWORK)
 
         # get the last update row
-        last_row = db.get_all_db_rows(self.db_session)[-1]
+        rows = db.get_all_db_rows(self.db_session)
+        rows.sort(key=operator.attrgetter("seqnum"))
+        first_row = rows[0]
 
-        # change the last update created time
-        self._decrease_row_created_time(last_row)
+        # change the state to processing
+        db.update_db_row_state(self.db_session, first_row,
+                               odl_const.PROCESSING)
 
         # create 1 more operation to trigger the sync thread
         # verify that there are no calls to ODL controller, because the
-        # first row was not valid (exit_after_run = true)
+        # first row was processing (exit_after_run = true)
         self._test_thread_processing(odl_const.ODL_UPDATE,
                                      odl_const.ODL_NETWORK, expected_calls=0)
 
-        # validate that all the rows are in 'pending' state
-        # first row should be set back to 'pending' because it was not valid
+        # validate that all the pending rows stays in 'pending' state
+        # first row should be 'processing' because it was not processed
+        processing = db.get_all_db_rows_by_state(self.db_session, 'processing')
+        self.assertEqual(1, len(processing))
         rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
-        self.assertEqual(3, len(rows))
+        self.assertEqual(2, len(rows))

@@ -24,6 +24,10 @@ from networking_odl.db import models
 from neutron.db import api as db_api
 
 from oslo_db import api as oslo_db_api
+from oslo_log import log as logging
+
+
+LOG = logging.getLogger(__name__)
 
 
 def check_for_pending_or_processing_ops(session, object_uuid, operation=None):
@@ -60,9 +64,11 @@ def check_for_older_ops(session, row):
             models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.operation == row.operation,
         models.OpendaylightJournal.object_uuid == row.object_uuid,
-        models.OpendaylightJournal.created_at < row.created_at,
-        models.OpendaylightJournal.id != row.id)
-    return session.query(q.exists()).scalar()
+        models.OpendaylightJournal.seqnum < row.seqnum)
+    row = q.first()
+    if row is not None:
+        LOG.debug("found older operation %s", row)
+    return bool(row)
 
 
 def get_all_db_rows(session):

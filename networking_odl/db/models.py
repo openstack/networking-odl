@@ -13,16 +13,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron_lib.db import model_base
 import sqlalchemy as sa
 from sqlalchemy.dialects import sqlite
+
+from neutron_lib.db import model_base
 
 from networking_odl.common import constants as odl_const
 
 
-class OpendaylightJournal(model_base.BASEV2, model_base.HasId):
+class OpendaylightJournal(model_base.BASEV2):
     __tablename__ = 'opendaylightjournal'
 
+    seqnum = sa.Column(sa.BigInteger().with_variant(sa.Integer(), 'sqlite'),
+                       primary_key=True, autoincrement=True)
     object_type = sa.Column(sa.String(36), nullable=False)
     object_uuid = sa.Column(sa.String(36), nullable=False)
     operation = sa.Column(sa.String(36), nullable=False)
