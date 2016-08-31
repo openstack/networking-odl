@@ -324,11 +324,11 @@ class OpenDaylightDriver(object):
         if not self.out_of_sync:
             return
         dbcontext = neutron_context.get_admin_context()
-        for collection_name in [odl_const.ODL_NETWORKS,
+        for collection_name in [odl_const.ODL_SGS,
+                                odl_const.ODL_SG_RULES,
+                                odl_const.ODL_NETWORKS,
                                 odl_const.ODL_SUBNETS,
-                                odl_const.ODL_PORTS,
-                                odl_const.ODL_SGS,
-                                odl_const.ODL_SG_RULES]:
+                                odl_const.ODL_PORTS]:
             self.sync_resources(plugin, dbcontext, collection_name)
         self.out_of_sync = False
 

@@ -270,10 +270,10 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
                               return_value=[FAKE_SECURITY_GROUP_RULE.copy()]):
             self.given_back_end.sync_full(ml2_plugin)
 
-            sync_id_list = [FAKE_NETWORK['id'], FAKE_SUBNET['id'],
-                            FAKE_PORT['id'],
-                            FAKE_SECURITY_GROUP['id'],
-                            FAKE_SECURITY_GROUP_RULE['id']]
+            sync_id_list = [FAKE_SECURITY_GROUP['id'],
+                            FAKE_SECURITY_GROUP_RULE['id'],
+                            FAKE_NETWORK['id'], FAKE_SUBNET['id'],
+                            FAKE_PORT['id']]
 
             act = []
             for args, kwargs in \
