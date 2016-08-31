@@ -22,26 +22,18 @@ from datetime import timedelta
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
+from networking_odl.tests.unit import test_base_db
 
-from neutron.db import api as neutron_db_api
-from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from oslo_db.exception import DBDeadlock
-from unittest2.case import TestCase
 
 
-class DbTestCase(SqlTestCaseLight, TestCase):
+class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     UPDATE_ROW = [odl_const.ODL_NETWORK, 'id', odl_const.ODL_UPDATE,
                   {'test': 'data'}]
 
     def setUp(self):
         super(DbTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
-        self.addCleanup(self._db_cleanup)
-
-    def _db_cleanup(self):
-        self.db_session.query(models.OpendaylightJournal).delete()
-        self.db_session.query(models.OpendaylightMaintenance).delete()
 
     def _update_row(self, row):
         self.db_session.merge(row)

@@ -16,20 +16,16 @@
 
 import mock
 import threading
-from unittest2.case import TestCase
-
-from neutron.db import api as neutron_db_api
-from neutron.tests.unit.testlib_api import SqlTestCaseLight
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
 from networking_odl.journal import maintenance
+from networking_odl.tests.unit import test_base_db
 
 
-class MaintenanceThreadTestCase(SqlTestCaseLight, TestCase):
+class MaintenanceThreadTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(MaintenanceThreadTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
 
         row = models.OpendaylightMaintenance(state=odl_const.PENDING)
         self.db_session.add(row)
