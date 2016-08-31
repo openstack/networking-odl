@@ -260,6 +260,12 @@ class OpenDaylightDriver(object):
         """Synchronize ODL with Neutron following a configuration change."""
         if self.out_of_sync:
             self.sync_full(context._plugin)
+            if operation in [odl_const.ODL_UPDATE, odl_const.ODL_DELETE]:
+                # NOTE(yamahata): work around that sync_full doesn't know
+                # how to handle UPDATE and DELETE at the moment.
+                # TODO(yamahata): implement TODOs in sync_full and remove this
+                # work around
+                self.sync_single_resource(operation, object_type, context)
         else:
             self.sync_single_resource(operation, object_type, context)
 
