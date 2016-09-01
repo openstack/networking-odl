@@ -115,16 +115,19 @@ class NetworkFilter(ResourceFilterBase):
 
 
 class SubnetFilter(ResourceFilterBase):
-    @staticmethod
-    def filter_create_attributes(subnet, context):
-        """Filter out subnet attributes not required for a create."""
-        pass
+    _UNMAPPED_KEYS = ['segment_id', 'subnetpool_id']
 
-    @staticmethod
-    def filter_update_attributes(subnet, context):
+    @classmethod
+    def filter_create_attributes(cls, subnet, context):
+        """Filter out subnet attributes not required for a create."""
+        cls._filter_unmapped_null(subnet, cls._UNMAPPED_KEYS)
+
+    @classmethod
+    def filter_update_attributes(cls, subnet, context):
         """Filter out subnet attributes for an update operation."""
         odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
                           'allocation_pools', 'tenant_id'])
+        cls._filter_unmapped_null(subnet, cls._UNMAPPED_KEYS)
 
     @classmethod
     def filter_create_attributes_with_plugin(cls, subnet, plugin, dbcontext):
@@ -132,6 +135,7 @@ class SubnetFilter(ResourceFilterBase):
         context = driver_context.SubnetContext(plugin, dbcontext, subnet,
                                                network)
         cls.filter_create_attributes(subnet, context)
+        cls._filter_unmapped_null(subnet, cls._UNMAPPED_KEYS)
 
 
 class PortFilter(ResourceFilterBase):

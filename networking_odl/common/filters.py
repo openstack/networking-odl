@@ -42,6 +42,7 @@ def _filter_unmapped_null(resource_dict, unmapped_keys):
 
 
 _NETWORK_UNMAPPED_KEYS = ['qos_policy_id']
+_SUBNET_UNMAPPED_KEYS = ['segment_id', 'subnetpool_id']
 _PORT_UNMAPPED_KEYS = ['binding:profile', 'dns_name',
                        'port_security_enabled', 'qos_policy_id']
 
@@ -56,9 +57,14 @@ def _filter_network_update(network):
     _filter_unmapped_null(network, _NETWORK_UNMAPPED_KEYS)
 
 
+def _filter_subnet_create(subnet):
+    _filter_unmapped_null(subnet, _SUBNET_UNMAPPED_KEYS)
+
+
 def _filter_subnet_update(subnet):
     odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
                       'allocation_pools', 'tenant_id'])
+    _filter_unmapped_null(subnet, _SUBNET_UNMAPPED_KEYS)
 
 
 def _filter_port_create(port):
@@ -82,6 +88,7 @@ def _filter_router_update(router):
 _FILTER_MAP = {
     (odl_const.ODL_NETWORK, odl_const.ODL_CREATE): _filter_network_create,
     (odl_const.ODL_NETWORK, odl_const.ODL_UPDATE): _filter_network_update,
+    (odl_const.ODL_SUBNET, odl_const.ODL_CREATE): _filter_subnet_create,
     (odl_const.ODL_SUBNET, odl_const.ODL_UPDATE): _filter_subnet_update,
     (odl_const.ODL_PORT, odl_const.ODL_CREATE): _filter_port_create,
     (odl_const.ODL_PORT, odl_const.ODL_UPDATE): _filter_port_update,
