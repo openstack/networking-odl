@@ -21,7 +21,6 @@ from requests import exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron import context as neutron_context
 from neutron.db import api as neutron_db_api
 from neutron import manager
 
@@ -44,7 +43,7 @@ def call_thread_on_end(func):
     return new_func
 
 
-def _enrich_port(db_session, context, object_type, operation, data):
+def _enrich_port(plugin_context, ml2_context, object_type, operation, data):
     """Enrich the port with additional information needed by ODL"""
 
     # NOTE(yamahata): work around of ODL neutron northbound
@@ -69,26 +68,26 @@ def _enrich_port(db_session, context, object_type, operation, data):
     # is fixed
     # assert port['tenant_id'] != ''
     if ('tenant_id' not in new_data or new_data['tenant_id'] == ''):
-        if context:
-            tenant_id = context._network_context._network['tenant_id']
+        if ml2_context:
+            network = ml2_context._network_context._network
         else:
             plugin = manager.NeutronManager.get_plugin()
-            dbcontext = neutron_context.get_admin_context()
-            network = plugin.get_network(dbcontext, new_data['network_id'])
-            tenant_id = network['tenant_id']
-        new_data['tenant_id'] = tenant_id
+            network = plugin.get_network(plugin_context,
+                                         new_data['network_id'])
+        new_data['tenant_id'] = network['tenant_id']
 
     return new_data
 
 
-def record(db_session, object_type, object_uuid, operation, data,
-           context=None):
+def record(plugin_context, ml2_context,
+           object_type, object_uuid, operation, data):
     if (object_type == odl_const.ODL_PORT and
             operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)):
-        data = _enrich_port(db_session, context, object_type, operation, data)
+        data = _enrich_port(
+            plugin_context, ml2_context, object_type, operation, data)
 
-    db.create_pending_row(db_session, object_type, object_uuid, operation,
-                          data)
+    db.create_pending_row(plugin_context.session, object_type, object_uuid,
+                          operation, data)
 
 
 class OpendaylightJournalThread(object):

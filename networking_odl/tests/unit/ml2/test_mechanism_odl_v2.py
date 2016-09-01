@@ -300,10 +300,13 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         context = self._get_mock_operation_context(object_type)
 
         if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
+            plugin_context_mock = mock.Mock()
+            plugin_context_mock.session = neutron_db_api.get_session()
             res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
                         if rt.singular == object_type][0]
-            self.mech.sync_from_callback(operation, res_type,
-                                         context[object_type]['id'], context)
+            self.mech.sync_from_callback(
+                plugin_context_mock, operation, res_type,
+                context[object_type]['id'], context)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
