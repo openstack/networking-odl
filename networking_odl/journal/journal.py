@@ -46,17 +46,17 @@ def call_thread_on_end(func):
 
 def _enrich_port(db_session, context, object_type, operation, data):
     """Enrich the port with additional information needed by ODL"""
-    if context:
-        plugin = context._plugin
-        dbcontext = context._plugin_context
-    else:
-        dbcontext = neutron_context.get_admin_context()
-        plugin = manager.NeutronManager.get_plugin()
 
-    groups = [plugin.get_security_group(dbcontext, sg)
-              for sg in data['security_groups']]
+    # NOTE(yamahata): work around of ODL neutron northbound
+    # It passes security groups in port as list of dict for historical reasons.
+    # keep its format for compatibility.
+    # TODO(yamahata): drop this format conversion.
+    if data[odl_const.ODL_SGS]:
+        groups = [{'id': id_} for id_ in data['security_groups']]
+    else:
+        groups = []
     new_data = copy.deepcopy(data)
-    new_data['security_groups'] = groups
+    new_data[odl_const.ODL_SGS] = groups
 
     # NOTE(yamahata): work around for port creation for router
     # tenant_id=''(empty string) is passed when port is created
@@ -72,6 +72,8 @@ def _enrich_port(db_session, context, object_type, operation, data):
         if context:
             tenant_id = context._network_context._network['tenant_id']
         else:
+            plugin = manager.NeutronManager.get_plugin()
+            dbcontext = neutron_context.get_admin_context()
             network = plugin.get_network(dbcontext, new_data['network_id'])
             tenant_id = network['tenant_id']
         new_data['tenant_id'] = tenant_id
