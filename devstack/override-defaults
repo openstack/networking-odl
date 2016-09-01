@@ -34,4 +34,4 @@ fi
 # api-extensions=all means any kind of extensions is enabled irrelevant of what plugin supports
 # ML2 plugin with ODL driver supports only the following extensions, not all
 # Those list must be maintained as ML2 plugin with ODL driver supports more extensions
-NETWORK_API_EXTENSIONS=${NETWORK_API_EXTENSIONS:-"dns-integration,address-scope,ext-gw-mode,binding,agent,subnet_allocation,dhcp_agent_scheduler,external-net,flavors,net-mtu,quotas,provider,multi-provider,extraroute,vlan-transparent,router,extra_dhcp_opt,security-group,rbac-policies,port-security,allowed-address-pairs,dvr"}
+NETWORK_API_EXTENSIONS=${NETWORK_API_EXTENSIONS:-"address-scope,agent,allowed-address-pairs,binding,dhcp_agent_scheduler,dns-integration,dvr,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,flavors,multi-provider,net-mtu,port-security,provider,qos,quotas,rbac-policies,router,security-group,subnet_allocation,vlan-transparent"}
