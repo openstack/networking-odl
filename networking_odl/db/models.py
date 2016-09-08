@@ -13,14 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.db import model_base
 import sqlalchemy as sa
 
 from networking_odl.common import constants as odl_const
-from neutron.db import model_base
-from neutron.db.models_v2 import HasId
 
 
-class OpendaylightJournal(model_base.BASEV2, HasId):
+class OpendaylightJournal(model_base.BASEV2, model_base.HasId):
     __tablename__ = 'opendaylightjournal'
 
     object_type = sa.Column(sa.String(36), nullable=False)
@@ -36,7 +35,7 @@ class OpendaylightJournal(model_base.BASEV2, HasId):
                              onupdate=sa.func.now())
 
 
-class OpendaylightMaintenance(model_base.BASEV2, HasId):
+class OpendaylightMaintenance(model_base.BASEV2, model_base.HasId):
     __tablename__ = 'opendaylight_maintenance'
 
     state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING),
