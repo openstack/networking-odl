@@ -35,6 +35,16 @@ class MaintenanceThread(object):
     def start(self):
         self.timer.start(self.maintenance_interval, stop_on_exception=False)
 
+    def cleanup(self):
+        # this method is used for unit test to tear down
+        self.timer.stop()
+        try:
+            self.timer.wait()
+        except AttributeError:
+            # NOTE(yamahata): workaround
+            # some tests call this cleanup without calling start
+            pass
+
     def _execute_op(self, operation, session):
         op_details = operation.__name__
         if operation.__doc__:

@@ -33,6 +33,7 @@ class MaintenanceThreadTestCase(test_base_db.ODLBaseDbTestCase):
 
         self.thread = maintenance.MaintenanceThread()
         self.thread.maintenance_interval = 0.01
+        self.addCleanup(self.thread.cleanup)
 
     def test__execute_op_no_exception(self):
         with mock.patch.object(maintenance, 'LOG') as mock_log:
