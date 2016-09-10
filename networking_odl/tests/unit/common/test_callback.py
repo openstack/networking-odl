@@ -16,6 +16,7 @@
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
 from networking_odl.ml2.mech_driver import OpenDaylightDriver
+from networking_odl.tests import base
 
 import mock
 import testtools
@@ -28,11 +29,11 @@ FAKE_ID = 'fakeid'
 
 
 class ODLCallbackTestCase(testtools.TestCase):
-    odl_driver = OpenDaylightDriver()
-    sgh = callback.OdlSecurityGroupsHandler(odl_driver)
-
     def setUp(self):
+        self.useFixture(base.OpenDaylightRestClientFixture())
         super(ODLCallbackTestCase, self).setUp()
+        odl_driver = OpenDaylightDriver()
+        self.sgh = callback.OdlSecurityGroupsHandler(odl_driver)
 
     @mock.patch.object(OpenDaylightDriver, 'sync_from_callback')
     def _test_callback_for_sg(self, event, op, sg, sg_id, sfc):

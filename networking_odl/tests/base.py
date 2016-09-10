@@ -14,7 +14,10 @@
 #    under the License.
 
 
+import fixtures
 import mock
+
+from oslo_config import cfg
 
 from neutron.tests import base
 
@@ -26,3 +29,28 @@ class DietTestCase(base.DietTestCase):
         patch = context.start()
         self.addCleanup(context.stop)
         return patch
+
+
+class OpenDaylightRestClientFixture(fixtures.Fixture):
+    # Set URL/user/pass so init doesn't throw a cfg required error.
+    # They are not used in these tests since requests.request is overwritten.
+    def _setUp(self):
+        super(OpenDaylightRestClientFixture, self)._setUp()
+        mock.patch('requests.request').start()
+        cfg.CONF.set_override('url',
+                              'http://localhost:8080'
+                              '/controller/nb/v2/neutron', 'ml2_odl')
+        cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
+        cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
+        cfg.CONF.set_override('port_binding_controller',
+                              'legacy-port-binding', 'ml2_odl')
+
+
+class OpenDaylightRestClientGlobalFixture(fixtures.Fixture):
+    def __init__(self, global_client):
+        super(OpenDaylightRestClientGlobalFixture, self).__init__()
+        self._global_client = global_client
+
+    def _setUp(self):
+        super(OpenDaylightRestClientGlobalFixture, self)._setUp()
+        mock.patch.object(self._global_client, 'get_client').start()

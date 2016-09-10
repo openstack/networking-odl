@@ -19,6 +19,7 @@ from neutron.tests import base as base_test
 
 from networking_odl.common import constants as odl_const
 from networking_odl.qos import qos_driver
+from networking_odl.tests import base as odl_base
 
 FAKE_POLICY = {'description': 'qos_policy',
                'rules': [{'max_kpbs': 30,
@@ -47,11 +48,11 @@ class MakeObjectofDictionary(object):
 class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
 
     def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(OpenDaylightQosDriverTestCase, self).setUp()
-
-    _driver = qos_driver.OpenDaylightDriver()
-    _qos_driver = qos_driver.OpenDaylightQosDriver()
-    context = context = mock.Mock(current=FAKE_POLICY.copy())
+        self._driver = qos_driver.OpenDaylightDriver()
+        self._qos_driver = qos_driver.OpenDaylightQosDriver()
+        self.context = mock.Mock(current=FAKE_POLICY.copy())
 
     def _test_send_resource(self, operation, method):
         with mock.patch.object(self._qos_driver.odl_drv,

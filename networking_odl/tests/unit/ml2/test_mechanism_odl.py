@@ -40,6 +40,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.ml2 import legacy_port_binding
 from networking_odl.ml2 import mech_driver
 from networking_odl.ml2 import network_topology
+from networking_odl.tests import base as odl_base
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -115,12 +116,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
     _mechanism_drivers = ['opendaylight']
 
     def setUp(self):
-        # Set URL/user/pass so init doesn't throw a cfg required error.
-        # They are not used in these tests since sendjson is overwritten.
-        config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
-        config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
-        config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
-
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
         self.mech = mech_driver.OpenDaylightMechanismDriver()
@@ -147,12 +143,16 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
-
-    def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
-                    password='somepass'):
+    def setUp(self):
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'],
                                      'ml2')
+        config.cfg.CONF.set_override('port_binding_controller',
+                                     'legacy-port-binding', 'ml2_odl')
+
+    def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
+                    password='somepass'):
         config.cfg.CONF.set_override('url', url, 'ml2_odl')
         config.cfg.CONF.set_override('username', username, 'ml2_odl')
         config.cfg.CONF.set_override('password', password, 'ml2_odl')
@@ -306,11 +306,9 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     def setUp(self):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'], 'ml2')
-        config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
-        config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
-        config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
         self.mech = mech_driver.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
@@ -552,6 +550,11 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
 
 class TestOpenDaylightMechanismDriver(base.DietTestCase):
+    def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        super(TestOpenDaylightMechanismDriver, self).setUp()
+        config.cfg.CONF.set_override('mechanism_drivers',
+                                     ['logger', 'opendaylight'], 'ml2')
 
     # given valid  and invalid segments
     valid_segment = {

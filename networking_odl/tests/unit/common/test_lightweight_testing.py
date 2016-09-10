@@ -16,11 +16,15 @@
 import mock
 
 from networking_odl.common import lightweight_testing as lwt
+from networking_odl.tests import base as odl_base
 
 from neutron.tests import base
 
 
 class LightweightTestingTestCase(base.DietTestCase):
+    def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        super(LightweightTestingTestCase, self).setUp()
 
     def test_create_client_with_lwt_enabled(self):
         """Have to do the importation here, otherwise there will be a loop"""

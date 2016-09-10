@@ -18,11 +18,15 @@ Tests for the L3 FWaaS plugin for networking-odl.
 """
 
 from networking_odl.fwaas import driver as fwaas_odl
+from networking_odl.tests import base as odl_base
 
 from neutron.tests import base
 
 
 class TestODL_FWaaS(base.BaseTestCase):
+    def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        super(TestODL_FWaaS, self).setUp()
 
     def test_init(self):
         # just create an instance of OpenDaylightFwaasDriver

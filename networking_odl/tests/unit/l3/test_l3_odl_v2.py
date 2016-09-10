@@ -20,9 +20,11 @@ from networking_odl.db import db
 from networking_odl.journal import journal
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
+from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
 
 import mock
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 import requests
 
@@ -30,7 +32,6 @@ from neutron import context
 from neutron.db import api as neutron_db_api
 from neutron.extensions import external_net as external_net
 from neutron import manager
-from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
@@ -45,19 +46,22 @@ PORT_ID = 'port_uuid'
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
+    def setUp(self):
+        super(OpenDayLightMechanismConfigTests, self).setUp()
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
+        cfg.CONF.set_override('port_binding_controller',
+                              'legacy-port-binding', 'ml2_odl')
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'],
-                                     'ml2')
-        config.cfg.CONF.set_override('url', url, 'ml2_odl')
-        config.cfg.CONF.set_override('username', username, 'ml2_odl')
-        config.cfg.CONF.set_override('password', password, 'ml2_odl')
+        cfg.CONF.set_override('url', url, 'ml2_odl')
+        cfg.CONF.set_override('username', username, 'ml2_odl')
+        cfg.CONF.set_override('password', password, 'ml2_odl')
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)
-        self.assertRaisesRegex(config.cfg.RequiredOptError,
+        self.assertRaisesRegex(cfg.RequiredOptError,
                                'value required for option \w+ in group '
                                '\[ml2_odl\]',
                                plugin.Ml2Plugin)
@@ -98,15 +102,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                              test_base_db.ODLBaseDbTestCase,
                              base.BaseTestCase):
     def setUp(self):
-        config.cfg.CONF.set_override("core_plugin",
-                                     'neutron.plugins.ml2.plugin.Ml2Plugin')
-        core_plugin = config.cfg.CONF.core_plugin
+        cfg.CONF.set_override("core_plugin",
+                              'neutron.plugins.ml2.plugin.Ml2Plugin')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        core_plugin = cfg.CONF.core_plugin
         super(OpenDaylightL3TestCase, self).setUp(plugin=core_plugin)
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'], 'ml2')
-        config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
-        config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
-        config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
         mock.patch.object(journal.OpendaylightJournalThread,
                           'start_odl_sync_thread').start()
         self.db_session = neutron_db_api.get_session()
@@ -169,9 +171,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         if expected_calls:
             mock_method.assert_called_with(
                 headers={'Content-Type': 'application/json'},
-                auth=(config.cfg.CONF.ml2_odl.username,
-                      config.cfg.CONF.ml2_odl.password),
-                timeout=config.cfg.CONF.ml2_odl.timeout, *args, **kwargs)
+                auth=(cfg.CONF.ml2_odl.username,
+                      cfg.CONF.ml2_odl.password),
+                timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
         self.assertEqual(expected_calls, mock_method.call_count)
 
     def _call_operation_object(self, operation, object_type, object_id,
@@ -216,13 +218,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         # Setup expected results.
         if operation in [odl_const.ODL_UPDATE, odl_const.ODL_DELETE]:
-            url = (config.cfg.CONF.ml2_odl.url + '/' + object_type + 's/' +
+            url = (cfg.CONF.ml2_odl.url + '/' + object_type + 's/' +
                    object_id)
         elif operation in [odl_const.ODL_ADD, odl_const.ODL_REMOVE]:
-            url = (config.cfg.CONF.ml2_odl.url + '/' + odl_const.ODL_ROUTER +
+            url = (cfg.CONF.ml2_odl.url + '/' + odl_const.ODL_ROUTER +
                    's/' + object_id + '/' + operation + '_router_interface')
         else:
-            url = config.cfg.CONF.ml2_odl.url + '/' + object_type + 's'
+            url = cfg.CONF.ml2_odl.url + '/' + object_type + 's'
 
         if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE,
                          odl_const.ODL_ADD, odl_const.ODL_REMOVE]:

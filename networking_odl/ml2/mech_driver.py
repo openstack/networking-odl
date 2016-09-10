@@ -420,11 +420,6 @@ class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
         self.timeout = cfg.CONF.ml2_odl.timeout
         self.username = cfg.CONF.ml2_odl.username
         self.password = cfg.CONF.ml2_odl.password
-        required_opts = ('url', 'username', 'password')
-        for opt in required_opts:
-            if not getattr(self, opt):
-                raise cfg.RequiredOptError(opt, cfg.OptGroup('ml2_odl'))
-
         self.odl_drv = OpenDaylightDriver()
 
     # Postcommit hooks are used to trigger synchronization.

@@ -84,8 +84,9 @@ class PortBindingManager(PortBindingController):
     @classmethod
     def create(
             cls, namespace='networking_odl.ml2.port_binding_controllers',
-            name=cfg.CONF.ml2_odl.port_binding_controller):
+            name=None):
 
+        name = name or cfg.CONF.ml2_odl.port_binding_controller
         ext_mgr = stevedore.named.NamedExtensionManager(
             namespace, [name], invoke_on_load=True)
 

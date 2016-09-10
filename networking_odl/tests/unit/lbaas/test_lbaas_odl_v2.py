@@ -20,11 +20,15 @@ Tests for the LBaaS plugin for networking-odl.
 import mock
 
 from networking_odl.lbaas import driver_v2 as lbaas_odl
+from networking_odl.tests import base as odl_base
 
 from neutron.tests import base
 
 
 class TestODL_LBaaS(base.BaseTestCase):
+    def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        super(TestODL_LBaaS, self).setUp()
 
     def test_init(self):
         # just create an instance of OpenDaylightLbaasDriverV2
