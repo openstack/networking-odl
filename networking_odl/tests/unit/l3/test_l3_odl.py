@@ -68,6 +68,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         router_id = "234237d4-1e7f-11e5-9bd7-080027328c3a"
         router = {'router': {'name': 'router1', 'admin_state_up': True,
                              'tenant_id': router_id,
+                             'project_id': router_id,
                              'external_gateway_info': None}}
         return router_id, router
 
@@ -170,6 +171,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         floating_ip_request_info = {"floating_network_id":
                                     "376da547-b977-4cfe-9cba-275c80debf57",
                                     "tenant_id": "test-tenant",
+                                    "project_id": "test-tenant",
                                     "fixed_ip_address": "10.0.0.3",
                                     "subnet_id": port['subnets'][0]['id'],
                                     "port_id": port_id,
