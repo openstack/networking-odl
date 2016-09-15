@@ -23,6 +23,7 @@ from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
+from networking_odl.tests.unit import test_base_db
 
 import mock
 from oslo_config import cfg
@@ -43,7 +44,8 @@ SG_FAKE_ID = 'sg_fake_uuid'
 SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
 
 
-class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase):
+class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
+                             test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(OpenDaylightConfigBase, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
@@ -164,7 +166,6 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mech.initialize()
         self.thread = journal.OpendaylightJournalThread()
-        self.addCleanup(self._db_cleanup)
 
     @staticmethod
     def _get_mock_network_operation_context():
@@ -267,11 +268,6 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         501: '501 Server Error: Not Implemented',
         503: '503 Server Error: Service Unavailable',
     }
-
-    def _db_cleanup(self):
-        rows = db.get_all_db_rows(self.db_session)
-        for row in rows:
-            db.delete_row(self.db_session, row=row)
 
     @classmethod
     def _get_mock_request_response(cls, status_code):

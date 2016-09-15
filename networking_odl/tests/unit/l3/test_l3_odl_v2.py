@@ -20,6 +20,7 @@ from networking_odl.db import db
 from networking_odl.journal import journal
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
+from networking_odl.tests.unit import test_base_db
 
 import mock
 from oslo_serialization import jsonutils
@@ -94,6 +95,7 @@ class DataMatcher(object):
 
 
 class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
+                             test_base_db.ODLBaseDbTestCase,
                              base.BaseTestCase):
     def setUp(self):
         config.cfg.CONF.set_override("core_plugin",
@@ -116,7 +118,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.driver.get_floatingip = mock.Mock(
             return_value={'router_id': ROUTER_ID,
                           'floating_network_id': NETWORK_ID})
-        self.addCleanup(self._db_cleanup)
 
     @staticmethod
     def _get_mock_router_operation_info(network, subnet):
@@ -148,11 +149,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def _get_mock_operation_info(cls, object_type, *args):
         getter = getattr(cls, '_get_mock_' + object_type + '_operation_info')
         return getter(*args)
-
-    def _db_cleanup(self):
-        rows = db.get_all_db_rows(self.db_session)
-        for row in rows:
-            db.delete_row(self.db_session, row=row)
 
     @classmethod
     def _get_mock_request_response(cls, status_code):
