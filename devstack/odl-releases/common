@@ -1,3 +1,7 @@
+# Java major version required to run OpenDaylight: 7, 8, ...
+# by default, ODL uses jdk 8 as of Boron
+export ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-8}
+
 # karaf distribution name of ODL to download
 export ODL_NAME=${ODL_NAME:-distribution-karaf-${ODL_BUNDLEVERSION}}
 
