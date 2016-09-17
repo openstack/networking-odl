@@ -18,7 +18,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.db import db
 from networking_odl.journal import journal
-from networking_odl.l3 import l3_odl_v2
+from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
@@ -32,6 +32,7 @@ from neutron import context
 from neutron.db import api as neutron_db_api
 from neutron.extensions import external_net as external_net
 from neutron import manager
+from neutron.plugins.common import constants as service_constants
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
@@ -49,7 +50,7 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
         super(OpenDayLightMechanismConfigTests, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight'], 'ml2')
+                              ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
                               'legacy-port-binding', 'ml2_odl')
 
@@ -105,17 +106,26 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         cfg.CONF.set_override("core_plugin",
                               'neutron.plugins.ml2.plugin.Ml2Plugin')
         cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight'], 'ml2')
+                              ['logger', 'opendaylight_v2'], 'ml2')
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        cfg.CONF.set_override("service_plugins", ['odl-router_v2'])
         core_plugin = cfg.CONF.core_plugin
-        super(OpenDaylightL3TestCase, self).setUp(plugin=core_plugin)
+        service_plugins = {'l3_plugin_name': 'odl-router_v2'}
         mock.patch.object(journal.OpendaylightJournalThread,
                           'start_odl_sync_thread').start()
+        self.mock_mt_thread = mock.patch.object(
+            maintenance.MaintenanceThread, 'start').start()
+        mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
+                          '_record_in_journal').start()
+        mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
+                          'sync_from_callback').start()
+        super(OpenDaylightL3TestCase, self).setUp(
+            plugin=core_plugin, service_plugins=service_plugins)
         self.db_session = neutron_db_api.get_session()
-        self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.plugin = manager.NeutronManager.get_plugin()
         self.plugin._network_is_external = mock.Mock(return_value=True)
-        self.driver = l3_odl_v2.OpenDaylightL3RouterPlugin()
+        self.driver = manager.NeutronManager.get_service_plugins()[
+            service_constants.L3_ROUTER_NAT]
         self.thread = journal.OpendaylightJournalThread()
         self.driver.get_floatingip = mock.Mock(
             return_value={'router_id': ROUTER_ID,

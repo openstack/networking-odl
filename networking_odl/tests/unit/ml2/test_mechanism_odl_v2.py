@@ -22,6 +22,7 @@ from networking_odl.common import filters
 from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
+from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
@@ -50,7 +51,11 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         self.useFixture(base.OpenDaylightRestClientFixture())
         super(OpenDaylightConfigBase, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight'], 'ml2')
+                              ['logger', 'opendaylight_v2'], 'ml2')
+        self.mock_sync_thread = mock.patch.object(
+            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
+        self.mock_mt_thread = mock.patch.object(
+            maintenance.MaintenanceThread, 'start').start()
 
 
 class OpenDaylightTestCase(OpenDaylightConfigBase):
@@ -58,8 +63,6 @@ class OpenDaylightTestCase(OpenDaylightConfigBase):
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
-        mock.patch.object(journal.OpendaylightJournalThread,
-                          'start_odl_sync_thread').start()
         self.mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
                                                'sendjson').start()
         self.mock_sendjson.side_effect = self.check_sendjson
@@ -71,8 +74,12 @@ class OpenDaylightTestCase(OpenDaylightConfigBase):
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
         super(OpenDayLightMechanismConfigTests, self).setUp()
+        self.mock_sync_thread = mock.patch.object(
+            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
+        self.mock_mt_thread = mock.patch.object(
+            maintenance.MaintenanceThread, 'start').start()
         cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight'], 'ml2')
+                              ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
                               'legacy-port-binding', 'ml2_odl')
 
@@ -164,8 +171,6 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
-        self.mock_sync_thread = mock.patch.object(
-            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mech.initialize()
         self.thread = journal.OpendaylightJournalThread()
 
