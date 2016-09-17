@@ -18,6 +18,7 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
 import requests
+import threading
 
 
 LOG = log.getLogger(__name__)
@@ -25,6 +26,14 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 
 class OpenDaylightRestClient(object):
+    @staticmethod
+    def _check_opt(url):
+        if not url:
+            raise cfg.RequiredOptError('url', cfg.OptGroup('ml2_odl'))
+        required_opts = ('url', 'username', 'password')
+        for opt in required_opts:
+            if not getattr(cfg.CONF.ml2_odl, opt):
+                raise cfg.RequiredOptError(opt, cfg.OptGroup('ml2_odl'))
 
     @classmethod
     def create_client(cls, url=None):
@@ -36,8 +45,10 @@ class OpenDaylightRestClient(object):
             from networking_odl.common import lightweight_testing as lwt
             cls = lwt.OpenDaylightLwtClient
 
+        url = url or cfg.CONF.ml2_odl.url
+        cls._check_opt(url)
         return cls(
-            url or cfg.CONF.ml2_odl.url,
+            url,
             cfg.CONF.ml2_odl.username,
             cfg.CONF.ml2_odl.password,
             cfg.CONF.ml2_odl.timeout)
@@ -100,3 +111,21 @@ class OpenDaylightRestClient(object):
             LOG.debug("Got response:\n"
                       "(%(response)s)", {'response': rensponse.text})
             return rensponse
+
+
+class OpenDaylightRestClientGlobal(object):
+    """ODL Rest client as global variable
+
+    The creation of OpenDaylightRestClient needs to be delayed until
+    configuration values need to be configured at first.
+    """
+    def __init__(self):
+        super(OpenDaylightRestClientGlobal, self).__init__()
+        self._lock = threading.Lock()
+        self._client = None
+
+    def get_client(self):
+        with self._lock:
+            if self._client is None:
+                self._client = OpenDaylightRestClient.create_client()
+            return self._client

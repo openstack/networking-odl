@@ -23,7 +23,7 @@ from networking_odl.db import db
 
 _CREATE_OPS = (odl_const.ODL_CREATE, odl_const.ODL_ADD)
 _DELETE_OPS = (odl_const.ODL_DELETE, odl_const.ODL_REMOVE)
-_CLIENT = client.OpenDaylightRestClient.create_client()
+_CLIENT = client.OpenDaylightRestClientGlobal()
 
 LOG = logging.getLogger(__name__)
 
@@ -32,8 +32,8 @@ def journal_recovery(session):
     for row in db.get_all_db_rows_by_state(session, odl_const.FAILED):
         try:
             LOG.debug("Attempting recovery of journal entry %s.", row)
-            odl_resource = _CLIENT.get_resource(row.object_type,
-                                                row.object_uuid)
+            odl_resource = _CLIENT.get_client().get_resource(row.object_type,
+                                                             row.object_uuid)
             if odl_resource is not None:
                 _handle_existing_resource(session, row)
             else:

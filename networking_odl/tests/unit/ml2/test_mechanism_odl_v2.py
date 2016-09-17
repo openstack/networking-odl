@@ -23,6 +23,7 @@ from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
+from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
 
 import mock
@@ -32,7 +33,6 @@ import requests
 
 from neutron.db import api as neutron_db_api
 from neutron import manager
-from neutron.plugins.ml2 import config as config
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
@@ -47,12 +47,10 @@ SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
 class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
                              test_base_db.ODLBaseDbTestCase):
     def setUp(self):
+        self.useFixture(base.OpenDaylightRestClientFixture())
         super(OpenDaylightConfigBase, self).setUp()
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'], 'ml2')
-        config.cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
-        config.cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
-        config.cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
 
 
 class OpenDaylightTestCase(OpenDaylightConfigBase):
@@ -71,18 +69,22 @@ class OpenDaylightTestCase(OpenDaylightConfigBase):
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
+    def setUp(self):
+        super(OpenDayLightMechanismConfigTests, self).setUp()
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
+        cfg.CONF.set_override('port_binding_controller',
+                              'legacy-port-binding', 'ml2_odl')
+
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'],
-                                     'ml2')
-        config.cfg.CONF.set_override('url', url, 'ml2_odl')
-        config.cfg.CONF.set_override('username', username, 'ml2_odl')
-        config.cfg.CONF.set_override('password', password, 'ml2_odl')
+        cfg.CONF.set_override('url', url, 'ml2_odl')
+        cfg.CONF.set_override('username', username, 'ml2_odl')
+        cfg.CONF.set_override('password', password, 'ml2_odl')
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)
-        self.assertRaisesRegex(config.cfg.RequiredOptError,
+        self.assertRaisesRegex(cfg.RequiredOptError,
                                'value required for option \w+ in group '
                                '\[ml2_odl\]',
                                plugin.Ml2Plugin)
@@ -287,9 +289,8 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         if expected_calls:
             mock_method.assert_called_with(
                 headers={'Content-Type': 'application/json'},
-                auth=(config.cfg.CONF.ml2_odl.username,
-                      config.cfg.CONF.ml2_odl.password),
-                timeout=config.cfg.CONF.ml2_odl.timeout, *args, **kwargs)
+                auth=(cfg.CONF.ml2_odl.username, cfg.CONF.ml2_odl.password),
+                timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
         self.assertEqual(expected_calls, mock_method.call_count)
 
     def _call_operation_object(self, operation, object_type):
@@ -338,10 +339,9 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                 uuid = context[object_type]['id']
             else:
                 uuid = context.current['id']
-            url = '%s/%ss/%s' % (config.cfg.CONF.ml2_odl.url, url_object_type,
-                                 uuid)
+            url = '%s/%ss/%s' % (cfg.CONF.ml2_odl.url, url_object_type, uuid)
         else:
-            url = '%s/%ss' % (config.cfg.CONF.ml2_odl.url, url_object_type)
+            url = '%s/%ss' % (cfg.CONF.ml2_odl.url, url_object_type)
 
         if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE]:
             kwargs = {

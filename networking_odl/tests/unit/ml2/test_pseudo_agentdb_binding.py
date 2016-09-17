@@ -20,7 +20,6 @@ from string import Template
 
 from neutron.extensions import portbindings
 from neutron.plugins.common import constants
-from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib import constants as n_const
@@ -178,10 +177,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
     def setUp(self):
         """Setup test."""
         super(TestPseudoAgentDBBindingController, self).setUp()
-
-        config.cfg.CONF.set_override('url',
-                                     'http://localhost:8080'
-                                     '/controller/nb/v2/neutron', 'ml2_odl')
+        self.useFixture(base.OpenDaylightRestClientFixture())
 
         fake_agents_db = mock.MagicMock()
         fake_agents_db.create_or_update_agent = mock.MagicMock()

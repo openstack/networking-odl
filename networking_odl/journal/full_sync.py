@@ -40,7 +40,7 @@ _L2_RESOURCES_TO_SYNC = [(odl_const.ODL_SG, odl_const.ODL_SGS),
                          (odl_const.ODL_PORT, odl_const.ODL_PORTS)]
 _L3_RESOURCES_TO_SYNC = [(odl_const.ODL_ROUTER, odl_const.ODL_ROUTERS),
                          (odl_const.ODL_FLOATINGIP, odl_const.ODL_FLOATINGIPS)]
-_CLIENT = client.OpenDaylightRestClient.create_client()
+_CLIENT = client.OpenDaylightRestClientGlobal()
 
 
 def full_sync(session):
@@ -74,10 +74,11 @@ def _full_sync_needed(session):
 def _canary_network_missing_on_odl():
     # Try to reach the ODL server, sometimes it might be up & responding to
     # HTTP calls but inoperative..
-    response = _CLIENT.get(odl_const.ODL_NETWORKS)
+    client = _CLIENT.get_client()
+    response = client.get(odl_const.ODL_NETWORKS)
     response.raise_for_status()
 
-    response = _CLIENT.get(odl_const.ODL_NETWORKS + "/" + _CANARY_NETWORK_ID)
+    response = client.get(odl_const.ODL_NETWORKS + "/" + _CANARY_NETWORK_ID)
     if response.status_code == requests.codes.not_found:
         return True
 

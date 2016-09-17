@@ -14,8 +14,6 @@
 #  under the License.
 #
 
-import mock
-
 from neutron.db import api as neutron_db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
 
@@ -23,6 +21,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
 from networking_odl.journal import recovery
+from networking_odl.tests import base
 
 
 class RecoveryTestCase(SqlTestCaseLight):
@@ -30,7 +29,9 @@ class RecoveryTestCase(SqlTestCaseLight):
         super(RecoveryTestCase, self).setUp()
         self.db_session = neutron_db_api.get_session()
 
-        recovery._CLIENT = mock.MagicMock()
+        self.useFixture(
+            base.OpenDaylightRestClientGlobalFixture(recovery._CLIENT))
+        self._CLIENT = recovery._CLIENT.get_client()
 
         self.addCleanup(self._db_cleanup)
 
@@ -39,7 +40,7 @@ class RecoveryTestCase(SqlTestCaseLight):
 
     def test_journal_recovery_no_rows(self):
         recovery.journal_recovery(self.db_session)
-        self.assertFalse(recovery._CLIENT.get_resource.called)
+        self.assertFalse(self._CLIENT.get_resource.called)
 
     def _test_journal_recovery(self, operation, odl_resource, expected_state):
         db.create_pending_row(
@@ -47,7 +48,7 @@ class RecoveryTestCase(SqlTestCaseLight):
         row = db.get_all_db_rows(self.db_session)[0]
         db.update_db_row_state(self.db_session, row, odl_const.FAILED)
 
-        recovery._CLIENT.get_resource.return_value = odl_resource
+        self._CLIENT.get_resource.return_value = odl_resource
 
         recovery.journal_recovery(self.db_session)
 
@@ -55,7 +56,7 @@ class RecoveryTestCase(SqlTestCaseLight):
         self.assertEqual(expected_state, row['state'])
 
     def test_journal_recovery_hadles_failure_quietly(self):
-        recovery._CLIENT.get_resource.side_effect = Exception('')
+        self._CLIENT.get_resource.side_effect = Exception('')
         self._test_journal_recovery(
             odl_const.ODL_DELETE, None, odl_const.FAILED)
 

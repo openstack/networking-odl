@@ -22,6 +22,7 @@ from neutron import manager
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.journal import full_sync
+from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
 
 
@@ -29,7 +30,9 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(FullSyncTestCase, self).setUp()
 
-        full_sync._CLIENT = mock.MagicMock()
+        self.useFixture(
+            base.OpenDaylightRestClientGlobalFixture(full_sync._CLIENT))
+        self._CLIENT = full_sync._CLIENT.get_client()
         self.plugin_mock = mock.patch.object(manager.NeutronManager,
                                              'get_plugin').start()
         self.l3_plugin_mock = mock.patch.object(manager.NeutronManager,
@@ -81,13 +84,13 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             def __init__(self):
                 pass
 
-        full_sync._CLIENT.get.side_effect = TestException()
+        self._CLIENT.get.side_effect = TestException()
         self.assertRaises(TestException, full_sync.full_sync, self.db_session)
 
     def _mock_canary_missing(self):
         get_return = mock.MagicMock()
         get_return.status_code = requests.codes.not_found
-        full_sync._CLIENT.get.return_value = get_return
+        self._CLIENT.get.return_value = get_return
 
     def _assert_canary_created(self):
         rows = db.get_all_db_rows(self.db_session)
