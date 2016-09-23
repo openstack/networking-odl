@@ -16,6 +16,25 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 
 
+# NOTE(yamahata): As neutron keyston v3 support, tenant_id would be renamed to
+# project_id. In order to keep compatibility, populate both
+# 'project_id' and 'tenant_id'
+# for details refer to
+# https://specs.openstack.org/openstack/neutron-specs/specs/newton/moving-to-keystone-v3.html
+def _populate_project_id_and_tenant_id(resource_dict):
+    # NOTE(yamahata): l3 plugin passes data as dependency_list as python list
+    #                 delete_router, delete_floatingip
+    if isinstance(resource_dict, list):
+        return
+
+    project_id = resource_dict.get('project_id',
+                                   resource_dict.get('tenant_id'))
+    if project_id is not None:
+        # NOTE(yamahata): project_id can be ""(empty string)
+        resource_dict.setdefault('project_id', project_id)
+        resource_dict.setdefault('tenant_id', project_id)
+
+
 def _filter_unmapped_null(resource_dict, unmapped_keys):
     # NOTE(yamahata): bug work around
     # https://bugs.eclipse.org/bugs/show_bug.cgi?id=475475
@@ -53,7 +72,8 @@ def _filter_network_create(network):
 
 
 def _filter_network_update(network):
-    odl_utils.try_del(network, ['id', 'status', 'subnets', 'tenant_id'])
+    odl_utils.try_del(network, ['id', 'status', 'subnets',
+                                'tenant_id', 'project_id'])
     _filter_unmapped_null(network, _NETWORK_UNMAPPED_KEYS)
 
 
@@ -63,7 +83,7 @@ def _filter_subnet_create(subnet):
 
 def _filter_subnet_update(subnet):
     odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
-                      'allocation_pools', 'tenant_id'])
+                               'allocation_pools', 'tenant_id', 'project_id'])
     _filter_unmapped_null(subnet, _SUBNET_UNMAPPED_KEYS)
 
 
@@ -76,13 +96,13 @@ def _filter_port_create(port):
 def _filter_port_update(port):
     """Filter out port attributes for an update operation."""
     odl_utils.try_del(port, ['network_id', 'id', 'status', 'mac_address',
-                      'tenant_id', 'fixed_ips'])
+                             'tenant_id', 'project_id', 'fixed_ips'])
     _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
 
 
 def _filter_router_update(router):
     """Filter out attributes for an update operation."""
-    odl_utils.try_del(router, ['id', 'tenant_id', 'status'])
+    odl_utils.try_del(router, ['id', 'tenant_id', 'project_id', 'status'])
 
 
 _FILTER_MAP = {
@@ -101,3 +121,4 @@ def filter_for_odl(object_type, operation, data):
     filter_key = (object_type, operation)
     if filter_key in _FILTER_MAP:
         _FILTER_MAP[filter_key](data)
+    _populate_project_id_and_tenant_id(data)
