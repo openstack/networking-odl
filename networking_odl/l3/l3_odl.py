@@ -137,44 +137,6 @@ class OpenDaylightL3RouterPlugin(
         url = FLOATINGIPS + "/" + id
         self.client.sendjson('delete', url, None)
 
-    def add_router_interface(self, context, router_id, interface_info):
-        new_router = super(
-            OpenDaylightL3RouterPlugin, self).add_router_interface(
-                context, router_id, interface_info)
-        url = ROUTERS + "/" + router_id + "/add_router_interface"
-        router_dict = self._generate_router_dict(router_id, interface_info,
-                                                 new_router)
-        self.client.sendjson('put', url, router_dict)
-        return new_router
-
-    def remove_router_interface(self, context, router_id, interface_info):
-        new_router = super(
-            OpenDaylightL3RouterPlugin, self).remove_router_interface(
-                context, router_id, interface_info)
-        url = ROUTERS + "/" + router_id + "/remove_router_interface"
-        router_dict = self._generate_router_dict(router_id, interface_info,
-                                                 new_router)
-        self.client.sendjson('put', url, router_dict)
-        return new_router
-
-    def _generate_router_dict(self, router_id, interface_info, new_router):
-        # Get network info for the subnet that is being added to the router.
-        # Check if the interface information is by port-id or subnet-id
-        add_by_port, add_by_sub = self._validate_interface_info(interface_info)
-        if add_by_sub:
-            _port_id = new_router['port_id']
-            _subnet_id = interface_info['subnet_id']
-        elif add_by_port:
-            _port_id = interface_info['port_id']
-            _subnet_id = new_router['subnet_id']
-
-        router_dict = {'subnet_id': _subnet_id,
-                       'port_id': _port_id,
-                       'id': router_id,
-                       'tenant_id': new_router['tenant_id']}
-
-        return router_dict
-
     dvr_deletens_if_no_port_warned = False
 
     def dvr_deletens_if_no_port(self, context, port_id):

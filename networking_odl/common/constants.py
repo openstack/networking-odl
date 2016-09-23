@@ -25,7 +25,6 @@ ODL_SG_RULE = 'security_group_rule'
 ODL_SG_RULES = 'security_group_rules'
 ODL_ROUTER = 'router'
 ODL_ROUTERS = 'routers'
-ODL_ROUTER_INTF = 'router_interface'
 ODL_FLOATINGIP = 'floatingip'
 ODL_FLOATINGIPS = 'floatingips'
 
@@ -46,10 +45,6 @@ ODL_POLICY = 'policy'
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
-ODL_ADD = 'add'
-ODL_REMOVE = 'remove'
-
-ODL_UUID_NOT_USED = '0'
 
 # Constants for journal operation states
 PENDING = 'pending'

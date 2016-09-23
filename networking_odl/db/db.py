@@ -54,36 +54,6 @@ def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
     return False
 
 
-def check_for_pending_or_processing_add(session, router_id, subnet_id):
-    rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == odl_const.PENDING,
-            models.OpendaylightJournal.state == odl_const.PROCESSING),
-        models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
-        models.OpendaylightJournal.operation == odl_const.ODL_ADD
-    ).all()
-
-    for row in rows:
-        if router_id in row.data.values() and subnet_id in row.data.values():
-            return True
-
-    return False
-
-
-def check_for_pending_remove_ops_with_parent(session, parent_id):
-    rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == odl_const.PENDING,
-            models.OpendaylightJournal.state == odl_const.PROCESSING),
-        models.OpendaylightJournal.object_type == odl_const.ODL_ROUTER_INTF,
-        models.OpendaylightJournal.operation == odl_const.ODL_REMOVE
-    ).all()
-
-    for row in rows:
-        if parent_id in row.data.values():
-            return True
-
-    return False
-
-
 def check_for_older_ops(session, row):
     q = session.query(models.OpendaylightJournal).filter(
         or_(models.OpendaylightJournal.state == odl_const.PENDING,

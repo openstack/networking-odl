@@ -151,11 +151,6 @@ def validate_router_operation(session, row):
                 session, odl_const.ODL_FLOATINGIP, row.object_uuid):
             return False
 
-        # Check that dependent router interface remove operation has completed.
-        if db.check_for_pending_remove_ops_with_parent(
-                session, row.object_uuid):
-            return False
-
     return True
 
 
@@ -195,29 +190,6 @@ def validate_floatingip_operation(session, row):
     return True
 
 
-def validate_router_interface_operation(session, row):
-    """Validate router_interface operation based on dependencies.
-
-    Validate router_interface operation depending on whether it's dependencies
-    are still in 'pending' or 'processing' state.
-    """
-    if row.operation == odl_const.ODL_ADD:
-        # Verify that router event has been completed.
-        if db.check_for_pending_or_processing_ops(session, row.data['id']):
-            return False
-
-        # TODO(rcurran): Check for port_id?
-        if db.check_for_pending_or_processing_ops(session,
-                                                  row.data['subnet_id']):
-            return False
-    elif row.operation == odl_const.ODL_REMOVE:
-        if db.check_for_pending_or_processing_add(session, row.data['id'],
-                                                  row.data['subnet_id']):
-            return False
-
-    return True
-
-
 def validate_security_group_operation(session, row):
     """Validate security_group operation based on dependencies.
 
@@ -240,7 +212,6 @@ _VALIDATION_MAP = {
     odl_const.ODL_SUBNET: validate_subnet_operation,
     odl_const.ODL_PORT: validate_port_operation,
     odl_const.ODL_ROUTER: validate_router_operation,
-    odl_const.ODL_ROUTER_INTF: validate_router_interface_operation,
     odl_const.ODL_FLOATINGIP: validate_floatingip_operation,
     odl_const.ODL_SG: validate_security_group_operation,
     odl_const.ODL_SG_RULE: validate_security_group_rule_operation,
