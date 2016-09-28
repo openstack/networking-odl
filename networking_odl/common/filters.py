@@ -115,7 +115,7 @@ _ODL_KNOWN_PROTOCOL_NAMES = (
     n_const.PROTO_NAME_UDP,
     n_const.PROTO_NAME_ICMP,
     n_const.PROTO_NAME_IPV6_ICMP_LEGACY,
-    )
+)
 
 
 def _sgrule_scrub_unknown_protocol_name(protocol):

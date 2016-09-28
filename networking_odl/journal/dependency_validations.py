@@ -44,13 +44,13 @@ def validate_network_operation(session, row):
             return False
         # Check for dependent operations
         if db.check_for_pending_delete_ops_with_parent(
-            session, odl_const.ODL_SUBNET, row.object_uuid):
+                session, odl_const.ODL_SUBNET, row.object_uuid):
             return False
         if db.check_for_pending_delete_ops_with_parent(
-            session, odl_const.ODL_PORT, row.object_uuid):
+                session, odl_const.ODL_PORT, row.object_uuid):
             return False
         if db.check_for_pending_delete_ops_with_parent(
-            session, odl_const.ODL_ROUTER, row.object_uuid):
+                session, odl_const.ODL_ROUTER, row.object_uuid):
             return False
     elif (row.operation == odl_const.ODL_UPDATE and
             not _is_valid_update_operation(session, row)):
@@ -81,7 +81,7 @@ def validate_subnet_operation(session, row):
             return False
         # Check for dependent operations
         if db.check_for_pending_delete_ops_with_parent(
-            session, odl_const.ODL_PORT, row.object_uuid):
+                session, odl_const.ODL_PORT, row.object_uuid):
             return False
 
     return True
@@ -143,7 +143,7 @@ def validate_router_operation(session, row):
 
         # Check that dependent port delete operation has completed.
         if db.check_for_pending_delete_ops_with_parent(
-            session, odl_const.ODL_PORT, row.object_uuid):
+                session, odl_const.ODL_PORT, row.object_uuid):
             return False
 
         # Check that dependent floatingip delete operation has completed.

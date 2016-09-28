@@ -34,11 +34,11 @@ LOG = logging.getLogger(__name__)
 
 
 class OpenDaylightL3RouterPlugin(
-    common_db_mixin.CommonDbMixin,
-    extraroute_db.ExtraRoute_db_mixin,
-    l3_dvr_db.L3_NAT_with_dvr_db_mixin,
-    l3_gwmode_db.L3_NAT_db_mixin,
-    l3_agentschedulers_db.L3AgentSchedulerDbMixin):
+        common_db_mixin.CommonDbMixin,
+        extraroute_db.ExtraRoute_db_mixin,
+        l3_dvr_db.L3_NAT_with_dvr_db_mixin,
+        l3_gwmode_db.L3_NAT_db_mixin,
+        l3_agentschedulers_db.L3AgentSchedulerDbMixin):
 
     """Implementation of the OpenDaylight L3 Router Service Plugin.
 
