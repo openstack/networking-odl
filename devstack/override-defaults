@@ -13,7 +13,7 @@ fi
 Q_ML2_PLUGIN_MECHANISM_DRIVERS=${Q_ML2_PLUGIN_MECHANISM_DRIVERS:-"opendaylight${V2_POSTFIX},logger"}
 
 # This triggers the provisioning of L3 resources like routers and
-# external network, if not overriden.
+# external network, if not overridden.
 Q_L3_ENABLED=${Q_L3_ENABLED:-True}
 
 # We have to disable the neutron L2 agent. OpenDaylight does not use the
