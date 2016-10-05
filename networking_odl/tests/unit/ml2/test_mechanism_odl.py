@@ -272,7 +272,7 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
 
             act = []
             for args, kwargs in \
-                client.OpenDaylightRestClient.sendjson.call_args_list:
+                    client.OpenDaylightRestClient.sendjson.call_args_list:
                 if args[0] == 'post':
                     for key in args[2]:
                         act.append(args[2][key][0]['id'])

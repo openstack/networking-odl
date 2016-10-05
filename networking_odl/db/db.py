@@ -226,6 +226,6 @@ def reset_processing_rows(session, max_timedelta):
         rows = session.query(models.OpendaylightJournal).filter(
             models.OpendaylightJournal.last_retried < now - max_timedelta,
             models.OpendaylightJournal.state == odl_const.PROCESSING,
-            ).update({'state': odl_const.PENDING})
+        ).update({'state': odl_const.PENDING})
 
     return rows

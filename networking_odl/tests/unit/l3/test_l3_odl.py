@@ -85,7 +85,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                            "status": None,
                            "tenant_id": "test-tenant"
                            }
-            }
+        }
         return floating_ip_id, floating_ip
 
     @staticmethod
@@ -131,7 +131,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         router_request_info = {'external_gateway_info': {
             "network_id": "3c5bcddd-6af9-4e6b-9c3e-c153e521cab8",
             "enable_snat": True}
-            }
+        }
         return_value = copy.deepcopy(router['router'])
         return_value.update(router_request_info)
         return_value.update({'status': "ACTIVE", 'id': router_id})

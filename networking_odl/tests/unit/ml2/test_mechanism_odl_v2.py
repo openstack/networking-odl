@@ -399,12 +399,12 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             odl_const.ODL_CREATE)
 
     def _test_object_operation_pending_object_operation(
-        self, object_type, operation, pending_operation):
+            self, object_type, operation, pending_operation):
         self._test_object_operation_pending_another_object_operation(
             object_type, operation, object_type, pending_operation)
 
     def _test_object_operation_pending_another_object_operation(
-        self, object_type, operation, pending_type, pending_operation):
+            self, object_type, operation, pending_type, pending_operation):
         # Create the object_type (creates db row in pending state).
         self._call_operation_object(pending_operation,
                                     pending_type)
