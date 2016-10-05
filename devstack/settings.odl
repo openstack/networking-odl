@@ -18,7 +18,7 @@
 #   lithium-0.3.1-SR1      (SR1)
 #   helium-0.2.3-SR3
 
-ODL_RELEASE=${ODL_RELEASE:-boron-snapshot-0.5.0}
+ODL_RELEASE=${ODL_RELEASE:-carbon-snapshot-0.6.0}
 
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
