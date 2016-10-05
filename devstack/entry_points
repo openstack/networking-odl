@@ -125,6 +125,12 @@ function configure_opendaylight {
 # configure_neutron_opendaylight() - Set Neutron config files according to ODL settings
 function configure_neutron_odl {
     echo "Configuring ML2 for OpenDaylight"
+
+    # bug work around
+    # https://bugs.launchpad.net/neutron/+bug/1614766
+    # TODO(yamahata): once the bug is fixed, remove this bug work around
+    iniset $NEUTRON_CONF OVS ovsdb_interface vsctl
+
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD

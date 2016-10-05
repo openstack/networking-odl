@@ -74,6 +74,7 @@ if is_service_enabled odl-compute; then
         install_networking_odl
         install_opendaylight_compute
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
+        configure_neutron_odl
         if is_service_enabled nova; then
             create_nova_conf_neutron
         fi
