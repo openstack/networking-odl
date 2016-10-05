@@ -1,0 +1,16 @@
+---
+prelude: >
+    Change the default value of port_binding_controller
+    from network-topology to pseudo-agentdb-binding
+    as networking-topology will be deprecated.
+upgrade:
+  - pseudo-agentdb-binding is supported by the version
+    of OpenDaylight Boron(0.5.x) or later.
+    So for the version of OpenDaylight Beryllium or earlier,
+    the option, port_binding_controller, needs to be
+    explicitly configured to be legacy-port-binding or
+    network-topology(deprecated).
+deprecations:
+  - port binding controller, network-topology, is
+    deprecated with OpenStack Ocata and will be removed
+    in future openstack version.

@@ -179,7 +179,7 @@ All related neutron services need to be restarted after configuration change.
         username = <ODL_USERNAME>
         password = <ODL_PASSWORD>
         url = http://<ODL_IP_ADDRESS>:<ODL_PORT>/controller/nb/v2/neutron
-        port_binding_controller = network-topology
+        port_binding_controller = pseudo-agentdb-binding
 
 
 Compute/network nodes

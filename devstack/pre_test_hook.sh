@@ -31,6 +31,17 @@ case "$ODL_GATE_V2DRIVER" in
         ;;
 esac
 
+if [[ -z "$ODL_GATE_PORT_BINDING" ]]; then
+    case "$ODL_RELEASE_BASE" in
+        beryllium-snapshot)
+            # pseudo-agentdb-binding is supported from boron
+            ODL_GATE_PORT_BINDING=network-topology
+            ;;
+        *)
+            ODL_GATE_PORT_BINDING=pseudo-agentdb-binding
+            ;;
+    esac
+fi
 case "$ODL_GATE_PORT_BINDING" in
     pseudo-agentdb-binding)
         ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
@@ -38,8 +49,12 @@ case "$ODL_GATE_PORT_BINDING" in
     legacy-port-binding)
         ODL_PORT_BINDING_CONTROLLER=legacy-port-binding
         ;;
-    network-topology|*)
+    network-topology)
         ODL_PORT_BINDING_CONTROLLER=network-topology
+        ;;
+    *)
+        echo "Unknown port binding controller: $ODL_GATE_PORT_BINDING"
+        exit 1
         ;;
 esac
 
