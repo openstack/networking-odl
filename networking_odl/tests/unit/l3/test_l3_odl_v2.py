@@ -90,10 +90,7 @@ class DataMatcher(object):
 
     def __eq__(self, s):
         data = jsonutils.loads(s)
-        if self._object_type == odl_const.ODL_ROUTER_INTF:
-            return self._data == data
-        else:
-            return self._data == data[self._object_type]
+        return self._data == data[self._object_type]
 
     def __ne__(self, s):
         return not self.__eq__(s)
@@ -196,10 +193,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             new_object_dict = method(object_context, object_dict)
         elif operation == odl_const.ODL_UPDATE:
             new_object_dict = method(object_context, object_id, object_dict)
-        elif operation in [odl_const.ODL_ADD, odl_const.ODL_REMOVE]:
-            router_dict = method(object_context, object_id, object_dict)
-            new_object_dict = self.driver._generate_router_dict(
-                object_id, object_dict, router_dict)
         else:
             new_object_dict = method(object_context, object_id)
 
@@ -210,14 +203,10 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                                           expected_calls=1):
         http_requests = {odl_const.ODL_CREATE: 'post',
                          odl_const.ODL_UPDATE: 'put',
-                         odl_const.ODL_DELETE: 'delete',
-                         odl_const.ODL_ADD: 'put',
-                         odl_const.ODL_REMOVE: 'put'}
+                         odl_const.ODL_DELETE: 'delete'}
         status_codes = {odl_const.ODL_CREATE: requests.codes.created,
                         odl_const.ODL_UPDATE: requests.codes.ok,
-                        odl_const.ODL_DELETE: requests.codes.no_content,
-                        odl_const.ODL_ADD: requests.codes.created,
-                        odl_const.ODL_REMOVE: requests.codes.created}
+                        odl_const.ODL_DELETE: requests.codes.no_content}
 
         http_request = http_requests[operation]
         status_code = status_codes[operation]
@@ -230,14 +219,10 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         if operation in [odl_const.ODL_UPDATE, odl_const.ODL_DELETE]:
             url = (cfg.CONF.ml2_odl.url + '/' + object_type + 's/' +
                    object_id)
-        elif operation in [odl_const.ODL_ADD, odl_const.ODL_REMOVE]:
-            url = (cfg.CONF.ml2_odl.url + '/' + odl_const.ODL_ROUTER +
-                   's/' + object_id + '/' + operation + '_router_interface')
         else:
             url = cfg.CONF.ml2_odl.url + '/' + object_type + 's'
 
-        if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE,
-                         odl_const.ODL_ADD, odl_const.ODL_REMOVE]:
+        if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE]:
             kwargs = {
                 'url': url,
                 'data': DataMatcher(operation, object_type, new_object_dict)}
@@ -364,77 +349,11 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def test_floatingip_db(self):
         self._test_object_db(odl_const.ODL_FLOATINGIP)
 
-    def test_router_intf_db(self):
-        # Create network, subnet and router for testing.
-        kwargs = {'arg_list': (external_net.EXTERNAL,),
-                  external_net.EXTERNAL: True}
-        with self.network(**kwargs) as network:
-            with self.subnet(cidr='10.0.0.0/24') as subnet:
-                router_context, router_dict = (
-                    self._get_mock_router_operation_info(network, None))
-                new_router_dict = self.driver.create_router(router_context,
-                                                            router_dict)
-                router_id = new_router_dict['id']
-
-                object_type = odl_const.ODL_ROUTER_INTF
-                router_intf_context, router_intf_dict = \
-                    self._get_mock_router_interface_operation_info(network,
-                                                                   subnet)
-
-                # Remove 'router' database entry to allow tests to pass.
-                self._db_cleanup()
-
-                # Add and test router interface 'add' database entry.
-                # Note that router interface events do not generate unique
-                # UUIDs.
-                self.driver.add_router_interface(router_intf_context,
-                                                 router_id, router_intf_dict)
-                self._test_db_results(odl_const.ODL_UUID_NOT_USED,
-                                      odl_const.ODL_ADD, object_type)
-
-                # Add and test 'remove' database entry.
-                self.driver.remove_router_interface(router_intf_context,
-                                                    router_id,
-                                                    router_intf_dict)
-                self._test_db_results(odl_const.ODL_UUID_NOT_USED,
-                                      odl_const.ODL_REMOVE, object_type)
-
     def test_router_threading(self):
         self._test_thread_processing(odl_const.ODL_ROUTER)
 
     def test_floatingip_threading(self):
         self._test_thread_processing(odl_const.ODL_FLOATINGIP)
-
-    def test_router_intf_threading(self):
-        # Create network, subnet and router for testing.
-        kwargs = {'arg_list': (external_net.EXTERNAL,),
-                  external_net.EXTERNAL: True}
-        with self.network(**kwargs) as network:
-            with self.subnet(cidr='10.0.0.0/24') as subnet:
-                router_context, router_dict = (
-                    self._get_mock_router_operation_info(network, None))
-                new_router_dict = self.driver.create_router(router_context,
-                                                            router_dict)
-                router_id = new_router_dict['id']
-                object_type = odl_const.ODL_ROUTER_INTF
-
-                # Add and process router interface 'add' request. Adds to
-                # database. Expected calls = 2 because the create_router db
-                # entry is also processed.
-                self._test_operation_thread_processing(
-                    object_type, odl_const.ODL_ADD, network, subnet, router_id,
-                    expected_calls=2)
-                rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   odl_const.COMPLETED)
-                self.assertEqual(2, len(rows))
-
-                # Add and process 'remove' request. Adds to database.
-                self._test_operation_thread_processing(
-                    object_type, odl_const.ODL_REMOVE, network, subnet,
-                    router_id)
-                rows = db.get_all_db_rows_by_state(self.db_session,
-                                                   odl_const.COMPLETED)
-                self.assertEqual(3, len(rows))
 
     def test_delete_network_validate_ext_delete_router_dep(self):
         router_context = [NETWORK_ID]
@@ -456,13 +375,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, None,
             odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             floatingip_context)
-
-    def test_delete_router_validate_ext_remove_routerintf_dep(self):
-        router_intf_dict = {'id': ROUTER_ID}
-        self._test_dependency_processing(
-            odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, None,
-            odl_const.ODL_REMOVE, odl_const.ODL_ROUTER_INTF,
-            odl_const.ODL_UUID_NOT_USED, router_intf_dict)
 
     def test_delete_router_validate_self_create_dep(self):
         self._test_dependency_processing(
@@ -509,28 +421,3 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             EMPTY_DEP,
             odl_const.ODL_UPDATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             None)
-
-    def test_add_router_intf_validate_ext_create_router_dep(self):
-        router_intf_context = {'subnet_id': SUBNET_ID,
-                               'id': ROUTER_ID}
-        self._test_dependency_processing(
-            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
-            odl_const.ODL_UUID_NOT_USED, router_intf_context,
-            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
-
-    def test_add_router_intf_validate_ext_create_subnet_dep(self):
-        router_intf_context = {'subnet_id': SUBNET_ID,
-                               'id': ROUTER_ID}
-        self._test_dependency_processing(
-            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
-            odl_const.ODL_UUID_NOT_USED, router_intf_context,
-            odl_const.ODL_CREATE, odl_const.ODL_SUBNET, SUBNET_ID, None)
-
-    def test_remove_router_intf_validate_self_remove_router_intf_dep(self):
-        router_intf_context = {'subnet_id': SUBNET_ID,
-                               'id': ROUTER_ID}
-        self._test_dependency_processing(
-            odl_const.ODL_REMOVE, odl_const.ODL_ROUTER_INTF,
-            odl_const.ODL_UUID_NOT_USED, router_intf_context,
-            odl_const.ODL_ADD, odl_const.ODL_ROUTER_INTF,
-            odl_const.ODL_UUID_NOT_USED, router_intf_context)

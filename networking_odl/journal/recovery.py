@@ -21,8 +21,8 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 
-_CREATE_OPS = (odl_const.ODL_CREATE, odl_const.ODL_ADD)
-_DELETE_OPS = (odl_const.ODL_DELETE, odl_const.ODL_REMOVE)
+_CREATE_OPS = (odl_const.ODL_CREATE, )
+_DELETE_OPS = (odl_const.ODL_DELETE, )
 _CLIENT = client.OpenDaylightRestClientGlobal()
 
 LOG = logging.getLogger(__name__)

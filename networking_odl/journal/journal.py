@@ -140,14 +140,6 @@ class OpendaylightJournalThread(object):
             method = 'delete'
             urlpath = url_object + 's/' + row.object_uuid
             to_send = None
-        elif row.operation == odl_const.ODL_ADD:
-            method = 'put'
-            urlpath = 'routers/' + data['id'] + '/add_router_interface'
-            to_send = data
-        elif row.operation == odl_const.ODL_REMOVE:
-            method = 'put'
-            urlpath = 'routers/' + data['id'] + '/remove_router_interface'
-            to_send = data
 
         return method, urlpath, to_send
 

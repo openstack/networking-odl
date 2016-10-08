@@ -132,14 +132,12 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     def _mock_l3_resources(self):
         expected_journal = {odl_const.ODL_ROUTER: '1',
-                            odl_const.ODL_FLOATINGIP: '2',
-                            odl_const.ODL_ROUTER_INTF: '3'}
+                            odl_const.ODL_FLOATINGIP: '2'}
         plugin_instance = self.l3_plugin_mock.return_value.get.return_value
         plugin_instance.get_routers.return_value = [
             {'id': expected_journal[odl_const.ODL_ROUTER]}]
         plugin_instance.get_floatingips.return_value = [
             {'id': expected_journal[odl_const.ODL_FLOATINGIP]}]
-        self._mock_router_port(expected_journal[odl_const.ODL_ROUTER_INTF])
 
         return expected_journal
 
