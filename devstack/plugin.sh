@@ -71,6 +71,7 @@ fi
 
 if is_service_enabled odl-compute; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
+        install_networking_odl
         install_opendaylight_compute
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         if is_service_enabled nova; then
@@ -104,7 +105,7 @@ fi
 
 if is_service_enabled odl-neutron; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
-        install_opendaylight_neutron_thin_ml2_driver
+        install_networking_odl
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         configure_neutron_odl
     elif [[ "$1" == "stack" && "$2" == "post-extra" ]]; then
@@ -125,7 +126,7 @@ fi
 
 if is_service_enabled odl-lightweight-testing; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
-        install_opendaylight_neutron_thin_ml2_driver
+        install_networking_odl
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         configure_neutron_odl
         configure_neutron_odl_lightweight_testing
