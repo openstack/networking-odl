@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2016 OpenStack Foundation
 # All Rights Reserved.
 #
@@ -13,6 +15,51 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
+"""
+Command line script to set host OVS configurations (it requires ovsctl)
+
+Examples:
+    NOTE: bash accepts new line characters between quotes
+
+    To give a full custom json
+
+        python set_ovs_hostconfigs.py --ovs_hostconfigs='{
+                "ODL L2": {
+                    "allowed_network_types":
+                        ["local","vlan", "vxlan","gre"],
+                    "bridge_mappings": {"physnet1":"br-ex"}
+                    "supported_vnic_types": [
+                        {
+                            "vnic_type":"normal",
+                            "vif_type":"ovs",
+                            "vif_details":{}
+                         }
+                    ],
+                },
+                "ODL L3": {}
+            }'
+
+    To make sure to use system data path (Kernel)
+
+        python set_ovs_hostconfigs.py --noovs_dpdk
+
+    To make sure to use user space data path (vhostuser)
+
+        python set_ovs_hostconfigs.py --ovs_dpdk
+
+    To give bridge mappings
+
+        python --bridge_mapping=physnet1:br-ex,physnet2:br-eth0
+
+"""
+
+
+import os
+import socket
+import subprocess
+import sys
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
@@ -20,104 +67,395 @@ from oslo_serialization import jsonutils
 from networking_odl._i18n import _
 from networking_odl._i18n import _LE
 from networking_odl._i18n import _LI
-from neutron.agent.common import utils
-from neutron.common import config
+from networking_odl._i18n import _LW
+
 
 LOG = log.getLogger(__name__)
 
+USERSPACE_DATAPATH_TYPES = ['netdev', 'dpdkvhostuser']
 
-class SetOvsHostconfigs(object):
+COMMAND_LINE_OPTIONS = [
 
-    # Refer below for ovs ext-id strings
-    # https://review.openstack.org/#/c/309630/
-    extid_str = 'external_ids:{}={}'
-    odl_os_hconf_str = 'odl_os_hostconfig_config_{}'
-    odl_os_hostid_str = 'odl_os_hostconfig_hostid'
-    odl_os_hosttype_str = 'odl_os_hostconfig_hosttype'
+    cfg.ListOpt(
+        'allowed_network_types',
+        default=['local', 'vlan', 'vxlan', 'gre'],
+        help=_("""
+            Specifies allowed network types given as a Comma-separated list of
+            types.
 
-    # TODO(mzmalick): use neutron.agent.ovsdb instead of subprocess.Popen
-    ovs_cmd_get_uuid = ['ovs-vsctl', 'get', 'Open_vSwitch', '.', '_uuid']
-    ovs_cmd_set_extid = ['ovs-vsctl', 'set', 'Open_vSwitch', '', '']
+            Default: --allowed_network_types=local,vlan,vxlan,gre
+            """)),
 
-    UUID = 3
-    EXTID = 4
+    cfg.DictOpt(
+        'bridge_mappings',
+        default={},
+        help=_("""
+            Comma-separated list of <physical_network>:<bridge> tuples mapping
+            physical network names to the agent's node-specific Open vSwitch
+            bridge names to be used for flat and VLAN networks. The length of
+            bridge names should be no more than 11. Each bridge must exist, and
+            should have a physical network interface configured as a port. All
+            physical networks configured on the server should have mappings to
+            appropriate bridges on each agent.
 
-    def __init__(self):
-        self.ovs_uuid = self.get_ovs_uuid()
+            Note: If you remove a bridge from this mapping, make sure to
+            disconnect it from the integration bridge as it won't be managed by
+            the agent anymore.
 
-    def ovs_exec_cmd(self, cmd):
-        LOG.info(_LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(cmd))
-        return utils.execute(cmd, return_stderr=True, run_as_root=True)
+            Default: --bridge_mappings=
+            """)),
 
-    def get_ovs_uuid(self):
-        return self.ovs_exec_cmd(self.ovs_cmd_get_uuid)[0].strip()
+    cfg.StrOpt(
+        'datapath_type',
+        choices=['system', 'netdev', 'dpdkvhostuser'],
+        default=None,
+        help=_("""
+            It specifies the OVS data path to use.
 
-    def set_extid_hostname(self, hname):
-        self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
-        self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
-            self.odl_os_hostid_str, hname)
-        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
+            If this value is given then --ovs_dpdk will be ignored.
+            If neither this option or --ovs_dpdk are given then it will use a
+            valid value for current host.
 
-    def set_extid_hosttype(self, htype):
-        self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
-        self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
-            self.odl_os_hosttype_str, htype)
-        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
+            Choices: --datapath_type=
+                     --datapath_type=system         # kernel data path
+                     --datapath_type=netdev         # userspace data path
+                     --datapath_type=dpdkvhostuser  # userspace data path
 
-    def set_extid_hostconfig(self, htype, hconfig):
-        ext_htype = self.odl_os_hconf_str.format(
-            htype.lower().replace(' ', '_'))
-        self.ovs_cmd_set_extid[self.UUID] = self.ovs_uuid
-        self.ovs_cmd_set_extid[self.EXTID] = self.extid_str.format(
-            ext_htype, jsonutils.dumps(hconfig))
-        return self.ovs_exec_cmd(self.ovs_cmd_set_extid)
+            Default: --datapath_type=netdev         # if support is detected
+                     --datapath_type=system         # in all other cases
+            """)),
 
-    def set_ovs_extid_hostconfigs(self, conf):
-        if not conf.ovs_hostconfigs:
-            LOG.error(_LE("ovs_hostconfigs argument needed!"))
-            return
+    cfg.BoolOpt(
+        'debug',
+        default=False,
+        help=_("""
+            It shows debugging informations.
 
-        json_str = cfg.CONF.ovs_hostconfigs
-        json_str.replace("\'", "\"")
+            Default: --nodebug
+            """)),
+
+    cfg.StrOpt(
+        'host',
+        default=socket.gethostname(),  # pylint: disable=no-member
+        help=_("""
+            It specifies the host name of the target machine.
+
+            Default: --host=$HOSTNAME  # running machine host name
+            """)),
+
+    cfg.IPOpt(
+        'local_ip',
+        help=_("""
+            IP address of local overlay (tunnel) network end-point.
+            It accepts either an IPv4 or IPv6 address that resides on one
+            of the host network interfaces. The IP version of this
+            value must match the value of the 'overlay_ip_version'
+            option in the ML2 plug-in configuration file on the Neutron
+            server node(s).
+
+            Default: local_ip=
+            """)),
+
+    cfg.BoolOpt(
+        'ovs_dpdk',
+        default=None,
+        help=_("""
+            It uses user-space type of virtual interface (vhostuser) instead of
+            the system based one (ovs).
+
+            If this option is not specified it tries to detect vhostuser
+            support on running host and in case of positive match it uses it.
+
+            NOTE: if --datapath_type is given then this option is ignored.
+
+            Default:
+            """)),
+
+    cfg.StrOpt(
+        'ovs_hostconfigs',
+        help=_("""
+            Fives pre-made host configuration for OpenDaylight as a JSON
+            string.
+
+            NOTE: when specified all other options are ignored!
+
+            An entry should look like:
+                --ovs_hostconfigs='{
+                    "ODL L2": {
+                        "allowed_network_types":
+                            ["local","vlan", "vxlan","gre"],
+                        "bridge_mappings": {"physnet1":"br-ex"}
+                        "supported_vnic_types": [
+                            {
+                                "vnic_type":"normal",
+                                "vif_type":"ovs",
+                                "vif_details":{}
+                             }
+                        ],
+                    },
+                    "ODL L3": {}
+                }'
+
+            Default: --ovs_hostconfigs=
+            """)),
+
+    cfg.StrOpt(
+        'vhostuser_mode',
+        choices=['client', 'server'],
+        default='client',
+        help=_("""
+            It specifies the OVS VHostUser mode.
+
+            Choices: --vhostuser_mode=client
+                     --vhostuser_mode=server
+
+            Default: --vhostuser_mode=client
+            """)),
+
+    cfg.BoolOpt(
+        'vhostuser_ovs_plug',
+        default=True,
+        help=_("""
+            Enable VHostUser OVS Plug.
+
+            Default: --vhostuser_ovs_plug
+            """)),
+
+    cfg.StrOpt(
+        'vhostuser_port_prefix',
+        choices=['vhu', 'socket'],
+        default='vhu',
+        help=_("""
+            VHostUser socket port prefix.
+
+            Choices: --vhostuser_socket_dir=vhu
+                     --vhostuser_socket_dir=socket
+
+            Default: --vhostuser_socket_dir=vhu
+            """)),
+
+    cfg.StrOpt(
+        'vhostuser_socket_dir',
+        default='/var/run/openvswitch',
+        help=_("""
+            OVS VHostUser socket directory.
+
+            Default: --vhostuser_socket_dir=/var/run/openvswitch
+            """)),
+]
+
+
+DEFAULT_COMMAND_LINE_OPTIONS = tuple(sys.argv[1:])
+
+
+def main(args=None):
+    """Main."""
+
+    conf = setup_conf(args)
+
+    if os.geteuid() != 0:
+        LOG.error(_LE('Root permissions are required to configure ovsdb.'))
+        return 1
+
+    try:
+        set_ovs_extid_hostconfigs(conf=conf, ovs_vsctl=OvsVsctl())
+
+    except Exception as ex:  # pylint: disable=broad-except
+        LOG.error(_LE("Fatal error: %s"), ex, exc_info=conf.debug)
+        return 1
+
+    else:
+        return 0
+
+
+def set_ovs_extid_hostconfigs(conf, ovs_vsctl):
+    if conf.ovs_hostconfigs:
+        json_str = conf.ovs_hostconfigs.replace("\'", "\"")
         LOG.debug("SET-HOSTCONFIGS: JSON String %s", json_str)
+        hostconfigs = jsonutils.loads(json_str)
 
-        self.set_extid_hostname(cfg.CONF.host)
-        htype_config = jsonutils.loads(json_str)
+    else:
+        uuid = ovs_vsctl.uuid()
+        userspace_datapath_types = ovs_vsctl.userspace_datapath_types()
+        hostconfigs = _hostconfigs_from_conf(
+            conf=conf, uuid=uuid,
+            userspace_datapath_types=userspace_datapath_types)
 
-        for htype in htype_config.keys():
-            self.set_extid_hostconfig(htype, htype_config[htype])
+    ovs_vsctl.set_host_name(conf.host)
+    for name in sorted(hostconfigs):
+        ovs_vsctl.set_host_config(name, hostconfigs[name])
 
 
-def setup_conf():
+def _hostconfigs_from_conf(conf, uuid, userspace_datapath_types):
+    vif_type = _vif_type_from_conf(
+        conf=conf, userspace_datapath_types=userspace_datapath_types)
+    datapath_type = conf.datapath_type or (
+        'system' if vif_type == 'ovs' else userspace_datapath_types[0])
+    vif_details = _vif_details_from_conf(
+        conf=conf, uuid=uuid, vif_type=vif_type)
+
+    return {
+        "ODL L2": {
+            "allowed_network_types": conf.allowed_network_types,
+            "bridge_mappings": conf.bridge_mappings,
+            "datapath_type": datapath_type,
+            "supported_vnic_types": [
+                {
+                    "vif_details": vif_details,
+                    "vif_type": vif_type,
+                    "vnic_type": "normal",
+                }
+            ]
+        }
+    }
+
+
+def _vif_type_from_conf(conf, userspace_datapath_types):
+
+    # take vif_type from datapath_type ------------------------------------
+    if conf.datapath_type:
+        # take it from  datapath_type
+        if conf.datapath_type in USERSPACE_DATAPATH_TYPES:
+            if conf.datapath_type not in userspace_datapath_types:
+                LOG.warning(_LW(
+                    "Using user space data path type '%s' even if no "
+                    "support was detected."), conf.datapath_type)
+            return 'vhostuser'
+        else:
+            return 'ovs'
+
+    # take vif_type from ovs_dpdk -----------------------------------------
+    if conf.ovs_dpdk is True:
+        if userspace_datapath_types:
+            return 'vhostuser'
+
+        raise ValueError(_LE(
+            "--ovs_dpdk option was specified but the 'netdev' datapath_type "
+            "was not enabled. "
+            "To override use option --datapath_type=netdev"))
+
+    elif conf.ovs_dpdk is False:
+        return 'ovs'
+
+    # take detected dtype -------------------------------------------------
+    if userspace_datapath_types:
+        return 'vhostuser'
+    else:
+        return 'ovs'
+
+
+def _vif_details_from_conf(conf, uuid, vif_type):
+    host_addrasses = [conf.local_ip or conf.host]
+    if vif_type == 'ovs':
+        # OVS legacy mode
+        return {"uuid": uuid,
+                "host_addresses": host_addrasses,
+                "has_datapath_type_netdev": False,
+                "support_vhost_user": False}
+
+    elif vif_type == 'vhostuser':
+        # enable VHOSTUSER
+        return {"uuid": uuid,
+                "host_addresses": host_addrasses,
+                "has_datapath_type_netdev": True,
+                "support_vhost_user": True,
+                "port_prefix": conf.vhostuser_port_prefix,
+                "vhostuser_socket_dir": conf.vhostuser_socket_dir,
+                "vhostuser_ovs_plug": conf.vhostuser_ovs_plug,
+                "vhostuser_mode": conf.vhostuser_mode,
+                "vhostuser_socket": os.path.join(
+                    conf.vhostuser_socket_dir,
+                    conf.vhostuser_port_prefix + '$PORTID')}
+
+
+def setup_conf(args=None):
     """setup cmdline options."""
-    cli_opts = [
-        cfg.StrOpt('ovs_hostconfigs', help=_(
-            "OVS hostconfiguration for OpenDaylight "
-            "as a JSON string"))
-    ]
 
-    conf = cfg.CONF
-    conf.register_cli_opts(cli_opts)
+    if args is None:
+        args = DEFAULT_COMMAND_LINE_OPTIONS
+
+    conf = cfg.ConfigOpts()
+    if '-h' in args or '--help' in args:
+        # Prints out script documentation."
+        print(__doc__)
+
+    conf.register_cli_opts(COMMAND_LINE_OPTIONS)
     conf.import_opt('host', 'neutron.common.config')
-    conf()
+    conf(args=args)
     return conf
 
 
-def main():
+class OvsVsctl(object):
+    """Wrapper class for ovs-vsctl command tool
 
-    conf = setup_conf()
-    config.setup_logging()
-    SetOvsHostconfigs().set_ovs_extid_hostconfigs(conf)
+    """
 
-#
-# command line example (run without line breaks):
-#
-# set_ovs_hostconfigs.py  --ovs_hostconfigs='{"ODL L2": {
-# "supported_vnic_types":[{"vnic_type":"normal", "vif_type":"ovs",
-# "vif_details":{}}], "allowed_network_types":["local","vlan",
-# "vxlan","gre"], "bridge_mappings":{"physnet1":"br-ex"}},
-# "ODL L3": {}}' --debug
-#
+    # TODO(fressi): re-implement this class on top of neutron.agent.ovsdb
+
+    COMMAND = 'ovs-vsctl'
+    TABLE = 'Open_vSwitch'
+
+    _uuid = None
+
+    def uuid(self):
+        uuid = self._uuid
+        if uuid is None:
+            self._uuid = uuid = self._get('.', '_uuid')
+        return uuid
+
+    _datapath_types = None
+
+    def datapath_types(self):
+        datapath_types = self._datapath_types
+        if datapath_types is None:
+            try:
+                datapath_types = self._get('.', 'datapath_types')
+            except RuntimeError:
+                datapath_types = 'system'
+            self._datapath_types = datapath_types
+        return datapath_types
+
+    _userspace_datapath_types = None
+
+    def userspace_datapath_types(self):
+        userspace_datapath_types = self._userspace_datapath_types
+        if userspace_datapath_types is None:
+            datapath_types = self.datapath_types()
+            userspace_datapath_types = tuple(
+                datapath_type
+                for datapath_type in USERSPACE_DATAPATH_TYPES
+                if datapath_types.find(datapath_type) >= 0)
+            self._userspace_datapath_types = userspace_datapath_types
+        return userspace_datapath_types
+
+    def set_host_name(self, host_name):
+        self._set_external_ids('odl_os_hostconfig_hostid', host_name)
+
+    def set_host_config(self, name, value):
+        self._set_external_ids(
+            name='odl_os_hostconfig_config_' + name.lower().replace(' ', '_'),
+            value=jsonutils.dumps(value))
+
+    # --- implementation details ----------------------------------------------
+
+    def _set_external_ids(self, name, value):
+        # Refer below for ovs ext-id strings
+        # https://review.openstack.org/#/c/309630/
+        value = 'external_ids:{}={}'.format(name, value)
+        self._set(record=self.uuid(), value=value)
+
+    def _get(self, record, name):
+        return self._excute('get', self.TABLE, record, name)
+
+    def _set(self, record, value):
+        self._excute('set', self.TABLE, record, value)
+
+    def _excute(self, *args):
+        command_line = (self.COMMAND,) + args
+        LOG.info(
+            _LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(command_line))
+        return subprocess.check_output(command_line).strip()
+
 
 if __name__ == '__main__':
-    main()
+    exit(main())
