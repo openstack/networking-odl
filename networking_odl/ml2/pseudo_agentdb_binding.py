@@ -165,7 +165,8 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             try:
                 self.agentdb_row['host'] = host_config['host-id']
                 self.agentdb_row['agent_type'] = host_config['host-type']
-                self.agentdb_row['configurations'] = host_config['config']
+                self.agentdb_row['configurations'] = jsonutils.loads(
+                    host_config['config'])
 
                 agents_db.create_or_update_agent(
                     context.get_admin_context(), self.agentdb_row)
@@ -182,7 +183,8 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         }
 
         # Substitute identifiers and Convert JSON string to dict
-        hconfig_conf_json = Template(hconfig['configurations'])
+        hconfig_conf_json = Template(
+            jsonutils.dumps(hconfig['configurations']))
         substituted_str = hconfig_conf_json.safe_substitute(subs_ids)
         hconfig['configurations'] = jsonutils.loads(substituted_str)
 

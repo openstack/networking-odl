@@ -28,6 +28,9 @@ from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
 from requests.exceptions import HTTPError
 
+from neutron import manager
+from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
+
 AGENTDB_BINARY = 'neutron-odlagent-portbinding'
 L2_TYPE = "ODL L2"
 
@@ -56,66 +59,66 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         "host": "devstack",      # host-id in ODL JSON
         "agent_type": "ODL L2",  # host-type in ODL JSON
                                  # config in ODL JSON
-        "configurations": """{"supported_vnic_types": [
-                    {"vnic_type": "normal", "vif_type": "vhostuser",
-                     "vif_details": {
-                        "uuid": "TEST_UUID",
-                        "has_datapath_type_netdev": true,
-                        "support_vhost_user": true,
-                        "port_prefix": "socket_",
-                        "vhostuser_socket_dir": "/tmp",
-                        "vhostuser_ovs_plug": true,
-                        "vhostuser_mode": "server",
-                        "vhostuser_socket":
-                            "/tmp/socket_$PORT_ID"
-                    }}],
-                    "allowed_network_types": [
-                    "local", "vlan", "vxlan", "gre"],
-                    "bridge_mappings": {"physnet1": "br-ex"}}"""
+        "configurations": {"supported_vnic_types": [
+            {"vnic_type": "normal", "vif_type": "vhostuser",
+             "vif_details": {
+                 "uuid": "TEST_UUID",
+                 "has_datapath_type_netdev": True,
+                 "support_vhost_user": True,
+                 "port_prefix": "socket_",
+                 "vhostuser_socket_dir": "/tmp",
+                 "vhostuser_ovs_plug": True,
+                 "vhostuser_mode": "server",
+                 "vhostuser_socket":
+                     "/tmp/socket_$PORT_ID"
+             }}],
+            "allowed_network_types": [
+                "local", "vlan", "vxlan", "gre"],
+            "bridge_mappings": {"physnet1": "br-ex"}}
     }
 
     sample_hconf_str_tmpl_subs_ovs = {
         "host": "devstack",      # host-id in ODL JSON
         "agent_type": "ODL L2",  # host-type in ODL JSON
                                  # config in ODL JSON
-        "configurations": """{"supported_vnic_types": [
-                    {"vnic_type": "normal", "vif_type": "vhostuser",
-                     "vif_details": {
-                        "uuid": "TEST_UUID",
-                        "has_datapath_type_netdev": true,
-                        "support_vhost_user": true,
-                        "port_prefix": "vhu_",
-                        "vhostuser_socket_dir": "/var/run/openvswitch",
-                        "vhostuser_ovs_plug": true,
-                        "vhostuser_mode": "client",
-                        "vhostuser_socket":
-                            "/var/run/openvswitch/vhu_$PORT_ID"
-                    }}],
-                    "allowed_network_types": [
-                    "local", "vlan", "vxlan", "gre"],
-                    "bridge_mappings": {"physnet1": "br-ex"}}"""
+        "configurations": {"supported_vnic_types": [
+            {"vnic_type": "normal", "vif_type": "vhostuser",
+             "vif_details": {
+                 "uuid": "TEST_UUID",
+                 "has_datapath_type_netdev": True,
+                 "support_vhost_user": True,
+                 "port_prefix": "vhu_",
+                 "vhostuser_socket_dir": "/var/run/openvswitch",
+                 "vhostuser_ovs_plug": True,
+                 "vhostuser_mode": "client",
+                 "vhostuser_socket":
+                     "/var/run/openvswitch/vhu_$PORT_ID"
+             }}],
+            "allowed_network_types": [
+                "local", "vlan", "vxlan", "gre"],
+            "bridge_mappings": {"physnet1": "br-ex"}}
     }
 
     sample_hconf_str_tmpl_nosubs = {
         "host": "devstack",      # host-id in ODL JSON
         "agent_type": "ODL L2",  # host-type in ODL JSON
                                  # config in ODL JSON
-        "configurations": """{"supported_vnic_types": [
-                    {"vnic_type": "normal", "vif_type": "ovs",
-                     "vif_details": {
-                        "uuid": "TEST_UUID",
-                        "has_datapath_type_netdev": true,
-                        "support_vhost_user": true,
-                        "port_prefix": "socket_",
-                        "vhostuser_socket_dir": "/tmp",
-                        "vhostuser_ovs_plug": true,
-                        "vhostuser_mode": "server",
-                        "vhostuser_socket":
-                            "/var/run/openvswitch/PORT_NOSUBS"
-                    }}],
-                    "allowed_network_types": [
-                    "local", "vlan", "vxlan", "gre"],
-                    "bridge_mappings": {"physnet1": "br-ex"}}"""
+        "configurations": {"supported_vnic_types": [
+            {"vnic_type": "normal", "vif_type": "ovs",
+             "vif_details": {
+                 "uuid": "TEST_UUID",
+                 "has_datapath_type_netdev": True,
+                 "support_vhost_user": True,
+                 "port_prefix": "socket_",
+                 "vhostuser_socket_dir": "/tmp",
+                 "vhostuser_ovs_plug": True,
+                 "vhostuser_mode": "server",
+                 "vhostuser_socket":
+                     "/var/run/openvswitch/PORT_NOSUBS"
+             }}],
+            "allowed_network_types": [
+                "local", "vlan", "vxlan", "gre"],
+            "bridge_mappings": {"physnet1": "br-ex"}}
     }
 
     # Test data for vanilla OVS
@@ -352,3 +355,40 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
                      portbindings.VNIC_TYPE: portbindings.VNIC_NORMAL},
             segments_to_bind=fake_segments, network=network,
             host_agents=lambda agent_type: host_agents)
+
+
+class TestPseudoAgentDBBindingControllerBug1608659(
+        test_plugin.NeutronDbPluginV2TestCase):
+    """Test class for Bug1608659."""
+
+    # test data hostconfig
+    sample_odl_hconfigs = {"hostconfigs": {"hostconfig": [
+        {"host-id": "devstack-control",
+         "host-type": "ODL L2",
+         "config": """{"supported_vnic_types": [
+             {"vnic_type": "normal", "vif_type": "vhostuser",
+              "vif_details":
+                  {"port_filter": "False",
+                   "vhostuser_socket": "/var/run/openvswitch"}}],
+             "allowed_network_types": [
+                 "local", "vlan", "vxlan", "gre"],
+             "bridge_mappings": {"physnet1": "br-ex"}}"""},
+        {"host-id": "devstack-control",
+         "host-type": "ODL L3",
+         "config": """{ "some_details": "dummy_details" }"""}
+    ]}}
+
+    def setUp(self):
+        super(TestPseudoAgentDBBindingControllerBug1608659, self).setUp(
+            plugin='ml2')
+        self.useFixture(base.OpenDaylightRestClientFixture())
+        self.core_plugin = manager.NeutronManager.get_plugin()
+        self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController(
+            self.core_plugin)
+
+    def test_execute_no_exception(self):
+        with mock.patch.object(pseudo_agentdb_binding, 'LOG') as mock_log:
+            self.mgr._update_agents_db(
+                self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
+            # Assert no exception happened
+            self.assertFalse(mock_log.exception.called)
