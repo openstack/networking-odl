@@ -248,26 +248,6 @@ COMMAND_LINE_OPTIONS = [
 DEFAULT_COMMAND_LINE_OPTIONS = tuple(sys.argv[1:])
 
 
-def main(args=None):
-    """Main."""
-
-    conf = setup_conf(args)
-
-    if os.geteuid() != 0:
-        LOG.error(_LE('Root permissions are required to configure ovsdb.'))
-        return 1
-
-    try:
-        set_ovs_extid_hostconfigs(conf=conf, ovs_vsctl=OvsVsctl())
-
-    except Exception as ex:  # pylint: disable=broad-except
-        LOG.error(_LE("Fatal error: %s"), ex, exc_info=conf.debug)
-        return 1
-
-    else:
-        return 0
-
-
 def set_ovs_extid_hostconfigs(conf, ovs_vsctl):
     if conf.ovs_hostconfigs:
         json_str = conf.ovs_hostconfigs.replace("\'", "\"")
@@ -380,7 +360,6 @@ def setup_conf(args=None):
         print(__doc__)
 
     conf.register_cli_opts(COMMAND_LINE_OPTIONS)
-    conf.import_opt('host', 'neutron.common.config')
     conf(args=args)
     return conf
 
@@ -389,8 +368,6 @@ class OvsVsctl(object):
     """Wrapper class for ovs-vsctl command tool
 
     """
-
-    # TODO(fressi): re-implement this class on top of neutron.agent.ovsdb
 
     COMMAND = 'ovs-vsctl'
     TABLE = 'Open_vSwitch'
@@ -455,6 +432,26 @@ class OvsVsctl(object):
         LOG.info(
             _LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(command_line))
         return subprocess.check_output(command_line).strip()
+
+
+def main(args=None):
+    """Main."""
+
+    conf = setup_conf(args)
+
+    if os.geteuid() != 0:
+        LOG.error(_LE('Root permissions are required to configure ovsdb.'))
+        return 1
+
+    try:
+        set_ovs_extid_hostconfigs(conf=conf, ovs_vsctl=OvsVsctl())
+
+    except Exception as ex:  # pylint: disable=broad-except
+        LOG.error(_LE("Fatal error: %s"), ex, exc_info=conf.debug)
+        return 1
+
+    else:
+        return 0
 
 
 if __name__ == '__main__':
