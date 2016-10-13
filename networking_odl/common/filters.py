@@ -27,7 +27,7 @@ from networking_odl.common import utils as odl_utils
 def _populate_project_id_and_tenant_id(resource_dict):
     # NOTE(yamahata): l3 plugin passes data as dependency_list as python list
     #                 delete_router, delete_floatingip
-    if isinstance(resource_dict, list):
+    if not isinstance(resource_dict, dict):
         return
 
     project_id = resource_dict.get('project_id',
