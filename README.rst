@@ -1,21 +1,25 @@
-Welcome!
-========
+Networking-odl
+==============
 
-This is the external, decomposed plugin library for the OpenDaylight ML2
-MechanismDriver. This is the backend code which handles communication with
-OpenDaylight.
+OpenStack networking-odl is a library of drivers and plugins that integrates
+OpenStack Neutron API with OpenDaylight Backend. For example it has ML2
+driver and L3 plugin plugin to enable communication of OpenStack Neutron L2
+and L3 resources API to OpenDayLight Backend.
+
+To report and discover bugs in networking-odl the following
+link can be used:
+
+   https://bugs.launchpad.net/networking-odl
+
+Any new code submission or proposal must follow the development
+guidelines detailed in HACKING.rst and for further details this
+link can be checked:
+
+   http://docs.openstack.org/developer/neutron/
+
 
 External Resources:
 ===================
 
 The OpenDaylight homepage:
    http://www.opendaylight.org/
-
-The Launchpad page for openstack/networking-odl:
-   https://launchpad.net/networking-odl
-
-File bugs for this project here:
-   https://bugs.launchpad.net/networking-odl
-
-The Neutron homepage:
-   http://launchpad.net/neutron.
