@@ -39,7 +39,7 @@ def upgrade():
                "SELECT object_type, object_uuid, operation, data, "
                "state, retry_count, created_at, last_retried "
                "FROM opendaylightjournal "
-               "WHERE state != 'completed "
-               "ORDER BY created_at ASC'")
+               "WHERE state != 'completed' "
+               "ORDER BY created_at ASC")
     op.drop_table('opendaylightjournal')
     op.rename_table('opendaylightjournal_new', 'opendaylightjournal')
