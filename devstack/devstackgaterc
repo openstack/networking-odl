@@ -30,6 +30,15 @@ r="^(?!.*"
 # exclude the slow tag (part of the default for 'full')
 r="$r(?:.*\[.*\bslow\b.*\])"
 
+# exclude tests that use ssh to login until metadata server for keypair
+r="$r|(?:tempest\.scenario\.test_minimum_basic.*)"
+r="$r|(?:tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*)"
+r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
+r="$r|(?:tempest\.scenario\.test_shelve_instance\.TestShelveInstance.*)"
+r="$r|(?:tempest\.scenario\.test_snapshot_pattern\.TestSnapshotPattern.*)"
+r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPattern\.test_volume_boot_pattern.*)"
+r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPatternV2\.test_volume_boot_pattern.*)"
+
 # exclude things that just aren't enabled:
 r="$r|(?:tempest\.api\.network\.admin\.test_quotas\.QuotasTest\.test_lbaas_quotas.*)"
 r="$r|(?:tempest\.api\.network\.test_load_balancer.*)"
