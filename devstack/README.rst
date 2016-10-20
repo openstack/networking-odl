@@ -151,3 +151,12 @@
 - Now stack up Devstack and after stacking completes, we are all set to use
   l2gateway-as-a-service with OpenDaylight.
 
+17. Note: To enable networking-sfc (version 2) driver to use with OpenDaylight
+    controller, please add following configuration::
+
+      > in /etc/neutron/neutron.conf
+      [sfc]
+      drivers = odl_v2
+
+      [flowclassifier]
+      drivers = odl_v2
