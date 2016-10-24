@@ -1,0 +1,16 @@
+---
+prelude: >
+    Agentless Port binding controller using agentdb
+    for persistency with ODL provided host configuration.
+features:
+  - Reads host configuration from ODL using a REST/get
+    and stores the information in Neutron agentdb for
+    persistency. This host configuration is read back
+    from agentdb and applied during port binding.
+    Without this feature several out-of-sync race
+    conditions were caused due to incorrect host
+    information.
+fixes:
+  - Includes the following bug fixes
+    Bug 1608659 - pseudo_agentdb_binding AttributeError.
+
