@@ -1,0 +1,11 @@
+---
+prelude: >
+    Host Configuration data population from agentless
+    OpenDayLight.
+features:
+  - This configuration is used to get the information
+    about physical host type and other config data like
+    supported vnic types stored in ovsdb. Networking-odl
+    can fetch this info from OpenDaylight via REST API
+    request and feed agents_db table in neutron, which
+    will be used by neutron scheduler.
