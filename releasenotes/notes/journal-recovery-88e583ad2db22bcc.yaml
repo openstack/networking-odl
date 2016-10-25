@@ -1,0 +1,10 @@
+---
+prelude: >
+    Journal recovery for the V2 driver handles failed
+    journal entries.
+features:
+  - The journal recovery mechanism handles failed journal
+    entries by inspecting ODL and deciding on the correct
+    course of action.
+    This support should be sufficient for the majority of
+    entry failures.
