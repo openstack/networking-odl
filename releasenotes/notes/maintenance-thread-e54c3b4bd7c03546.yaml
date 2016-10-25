@@ -1,0 +1,20 @@
+---
+prelude: >
+    Maintenance thread for the V2 driver.
+features:
+  - The maintenance thread was introduced in the V2 driver
+    in order to perform various journal maintenance tasks,
+    such as
+
+    * Stale lock release
+    * Completed entry cleanup
+    * Full sync
+    * Journal recovery
+
+    The thread runs in a configurable interval and is HA
+    safe so at most one will be executing regardless of how
+    many threads are running concurrently.
+upgrade:
+  - Maintenace lock table was added to synchronize multiple
+    threads.
+
