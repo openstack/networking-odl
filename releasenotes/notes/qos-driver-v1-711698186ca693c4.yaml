@@ -1,0 +1,9 @@
+---
+prelude: >
+    QoS Driver V1 for networking-odl.
+features:
+  - A new driver to integrate OpenStack neutron QoS API with
+    OpenDayLight backend. It supports CRUD operations for
+    QoS policy and its associated rules. The QoS driver in
+    tree is of version v1, which does not log the operation
+    request in journal table.

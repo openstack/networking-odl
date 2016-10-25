@@ -78,3 +78,21 @@
       [[local|localrc]]
       ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
       ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
+
+11. Note: Enable Quality Of Service (QoS) with OpenDaylight Backend
+    enable the qos service plugin by adding qos to service_plugins::
+
+      > in /etc/neutron/neutron.conf
+      service_plugins = qos, odl-router
+
+    enable notification driver in neutron.conf::
+      > in /etc/neutron/neutron.conf
+      [qos]
+      notification_drivers = odl-qos
+
+    enable qos extension driver in ml2 conf::
+
+      > in /etc/neutron/plugins/ml2/ml2_conf.ini
+      extensions_drivers = qos, port_security
+
+    restart neutron service q-svc
