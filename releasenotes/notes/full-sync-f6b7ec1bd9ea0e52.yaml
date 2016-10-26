@@ -1,0 +1,15 @@
+---
+prelude: >
+    Full sync supports and ODL controller with no Neutron
+    resources on it.
+    This support is for the V2 driver, as V1 driver already
+    supports this.
+features:
+  - The full sync process looks for a "canary" network on
+    the ODL controller side.
+    If such a network is found, it doesn't do anything.
+    If the network is missing then all the neutron
+    resources are re-created on ODL.
+    This supports cases when ODL controller comes online
+    with no Neutron resources on it (also referred to as
+    "cold reboot", but can happen on various cases).
