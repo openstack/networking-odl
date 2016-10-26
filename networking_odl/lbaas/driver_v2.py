@@ -48,6 +48,7 @@ class OpenDaylightManager(object):
     out_of_sync = True
     url_path = ""
     obj_type = ""
+    obj_name = ""
 
     """OpenDaylight LBaaS Driver for the V2 API
 
@@ -56,17 +57,21 @@ class OpenDaylightManager(object):
     """
 
     @log_helpers.log_method_call
-    def __init__(self, client):
+    def __init__(self, client, obj_type):
         self.client = client
-        self.url_path = LBAAS + '/' + self.obj_type
+        self.obj_type = obj_type
+        self.url_path = LBAAS + '/' + obj_type
+        self.obj_name = obj_type[:-1]
 
     @log_helpers.log_method_call
     def create(self, context, obj):
-        self.client.sendjson('post', self.url_path, None)
+        self.client.sendjson(
+            'post', self.url_path, {self.obj_name: obj.to_api_dict()})
 
     @log_helpers.log_method_call
     def update(self, context, obj):
-        self.client.sendjson('put', self.url_path + '/' + obj.id, None)
+        self.client.sendjson('put', self.url_path + '/' + obj.id,
+                             {self.obj_name: obj.to_api_dict()})
 
     @log_helpers.log_method_call
     def delete(self, context, obj):
@@ -78,8 +83,8 @@ class ODLLoadBalancerManager(OpenDaylightManager,
 
     @log_helpers.log_method_call
     def __init__(self, client):
-        self.obj_type = odl_const.ODL_LOADBALANCERS
-        super(ODLLoadBalancerManager, self).__init__(client)
+        super(ODLLoadBalancerManager, self).__init__(
+            client, odl_const.ODL_LOADBALANCERS)
 
     @log_helpers.log_method_call
     def refresh(self, context, lb):
@@ -95,8 +100,8 @@ class ODLListenerManager(OpenDaylightManager,
 
     @log_helpers.log_method_call
     def __init__(self, client):
-        self.obj_type = odl_const.ODL_LISTENERS
-        super(ODLListenerManager, self).__init__(client)
+        super(ODLListenerManager, self).__init__(client,
+                                                 odl_const.ODL_LISTENERS)
 
 
 class ODLPoolManager(OpenDaylightManager,
@@ -104,8 +109,7 @@ class ODLPoolManager(OpenDaylightManager,
 
     @log_helpers.log_method_call
     def __init__(self, client):
-        self.obj_type = odl_const.ODL_POOLS
-        super(ODLPoolManager, self).__init__(client)
+        super(ODLPoolManager, self).__init__(client, odl_const.ODL_POOLS)
 
 
 class ODLMemberManager(OpenDaylightManager,
@@ -113,8 +117,7 @@ class ODLMemberManager(OpenDaylightManager,
 
     @log_helpers.log_method_call
     def __init__(self, client):
-        self.obj_type = odl_const.ODL_MEMBERS
-        super(ODLMemberManager, self).__init__(client)
+        super(ODLMemberManager, self).__init__(client, odl_const.ODL_MEMBERS)
 
 
 class ODLHealthMonitorManager(OpenDaylightManager,
@@ -122,5 +125,5 @@ class ODLHealthMonitorManager(OpenDaylightManager,
 
     @log_helpers.log_method_call
     def __init__(self, client):
-        self.obj_type = odl_const.ODL_HEALTHMONITORS
-        super(ODLHealthMonitorManager, self).__init__(client)
+        super(ODLHealthMonitorManager, self).__init__(
+            client, odl_const.ODL_HEALTHMONITORS)
