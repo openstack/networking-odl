@@ -35,6 +35,7 @@ from oslo_serialization import jsonutils
 import requests
 
 from neutron.db import api as neutron_db_api
+from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import providernet
 from neutron import manager
@@ -258,6 +259,9 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
     @staticmethod
     def _get_mock_security_group_operation_context():
         context = {odl_const.ODL_SG: {'name': 'test_sg',
+                                      'project_id': 'test-tenant',
+                                      'tenant_id': 'test-tenant',
+                                      'description': 'test-description',
                                       'id': SG_FAKE_ID}}
         return context
 
@@ -315,9 +319,21 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             plugin_context_mock.session = neutron_db_api.get_session()
             res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
                         if rt.singular == object_type][0]
-            self.mech.sync_from_callback(
-                plugin_context_mock, operation, res_type,
-                context[object_type]['id'], context)
+            res_id = context[object_type]['id']
+            context_ = copy.deepcopy(context)
+            if (object_type == odl_const.ODL_SG and
+                    operation == odl_const.ODL_CREATE):
+                # TODO(yamahata): remove this work around once
+                # https://review.openstack.org/#/c/281693/
+                # is merged.
+                sg = securitygroup.SecurityGroup(
+                    id=res_id, name=context_[object_type]['name'],
+                    tenant_id=context_[object_type]['tenant_id'],
+                    description=context_[object_type]['description'])
+                plugin_context_mock.session.add(sg)
+                context_[odl_const.ODL_SG].pop('id', None)
+            self.mech.sync_from_callback_precommit(
+                plugin_context_mock, operation, res_type, res_id, context_)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))

@@ -115,7 +115,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           '_record_in_journal').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
-                          'sync_from_callback').start()
+                          'sync_from_callback_precommit').start()
+        mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
+                          'sync_from_callback_postcommit').start()
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
         self.db_session = neutron_db_api.get_session()
