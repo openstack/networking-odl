@@ -88,15 +88,30 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
         #     None,
         #    'opendaylightjournal',
         #    'created_at',
-        #  { 'existing_nullable': True,
+        #   {'existing_nullable': True,
         #    'existing_type': DATETIME()},
         # DefaultClause(<sqlalchemy.sql.elements.TextClause object
         #               at 0x7f652188ce50>, for_update=False),
         # DefaultClause(<sqlalchemy.sql.functions.now at 0x7f6522411050; now>,
-        #               for_update=False))
+        #               for_update=False))]
+        # another example
+        # [ ('modify_default',
+        #     None,
+        #    'opendaylightjournal',
+        #    'created_at',
+        #   {'existing_nullable': True,
+        #    'existing_type': DATETIME()},
+        #     None,
+        #   DefaultClause(<sqlalchemy.sql.functions.now at 0x7ff3b3517410;
+        #                  now>,
+        #                 for_update=False))]
+
         meta_def = diff_elem[0][5]
         rendered_meta_def = diff_elem[0][6]
-        if (isinstance(meta_def, schema.DefaultClause) and
+        if (diff_elem[0][0] == 'modify_default' and
+                diff_elem[0][2] in ('opendaylightjournal',
+                                    'opendaylight_maintenance') and
+                isinstance(meta_def, schema.DefaultClause) and
                 isinstance(meta_def.arg, sql.elements.TextClause) and
                 meta_def.reflected and
                 meta_def.arg.text == u'CURRENT_TIMESTAMP' and
@@ -104,6 +119,13 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
                 isinstance(rendered_meta_def.arg, sql.functions.now) and
                 not rendered_meta_def.reflected and
                 meta_def.for_update == rendered_meta_def.for_update):
+            return False
+        if (diff_elem[0][0] == 'modify_default' and
+                diff_elem[0][2] == 'opendaylightjournal' and
+                meta_def is None and
+                isinstance(rendered_meta_def, schema.DefaultClause) and
+                isinstance(rendered_meta_def.arg, sql.functions.now) and
+                not rendered_meta_def.reflected):
             return False
         return True
 

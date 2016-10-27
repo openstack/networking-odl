@@ -43,7 +43,7 @@ def upgrade():
                           name='state'),
                   nullable=False, default='pending'),
         sa.Column('retry_count', sa.Integer, default=0),
-        sa.Column('created_at', sa.DateTime, server_default=sa.func.now()),
+        sa.Column('created_at', sa.DateTime, default=sa.func.now()),
         sa.Column('last_retried', sa.TIMESTAMP, server_default=sa.func.now(),
                   onupdate=sa.func.now()),
     )
