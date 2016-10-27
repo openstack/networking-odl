@@ -22,9 +22,10 @@ level design and implementation details.
 Contents:
 --------------------------------
 .. toctree::
-    :maxdepth: 2
+   :maxdepth: 2
 
    hostconfig
+   maintenance
 
 
 Indices and tables
