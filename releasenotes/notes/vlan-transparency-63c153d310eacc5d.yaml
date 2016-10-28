@@ -1,0 +1,21 @@
+---
+prelude: >
+    Support for vlan-transparency.
+features:
+  - The extension `vlan-transparent` is supported for Newton
+    release, unconditionally only vxlan is considered to
+    support its extension independent of ODL openstack
+    provider. It's future work to allow ODL openstack
+    provider to report list of supported network types
+    at start up statically.
+issues:
+  - Currently only network type of VXLAN is statically
+    considered to support vlan-transparent independently
+    of OpenDaylight openstack provider.
+    It should use capability report by OpenDaylight
+    openstack provider statically instead of static hard
+    code.
+other:
+  - For details please read
+    'VLAN trunking networks for NFV
+    <https://specs.openstack.org/openstack/neutron-specs/specs/kilo/nfv-vlan-trunks.html>'_.
