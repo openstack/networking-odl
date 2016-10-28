@@ -1,0 +1,9 @@
+---
+prelude: >
+    Remove LbaaS v1 driver, as LbaaS removed v1 API.
+upgrade:
+  - Upgrade to use LBaaS v2 driver and migrate to use
+    LBaaS v2 driver.
+deprecations:
+  - LBaaS v1 API driver for ODL is removed.
+    * LBaaS v2 API driver
