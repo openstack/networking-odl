@@ -29,7 +29,7 @@ from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import portbindings
 from neutron.extensions import providernet
 from neutron.plugins.common import constants
-from neutron.plugins.ml2 import config as config
+from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
 from neutron.plugins.ml2 import plugin
