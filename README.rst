@@ -1,5 +1,5 @@
 Networking-odl
-==============
+--------------
 
 OpenStack networking-odl is a library of drivers and plugins that integrates
 OpenStack Neutron API with OpenDaylight Backend. For example it has ML2
@@ -18,8 +18,9 @@ link can be checked:
    http://docs.openstack.org/developer/neutron/
 
 
-External Resources:
-===================
+External Resources
+~~~~~~~~~~~~~~~~~~
 
 The OpenDaylight homepage:
+
    http://www.opendaylight.org/

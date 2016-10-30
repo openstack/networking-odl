@@ -6,12 +6,10 @@
 
  neutron networking-odl specs documentation master file
 
-=============================================
 Neutron networking-odl Project Specifications
 =============================================
 
-Specs
-=====
+Specs:
 
 .. toctree::
    :glob:
@@ -19,8 +17,7 @@ Specs
 
    specs/*
 
-==================
 Indices and tables
-==================
+------------------
 
 * :ref:`search`

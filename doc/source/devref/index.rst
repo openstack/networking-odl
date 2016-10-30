@@ -20,7 +20,7 @@ level design and implementation details.
 
 
 Contents:
---------------------------------
+
 .. toctree::
    :maxdepth: 2
 
@@ -30,7 +30,7 @@ Contents:
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
