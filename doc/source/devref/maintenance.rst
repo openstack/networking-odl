@@ -4,7 +4,7 @@ Journal Maintenance
 Overview
 --------
 
-The V2 ODL driver is Journal based, which means that there's a journal of
+The V2 ODL driver is Journal based [#]_, which means that there's a journal of
 entries detailing the various operations done on a Neutron resource.
 The driver has a thread which is in charge of processing the journal of
 operations which entails communicating the operation forward to the ODL
@@ -39,4 +39,6 @@ that receives the database session object and registering it using a call to::
 
 The best place to do so would be at the _start_maintenance_thread method of
 the V2 OpenDaylightMechanismDriver class.
+
+.. [#] See :ref:`v2_design` for details.
 

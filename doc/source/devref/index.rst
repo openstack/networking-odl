@@ -24,6 +24,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   v2_driver
    hostconfig
    maintenance
 
