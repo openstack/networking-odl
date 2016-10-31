@@ -86,6 +86,7 @@
       service_plugins = qos, odl-router
 
     enable notification driver in neutron.conf::
+
       > in /etc/neutron/neutron.conf
       [qos]
       notification_drivers = odl-qos
