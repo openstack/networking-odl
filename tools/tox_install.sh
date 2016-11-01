@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
 set -e
 set -x
@@ -17,3 +17,4 @@ if [ $CONSTRAINTS_FILE != "unconstrained" ]; then
 fi
 
 $install_cmd -U $*
+exit $?
