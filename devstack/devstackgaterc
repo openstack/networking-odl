@@ -17,7 +17,7 @@
 # http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/jobs/networking-odl.yaml
 #
 
-export OVERRIDE_ENABLED_SERVICES=q-svc,q-dhcp,q-meta,quantum,tempest,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,g-api,g-reg,mysql,rabbit,key,dstat
+export OVERRIDE_ENABLED_SERVICES=dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit,tempest
 
 # By default this variable is set to br100, and it is used to determine the value of PUBLIC_INTERFACE.
 # PUBLIC_INTERFACE is wired to PUBLIC_BRIDGE to route traffic externally. Since, we don't currently
