@@ -122,10 +122,11 @@ class OpenDaylightL3RouterPlugin(
             fip_dict = super(OpenDaylightL3RouterPlugin,
                              self).update_floatingip(context, id, floatingip)
             # Update status based on association
-            if fip_dict.get('port_id') is None:
-                fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
+            if fip_dict['port_id'] is None:
+                status = q_const.FLOATINGIP_STATUS_DOWN
             else:
-                fip_dict['status'] = q_const.FLOATINGIP_STATUS_ACTIVE
+                status = q_const.FLOATINGIP_STATUS_ACTIVE
+            fip_dict['status'] = status
             self.update_floatingip_status(context, id, fip_dict['status'])
 
         url = FLOATINGIPS + "/" + id
