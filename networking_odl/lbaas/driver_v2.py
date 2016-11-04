@@ -115,9 +115,30 @@ class ODLPoolManager(OpenDaylightManager,
 class ODLMemberManager(OpenDaylightManager,
                        driver_base.BaseMemberManager):
 
+    # NOTE:It is for lbaas v2 api but using v1 mechanism of networking-odl.
+
     @log_helpers.log_method_call
     def __init__(self, client):
         super(ODLMemberManager, self).__init__(client, odl_const.ODL_MEMBERS)
+
+    @log_helpers.log_method_call
+    def create(self, context, obj):
+        self.client.sendjson(
+            'post', self._member_url(obj), {self.obj_name: obj.to_api_dict()})
+
+    @log_helpers.log_method_call
+    def update(self, context, obj):
+        self.client.sendjson('put', self._member_url(obj) + '/' + obj.id,
+                             {self.obj_name: obj.to_api_dict()})
+
+    @log_helpers.log_method_call
+    def delete(self, context, obj):
+        self.client.sendjson('delete',
+                             self._member_url(obj) + '/' + obj.id, None)
+
+    def _member_url(self, obj):
+        return (LBAAS + '/' + odl_const.ODL_POOLS + '/' + obj.pool_id + '/' +
+                odl_const.ODL_MEMBERS)
 
 
 class ODLHealthMonitorManager(OpenDaylightManager,
