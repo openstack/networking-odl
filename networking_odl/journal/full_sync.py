@@ -32,13 +32,6 @@ _CANARY_NETWORK_DATA = {'id': _CANARY_NETWORK_ID,
                         'name': 'Sync Canary Network',
                         'admin_state_up': False}
 _OPS_TO_DELETE_ON_SYNC = (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)
-_L2_RESOURCES_TO_SYNC = [(odl_const.ODL_SG, odl_const.ODL_SGS),
-                         (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
-                         (odl_const.ODL_NETWORK, odl_const.ODL_NETWORKS),
-                         (odl_const.ODL_SUBNET, odl_const.ODL_SUBNETS),
-                         (odl_const.ODL_PORT, odl_const.ODL_PORTS)]
-_L3_RESOURCES_TO_SYNC = [(odl_const.ODL_ROUTER, odl_const.ODL_ROUTERS),
-                         (odl_const.ODL_FLOATINGIP, odl_const.ODL_FLOATINGIPS)]
 _CLIENT = client.OpenDaylightRestClientGlobal()
 
 
@@ -50,13 +43,13 @@ def full_sync(session):
 
     dbcontext = neutron_context.get_admin_context()
     plugin = manager.NeutronManager.get_plugin()
-    for resource_type, collection_name in _L2_RESOURCES_TO_SYNC:
+    for resource_type, collection_name in odl_const.L2_RESOURCES.items():
         _sync_resources(session, plugin, dbcontext, resource_type,
                         collection_name)
 
     l3plugin = manager.NeutronManager.get_service_plugins().get(
         constants.L3_ROUTER_NAT)
-    for resource_type, collection_name in _L3_RESOURCES_TO_SYNC:
+    for resource_type, collection_name in odl_const.L3_RESOURCES.items():
         _sync_resources(session, l3plugin, dbcontext, resource_type,
                         collection_name)
 

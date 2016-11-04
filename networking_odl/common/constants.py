@@ -46,6 +46,15 @@ ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
 
+L2_RESOURCES = {ODL_SG: ODL_SGS,
+                ODL_SG_RULE: ODL_SG_RULES,
+                ODL_NETWORK: ODL_NETWORKS,
+                ODL_SUBNET: ODL_SUBNETS,
+                ODL_PORT: ODL_PORTS}
+L3_RESOURCES = {ODL_ROUTER: ODL_ROUTERS,
+                ODL_FLOATINGIP: ODL_FLOATINGIPS}
+
+
 # Constants for journal operation states
 PENDING = 'pending'
 PROCESSING = 'processing'
