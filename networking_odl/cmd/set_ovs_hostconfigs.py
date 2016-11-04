@@ -387,7 +387,7 @@ class OvsVsctl(object):
         if datapath_types is None:
             try:
                 datapath_types = self._get('.', 'datapath_types')
-            except RuntimeError:
+            except subprocess.CalledProcessError:
                 datapath_types = 'system'
             self._datapath_types = datapath_types
         return datapath_types
