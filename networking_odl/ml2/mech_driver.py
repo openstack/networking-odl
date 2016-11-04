@@ -23,6 +23,7 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
+from neutron.callbacks import resources
 from neutron.common import utils
 from neutron import context as neutron_context
 from neutron.extensions import allowedaddresspairs as addr_pair
@@ -253,7 +254,8 @@ class OpenDaylightDriver(object):
     def __init__(self):
         LOG.debug("Initializing OpenDaylight ML2 driver")
         self.client = odl_client.OpenDaylightRestClient.create_client()
-        self.sec_handler = odl_call.OdlSecurityGroupsHandler(self)
+        self.sec_handler = odl_call.OdlSecurityGroupsHandler(
+            None, self.sync_from_callback)
         self.port_binding_controller = port_binding.PortBindingManager.create()
         # TODO(rzang): Each port binding controller should have any necessary
         # parameter passed in from configuration files.
@@ -402,6 +404,17 @@ class OpenDaylightDriver(object):
                            'res_id': res_id,
                            'resource_dict': resource_dict})
                 self.out_of_sync = True
+
+        # NOTE(yamahata) when security group is created, default rules
+        # are also created.
+        if (operation == odl_const.ODL_CREATE and
+                res_type.singular == odl_const.ODL_SG):
+            for rule in resource_dict[odl_const.ODL_SG][
+                    odl_const.ODL_SG_RULES]:
+                self.sync_from_callback(
+                    context, odl_const.ODL_CREATE,
+                    odl_call._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE],
+                    rule['id'], {odl_const.ODL_SG_RULE: rule})
 
     def bind_port(self, port_context):
         """Set binding for a valid segments

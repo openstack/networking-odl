@@ -32,6 +32,9 @@ _RESOURCE_MAPPING = {
                                                odl_const.ODL_SG_RULES),
 }
 _OPERATION_MAPPING = {
+    events.PRECOMMIT_CREATE: odl_const.ODL_CREATE,
+    events.PRECOMMIT_UPDATE: odl_const.ODL_UPDATE,
+    events.PRECOMMIT_DELETE: odl_const.ODL_DELETE,
     events.AFTER_CREATE: odl_const.ODL_CREATE,
     events.AFTER_UPDATE: odl_const.ODL_UPDATE,
     events.AFTER_DELETE: odl_const.ODL_DELETE,
@@ -40,24 +43,38 @@ _OPERATION_MAPPING = {
 
 class OdlSecurityGroupsHandler(object):
 
-    def __init__(self, odl_driver):
-        self.odl_driver = odl_driver
+    def __init__(self, precommit, postcommit):
+        assert postcommit is not None
+        self._precommit = precommit
+        self._postcommit = postcommit
         self._subscribe()
 
     def _subscribe(self):
+        if self._precommit is not None:
+            for event in (events.PRECOMMIT_CREATE, events.PRECOMMIT_DELETE):
+                registry.subscribe(self.sg_callback_precommit,
+                                   resources.SECURITY_GROUP, event)
+                registry.subscribe(self.sg_callback_precommit,
+                                   resources.SECURITY_GROUP_RULE, event)
+            registry.subscribe(
+                self.sg_callback_precommit, resources.SECURITY_GROUP,
+                events.PRECOMMIT_UPDATE)
+
         for event in (events.AFTER_CREATE, events.AFTER_DELETE):
-            registry.subscribe(self.sg_callback, resources.SECURITY_GROUP,
-                               event)
-            registry.subscribe(self.sg_callback, resources.SECURITY_GROUP_RULE,
-                               event)
+            registry.subscribe(self.sg_callback_postcommit,
+                               resources.SECURITY_GROUP, event)
+            registry.subscribe(self.sg_callback_postcommit,
+                               resources.SECURITY_GROUP_RULE, event)
 
-        registry.subscribe(self.sg_callback, resources.SECURITY_GROUP,
-                           events.AFTER_UPDATE)
+        registry.subscribe(self.sg_callback_postcommit,
+                           resources.SECURITY_GROUP, events.AFTER_UPDATE)
 
-    def sg_callback(self, resource, event, trigger, **kwargs):
+    def _sg_callback(self, callback, resource, event, trigger, **kwargs):
         context = kwargs['context']
         res = kwargs.get(resource)
         res_id = kwargs.get("%s_id" % resource)
+        if res_id is None:
+            res_id = res.get('id')
         odl_res_type = _RESOURCE_MAPPING[resource]
 
         odl_ops = _OPERATION_MAPPING[event]
@@ -70,5 +87,10 @@ class OdlSecurityGroupsHandler(object):
                    'res_id': res_id, 'odl_res_dict': odl_res_dict,
                    'kwargs': kwargs})
 
-        self.odl_driver.sync_from_callback(context, odl_ops, odl_res_type,
-                                           res_id, odl_res_dict)
+        callback(context, odl_ops, odl_res_type, res_id, odl_res_dict)
+
+    def sg_callback_precommit(self, resource, event, trigger, **kwargs):
+        self._sg_callback(self._precommit, resource, event, trigger, **kwargs)
+
+    def sg_callback_postcommit(self, resource, event, trigger, **kwargs):
+        self._sg_callback(self._postcommit, resource, event, trigger, **kwargs)

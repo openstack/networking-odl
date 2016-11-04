@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import providernet
 from neutron.plugins.common import constants as p_const
@@ -44,7 +45,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
     def initialize(self):
         LOG.debug("Initializing OpenDaylight ML2 driver")
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
-        self.sg_handler = callback.OdlSecurityGroupsHandler(self)
+        self.sg_handler = callback.OdlSecurityGroupsHandler(
+            self.sync_from_callback_precommit,
+            self.sync_from_callback_postcommit)
         self.journal = journal.OpendaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
         self._start_maintenance_thread()
@@ -120,16 +123,88 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             context, odl_const.ODL_PORT, odl_const.ODL_DELETE,
             data=new_context)
 
-    @journal.call_thread_on_end
-    def sync_from_callback(self, context,
-                           operation, res_type, res_id, resource_dict):
+    def _make_security_group_dict(self, sg):
+        return {
+            'id': sg['id'],
+            'name': sg['name'],
+            'tenant_id': sg['tenant_id'],
+            'description': sg['description']
+        }
+
+    def _make_security_group_rule_dict(self, rule, sg_id=None):
+        if sg_id is None:
+            sg_id = rule['security_group_id']
+        return {
+            'id': rule['id'],
+            'tenant_id': rule['tenant_id'],
+            'security_group_id': sg_id,
+            'ethertype': rule['ethertype'],
+            'direction': rule['direction'],
+            'protocol': rule['protocol'],
+            'port_range_min': rule['port_range_min'],
+            'port_range_max': rule['port_range_max'],
+            'remote_ip_prefix': rule['remote_ip_prefix'],
+            'remote_group_id': rule['remote_group_id']
+        }
+
+    def _sync_security_group_create_precommit(
+            self, context, operation, object_type, res_id, resource_dict):
+        # TODO(yamahata): remove this work around once
+        # https://review.openstack.org/#/c/281693/
+        # is merged.
+        # For now, SG rules aren't passed down with
+        # precommit event. We resort to get it by query.
+        new_objects = context.session.new
+        sgs = [sg for sg in new_objects
+               if isinstance(sg, securitygroup.SecurityGroup)]
+        if res_id is not None:
+            sgs = [sg for sg in sgs if sg.id == res_id]
+        for sg in sgs:
+            sg_id = sg['id']
+            res = self._make_security_group_dict(sg)
+            journal.record(context, None, object_type, sg_id, operation, res)
+            # NOTE(yamahata): when security group is created, default rules
+            # are also created.
+            # NOTE(yamahata): at this point, rule.security_group_id isn't
+            # populated. but it has rule.security_group
+            rules = [rule for rule in new_objects
+                     if (isinstance(rule, securitygroup.SecurityGroupRule) and
+                         rule.security_group == sg)]
+            for rule in rules:
+                res_rule = self._make_security_group_rule_dict(rule, sg_id)
+                journal.record(context, None, odl_const.ODL_SG_RULE,
+                               rule['id'], odl_const.ODL_CREATE, res_rule)
+
+    def sync_from_callback_precommit(self, context, operation, res_type,
+                                     res_id, resource_dict):
         object_type = res_type.singular
-        object_uuid = (resource_dict[object_type]['id']
-                       if operation == 'create' else res_id)
         if resource_dict is not None:
             resource_dict = resource_dict[object_type]
+
+        if (operation == odl_const.ODL_CREATE and
+                object_type == odl_const.ODL_SG):
+            self._sync_security_group_create_precommit(
+                context, operation, object_type, res_id, resource_dict)
+            return
+
+        # NOTE(yamahata): in security group/security gorup rule case,
+        # orm object is passed. not resource dict. So we have to convert it
+        # into resource_dict
+        if not isinstance(resource_dict, dict):
+            if object_type == odl_const.ODL_SG:
+                resource_dict = self._make_security_group_dict(resource_dict)
+            elif object_type == odl_const.ODL_SG_RULE:
+                resource_dict = self._make_security_group_rule_dict(
+                    resource_dict)
+
+        object_uuid = (resource_dict['id']
+                       if operation == 'create' else res_id)
         journal.record(context, None, object_type, object_uuid,
                        operation, resource_dict)
+
+    def sync_from_callback_postcommit(self, context, operation, res_type,
+                                      res_id, resource_dict):
+        self._postcommit(context)
 
     def _postcommit(self, context):
         self.journal.set_sync_event()
