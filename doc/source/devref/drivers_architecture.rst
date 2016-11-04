@@ -9,8 +9,8 @@ reference purposes.
 V1 Driver Overview
 ------------------
 
-The first version driver was a naive implementation which mirrored all calls
-synchronously to the ODL controller. For example, a create network request
+The first driver version was a naive implementation which synchronously
+mirrored all calls to the ODL controller. For example, a create network request
 would first get written to the DB by Neutron's ML2 plugin, and then the ODL
 driver would send the request to POST the network to the ODL controller.
 
@@ -20,8 +20,8 @@ Although this implementation is simple, it has a few problems:
   the action really happened on ODL.
 * The "synchronous" call can be a bottleneck under load.
 * Upon failure the V1 driver would try to "full sync" the entire Neutron DB
-  over on the next call, so the next call can take a very long time.
-* Doesn't really handle race conditions:
+  over on the next call, so the next call could take a very long time.
+* It doesn't really handle race conditions:
 
   - For example, create subnet and then create port could be sent in parallel
     by the driver in an HA Neutron environment, causing the port creation to

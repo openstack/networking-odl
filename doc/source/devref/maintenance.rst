@@ -19,7 +19,7 @@ The journal entries can wind up in several states due to various reasons:
 These journal entries need to be dealt with appropriately, hence a maintenance
 thread was introduced that takes care of journal maintenance and other related
 tasks.
-This thread runs in a configurable inerval and is HA safe using a shared state
+This thread runs in a configurable interval and is HA safe using a shared state
 kept in the DB.
 
 Currently the maintenance thread performs:
