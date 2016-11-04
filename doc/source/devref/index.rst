@@ -16,7 +16,15 @@ Developer Guide
 ===============
 
 In the Developer Guide, you will find information on networking-odl's lower
-level design and implementation details.
+level design and implementation details. We will cover only essentials details
+related to just networking-odl and we won't repeat neutron devref here, for
+details in neutron, neutron's devref can be checked ::
+
+    https://github.com/openstack/neutron/tree/master/doc/source/devref
+
+For details regarding OpenStack Neutron's Api ::
+
+    https://github.com/openstack/neutron-lib/tree/master/api-ref/source
 
 
 Contents:
