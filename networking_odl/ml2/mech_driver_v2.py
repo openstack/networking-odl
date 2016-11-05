@@ -22,6 +22,7 @@ from neutron.extensions import providernet
 from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api as api
 
+from networking_odl._i18n import _, _LE
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
@@ -197,8 +198,26 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 resource_dict = self._make_security_group_rule_dict(
                     resource_dict)
 
-        object_uuid = (resource_dict['id']
+        object_uuid = (resource_dict.get('id')
                        if operation == 'create' else res_id)
+        if object_uuid is None:
+            # NOTE(yamahata): bug work around bug/1546910
+            # TODO(yamahata): once the following patch is merged
+            # remove this bug work around
+            # https://review.openstack.org/#/c/281693/
+            assert object_type == odl_const.ODL_SG_RULE
+            # NOTE(yamahata): bulk creation case
+            # context.session.new accumulates all newly created orm object.
+            # there is no easy way to pick up the lastly added orm object.
+            rules = [rule for rule in context.session.new
+                     if (isinstance(rule, securitygroup.SecurityGroupRule))]
+            if len(rules) == 1:
+                object_uuid = rules[0].id
+                resource_dict['id'] = object_uuid
+            else:
+                LOG.error(_LE("bulk creation of sgrule isn't supported"))
+                raise NotImplementedError(
+                    _("unsupporetd bulk creation of security group rule"))
         journal.record(context, None, object_type, object_uuid,
                        operation, resource_dict)
 
