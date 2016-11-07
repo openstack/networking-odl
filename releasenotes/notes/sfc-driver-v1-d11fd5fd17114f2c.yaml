@@ -1,0 +1,10 @@
+---
+prelude: >
+    Networking SFC V1 driver for networking-odl.
+features:
+  - First version of the driver to support networking-sfc
+    API through OpenDaylight controller. This driver
+    support CRUD operation for flow classifier, port-pair,
+    port-pair-group and port-pair-chain. This is version 1
+    driver and does not support the journal based
+    implementation.
