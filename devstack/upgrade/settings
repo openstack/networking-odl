@@ -11,6 +11,11 @@ for w in base target; do
     devstack_localrc $w enable_service q-meta
     devstack_localrc $w Q_PLUGIN=ml2
     devstack_localrc $w ODL_CONFIG_BRIDGES=True
+    devstack_localrc $w ODL_L3=True
     devstack_localrc $w Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,openvswitch
     devstack_localrc $w Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,gre,vxlan
+    devstack_localrc $w Q_USE_PUBLIC_VETH=True
+    devstack_localrc $w Q_PUBLIC_VETH_EX=veth-pub-ex
+    devstack_localrc $w Q_PUBLIC_VETH_INT=veth-pub-int
+    devstack_localrc $w ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:\${Q_PUBLIC_VETH_INT}}
 done
