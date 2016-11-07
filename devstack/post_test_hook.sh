@@ -12,12 +12,6 @@ TEMPEST_CODE_DIR="$BASE/new/tempest"
 TEMPEST_DATA_DIR="$DATA_DIR/tempest"
 NETWORKING_ODL_DIR="$BASE/new/networking-odl"
 
-IS_GATE=$(trueorfalse False IS_GATE)
-if [[ "$IS_GATE" == "True" ]]
-then
-    source $NETWORKING_ODL_DIR/devstack/devstackgaterc
-fi
-
 sudo ip address
 sudo ip link
 sudo ip route

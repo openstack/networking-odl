@@ -68,5 +68,4 @@ IS_GATE=$(trueorfalse False IS_GATE)
 if [[ "$IS_GATE" == "True" ]]
 then
     NETWORKING_ODL_DIR=$DEST/networking-odl
-    source $NETWORKING_ODL_DIR/devstack/devstackgaterc
 fi
