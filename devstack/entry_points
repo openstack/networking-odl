@@ -321,13 +321,32 @@ function configure_opendaylight_l3 {
     #       to the external bridge via the ODL_PROVIDER_MAPPINGS method. Being so,
     #       the usage of PUBLIC_INTERFACE is no longer necessary in ODL devstack.
 
-    # DEPRECATED: Add public interface to public bridge, if needed
-    if [[ -n "$PUBLIC_INTERFACE" && "$PUBLIC_INTERFACE" != "br100" ]]; then
-        deprecated "Adding $PUBLIC_INTERFACE to $PUBLIC_BRIDGE."
-        deprecated "Use ODL_PROVIDER_MAPPINGS instead of PUBLIC_INTERFACE."
-        sudo ovs-vsctl --no-wait -- --may-exist add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
-        sudo ip link set $PUBLIC_INTERFACE up
-    fi
+    if [[ "$Q_USE_PUBLIC_VETH" = "True" ]]; then
+        ip link show $Q_PUBLIC_VETH_INT > /dev/null 2>&1 ||
+        sudo ip link add $Q_PUBLIC_VETH_INT type veth \
+            peer name $Q_PUBLIC_VETH_EX
+        sudo ip link set $Q_PUBLIC_VETH_INT up
+        sudo ip link set $Q_PUBLIC_VETH_EX up
+        sudo ip addr flush dev $Q_PUBLIC_VETH_EX
+        local OVSBR_EX=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
+        sudo ovs-vsctl --may-exist add-port $OVSBR_EX $Q_PUBLIC_VETH_INT
+        local cidr_len=${FLOATING_RANGE#*/}
+        sudo ip addr replace ${PUBLIC_NETWORK_GATEWAY}/$cidr_len dev $Q_PUBLIC_VETH_EX
+        sudo ip route replace ${FIXED_RANGE} via ${PUBLIC_NETWORK_GATEWAY} dev ${Q_PUBLIC_VETH_EX}
+        if [[ -n "$IPV6_PUBLIC_RANGE" ]] && [[ -n "$IPV6_PUBLIC_NETWORK_GATEWAY" ]] && [[ -n "$FIXED_RANGE_V6" ]] && [[ -n "$IPV6_ROUTER_GW_IP" ]]; then
+            local ipv6_cidr_len=${IPV6_PUBLIC_RANGE#*/}
+            sudo ip -6 addr replace ${IPV6_PUBLIC_NETWORK_GATEWAY}/$ipv6_cidr_len dev ${Q_PUBLIC_VETH_EX}
+            sudo ip -6 route replace ${FIXED_RANGE_V6} via ${IPV6_ROUTER_GW_IP} dev ${Q_PUBLIC_VETH_EX}
+        fi
+    else
+        # DEPRECATED: Add public interface to public bridge, if needed
+        if [[ -n "$PUBLIC_INTERFACE" && "$PUBLIC_INTERFACE" != "br100" ]]; then
+            deprecated "Adding $PUBLIC_INTERFACE to $PUBLIC_BRIDGE."
+            deprecated "Use ODL_PROVIDER_MAPPINGS instead of PUBLIC_INTERFACE."
+            sudo ovs-vsctl --no-wait -- --may-exist add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
+            sudo ip link set $PUBLIC_INTERFACE up
+        fi
 
-    move_interface_addresses "into_bridge"
+        move_interface_addresses "into_bridge"
+    fi
 }

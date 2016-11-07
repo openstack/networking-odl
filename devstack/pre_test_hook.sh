@@ -71,6 +71,12 @@ ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE}
 # Switch to using the ODL's L3 implementation
 ODL_L3=True
 
+# TODO(yamahata): only for legacy netvirt
+Q_USE_PUBLIC_VETH=True
+Q_PUBLIC_VETH_EX=veth-pub-ex
+Q_PUBLIC_VETH_INT=veth-pub-int
+ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:\${Q_PUBLIC_VETH_INT}}
+
 # Enable debug logs for odl ovsdb
 ODL_NETVIRT_DEBUG_LOGS=True
 

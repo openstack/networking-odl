@@ -18,6 +18,10 @@ then
     source $NETWORKING_ODL_DIR/devstack/devstackgaterc
 fi
 
+sudo ip address
+sudo ip link
+sudo ip route
+
 owner=stack
 sudo_env="TEMPEST_CONFIG_DIR=$TEMPEST_CODE_DIR/etc"
 

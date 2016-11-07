@@ -22,10 +22,6 @@ if [ -z "${RALLY_SCENARIO}" ] ; then
     # Only include tempest if this is not a rally job, As running tempest in Rally is likely to cause failure
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
 fi
-# By default this variable is set to br100, and it is used to determine the value of PUBLIC_INTERFACE.
-# PUBLIC_INTERFACE is wired to PUBLIC_BRIDGE to route traffic externally. Since, we don't currently
-# need to route external traffic in the gate (no multi-node testing), this can be unset.
-unset PUBLIC_INTERFACE
 
 # Begin list of exclusions.
 r="^(?!.*"
