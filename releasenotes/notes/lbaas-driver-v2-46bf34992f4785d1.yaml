@@ -1,0 +1,10 @@
+---
+prelude: >
+    Complement the implementation of odl lbaas driver_v2.
+features:
+  - Complement the implementation of odl lbaas driver_v2.
+    It supports CRUD operations for loadbalancer, listener,
+    pool, member and healthmonitor.
+fixes:
+  - Includes the following bug fixes
+    Bug 1640076 - Using odl lbaas driver_v2 to create listener failed.
