@@ -34,7 +34,7 @@ neutron subnet-list
 neutron router-list
 
 echo "Running networking-odl test suite"
-sudo -H -u $owner $sudo_env tools/pretty_tox_serial.sh "$DEVSTACK_GATE_TEMPEST_REGEX"
+sudo -H -u $owner $sudo_env tox -eall -- "$DEVSTACK_GATE_TEMPEST_REGEX" --serial
 
 echo "Some post-process info"
 neutron net-list
