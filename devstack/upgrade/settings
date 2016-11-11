@@ -4,8 +4,6 @@ register_project_for_upgrade networking-odl
 # networking-odl before neutron
 UPGRADE_PROJECTS="networking-odl ${UPGRADE_PROJECTS/ networking-odl/}"
 
-export TARGET_RUN_SMOKE=False
-export BASE_RUN_SMOKE=False
 
 for w in base target; do
     devstack_localrc $w enable_plugin networking-odl http://github.com/openstack/networking-odl.git
