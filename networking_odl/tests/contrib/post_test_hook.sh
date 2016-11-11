@@ -4,6 +4,7 @@ set -xe
 
 NETWORKING_ODL_DIR="$BASE/new/networking-odl"
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
+GATE_STACK_USER=stack
 
 venv=${1:-"dsvm-functional"}
 
@@ -20,23 +21,27 @@ function generate_testr_results {
     fi
 }
 
-if [[ "$venv" == dsvm-functional* ]]
-then
-    owner=stack
-    sudo_env=
+case $venv in
+    dsvm-functional*|dsvm-fullstack)
+        owner=$GATE_STACK_USER
+        sudo_env=
 
-    # Set owner permissions according to job's requirements.
-    cd $NETWORKING_ODL_DIR
-    sudo chown -R $owner:stack $NETWORKING_ODL_DIR
+        # Set owner permissions according to job's requirements.
+        cd $NETWORKING_ODL_DIR
+        sudo chown -R $owner:stack $NETWORKING_ODL_DIR
 
-    # Run tests
-    echo "Running networking-odl $venv test suite"
-    set +e
-    sudo -H -u $owner $sudo_env tox -e $venv
-    testr_exit_code=$?
-    set -e
+        # Run tests
+        echo "Running networking-odl $venv test suite"
+        set +e
+        sudo -H -u $owner $sudo_env tox -e $venv
+        testr_exit_code=$?
+        set -e
 
-    # Collect and parse results
-    generate_testr_results
-    exit $testr_exit_code
-fi
+        # Collect and parse results
+        generate_testr_results
+        exit $testr_exit_code
+        ;;
+    *)
+        echo "Unrecognized test suite $venv".
+        exit 1
+esac
