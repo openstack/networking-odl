@@ -17,7 +17,7 @@
 # http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/jobs/networking-odl.yaml
 #
 
-export OVERRIDE_ENABLED_SERVICES=dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit
+export OVERRIDE_ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit
 if [ -z "${RALLY_SCENARIO}" ] ; then
     # Only include tempest if this is not a rally job, As running tempest in Rally is likely to cause failure
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
