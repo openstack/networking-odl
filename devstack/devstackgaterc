@@ -60,9 +60,14 @@ if [[ "${ODL_RELEASE_BASE}" == "beryllium-snapshot" ]]; then
 fi
 
 # TODO(yamahata): fix bugs and remove those tests from here
-r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_network_basic_ops.*)"
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1642158
+# legacy netvirt ignores admin-state-up state for network/port
 r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_instance_port_admin_state.*)"
 r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_router_admin_state.*)"
+
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1643033
+# stateful security group: conntracking needs to be enabled
+r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_hotplug_nic.*)"
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)"
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)"
 
