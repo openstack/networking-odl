@@ -29,21 +29,10 @@ r="^(?!.*"
 # exclude the slow tag (part of the default for 'full')
 r="$r(?:.*\[.*\bslow\b.*\])"
 
-# exclude tests that use ssh to login until metadata server for keypair
-r="$r|(?:tempest\.scenario\.test_minimum_basic.*)"
-r="$r|(?:tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*)"
-r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
-r="$r|(?:tempest\.scenario\.test_shelve_instance\.TestShelveInstance.*)"
-r="$r|(?:tempest\.scenario\.test_snapshot_pattern\.TestSnapshotPattern.*)"
-r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPattern\.test_volume_boot_pattern.*)"
-r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPatternV2\.test_volume_boot_pattern.*)"
-
 # exclude things that just aren't enabled:
 r="$r|(?:tempest\.api\.network\.admin\.test_quotas\.QuotasTest\.test_lbaas_quotas.*)"
 r="$r|(?:tempest\.api\.network\.test_load_balancer.*)"
 r="$r|(?:tempest\.scenario\.test_load_balancer.*)"
-r="$r|(?:tempest\.scenario\.test_network_basic_ops.*)"
-r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops.*)"
 r="$r|(?:tempest\.api\.network\.admin\.test_load_balancer.*)"
 r="$r|(?:tempest\.api\.network\.admin\.test_lbaas.*)"
 r="$r|(?:tempest\.api\.network\.test_fwaas_extensions.*)"
@@ -56,9 +45,31 @@ r="$r|(?:tempest\.api\.identity.*)"
 r="$r|(?:tempest\.api\.image.*)"
 r="$r|(?:tempest\.api\.volume.*)"
 
+# unsupported features
+# ODL legacy netvirt doesn't support ipv6
+r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
+
 # Current list of failing tests that need to be triaged, have bugs filed, and
 # fixed as appropriate.
 # (none)
+
+if [[ "${ODL_RELEASE_BASE}" == "beryllium-snapshot" ]]; then
+   # Beryllium release has bug on security group and there is no plan
+   # for new release. Its last release is Beryllium-SR4.
+   r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops.*)"
+fi
+
+# TODO(yamahata): fix bugs and remove those tests from here
+r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_network_basic_ops.*)"
+r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_instance_port_admin_state.*)"
+r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_router_admin_state.*)"
+r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)"
+r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)"
+
+# TODO(yamahata): those test sets doesn't stably pass yet.
+r="$r|(?:tempest\.scenario\.test_minimum_basic.*)"
+r="$r|(?:tempest\.scenario\.test_network_basic_ops.*)"
+r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops.*)"
 
 # End list of exclusions.
 r="$r)"
