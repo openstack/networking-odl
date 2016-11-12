@@ -121,3 +121,6 @@ ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-network-topology}
 # specific version: the specific version of the snapshot
 # "": odl release
 ODL_SNAPSHOT_VERSION=${ODL_SNAPSHOT_VERSION:-}
+
+# Set to True to keep odl running after unstack
+UNSTACK_KEEP_ODL=${UNSTACK_KEEP_ODL:-False}

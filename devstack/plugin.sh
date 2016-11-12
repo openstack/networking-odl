@@ -58,7 +58,7 @@ if is_service_enabled odl-server; then
         :
     fi
 
-    if [[ "$1" == "unstack" ]]; then
+    if [[ "$1" == "unstack" && "$UNSTACK_KEEP_ODL" != "True" ]]; then
         stop_opendaylight
         cleanup_opendaylight
     fi
@@ -96,7 +96,7 @@ if is_service_enabled odl-compute; then
         :
     fi
 
-    if [[ "$1" == "unstack" ]]; then
+    if [[ "$1" == "unstack" && "$UNSTACK_KEEP_ODL" != "True" ]]; then
         cleanup_opendaylight_compute
     fi
 
