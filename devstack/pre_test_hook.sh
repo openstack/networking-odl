@@ -51,6 +51,15 @@ case "$ODL_GATE_SERVICE_PROVIDER" in
         ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack
         ;;
 esac
+# add odl-neutron-logger for debugging
+# odl-neutorn-logger has been introduced from boron cycle
+case "$ODL_RELEASE_BASE" in
+    carbon-snapshot|boron-snapshot)
+        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
+        ;;
+    *)
+        ;;
+esac
 
 cat <<EOF >> $DEVSTACK_PATH/localrc
 
