@@ -14,7 +14,7 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=boron-snapshot-0.5.2
         ;;
     beryllium-snapshot)
-        ODL_RELEASE=beryllium-snapshot-0.4.4
+        ODL_RELEASE=beryllium-snapshot-0.4.5
         ;;
     *)
         echo "Unknown ODL release base: $ODL_RELEASE_BASE"

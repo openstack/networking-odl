@@ -1,0 +1,7 @@
+---
+prelude: >
+    Add ODL Beryllium SR4 release definition.
+features:
+  - Add OpenDaylight Beryllium SR4 release and Beryllium 0.4.5 snapshot
+    definition and remove Beryllium 0.4.4 snapshot as OpenDaylight
+    Beryllium 0.4.4 SR4 has been released.
