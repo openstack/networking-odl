@@ -23,6 +23,15 @@ if [ -z "${RALLY_SCENARIO}" ] ; then
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
 fi
 
+# NOTE(manjeets) To prevent create of public network twice
+if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
+
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"NEUTRON_CREATE_INITIAL_NETWORKS=False"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"ENABLED_SERVICES=n-cpu,dstat,c-vol,c-bak,q-dhcp"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"DATABASE_HOST=\$SERVICE_HOST"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"RABBIT_HOST=\$SERVICE_HOST"
+fi
+
 # Begin list of exclusions.
 r="^(?!.*"
 
