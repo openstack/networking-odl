@@ -53,7 +53,8 @@ class TestLegacyPortBindingManager(base.DietTestCase):
             if mgr._check_segment({api.NETWORK_TYPE: network_type})}
 
         self.assertEqual({
-            constants.TYPE_LOCAL, constants.TYPE_GRE, constants.TYPE_VXLAN,
+            constants.TYPE_FLAT, constants.TYPE_LOCAL,
+            constants.TYPE_GRE, constants.TYPE_VXLAN,
             constants.TYPE_VLAN}, valid_types)
 
     def test_bind_port(self):
