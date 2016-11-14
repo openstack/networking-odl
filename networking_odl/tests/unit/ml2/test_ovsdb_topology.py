@@ -184,8 +184,8 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
 
         # then true is returned only for valid network types
         self.assertEqual({
-            constants.TYPE_LOCAL, constants.TYPE_GRE, constants.TYPE_VXLAN,
-            constants.TYPE_VLAN}, valid_types)
+            constants.TYPE_FLAT, constants.TYPE_LOCAL, constants.TYPE_GRE,
+            constants.TYPE_VXLAN, constants.TYPE_VLAN}, valid_types)
 
     def test_bind_port_with_vif_type_ovs(self):
         given_port_context = self.given_port_context(

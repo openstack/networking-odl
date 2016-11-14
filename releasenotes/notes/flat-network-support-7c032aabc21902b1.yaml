@@ -1,0 +1,6 @@
+---
+prelude: >
+    Added FLAT type networks support.
+features:
+  - In addition to existing supported types, networks
+    of type FLAT can be also used with ODL.

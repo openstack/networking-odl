@@ -71,8 +71,9 @@ class LegacyPortBindingManager(port_binding.PortBindingController):
         """
 
         network_type = segment[driver_api.NETWORK_TYPE]
-        return network_type in [constants.TYPE_LOCAL, constants.TYPE_GRE,
-                                constants.TYPE_VXLAN, constants.TYPE_VLAN]
+        return network_type in [constants.TYPE_FLAT, constants.TYPE_LOCAL,
+                                constants.TYPE_GRE, constants.TYPE_VXLAN,
+                                constants.TYPE_VLAN]
 
     def _get_vif_type(self, port_context):
         """Get VIF type string for given PortContext
