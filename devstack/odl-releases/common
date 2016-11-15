@@ -11,8 +11,21 @@ export ODL_NETVIRT_KARAF_FEATURE_OVSDB=${ODL_NETVIRT_KARAF_FEATURE_OVSDB:-odl-ov
 # The network virtualization newer feature name (vpnservice based)
 export ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE=${ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE:-odl-netvirt-openstack}
 
+ODL_NETVIRT_KARAF_FEATURE_DEFAULT=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,$ODL_NETVIRT_KARAF_FEATURE_OVSDB
+# odl-neutron-logger has been introduced from Boron release
+case "$ODL_BUNDLEVERSION" in
+    # in Helium case, ODL_NETVIRT_KARAF_FEATURE is defined
+    # so ODL_NETVIRT_KARAF_FEATURE_DEFAULT doesn't matter
+    0.3.?-Lithium-SR?|0.4.0-Beryllium|0.4.?-Beryllium-SR?|0.4.?-SNAPSHOT)
+        ;;
+    *)
+        # 0.5.?-Boron-SR?|0.5.?-SNAPSHOT|0.6.?-SNAPSHOT)
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT=$ODL_NETVIRT_KARAF_FEATURE_DEFAULT,odl-neutron-logger
+        ;;
+esac
+
 # The network virtualization feature used by opendaylight loaded by Karaf
-export ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,$ODL_NETVIRT_KARAF_FEATURE_OVSDB}
+export ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE:-$ODL_NETVIRT_KARAF_FEATURE_DEFAULT}
 
 # The url that this version of ODL netvirt can use to know ODL is fully up
 export ODL_BOOT_WAIT_URL=${ODL_BOOT_WAIT_URL:-restconf/operational/network-topology:network-topology/topology/netvirt:1}
