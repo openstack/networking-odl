@@ -194,8 +194,9 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
         """
 
         network_type = segment[driver_api.NETWORK_TYPE]
-        return network_type in [constants.TYPE_LOCAL, constants.TYPE_GRE,
-                                constants.TYPE_VXLAN, constants.TYPE_VLAN]
+        return network_type in [constants.TYPE_FLAT, constants.TYPE_LOCAL,
+                                constants.TYPE_GRE, constants.TYPE_VXLAN,
+                                constants.TYPE_VLAN]
 
     def _get_vif_details(self, vif_details, port_context_id, vif_type):
         vif_details = dict(vif_details)
