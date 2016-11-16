@@ -14,20 +14,19 @@
 #    under the License.
 
 import logging
+
+from neutron import context
+from neutron.extensions import portbindings
+from neutron.plugins.ml2 import driver_api
 from neutron_lib import constants as nl_const
+from neutron_lib.plugins import directory
+from oslo_config import cfg
+from oslo_log import log
+from oslo_serialization import jsonutils
 from requests import codes
 from requests import exceptions
 import six.moves.urllib.parse as urlparse
 from string import Template
-
-from oslo_config import cfg
-from oslo_log import log
-from oslo_serialization import jsonutils
-
-from neutron import context
-from neutron.extensions import portbindings
-from neutron import manager
-from neutron.plugins.ml2 import driver_api
 
 from networking_odl._i18n import _LE, _LI, _LW
 from networking_odl.common import client as odl_client
@@ -147,8 +146,8 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         self._update_agents_db(hostconfigs=hostconfigs)
 
     def _get_neutron_db_plugin(self):
-        if (not self.agents_db) and manager.NeutronManager.has_instance():
-            self.agents_db = manager.NeutronManager.get_plugin()
+        if not self.agents_db:
+            self.agents_db = directory.get_plugin()
         return self.agents_db
 
     def _update_agents_db(self, hostconfigs):
