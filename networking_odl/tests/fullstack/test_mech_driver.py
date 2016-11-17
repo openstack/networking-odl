@@ -15,6 +15,7 @@
 import re
 
 from oslo_utils import uuidutils
+from tempest.lib.common.utils import test_utils
 
 from neutron.agent.common import utils
 from neutron.tests.common import net_helpers
@@ -36,10 +37,13 @@ class TestMechDriver(base.TestODLFullStackBase):
         return re.findall('".*"', system_id)[0]
 
     def _check_flow_existance(self, mac):
-        flows = utils.execute(['ovs-appctl', 'bridge/dump-flows', 'br-int'],
-                              run_as_root=True)
+        def _callback():
+            flows = utils.execute(
+                ['ovs-appctl', 'bridge/dump-flows', 'br-int'],
+                run_as_root=True)
 
-        return bool(re.search(mac, flows))
+            return bool(re.search(mac, flows))
+        return test_utils.call_until_true(_callback, 3, 1)
 
     def _create_ovs_vif_port(self, bridge, dev, iface_id, mac, instance_id):
         return utils.execute(['ovs-vsctl', 'add-port', bridge, dev,
