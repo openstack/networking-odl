@@ -107,3 +107,24 @@
 
       [flowclassifier]
       drivers = odl
+
+13. Note: legacy netvirt specific options
+
+    - OVS conntrack support
+
+      :variable: ODL_LEGACY_NETVIRT_CONNTRACK By default it's False for
+                 compatibility and version requirements.
+
+      - version requirement
+
+        :ODL version: Boron release or later.
+                      (ODL legacy netvirt support is from Beryllium. But
+                      networking-odl devstack supports Boron+)
+
+        :OVS version: 2.5 or later
+
+      enable OVS conntrack support::
+
+        > cat local.conf
+        [[local|localrc]]
+        ODL_LEGACY_NETVIRT_CONNTRACK=True

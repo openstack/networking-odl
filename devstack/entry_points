@@ -54,6 +54,14 @@ function configure_opendaylight {
         fi
     fi
 
+    # Configure conntrack for legacy netvirt
+    if [[ "$ODL_LEGACY_NETVIRT_CONNTRACK" == "True" ]]; then
+        NETVIRT_INIT_CONFIG_XML=$NETWORKING_ODL_DIR/devstack/odl-etc/opendaylight/datastore/initial/config/netvirt-impl-config_netvirt-impl-config.xml
+        ODL_DATASTORE_INITIAL_CONFIG_DIR=${ODL_DIR}/${ODL_NAME}/etc/opendaylight/datastore/initial/config
+        mkdir -p $ODL_DATASTORE_INITIAL_CONFIG_DIR
+        cp --backup --force $NETVIRT_INIT_CONFIG_XML $ODL_DATASTORE_INITIAL_CONFIG_DIR/
+    fi
+
     # Configure L3 if the user wants it for NETVIRT_OVSDB
     # L3 is always enabled in NETVIRT_VPNSERVICE
     if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]] && [ "${ODL_L3}" == "True" ]; then
