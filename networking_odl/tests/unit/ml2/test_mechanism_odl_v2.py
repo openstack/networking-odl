@@ -320,7 +320,8 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
                         if rt.singular == object_type][0]
             res_id = context[object_type]['id']
-            context_ = copy.deepcopy(context)
+            context_ = (copy.deepcopy(context)
+                        if operation != odl_const.ODL_DELETE else None)
             if (object_type == odl_const.ODL_SG and
                     operation == odl_const.ODL_CREATE):
                 # TODO(yamahata): remove this work around once

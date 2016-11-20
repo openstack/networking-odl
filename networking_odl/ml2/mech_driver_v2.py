@@ -191,7 +191,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         # NOTE(yamahata): in security group/security gorup rule case,
         # orm object is passed. not resource dict. So we have to convert it
         # into resource_dict
-        if not isinstance(resource_dict, dict):
+        if not isinstance(resource_dict, dict) and resource_dict is not None:
             if object_type == odl_const.ODL_SG:
                 resource_dict = self._make_security_group_dict(resource_dict)
             elif object_type == odl_const.ODL_SG_RULE:
