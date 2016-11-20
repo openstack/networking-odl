@@ -22,6 +22,7 @@ import threading
 
 from networking_odl._i18n import _LE
 from networking_odl.common import constants as odl_const
+from networking_odl.common import utils
 
 LOG = log.getLogger(__name__)
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -61,7 +62,7 @@ class OpenDaylightRestClient(object):
         self.auth = (username, password)
 
     def get_resource(self, resource_type, resource_id):
-        response = self.get(resource_type.replace('_', '-') + 's/' +
+        response = self.get(utils.neutronify(resource_type) + 's/' +
                             resource_id)
         if response.status_code == requests.codes.not_found:
             return None

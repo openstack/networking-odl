@@ -296,7 +296,7 @@ class OpenDaylightDriver(object):
         for resource in resources:
             try:
                 # Convert underscores to dashes in the URL for ODL
-                collection_name_url = collection_name.replace('_', '-')
+                collection_name_url = odl_utils.neutronify(collection_name)
                 urlpath = collection_name_url + '/' + resource['id']
                 self.client.sendjson('get', urlpath, None)
             except requests.exceptions.HTTPError as e:
@@ -315,7 +315,7 @@ class OpenDaylightDriver(object):
             key = collection_name[:-1] if len(to_be_synced) == 1 else (
                 collection_name)
             # Convert underscores to dashes in the URL for ODL
-            collection_name_url = collection_name.replace('_', '-')
+            collection_name_url = odl_utils.neutronify(collection_name)
             self.client.sendjson('post', collection_name_url,
                                  {key: to_be_synced})
 
@@ -350,7 +350,7 @@ class OpenDaylightDriver(object):
         operation (create or update) being handled.
         """
         # Convert underscores to dashes in the URL for ODL
-        object_type_url = object_type.replace('_', '-')
+        object_type_url = odl_utils.neutronify(object_type)
         try:
             obj_id = context.current['id']
             if operation == odl_const.ODL_DELETE:
@@ -381,7 +381,7 @@ class OpenDaylightDriver(object):
 
     def sync_from_callback(self, context,
                            operation, res_type, res_id, resource_dict):
-        object_type = res_type.plural.replace('_', '-')
+        object_type = odl_utils.neutronify(res_type.plural)
         try:
             if operation == odl_const.ODL_DELETE:
                 self.out_of_sync |= not self.client.try_delete(

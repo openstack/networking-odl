@@ -25,6 +25,7 @@ from neutron.services.qos.notification_drivers import qos_base
 from networking_odl._i18n import _LE
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
+from networking_odl.common import utils
 
 
 LOG = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class OpenDaylightDriver(object):
         Prepare a rest call and send a single resource to ODL NB
         """
         # Convert underscores to dashes in the URL for ODL
-        object_type_url = object_type.replace('_', '-')
+        object_type_url = utils.neutronify(object_type)
         try:
             obj_id = data['id']
             if operation == odl_const.ODL_DELETE:

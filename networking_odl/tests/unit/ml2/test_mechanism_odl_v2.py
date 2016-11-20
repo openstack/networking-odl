@@ -21,6 +21,7 @@ from networking_odl.common import callback
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
+from networking_odl.common import utils
 from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
@@ -363,7 +364,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self._call_operation_object(operation, object_type)
 
         context = self._get_mock_operation_context(object_type)
-        url_object_type = object_type.replace('_', '-')
+        url_object_type = utils.neutronify(object_type)
         if operation in [odl_const.ODL_UPDATE, odl_const.ODL_DELETE]:
             if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
                 uuid = context[object_type]['id']

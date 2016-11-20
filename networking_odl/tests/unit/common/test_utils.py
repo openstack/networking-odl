@@ -21,6 +21,15 @@ from networking_odl.common import cache
 from networking_odl.common import utils
 
 
+class TestUtils(base.DietTestCase):
+
+    def test_neutronify(self):
+        self.assertEqual('a-b-c', utils.neutronify('a_b_c'))
+
+    def test_neutronify_empty(self):
+        self.assertEqual('', utils.neutronify(''))
+
+
 class TestGetAddressesByName(base.DietTestCase):
 
     # pylint: disable=protected-access, unused-argument

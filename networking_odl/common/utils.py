@@ -58,3 +58,8 @@ def get_addresses_by_name(name, time_to_live=60.0):
         return tuple(address for name, address in results)
     except cache.CacheFetchError as error:
         error.reraise_cause()
+
+
+def neutronify(name):
+    """Adjust the resource name for use with Neutron's API"""
+    return name.replace('_', '-')

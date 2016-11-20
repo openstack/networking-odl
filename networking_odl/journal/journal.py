@@ -27,6 +27,7 @@ from neutron import manager
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
+from networking_odl.common import utils
 from networking_odl._i18n import _LI, _LE
 from networking_odl.db import db
 from networking_odl.journal import dependency_validations
@@ -126,7 +127,7 @@ class OpendaylightJournalThread(object):
     def _json_data(self, row):
         data = copy.deepcopy(row.data)
         filters.filter_for_odl(row.object_type, row.operation, data)
-        url_object = row.object_type.replace('_', '-')
+        url_object = utils.neutronify(row.object_type)
 
         if row.operation == odl_const.ODL_CREATE:
             method = 'post'
