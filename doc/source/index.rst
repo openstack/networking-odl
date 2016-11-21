@@ -10,6 +10,7 @@ General Documentation
    :maxdepth: 1
 
    installation
+   reference_architecture
    usage
    contributing
 
