@@ -6,7 +6,6 @@ VENV=${1:-"dsvm-functional"}
 
 GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
-GATE_STACK_USER=stack
 NETWORKING_ODL_PATH="$BASE/new/networking-odl"
 
 case $VENV in
@@ -29,8 +28,13 @@ case $VENV in
     ;;
 "dsvm-fullstack")
     # Fullstack testing happens in post-test-hook.sh
-    # Make the workspace owned by GATE_STACK_USER
-    sudo chown -R $GATE_STACK_USER:$GATE_STACK_USER $BASE
+    # Make the workspace owned by STACK_USER
+    sudo chown -R $STACK_USER:$STACK_USER $BASE
+
+    # TODO(rzang): set here temporarily.
+    # Remove once https://review.openstack.org/#/c/400281/ gets merged
+    export DEVSTACK_GATE_REMOVE_STACK_SUDO=0
+    $BASE/new/devstack-gate/devstack-vm-gate.sh
     ;;
 *)
     echo "Unrecognized environment $VENV".
