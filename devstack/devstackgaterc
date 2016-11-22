@@ -36,6 +36,10 @@ fi
 # NOTE(manjeets) To prevent create of public network twice
 if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
 
+    # NOTE(manjeets) Temporarily disabling LM test due to bug 1643678
+    # https://bugs.launchpad.net/networking-odl/+bug/1643678
+    export DEVSTACK_LOCAL_CONFIG+=$'\n'"LIVE_MIGRATION_AVAILABLE=False"
+    export DEVSTACK_LOCAL_CONFIG+=$'\n'"USE_BLOCK_MIGRATION_FOR_LIVE_MIGRATION=False"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"NEUTRON_CREATE_INITIAL_NETWORKS=False"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"ENABLED_SERVICES=n-cpu,dstat,c-vol,c-bak,q-dhcp"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"DATABASE_HOST=\$SERVICE_HOST"
