@@ -135,6 +135,8 @@ function _install_databases {
     configure_database_mysql
 
     if [[ "$install_pg" == "True" ]]; then
+        # acl package includes setfacl.
+        install_package acl
         enable_service postgresql
         initialize_database_backends
         install_database
