@@ -13,7 +13,15 @@ function generate_testr_results {
     sudo -H -u $owner chmod o+rw .
     sudo -H -u $owner chmod o+rw -R .testrepository
     if [ -f ".testrepository/0" ] ; then
-        .tox/$venv/bin/subunit-1to2 < .testrepository/0 > ./testrepository.subunit
+        # Some tests have python-subunit installed globally
+        # and in gate we specified sitepackages=True
+        if [ -x .tox/$venv/bin/subunit-1to2 ]; then
+            SUBUNIT1TO2=.tox/$venv/bin/subunit-1to2
+        else
+            # Use system subunit-1to2
+            SUBUNIT1TO2=subunit-1to2
+        fi
+        $SUBUNIT1TO2 < .testrepository/0 > ./testrepository.subunit
         $SCRIPTS_DIR/subunit2html ./testrepository.subunit testr_results.html
         gzip -9 ./testrepository.subunit
         gzip -9 ./testr_results.html
