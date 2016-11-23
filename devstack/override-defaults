@@ -10,7 +10,7 @@ else
     V2_POSTFIX=""
 fi
 
-Q_ML2_PLUGIN_MECHANISM_DRIVERS=${Q_ML2_PLUGIN_MECHANISM_DRIVERS:-"opendaylight${V2_POSTFIX},logger"}
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=${Q_ML2_PLUGIN_MECHANISM_DRIVERS:-"logger,opendaylight${V2_POSTFIX}"}
 
 # This triggers the provisioning of L3 resources like routers and
 # external network, if not overridden.
