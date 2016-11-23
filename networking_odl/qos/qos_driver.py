@@ -45,12 +45,12 @@ class OpenDaylightDriver(object):
 
     def convert_rules_format(self, data):
         policy = copy.deepcopy(data)
-        policy.pop('rules')
         policy.pop('tenant_id')
-        for rule in data['rules']:
+        policy.pop('rules', None)
+        for rule in data.get('rules', []):
             rule_type = rule['type'] + '_rules'
-            rule.pop('type')
-            rule.pop('qos_policy_id')
+            rule.pop('type', None)
+            rule.pop('qos_policy_id', None)
             rule['tenant_id'] = data['tenant_id']
             policy[rule_type] = [rule]
         return self.enforce_policy_format(policy)
