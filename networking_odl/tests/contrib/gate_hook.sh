@@ -12,6 +12,7 @@ case $VENV in
 "dsvm-functional")
     # The following need to be set before sourcing
     # configure_for_func_testing.
+    GATE_STACK_USER=stack
     PROJECT_NAME=networking-odl
     IS_GATE=True
 
