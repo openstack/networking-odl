@@ -17,9 +17,9 @@
 import mock
 
 from neutron.db import api as neutron_db_api
-from neutron import manager
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import exceptions as nexc
+from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -58,16 +58,16 @@ class RecoveryTestCase(SqlTestCaseLight):
         resource = recovery._get_latest_resource(mock_row)
         self.assertEqual(mock_resource, resource)
 
-    @mock.patch.object(manager.NeutronManager, 'get_plugin')
+    @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l2(self, plugin_mock):
         for resource_type in odl_const.L2_RESOURCES:
             plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
 
-    @mock.patch.object(manager.NeutronManager, 'get_service_plugins')
+    @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l3(self, plugin_mock):
         for resource_type in odl_const.L3_RESOURCES:
-            plugin = plugin_mock.return_value.get.return_value
+            plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
 
     def test__get_latest_resource_unsupported(self):
@@ -76,7 +76,7 @@ class RecoveryTestCase(SqlTestCaseLight):
             recovery.UnsupportedResourceType, recovery._get_latest_resource,
             mock_row)
 
-    @mock.patch.object(manager.NeutronManager, 'get_plugin')
+    @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_none(self, plugin_mock):
         plugin_mock.return_value.get_network.side_effect = nexc.NotFound()
 

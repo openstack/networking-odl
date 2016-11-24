@@ -25,6 +25,7 @@ from neutron.extensions import l3
 from neutron.extensions import l3_ext_gw_mode
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
+from neutron_lib import constants
 from webob import exc
 
 _get_path = test_base._get_path
@@ -41,9 +42,9 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
             l3.RESOURCE_ATTRIBUTE_MAP[key].update(
                 l3_ext_gw_mode.EXTENDED_ATTRIBUTES_2_0.get(key, {}))
         self._setUpExtension(
-            'neutron.extensions.l3.RouterPluginBase', None,
-            l3.RESOURCE_ATTRIBUTE_MAP, l3.L3, '',
-            allow_pagination=True, allow_sorting=True,
+            'neutron.services.l3_router.l3_router_plugin.L3RouterPlugin',
+            constants.L3, l3.RESOURCE_ATTRIBUTE_MAP,
+            l3.L3, '', allow_pagination=True, allow_sorting=True,
             supported_extension_aliases=['router', 'ext-gw-mode'],
             use_quota=True)
 

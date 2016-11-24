@@ -23,12 +23,12 @@ from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib import constants as n_const
+from neutron_lib.plugins import directory
 
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
 from requests.exceptions import HTTPError
 
-from neutron import manager
 from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
 
 AGENTDB_BINARY = 'neutron-odlagent-portbinding'
@@ -382,7 +382,7 @@ class TestPseudoAgentDBBindingControllerBug1608659(
         super(TestPseudoAgentDBBindingControllerBug1608659, self).setUp(
             plugin='ml2')
         self.useFixture(base.OpenDaylightRestClientFixture())
-        self.core_plugin = manager.NeutronManager.get_plugin()
+        self.core_plugin = directory.get_plugin()
         self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController(
             self.core_plugin)
 

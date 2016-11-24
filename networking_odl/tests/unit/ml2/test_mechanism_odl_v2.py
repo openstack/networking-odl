@@ -14,8 +14,22 @@
 #    under the License.
 import copy
 import datetime
+import mock
 import operator
+import requests
 import testscenarios
+
+from neutron.db import api as neutron_db_api
+from neutron.db.models import securitygroup
+from neutron.extensions import multiprovidernet as mpnet
+from neutron.extensions import providernet
+from neutron.plugins.common import constants as p_const
+from neutron.plugins.ml2 import plugin
+from neutron.tests.unit.plugins.ml2 import test_plugin
+from neutron.tests.unit import testlib_api
+from neutron_lib.plugins import directory
+from oslo_config import cfg
+from oslo_serialization import jsonutils
 
 from networking_odl.common import callback
 from networking_odl.common import client
@@ -29,21 +43,6 @@ from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
-
-import mock
-from oslo_config import cfg
-from oslo_serialization import jsonutils
-import requests
-
-from neutron.db import api as neutron_db_api
-from neutron.db.models import securitygroup
-from neutron.extensions import multiprovidernet as mpnet
-from neutron.extensions import providernet
-from neutron import manager
-from neutron.plugins.common import constants as p_const
-from neutron.plugins.ml2 import plugin
-from neutron.tests.unit.plugins.ml2 import test_plugin
-from neutron.tests.unit import testlib_api
 
 
 # Required to generate tests from scenarios. Not compatible with nose.
@@ -245,7 +244,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                    'mac_address': '12:34:56:78:21:b6'}
         _network = OpenDaylightMechanismDriverTestCase.\
             _get_mock_network_operation_context().current
-        _plugin = manager.NeutronManager.get_plugin()
+        _plugin = directory.get_plugin()
         _plugin.get_security_group = mock.Mock(return_value=SECURITY_GROUP)
         _plugin.get_port = mock.Mock(return_value=current)
         _plugin.get_network = mock.Mock(return_value=_network)

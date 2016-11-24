@@ -17,7 +17,8 @@
 import mock
 import requests
 
-from neutron import manager
+from neutron_lib import constants
+from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -33,10 +34,10 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         self.useFixture(
             base.OpenDaylightRestClientGlobalFixture(full_sync._CLIENT))
         self._CLIENT = full_sync._CLIENT.get_client()
-        self.plugin_mock = mock.patch.object(manager.NeutronManager,
-                                             'get_plugin').start()
-        self.l3_plugin_mock = mock.patch.object(manager.NeutronManager,
-                                                'get_service_plugins').start()
+        self.plugin = mock.MagicMock()
+        self.l3_plugin = mock.MagicMock()
+        directory.add_plugin(constants.CORE, self.plugin)
+        directory.add_plugin(constants.L3, self.l3_plugin)
 
     def test_no_full_sync_when_canary_exists(self):
         full_sync.full_sync(self.db_session)
@@ -46,12 +47,11 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         expected_journal = {odl_const.ODL_NETWORK: '1',
                             odl_const.ODL_SUBNET: '2',
                             odl_const.ODL_PORT: '3'}
-        plugin_instance = self.plugin_mock.return_value
-        plugin_instance.get_networks.return_value = [
+        self.plugin.get_networks.return_value = [
             {'id': expected_journal[odl_const.ODL_NETWORK]}]
-        plugin_instance.get_subnets.return_value = [
+        self.plugin.get_subnets.return_value = [
             {'id': expected_journal[odl_const.ODL_SUBNET]}]
-        plugin_instance.get_ports.side_effect = ([
+        self.plugin.get_ports.side_effect = ([
             {'id': expected_journal[odl_const.ODL_PORT]}], [])
         return expected_journal
 
@@ -127,16 +127,14 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                        'device_id': '1',
                        'tenant_id': '1',
                        'fixed_ips': [{'subnet_id': '1'}]}
-        plugin_instance = self.plugin_mock.return_value
-        plugin_instance.get_ports.side_effect = ([], [router_port])
+        self.plugin.get_ports.side_effect = ([], [router_port])
 
     def _mock_l3_resources(self):
         expected_journal = {odl_const.ODL_ROUTER: '1',
                             odl_const.ODL_FLOATINGIP: '2'}
-        plugin_instance = self.l3_plugin_mock.return_value.get.return_value
-        plugin_instance.get_routers.return_value = [
+        self.l3_plugin.get_routers.return_value = [
             {'id': expected_journal[odl_const.ODL_ROUTER]}]
-        plugin_instance.get_floatingips.return_value = [
+        self.l3_plugin.get_floatingips.return_value = [
             {'id': expected_journal[odl_const.ODL_FLOATINGIP]}]
 
         return expected_journal

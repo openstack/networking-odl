@@ -16,13 +16,11 @@
 import copy
 import threading
 
-from requests import exceptions
-
+from neutron.db import api as neutron_db_api
+from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_log import log as logging
-
-from neutron.db import api as neutron_db_api
-from neutron import manager
+from requests import exceptions
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -72,7 +70,7 @@ def _enrich_port(plugin_context, ml2_context, object_type, operation, data):
         if ml2_context:
             network = ml2_context._network_context._network
         else:
-            plugin = manager.NeutronManager.get_plugin()
+            plugin = directory.get_plugin()
             network = plugin.get_network(plugin_context,
                                          new_data['network_id'])
         new_data['tenant_id'] = network['tenant_id']

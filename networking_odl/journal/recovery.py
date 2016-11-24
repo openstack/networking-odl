@@ -15,9 +15,9 @@
 #
 
 from neutron import context as neutron_context
-from neutron import manager
-from neutron.plugins.common import constants
+from neutron_lib import constants
 from neutron_lib import exceptions as nexc
+from neutron_lib.plugins import directory
 from oslo_log import log as logging
 
 from networking_odl._i18n import _, _LE, _LW
@@ -56,10 +56,9 @@ def _get_latest_resource(row):
     object_type = row.object_type
 
     if object_type in odl_const.L2_RESOURCES:
-        plugin = manager.NeutronManager.get_plugin()
+        plugin = directory.get_plugin()
     elif object_type in odl_const.L3_RESOURCES:
-        plugin = manager.NeutronManager.get_service_plugins().get(
-            constants.L3_ROUTER_NAT)
+        plugin = directory.get_plugin(constants.L3)
     else:
         raise UnsupportedResourceType(
             _("unsupported resource type: {}").format(object_type))

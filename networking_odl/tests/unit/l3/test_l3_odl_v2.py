@@ -13,6 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+import requests
+
+from neutron import context
+from neutron.db import api as neutron_db_api
+from neutron.extensions import external_net as external_net
+from neutron.plugins.ml2 import plugin
+from neutron.tests import base
+from neutron.tests.unit.db import test_db_base_plugin_v2
+from neutron.tests.unit import testlib_api
+from neutron_lib import constants
+from neutron_lib.plugins import directory
+from oslo_config import cfg
+from oslo_serialization import jsonutils
+
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
@@ -22,21 +37,6 @@ from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
-
-import mock
-from oslo_config import cfg
-from oslo_serialization import jsonutils
-import requests
-
-from neutron import context
-from neutron.db import api as neutron_db_api
-from neutron.extensions import external_net as external_net
-from neutron import manager
-from neutron.plugins.common import constants as service_constants
-from neutron.plugins.ml2 import plugin
-from neutron.tests import base
-from neutron.tests.unit.db import test_db_base_plugin_v2
-from neutron.tests.unit import testlib_api
 
 EMPTY_DEP = []
 FLOATINGIP_ID = 'floatingip_uuid'
@@ -121,10 +121,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
         self.db_session = neutron_db_api.get_session()
-        self.plugin = manager.NeutronManager.get_plugin()
+        self.plugin = directory.get_plugin()
         self.plugin._network_is_external = mock.Mock(return_value=True)
-        self.driver = manager.NeutronManager.get_service_plugins()[
-            service_constants.L3_ROUTER_NAT]
+        self.driver = directory.get_plugin(constants.L3)
         self.thread = journal.OpendaylightJournalThread()
         self.driver.get_floatingip = mock.Mock(
             return_value={'router_id': ROUTER_ID,

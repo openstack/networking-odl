@@ -17,8 +17,8 @@
 import requests
 
 from neutron import context as neutron_context
-from neutron import manager
-from neutron.plugins.common import constants
+from neutron_lib import constants
+from neutron_lib.plugins import directory
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -42,13 +42,12 @@ def full_sync(session):
     db.delete_pending_rows(session, _OPS_TO_DELETE_ON_SYNC)
 
     dbcontext = neutron_context.get_admin_context()
-    plugin = manager.NeutronManager.get_plugin()
+    plugin = directory.get_plugin()
     for resource_type, collection_name in odl_const.L2_RESOURCES.items():
         _sync_resources(session, plugin, dbcontext, resource_type,
                         collection_name)
 
-    l3plugin = manager.NeutronManager.get_service_plugins().get(
-        constants.L3_ROUTER_NAT)
+    l3plugin = directory.get_plugin(constants.L3)
     for resource_type, collection_name in odl_const.L3_RESOURCES.items():
         _sync_resources(session, l3plugin, dbcontext, resource_type,
                         collection_name)
