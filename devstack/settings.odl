@@ -62,6 +62,9 @@ ODL_URL_RELEASE_REPOSITORY_PATH=${ODL_URL_RELEASE_REPOSITORY_PATH:-content/repos
 # How long (in seconds) to pause after ODL starts to let it complete booting
 ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-600}
 
+# Enable conntrack support for legacy netvirt
+ODL_LEGACY_NETVIRT_CONNTRACK=${ODL_LEGACY_NETVIRT_CONNTRACK:-False}
+
 # Enable OpenDaylight l3 forwarding
 ODL_L3=${ODL_L3:-False}
 
