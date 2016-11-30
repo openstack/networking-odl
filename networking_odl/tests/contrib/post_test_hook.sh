@@ -35,14 +35,17 @@ case $venv in
         sudo_env=
 
         # Set owner permissions according to job's requirements.
+        sudo chown -R $owner:stack $BASE/new
         cd $NETWORKING_ODL_DIR
-        sudo chown -R $owner:stack $NETWORKING_ODL_DIR
 
         # Run tests
         echo "Running networking-odl $venv test suite"
         set +e
         sudo -H -u $owner $sudo_env tox -e $venv
         testr_exit_code=$?
+        # stop ODL server for complete log
+        $BASE/new/opendaylight/distribution-karaf-*/bin/stop
+        sleep 3
         set -e
 
         # Collect and parse results

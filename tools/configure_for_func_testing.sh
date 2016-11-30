@@ -52,6 +52,12 @@ done
 # when sourcing.
 VENV=${VENV:-dsvm-functional}
 DEVSTACK_PATH=${DEVSTACK_PATH:-$1}
+if which realpath; then
+    DEVSTACK_PATH=$(realpath ${DEVSTACK_PATH})
+elif [[ ! "$DEVSTACKPATH" =~ ^/ ]]; then
+    >&2 echo "realpath command is not found. In the environment without realapth command, the path to devstack needs to be absolute."
+    exit 1
+fi
 PROJECT_NAME=${PROJECT_NAME:-networking-odl}
 REPO_BASE=${GATE_DEST:-$(cd $(dirname "$0")/../.. && pwd)}
 INSTALL_MYSQL_ONLY=${INSTALL_MYSQL_ONLY:-False}
@@ -79,6 +85,10 @@ function _init {
     # Allow the gate to override values set by stackrc.
     DEST=${GATE_DEST:-$DEST}
     STACK_USER=${GATE_STACK_USER:-$STACK_USER}
+    REQUIREMENTS_DIR=$DEST/requirements
+    if [[ -n "$SCREEN_LOGDIR" ]]; then
+        mkdir -p $SCREEN_LOGDIR
+    fi
 }
 
 
@@ -170,10 +180,67 @@ EOF
 }
 
 
+function _install_infra {
+    echo_summary "Installing infra"
+
+    pip_install -U virtualenv
+    source $DEVSTACK_PATH/lib/infra
+    install_infra
+}
+
+
+function _install_opendaylight {
+    echo_summary "Install OpenDaylight"
+
+    # fake up necessary environment for odl to install/configure
+    source $DEVSTACK_PATH/lib/neutron-legacy
+    neutron_plugin_configure_common
+    _create_neutron_conf_dir
+    mkdir -p /$Q_PLUGIN_CONF_PATH
+    Q_PLUGIN_CONF_FILE=$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
+    touch /$Q_PLUGIN_CONF_FILE
+
+    NETWORKING_ODL_DIR=$REPO_BASE/networking-odl
+    # openstack service provider isn't needed, only ODL neutron northbound
+    # is necessary for functional test
+    ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
+    ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
+    source $NETWORKING_ODL_DIR/devstack/settings.odl
+
+    set +e
+    curl -o /dev/null --fail --silent --head -u \
+         ${ODL_USERNAME}:${ODL_PASSWORD} \
+         http://${ODL_MGR_IP}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}
+    local result=$?
+    set -e
+    if [ $result -eq 0 ]; then
+        echo_summary "OpenDaylight config appears to be complete, skipping"
+        return 0
+    fi
+
+    # start_odl tries to run under screen session. ensure screen is running
+    USE_SCREEN=$(trueorfalse True USE_SCREEN)
+    if [[ "$USE_SCREEN" == "True" ]]; then
+        # Create a new named screen to run processes in
+        if ! (etype -p screen > /dev/null && screen -ls | egrep -q "[0-9]\.$SCREEN_NAME"); then
+            screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
+            sleep 1
+        fi
+    fi
+
+    enable_service odl-server
+    source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
+    source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
+}
+
+
 function _install_post_devstack {
     echo_summary "Performing post-devstack installation"
 
     _install_databases
+    # networkign-odl devstack plugin requires infra
+    _install_infra
+    _install_opendaylight
 
     if is_ubuntu; then
         install_package isc-dhcp-client
@@ -183,7 +250,6 @@ function _install_post_devstack {
     else
         exit_distro_not_supported "installing dhclient package"
     fi
-
 }
 
 
