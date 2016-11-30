@@ -80,9 +80,8 @@ def _canary_network_missing_on_odl():
 
 
 def _canary_network_not_in_journal(session):
-    return not db.check_for_pending_or_processing_ops(session,
-                                                      _CANARY_NETWORK_ID,
-                                                      odl_const.ODL_CREATE)
+    return not db.check_for_pending_or_processing_ops(
+        session, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
 
 
 def _sync_resources(session, plugin, dbcontext, object_type, collection_name):

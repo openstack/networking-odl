@@ -30,11 +30,16 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
-def check_for_pending_or_processing_ops(session, object_uuid, operation=None):
+def check_for_pending_or_processing_ops(session, object_uuid, seqnum=None,
+                                        operation=None):
     q = session.query(models.OpendaylightJournal).filter(
         or_(models.OpendaylightJournal.state == odl_const.PENDING,
             models.OpendaylightJournal.state == odl_const.PROCESSING),
         models.OpendaylightJournal.object_uuid == object_uuid)
+
+    if seqnum is not None:
+        q = q.filter(models.OpendaylightJournal.seqnum < seqnum)
+
     if operation:
         if isinstance(operation, (list, tuple)):
             q = q.filter(models.OpendaylightJournal.operation.in_(operation))

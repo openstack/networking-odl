@@ -24,7 +24,7 @@ def _is_valid_update_operation(session, row):
 
     # Check for a pending or processing create operation on this uuid
     if db.check_for_pending_or_processing_ops(
-            session, row.object_uuid, odl_const.ODL_CREATE):
+            session, row.object_uuid, operation=odl_const.ODL_CREATE):
         return False
     return True
 
@@ -39,8 +39,8 @@ def validate_network_operation(session, row):
         # Check for any pending or processing create or update
         # ops on this uuid itself
         if db.check_for_pending_or_processing_ops(
-            session, row.object_uuid, [odl_const.ODL_UPDATE,
-                                       odl_const.ODL_CREATE]):
+            session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
+                                                 odl_const.ODL_CREATE]):
             return False
         # Check for dependent operations
         if db.check_for_pending_delete_ops_with_parent(
@@ -67,7 +67,8 @@ def validate_subnet_operation(session, row):
     if row.operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = row.data['network_id']
         # Check for pending or processing network operations
-        if db.check_for_pending_or_processing_ops(session, network_id):
+        if db.check_for_pending_or_processing_ops(
+                session, network_id, seqnum=row.seqnum):
             return False
         if (row.operation == odl_const.ODL_UPDATE and
                 not _is_valid_update_operation(session, row)):
@@ -76,8 +77,8 @@ def validate_subnet_operation(session, row):
         # Check for any pending or processing create or update
         # ops on this uuid itself
         if db.check_for_pending_or_processing_ops(
-            session, row.object_uuid, [odl_const.ODL_UPDATE,
-                                       odl_const.ODL_CREATE]):
+            session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
+                                                 odl_const.ODL_CREATE]):
             return False
         # Check for dependent operations
         if db.check_for_pending_delete_ops_with_parent(
@@ -96,11 +97,12 @@ def validate_port_operation(session, row):
     if row.operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = row.data['network_id']
         # Check for pending or processing network operations
-        ops = db.check_for_pending_or_processing_ops(session, network_id)
+        ops = db.check_for_pending_or_processing_ops(
+            session, network_id, seqnum=row.seqnum)
         # Check for pending subnet operations.
         for fixed_ip in row.data['fixed_ips']:
             ip_ops = db.check_for_pending_or_processing_ops(
-                session, fixed_ip['subnet_id'])
+                session, fixed_ip['subnet_id'], seqnum=row.seqnum)
             ops = ops or ip_ops
 
         if ops:
@@ -112,8 +114,8 @@ def validate_port_operation(session, row):
         # Check for any pending or processing create or update
         # ops on this uuid itself
         if db.check_for_pending_or_processing_ops(
-            session, row.object_uuid, [odl_const.ODL_UPDATE,
-                                       odl_const.ODL_CREATE]):
+            session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
+                                                 odl_const.ODL_CREATE]):
             return False
 
     return True
@@ -127,8 +129,8 @@ def validate_router_operation(session, row):
     """
     if row.operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         if row.data['gw_port_id'] is not None:
-            if db.check_for_pending_or_processing_ops(session,
-                                                      row.data['gw_port_id']):
+            if db.check_for_pending_or_processing_ops(
+                    session, row.data['gw_port_id'], seqnum=row.seqnum):
                 return False
         if (row.operation == odl_const.ODL_UPDATE and
                 not _is_valid_update_operation(session, row)):
@@ -136,9 +138,9 @@ def validate_router_operation(session, row):
     elif row.operation == odl_const.ODL_DELETE:
         # Check for any pending or processing create or update
         # operations on this uuid.
-        if db.check_for_pending_or_processing_ops(session, row.object_uuid,
-                                                  [odl_const.ODL_UPDATE,
-                                                   odl_const.ODL_CREATE]):
+        if db.check_for_pending_or_processing_ops(
+                session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
+                                                     odl_const.ODL_CREATE]):
             return False
 
         # Check that dependent port delete operation has completed.
@@ -163,18 +165,20 @@ def validate_floatingip_operation(session, row):
     if row.operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE):
         network_id = row.data.get('floating_network_id')
         if network_id is not None:
-            if not db.check_for_pending_or_processing_ops(session, network_id):
+            if not db.check_for_pending_or_processing_ops(
+                    session, network_id, seqnum=row.seqnum):
                 port_id = row.data.get('port_id')
                 if port_id is not None:
-                    if db.check_for_pending_or_processing_ops(session,
-                                                              port_id):
+                    if db.check_for_pending_or_processing_ops(
+                            session, port_id, seqnum=row.seqnum):
                         return False
             else:
                 return False
 
         router_id = row.data.get('router_id')
         if router_id is not None:
-            if db.check_for_pending_or_processing_ops(session, router_id):
+            if db.check_for_pending_or_processing_ops(
+                    session, router_id, seqnum=row.seqnum):
                 return False
         if (row.operation == odl_const.ODL_UPDATE and
                 not _is_valid_update_operation(session, row)):
@@ -182,9 +186,9 @@ def validate_floatingip_operation(session, row):
     elif row.operation == odl_const.ODL_DELETE:
         # Check for any pending or processing create or update
         # ops on this uuid itself
-        if db.check_for_pending_or_processing_ops(session, row.object_uuid,
-                                                  [odl_const.ODL_UPDATE,
-                                                   odl_const.ODL_CREATE]):
+        if db.check_for_pending_or_processing_ops(
+                session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
+                                                     odl_const.ODL_CREATE]):
             return False
 
     return True
