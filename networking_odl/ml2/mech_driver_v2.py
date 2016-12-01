@@ -21,6 +21,7 @@ from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import providernet
 from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api as api
+from neutron_lib.plugins import directory
 
 from networking_odl._i18n import _, _LE
 from networking_odl.common import callback
@@ -197,6 +198,22 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             elif object_type == odl_const.ODL_SG_RULE:
                 resource_dict = self._make_security_group_rule_dict(
                     resource_dict)
+        # NOTE(yamahata): bug work around
+        # callback for update of security grouop doesn't pass complete
+        # info. So we have to build it. Once the bug is fixed, remove
+        # this bug work around.
+        # https://launchpad.net/bugs/1546910
+        # https://review.openstack.org/#/c/281693/
+        elif (object_type == odl_const.ODL_SG and
+              operation == odl_const.ODL_UPDATE):
+            # NOTE(yamahata): precommit_update is called before updating
+            # values. so context.session.{new, dirty} doesn't include sg
+            # in question. a dictionary with new values needs to be build.
+            core_plugin = directory.get_plugin()
+            sg = core_plugin._get_security_group(context, res_id)
+            tmp_dict = self._make_security_group_dict(sg)
+            tmp_dict.update(resource_dict)
+            resource_dict = tmp_dict
 
         object_uuid = (resource_dict.get('id')
                        if operation == 'create' else res_id)
