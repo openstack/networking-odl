@@ -54,26 +54,42 @@ class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
         self._qos_driver = qos_driver.OpenDaylightQosDriver()
         self.context = mock.Mock(current=FAKE_POLICY.copy())
 
-    def _test_send_resource(self, operation, method):
+    def _test_send_resource(self, operation, method, data):
         with mock.patch.object(self._qos_driver.odl_drv,
                                "send_resource") as res:
             getattr(self._qos_driver, method)(
                 self.context,
-                MakeObjectofDictionary(**FAKE_POLICY))
+                MakeObjectofDictionary(**data))
 
         res.assert_called_once_with(
             operation,
             odl_const.ODL_QOS_POLICIES,
-            FAKE_POLICY)
+            data)
 
     def test_qos_policy_create(self):
-        self._test_send_resource(odl_const.ODL_CREATE, 'create_policy')
+        self._test_send_resource(odl_const.ODL_CREATE,
+                                 'create_policy',
+                                 FAKE_POLICY)
 
     def test_qos_policy_delete(self):
-        self._test_send_resource(odl_const.ODL_DELETE, 'delete_policy')
+        self._test_send_resource(odl_const.ODL_DELETE,
+                                 'delete_policy',
+                                 FAKE_POLICY)
 
     def test_qos_policy_update(self):
-        self._test_send_resource(odl_const.ODL_UPDATE, 'update_policy')
+        self._test_send_resource(odl_const.ODL_UPDATE,
+                                 'update_policy',
+                                 FAKE_POLICY)
+
+    def test_qos_policy_update_without_rules(self):
+        policy = {'description': 'qos_policy',
+                  'tenant_id': 'fake_tenant',
+                  'shared': 'false',
+                  'id': 'fake_id',
+                  'name': 'fake_policy'}
+        self._test_send_resource(odl_const.ODL_UPDATE,
+                                 'update_policy',
+                                 policy)
 
     def test_format_policy_rules(self):
         policy = self._driver.convert_rules_format(FAKE_POLICY)
