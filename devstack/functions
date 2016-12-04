@@ -35,6 +35,9 @@ function _odl_export_snapshot_url_pkg {
         if is_ubuntu; then
             install_package libxml-xpath-perl
             BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
+        elif is_fedora; then
+            yum_install perl-XML-XPath
+            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
         else
             yum_install perl-XML-XPath
             BUNDLE_TIMESTAMP=`xpath $MAVENMETAFILE "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
