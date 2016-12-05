@@ -28,7 +28,7 @@ ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
 # In non-clustering cases, this is normally the same as ODL_MGR_IP. However,
 # for HA deployments the southbound portion to ODL is expected to
 # use the ip addresses of the ODL instances instead of a single vip. That
-# enables OVS to simultaneouly connect to more than one ODL instance.
+# enables OVS to simultaneously connect to more than one ODL instance.
 # Example of expected format: ODL_OVS_MANAGERS=1.1.1.1,2.2.2.2,3.3.3.3
 ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_IP}
 
@@ -55,7 +55,7 @@ ODL_V2DRIVER=${ODL_V2DRIVER:-False}
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
 # OpenDaylight snapshot & release repositories paths
-# Can be overidden in case you host proxy repositories which have a different diretory structure than OpenDaylight's
+# Can be overridden in case you host proxy repositories which have a different directory structure than OpenDaylight's
 ODL_URL_SNAPSHOT_REPOSITORY_PATH=${ODL_URL_SNAPSHOT_REPOSITORY_PATH:-content/repositories/opendaylight.snapshot}
 ODL_URL_RELEASE_REPOSITORY_PATH=${ODL_URL_RELEASE_REPOSITORY_PATH:-content/repositories/opendaylight.release}
 
