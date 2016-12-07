@@ -31,8 +31,7 @@ from networking_odl.common import utils
 LOG = logging.getLogger(__name__)
 
 
-class OpenDaylightDriver(object):
-
+class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     """OpenDaylight Python Driver for Neutron.
 
     This code is the backend implementation for the OpenDaylight QoS
@@ -41,6 +40,7 @@ class OpenDaylightDriver(object):
 
     def __init__(self):
         LOG.debug("Initializing OpenDaylight QoS driver")
+        self.url = cfg.CONF.ml2_odl.url
         self.client = odl_client.OpenDaylightRestClient.create_client()
 
     def convert_rules_format(self, data):
@@ -91,32 +91,23 @@ class OpenDaylightDriver(object):
                            'object_type': object_type,
                            'object_id': obj_id})
 
-
-class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
-
-    """QoS Driver for OpenDaylight"""
-
-    def __init__(self):
-        self.url = cfg.CONF.ml2_odl.url
-        self.odl_drv = OpenDaylightDriver()
-
     def get_description(self):
         pass
 
     def create_policy(self, context, qos_policy):
         data = qos_policy.to_dict()
-        self.odl_drv.send_resource(odl_const.ODL_CREATE,
-                                   odl_const.ODL_QOS_POLICIES,
-                                   data)
+        self.send_resource(odl_const.ODL_CREATE,
+                           odl_const.ODL_QOS_POLICIES,
+                           data)
 
     def delete_policy(self, context, qos_policy):
         data = qos_policy.to_dict()
-        self.odl_drv.send_resource(odl_const.ODL_DELETE,
-                                   odl_const.ODL_QOS_POLICIES,
-                                   data)
+        self.send_resource(odl_const.ODL_DELETE,
+                           odl_const.ODL_QOS_POLICIES,
+                           data)
 
     def update_policy(self, context, qos_policy):
         data = qos_policy.to_dict()
-        self.odl_drv.send_resource(odl_const.ODL_UPDATE,
-                                   odl_const.ODL_QOS_POLICIES,
-                                   data)
+        self.send_resource(odl_const.ODL_UPDATE,
+                           odl_const.ODL_QOS_POLICIES,
+                           data)

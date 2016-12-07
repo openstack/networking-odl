@@ -50,13 +50,11 @@ class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(OpenDaylightQosDriverTestCase, self).setUp()
-        self._driver = qos_driver.OpenDaylightDriver()
         self._qos_driver = qos_driver.OpenDaylightQosDriver()
         self.context = mock.Mock(current=FAKE_POLICY.copy())
 
     def _test_send_resource(self, operation, method, data):
-        with mock.patch.object(self._qos_driver.odl_drv,
-                               "send_resource") as res:
+        with mock.patch.object(self._qos_driver, "send_resource") as res:
             getattr(self._qos_driver, method)(
                 self.context,
                 MakeObjectofDictionary(**data))
@@ -92,6 +90,6 @@ class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
                                  policy)
 
     def test_format_policy_rules(self):
-        policy = self._driver.convert_rules_format(FAKE_POLICY)
+        policy = self._qos_driver.convert_rules_format(FAKE_POLICY)
         self.assertIn("bandwidth_limit_rules", policy)
         self.assertIn("dscp_marking_rules", policy)
