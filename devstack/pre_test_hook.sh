@@ -71,6 +71,9 @@ ODL_RELEASE=${ODL_RELEASE}
 # Set here which driver, v1 or v2 driver
 ODL_V2DRIVER=${ODL_V2DRIVER}
 
+# Set timeout in seconds for http client to ODL neutron northbound
+ODL_TIMEOUT=60
+
 # Set here which port binding controller
 ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER}
 
