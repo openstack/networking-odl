@@ -18,12 +18,11 @@ import copy
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import excutils
 import six
 
 from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
-from networking_odl._i18n import _LE, _LI
+from networking_odl._i18n import _LI
 from networking_odl.common import client as odl_client
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -56,38 +55,20 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         LOG.info(_LI("ODL: Create L2Gateway %(l2gateway)s"),
                  {'l2gateway': l2_gateway})
         request = {'l2_gateway': l2_gateway}
-        try:
-            self.client.sendjson('post', L2GATEWAYS, request)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("ODL: L2Gateway create"
-                                  " failed for gateway %(l2gatewayid)s"),
-                              {'l2gatewayid': l2_gateway['id']})
+        self.client.sendjson('post', L2GATEWAYS, request)
 
     def delete_l2_gateway_postcommit(self, context, l2_gateway_id):
         LOG.info(_LI("ODL: Delete L2Gateway %(l2gatewayid)s"),
                  {'l2gatewayid': l2_gateway_id})
         url = L2GATEWAYS + '/' + l2_gateway_id
-        try:
-            self.client.try_delete(url)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("ODL: L2Gateway delete"
-                                  " failed for gateway_id %(l2gatewayid)s"),
-                              {'l2gatewayid': l2_gateway_id})
+        self.client.try_delete(url)
 
     def update_l2_gateway_postcommit(self, context, l2_gateway):
         LOG.info(_LI("ODL: Update L2Gateway %(l2gateway)s"),
                  {'l2gateway': l2_gateway})
         request = {'l2_gateway': l2_gateway}
         url = L2GATEWAYS + '/' + l2_gateway['id']
-        try:
-            self.client.sendjson('put', url, request)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("ODL: L2Gateway update"
-                                  " failed for gateway %(l2gatewayid)s"),
-                              {'l2gatewayid': l2_gateway['id']})
+        self.client.sendjson('put', url, request)
 
     def create_l2_gateway_connection_postcommit(self, context,
                                                 l2_gateway_connection):
@@ -98,24 +79,11 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
             l2_gateway_connection['l2_gateway_id'])
         odl_l2_gateway_connection.pop('l2_gateway_id')
         request = {'l2gateway_connection': odl_l2_gateway_connection}
-        try:
-            self.client.sendjson('post', L2GATEWAY_CONNECTIONS, request)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("ODL: L2Gateway connection create"
-                                  " failed for gateway %(l2gwconnid)s"),
-                              {'l2gwconnid':
-                               l2_gateway_connection['l2_gateway_id']})
+        self.client.sendjson('post', L2GATEWAY_CONNECTIONS, request)
 
     def delete_l2_gateway_connection_postcommit(self, context,
                                                 l2_gateway_connection_id):
         LOG.info(_LI("ODL: Delete L2Gateway connection %(l2gwconnid)s"),
                  {'l2gwconnid': l2_gateway_connection_id})
         url = L2GATEWAY_CONNECTIONS + '/' + l2_gateway_connection_id
-        try:
-            self.client.try_delete(url)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.exception(_LE("ODL: L2Gateway connection delete"
-                                  " failed for connection %(l2gwconnid)s"),
-                              {'l2gwconnid': l2_gateway_connection_id})
+        self.client.try_delete(url)

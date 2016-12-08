@@ -18,11 +18,9 @@ import copy
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import excutils
 
 from neutron.services.qos.notification_drivers import qos_base
 
-from networking_odl._i18n import _LE
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
@@ -69,27 +67,19 @@ class OpenDaylightDriver(object):
         """
         # Convert underscores to dashes in the URL for ODL
         object_type_url = utils.neutronify(object_type)
-        try:
-            obj_id = data['id']
-            if operation == odl_const.ODL_DELETE:
-                self.client.try_delete(object_type_url + '/' + obj_id)
-            else:
-                if operation == odl_const.ODL_CREATE:
-                    urlpath = object_type_url
-                    method = 'post'
-                elif operation == odl_const.ODL_UPDATE:
-                    urlpath = object_type_url + '/' + obj_id
-                    method = 'put'
-                policy_data = self.convert_rules_format(data)
-                self.client.sendjson(method, urlpath,
-                                     {odl_const.ODL_POLICY: policy_data})
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                LOG.error(_LE("Unable to perform %(operation)s on "
-                              "%(object_type)s %(object_id)s"),
-                          {'operation': operation,
-                           'object_type': object_type,
-                           'object_id': obj_id})
+        obj_id = data['id']
+        if operation == odl_const.ODL_DELETE:
+            self.client.try_delete(object_type_url + '/' + obj_id)
+        else:
+            if operation == odl_const.ODL_CREATE:
+                urlpath = object_type_url
+                method = 'post'
+            elif operation == odl_const.ODL_UPDATE:
+                urlpath = object_type_url + '/' + obj_id
+                method = 'put'
+            policy_data = self.convert_rules_format(data)
+            self.client.sendjson(method, urlpath,
+                                 {odl_const.ODL_POLICY: policy_data})
 
 
 class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
