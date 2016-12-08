@@ -67,5 +67,5 @@ esac
 IS_GATE=$(trueorfalse False IS_GATE)
 if [[ "$IS_GATE" == "True" ]]
 then
-    NETWORKING_ODL_DIR=$DEST/networking-odl
+    NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$DEST/networking-odl}
 fi

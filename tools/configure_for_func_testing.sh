@@ -179,7 +179,7 @@ function _install_opendaylight {
     Q_PLUGIN_CONF_FILE=$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
     touch /$Q_PLUGIN_CONF_FILE
 
-    NETWORKING_ODL_DIR=$REPO_BASE/networking-odl
+    NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$REPO_BASE/networking-odl}
     # openstack service provider isn't needed, only ODL neutron northbound
     # is necessary for functional test
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger

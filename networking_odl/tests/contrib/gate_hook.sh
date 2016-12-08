@@ -6,7 +6,7 @@ VENV=${1:-"dsvm-functional"}
 
 GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
-NETWORKING_ODL_PATH="$BASE/new/networking-odl"
+NETWORKING_ODL_DIR="${NETWORKING_ODL_DIR:-$BASE/new/networking-odl}"
 
 case $VENV in
 "dsvm-functional")
@@ -15,7 +15,7 @@ case $VENV in
     PROJECT_NAME=networking-odl
     IS_GATE=True
 
-    source $NETWORKING_ODL_PATH/tools/configure_for_func_testing.sh
+    source $NETWORKING_ODL_DIR/tools/configure_for_func_testing.sh
     configure_host_for_func_testing
     ;;
 "dsvm-fullstack")

@@ -8,7 +8,7 @@ _XTRACE_NETWORKING_ODL=$(set +o | grep xtrace)
 set +o xtrace
 
 # OpenDaylight directories
-NETWORKING_ODL_DIR=$DEST/networking-odl
+NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$DEST/networking-odl}
 ODL_DIR=$DEST/opendaylight
 
 # Make sure $ODL_DIR exists
