@@ -51,13 +51,7 @@ done
 # Default to environment variables to permit the gate_hook to override
 # when sourcing.
 VENV=${VENV:-dsvm-functional}
-DEVSTACK_PATH=${DEVSTACK_PATH:-$1}
-if which realpath; then
-    DEVSTACK_PATH=$(realpath ${DEVSTACK_PATH})
-elif [[ ! "$DEVSTACKPATH" =~ ^/ ]]; then
-    >&2 echo "realpath command is not found. In the environment without realapth command, the path to devstack needs to be absolute."
-    exit 1
-fi
+DEVSTACK_PATH=${DEVSTACK_PATH:-$(cd "$1" && pwd)}
 PROJECT_NAME=${PROJECT_NAME:-networking-odl}
 REPO_BASE=${GATE_DEST:-$(cd $(dirname "$0")/../.. && pwd)}
 INSTALL_MYSQL_ONLY=${INSTALL_MYSQL_ONLY:-False}
