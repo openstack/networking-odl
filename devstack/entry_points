@@ -191,8 +191,6 @@ function install_opendaylight {
         fi
     fi
 
-    install_networking_odl
-
     # Download OpenDaylight
     cd $ODL_DIR
 
