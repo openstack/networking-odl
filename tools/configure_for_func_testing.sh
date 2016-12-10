@@ -100,21 +100,6 @@ function _install_base_deps {
 }
 
 
-function _install_rpc_backend {
-    echo_summary "Installing rabbitmq"
-
-    RABBIT_USERID=${RABBIT_USERID:-stackrabbit}
-    RABBIT_HOST=${RABBIT_HOST:-$SERVICE_HOST}
-    RABBIT_PASSWORD=${RABBIT_HOST:-secretrabbit}
-
-    source $DEVSTACK_PATH/lib/rpc_backend
-
-    enable_service rabbit
-    install_rpc_backend
-    restart_rpc_backend
-}
-
-
 # _install_databases [install_pg]
 function _install_databases {
     local install_pg=${1:-True}
@@ -264,7 +249,6 @@ function configure_host_for_func_testing {
         # installing Networking ODL, so their installation is conditional to
         # minimize the work to do on a devstack-configured host.
         _install_base_deps
-        _install_rpc_backend
     fi
     _install_post_devstack
 }
