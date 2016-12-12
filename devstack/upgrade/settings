@@ -1,5 +1,9 @@
 register_project_for_upgrade networking-odl
 
+# NOTE(manjeets) Workaround for bug 1648176 to upgrade
+# networking-odl before neutron
+UPGRADE_PROJECTS="networking-odl ${UPGRADE_PROJECTS/ networking-odl/}"
+
 export TARGET_RUN_SMOKE=False
 export BASE_RUN_SMOKE=False
 
