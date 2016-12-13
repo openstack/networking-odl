@@ -1,14 +1,14 @@
 _odl_release=$1
 if [[ "$_odl_release" =~ -snapshot- ]]; then
     # <release name>-snapshot-<N>.<N>.<N> -> <N>.<N>.<N>-SNAPSHOT
-    _odl_bundleversion_default=${_odl_version/[[:alpha:]]*-snapshot-/}-SNAPSHOT
+    _odl_bundleversion_default=${_odl_release/[[:alpha:]]*-snapshot-/}-SNAPSHOT
     export ODL_BUNDLEVERSION=${ODL_BUNDLEVERSION:-${_odl_bundleversion_default}}
     export ODL_SNAPSHOT_VERSION=${ODL_SNAPSHOT_VERSION:-latest}
 else
     # <release name>-<N>.<N>.<N>[-SR<N>] -> <N>.<N>.<N>-<Release name>[-SR<N>]
-    _name=$(echo ${_odl_release} | awk -F- {print toupper(substr($1, 1, 1))substr($1, 2)})
-    _version=$(echo ${_odl_release} | awk -F- {print $2})
-    _sr=$(echo ${_odl_release} | awk -F- {print $3})
+    _name=$(echo ${_odl_release} | awk -F- '{print toupper(substr($1, 1, 1))substr($1, 2)}')
+    _version=$(echo ${_odl_release} | awk -F- '{print $2}')
+    _sr=$(echo ${_odl_release} | awk -F- '{print $3}')
     _odl_bundleversion_default=${_version}-${_name}
     if [[ -n $_sr ]]; then
         _odl_bundleversion_default=${_odl_bundleversion_default}-${_sr}
