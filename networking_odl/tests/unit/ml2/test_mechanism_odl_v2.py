@@ -32,7 +32,6 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 
 from networking_odl.common import callback
-from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.common import utils
@@ -41,8 +40,7 @@ from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
-from networking_odl.tests import base
-from networking_odl.tests.unit import test_base_db
+from networking_odl.tests.unit import base_v2
 
 
 # Required to generate tests from scenarios. Not compatible with nose.
@@ -53,32 +51,6 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 SECURITY_GROUP = '2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'
 SG_FAKE_ID = 'sg_fake_uuid'
 SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
-
-
-class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
-                             test_base_db.ODLBaseDbTestCase):
-    def setUp(self):
-        self.useFixture(base.OpenDaylightRestClientFixture())
-        super(OpenDaylightConfigBase, self).setUp()
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight_v2'], 'ml2')
-        self.mock_sync_thread = mock.patch.object(
-            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
-        self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
-
-
-class OpenDaylightTestCase(OpenDaylightConfigBase):
-    def setUp(self):
-        super(OpenDaylightTestCase, self).setUp()
-        self.port_create_status = 'DOWN'
-        self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
-        self.mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
-                                               'sendjson').start()
-        self.mock_sendjson.side_effect = self.check_sendjson
-
-    def check_sendjson(self, method, urlpath, obj):
-        self.assertFalse(urlpath.startswith("http://"))
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
@@ -121,22 +93,22 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
 
 
 class OpenDaylightMechanismTestBasicGet(test_plugin.TestMl2BasicGet,
-                                        OpenDaylightTestCase):
+                                        base_v2.OpenDaylightTestCase):
     pass
 
 
 class OpenDaylightMechanismTestNetworksV2(test_plugin.TestMl2NetworksV2,
-                                          OpenDaylightTestCase):
+                                          base_v2.OpenDaylightTestCase):
     pass
 
 
 class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
-                                         OpenDaylightTestCase):
+                                         base_v2.OpenDaylightTestCase):
     pass
 
 
 class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
-                                       OpenDaylightTestCase):
+                                       base_v2.OpenDaylightTestCase):
     pass
 
 
@@ -176,7 +148,7 @@ class AttributeDict(dict):
         self.__dict__ = self
 
 
-class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
+class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_session()
@@ -622,7 +594,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         self.assertEqual(2, len(rows))
 
 
-class _OpenDaylightDriverVlanTransparencyBase(OpenDaylightTestCase):
+class _OpenDaylightDriverVlanTransparencyBase(base_v2.OpenDaylightTestCase):
     def _driver_context(self, network):
         return mock.MagicMock(current=network)
 
