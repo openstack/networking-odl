@@ -14,8 +14,6 @@
 #    under the License.
 
 
-import copy
-
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -24,6 +22,7 @@ from neutron.services.qos.notification_drivers import qos_base
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
+from networking_odl.qos import qos_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -40,25 +39,6 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
         LOG.debug("Initializing OpenDaylight QoS driver")
         self.url = cfg.CONF.ml2_odl.url
         self.client = odl_client.OpenDaylightRestClient.create_client()
-
-    def convert_rules_format(self, data):
-        policy = copy.deepcopy(data)
-        policy.pop('tenant_id')
-        policy.pop('rules', None)
-        for rule in data.get('rules', []):
-            rule_type = rule['type'] + '_rules'
-            rule.pop('type', None)
-            rule.pop('qos_policy_id', None)
-            rule['tenant_id'] = data['tenant_id']
-            policy[rule_type] = [rule]
-        return self.enforce_policy_format(policy)
-
-    def enforce_policy_format(self, policy):
-        if 'bandwidth_limit_rules' not in policy.keys():
-            policy['bandwidth_limit_rules'] = []
-        if 'dscp_marking_rules' not in policy.keys():
-            policy['dscp_marking_rules'] = []
-        return policy
 
     def send_resource(self, operation, object_type, data):
         """Send over a single resource from Neutron to OpenDaylight.
@@ -77,7 +57,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
             elif operation == odl_const.ODL_UPDATE:
                 urlpath = object_type_url + '/' + obj_id
                 method = 'put'
-            policy_data = self.convert_rules_format(data)
+            policy_data = qos_utils.convert_rules_format(data)
             self.client.sendjson(method, urlpath,
                                  {odl_const.ODL_POLICY: policy_data})
 

@@ -19,6 +19,7 @@ from neutron.tests import base as base_test
 
 from networking_odl.common import constants as odl_const
 from networking_odl.qos import qos_driver
+from networking_odl.qos import qos_utils
 from networking_odl.tests import base as odl_base
 
 FAKE_POLICY = {'description': 'qos_policy',
@@ -90,6 +91,6 @@ class OpenDaylightQosDriverTestCase(base_test.BaseTestCase):
                                  policy)
 
     def test_format_policy_rules(self):
-        policy = self._qos_driver.convert_rules_format(FAKE_POLICY)
+        policy = qos_utils.convert_rules_format(FAKE_POLICY)
         self.assertIn("bandwidth_limit_rules", policy)
         self.assertIn("dscp_marking_rules", policy)
