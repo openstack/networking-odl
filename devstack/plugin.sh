@@ -47,6 +47,7 @@ fi
 # main loop
 if is_service_enabled odl-server; then
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
+        install_networking_odl
         setup_opendaylight_package
         install_opendaylight
         configure_opendaylight
