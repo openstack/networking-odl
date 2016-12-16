@@ -10,7 +10,7 @@ source $DEVSTACK_PATH/openrc admin admin
 
 TEMPEST_CODE_DIR="$BASE/new/tempest"
 TEMPEST_DATA_DIR="$DATA_DIR/tempest"
-NETWORKING_ODL_DIR="$BASE/new/networking-odl"
+NETWORKING_ODL_DIR="${NETWORKING_ODL_DIR:-$BASE/new/networking-odl}"
 
 owner=stack
 sudo_env="TEMPEST_CONFIG_DIR=$TEMPEST_CODE_DIR/etc"

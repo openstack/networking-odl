@@ -2,7 +2,7 @@
 
 set -xe
 
-NETWORKING_ODL_DIR="$BASE/new/networking-odl"
+NETWORKING_ODL_DIR="${NETWORKING_ODL_DIR:-$BASE/new/networking-odl}"
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
 GATE_STACK_USER=stack
 
