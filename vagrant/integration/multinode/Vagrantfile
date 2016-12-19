@@ -1,0 +1,24 @@
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "bento/ubuntu-16.04"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", 8192]
+    vb.customize ["modifyvm", :id, "--cpus", 4]
+    vb.customize "post-boot",["controlvm", :id, "setlinkstate1", "on"]
+  end
+
+  config.vm.define "control" do |config|
+    config.vm.hostname = "control"
+    config.vm.network "private_network", ip: "192.168.0.10"
+    config.vm.provision "shell", path: "setup_control.sh", privileged: false
+  end
+
+  config.vm.define vm_name = "compute" do |config|
+    config.vm.hostname = vm_name
+    config.vm.network "private_network", ip: "192.168.0.20"
+    config.vm.provision "shell", path: "setup_compute.sh", privileged: false
+  end
+end

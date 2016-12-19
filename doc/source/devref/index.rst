@@ -36,6 +36,7 @@ Contents:
    hostconfig
    maintenance
 
+.. include:: ../../../vagrant/README.rst
 
 Indices and tables
 ------------------
