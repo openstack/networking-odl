@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import debtcollector
+import warnings
 
 from oslo_log import log as logging
 
@@ -25,6 +27,7 @@ from networking_odl.qos import qos_utils
 
 
 LOG = logging.getLogger(__name__)
+warnings.simplefilter("always")
 
 
 class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
@@ -37,6 +40,9 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     def __init__(self):
         LOG.debug("Initializing OpenDaylight QoS driver")
         self.client = odl_client.OpenDaylightRestClient.create_client()
+        debtcollector.deprecate("QoS v1 driver will be deprecated from queens "
+                                "release, use v2", version="pike",
+                                removal_version="queens")
 
     def send_resource(self, operation, object_type, data):
         """Send over a single resource from Neutron to OpenDaylight.
