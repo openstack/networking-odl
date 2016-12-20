@@ -40,12 +40,18 @@ if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
     # https://bugs.launchpad.net/networking-odl/+bug/1643678
     export DEVSTACK_LOCAL_CONFIG+=$'\n'"LIVE_MIGRATION_AVAILABLE=False"
     export DEVSTACK_LOCAL_CONFIG+=$'\n'"USE_BLOCK_MIGRATION_FOR_LIVE_MIGRATION=False"
-    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"NEUTRON_CREATE_INITIAL_NETWORKS=False"
-    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"ENABLED_SERVICES=n-cpu,dstat,c-vol,c-bak"
-    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"DATABASE_HOST=\$SERVICE_HOST"
+    # DEVSTACK_GATE_NEUTRON_DVR in devstack-gate set Q_DVR_MODE as dvr_snat
+    export DEVSTACK_LOCAL_CONFIG+=$'\n'"Q_DVR_MODE=legacy"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"Q_DVR_MODE=legacy"
+
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"disable_all_services"
+    # use non-exist q-odl to workaroud post-config failure in neutron configuration
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"ENABLED_SERVICES=n-cpu,dstat,c-vol,c-bak,q-odl"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"RABBIT_HOST=\$SERVICE_HOST"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"ODL_MODE=compute"
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"enable_plugin networking-odl git://git.openstack.org/openstack/networking-odl"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"DATABASE_TYPE=mysql"
+    export DEVSTACK_SUBNODE_CONFIG+=$'\n'"LIBVIRT_TYPE=qemu"
 fi
 
 # Begin list of exclusions.
@@ -95,21 +101,6 @@ r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_up
 r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_hotplug_nic.*)"
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)"
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)"
-
-# TODO(yamahata): sort out multinode tempest test cases and remove those.
-# BUG: https://bugs.launchpad.net/networking-odl/+bug/1633242
-# there are too many failures to timeout. As a result, multinode tempest
-# takes too long more than 2 hours to fail. disable some to shorten it for now.
-# Once it's fixed, enable them again.
-if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
-    r="$r|(?:tempest\.scenario\.test_minimum_basic\.TestMinimumBasicScenario\.test_minimum_basic_scenario.*)"
-    r="$r|(?:tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*)"
-    r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps.*)"
-    r="$r|(?:tempest\.scenario\.test_shelve_instance\.TestShelveInstance.*)"
-    r="$r|(?:tempest\.scenario\.test_snapshot_pattern\.TestSnapshotPattern.*)"
-    r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPattern.*)"
-    r="$r|(?:tempest\.scenario\.test_volume_boot_pattern\.TestVolumeBootPatternV2.*)"
-fi
 
 # End list of exclusions.
 r="$r)"
