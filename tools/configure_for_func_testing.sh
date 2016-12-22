@@ -183,6 +183,10 @@ function _install_opendaylight {
     # openstack service provider isn't needed, only ODL neutron northbound
     # is necessary for functional test
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
+    if [[ "$VENV" =~ "fullstack" ]]; then
+        # TODO: in future switch to new netvirt
+        ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack,odl-neutron-logger
+    fi
     ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
     source $NETWORKING_ODL_DIR/devstack/settings.odl
 
@@ -208,6 +212,12 @@ function _install_opendaylight {
     fi
 
     enable_service odl-server
+    if [[ "$VENV" =~ "fullstack" ]]; then
+        enable_service odl-compute
+        # They are needed by configure_opendaylight_l3
+        FLOATING_RANGE=172.24.5.0/24
+        PUBLIC_NETWORK_GATEWAY=172.24.5.1
+    fi
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
 }
