@@ -3,8 +3,8 @@
 ORACLE_JAVA_URL="http://download.oracle.com/otn-pub/java/jdk"
 ORACLE_JAVA7_URL="${ORACLE_JAVA7_URL:-$ORACLE_JAVA_URL/7u80-b15/jdk-7u80}"
 ORACLE_JAVA7_NAME="jdk1.7.0_80"
-ORACLE_JAVA8_URL="${ORACLE_JAVA8_URL:-$ORACLE_JAVA_URL/8u74-b02/jdk-8u74}"
-ORACLE_JAVA8_NAME="jdk1.8.0_74"
+ORACLE_JAVA8_URL="${ORACLE_JAVA8_URL:-$ORACLE_JAVA_URL/8u112-b15/jdk-8u112}"
+ORACLE_JAVA8_NAME="jdk1.8.0_112"
 
 function setup_java {
     # Java version 8 is the last stable one
