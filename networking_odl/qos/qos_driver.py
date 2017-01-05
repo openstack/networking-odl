@@ -14,7 +14,6 @@
 #    under the License.
 
 
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from neutron.services.qos.notification_drivers import qos_base
@@ -37,7 +36,6 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
 
     def __init__(self):
         LOG.debug("Initializing OpenDaylight QoS driver")
-        self.url = cfg.CONF.ml2_odl.url
         self.client = odl_client.OpenDaylightRestClient.create_client()
 
     def send_resource(self, operation, object_type, data):
