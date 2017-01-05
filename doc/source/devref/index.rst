@@ -35,6 +35,7 @@ Contents:
    drivers_architecture
    hostconfig
    maintenance
+   testing
 
 
 Indices and tables

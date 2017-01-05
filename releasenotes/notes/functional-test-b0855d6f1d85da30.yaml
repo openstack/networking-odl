@@ -1,0 +1,9 @@
+---
+prelude: >
+    The new class of test cases, functional test, has been
+    added. So was help scripts to setup necessary environment.
+other:
+  - The functional tests were added. It's new class of test cases,
+    which requires pre-configured environment.  Environment to
+    run such tests can be configured by tool in
+    networking-odl/tools.configure_for_func_testing.sh

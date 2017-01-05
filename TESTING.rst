@@ -166,6 +166,38 @@ Editable mode ensures that changes made to the source tree are
 automatically reflected in the venv, and that such changes are not
 overwritten during the next tox run.
 
+Running functional tests
+------------------------
+Neutron defines different classes of test cases. One of them is functional
+test. It requires pre-configured environment. But it's lighter than
+running devstack or openstack deployment.
+For definitions of functional tests, please refer to:
+
+  http://docs.openstack.org/developer/neutron/devref/development.environment.html#functional-tests
+
+The script is provided to setup the environment.
+At first make sure the latest version of pip command::
+
+    # ensure you have the latest version of pip command
+    # for example on ubuntu
+    $ sudo apt-get install python-pip
+    $ sudo pip --upgrade pip
+
+And then run functional test as follows::
+
+    # assuming devstack is setup with networking-odl
+    $ cd networking-odl
+    $ ./tools/configure_for_func_testing.sh /path/to/devstack
+    $ tox -e dsvm-functional
+
+
+For setting up devstack, please refer to neutron documentation:
+
+  https://wiki.openstack.org/wiki/NeutronDevstack
+  http://docs.openstack.org/developer/neutron/index.html
+  https://git.openstack.org/cgit/openstack/neutron/tree/TESTING.rst
+
+
 References
 ==========
 
