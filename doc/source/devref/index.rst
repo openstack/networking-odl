@@ -37,6 +37,7 @@ Contents:
    maintenance
    testing
 
+.. include:: ../../../vagrant/README.rst
 
 Indices and tables
 ------------------
