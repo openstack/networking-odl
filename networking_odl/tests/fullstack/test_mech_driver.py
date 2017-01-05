@@ -43,7 +43,7 @@ class TestMechDriver(base.TestODLFullStackBase):
                 run_as_root=True)
 
             return bool(re.search(mac, flows))
-        return test_utils.call_until_true(_callback, 5, 2)
+        return test_utils.call_until_true(_callback, 30, 2)
 
     def _create_ovs_vif_port(self, bridge, dev, iface_id, mac, instance_id):
         return utils.execute(['ovs-vsctl', 'add-port', bridge, dev,
