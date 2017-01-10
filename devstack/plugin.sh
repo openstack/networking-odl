@@ -17,6 +17,7 @@ mkdir -p $ODL_DIR
 # Import utility functions
 source $TOP_DIR/functions
 source $NETWORKING_ODL_DIR/devstack/functions
+source $TOP_DIR/lib/neutron-legacy
 
 # Import bridge data
 source $TOP_DIR/lib/neutron_plugins/ovs_base
