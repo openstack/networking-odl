@@ -59,6 +59,9 @@ class NetworkTopologyManager(port_binding.PortBindingController):
 
         # Parsers used for processing network topology
         self._parsers = list(self._create_parsers())
+        LOG.warning(
+            _LW("networking-topology port binding controller is deprecated "
+                "and will be removed. switch to pseudo-agentdb-binding."))
 
     def bind_port(self, port_context):
         """Set binding for a valid segment

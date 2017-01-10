@@ -17,6 +17,7 @@
 from os import path
 
 import mock
+from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 import requests
@@ -58,6 +59,8 @@ class TestNetworkTopologyManager(base.DietTestCase):
 
     def setUp(self):
         super(TestNetworkTopologyManager, self).setUp()
+        cfg.CONF.set_override('port_binding_controller',
+                              'network-topology', 'ml2_odl')
         self.patch(network_topology.LOG, 'isEnabledFor', lambda level: True)
         # patch given configuration
         self.cfg = mocked_cfg = self.patch(network_topology.client, 'cfg')

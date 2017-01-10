@@ -47,7 +47,7 @@ odl_opts = [
                 default=False,
                 help=_('Test without real ODL.')),
     cfg.StrOpt('port_binding_controller',
-               default='network-topology',
+               default='pseudo-agentdb-binding',
                help=_('Name of the controller to be used for port binding.')),
     cfg.IntOpt('processing_timeout', default='100',
                help=_("(V2 driver) Time in seconds to wait before a "
