@@ -109,15 +109,6 @@ ODL_NETVIRT_DEBUG_LOGS=True
 
 RALLY_SCENARIO=${RALLY_SCENARIO}
 
-# TODO(yamahata): remove this work around once the fix is released at pypi.
-# https://bugs.launchpad.net/python-openstackclient/+bug/1652025
-# https://review.openstack.org/#/c/417675/
-# devstack fails with router creation with
-# "TypeError: 'NoneType' object is not iterable"
-# the issue is fixed with the above patch. Until the patch is released
-# at pypi, use git master branch
-LIBS_FROM_GIT=osc-lib
-
 EOF
 
 # delete private network to workaroud netvirt bug:
