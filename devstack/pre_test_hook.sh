@@ -95,3 +95,20 @@ ODL_NETVIRT_DEBUG_LOGS=True
 RALLY_SCENARIO=${RALLY_SCENARIO}
 
 EOF
+
+# delete private network to workaroud netvirt bug:
+# https://bugs.opendaylight.org/show_bug.cgi?id=7456
+if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
+    cat <<EOF >> $DEVSTACK_PATH/local.sh
+#!/usr/bin/env bash
+
+source $DEVSTACK_PATH/openrc admin
+rid=\`neutron router-list | grep router1 | cut -f2 -d'|'\`
+neutron router-gateway-clear \$rid
+neutron router-port-list \$rid | grep subnet_id | cut -f4 -d'"' | xargs -I {} neutron router-interface-delete \$rid {}
+neutron router-delete \$rid
+neutron subnet-list | grep private | cut -f2 -d'|' | xargs neutron subnet-delete
+neutron net-list | grep private | cut -f2 -d'|' | xargs neutron net-delete
+EOF
+    chmod 755 $DEVSTACK_PATH/local.sh
+fi
