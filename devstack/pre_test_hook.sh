@@ -22,6 +22,9 @@ case "$ODL_RELEASE_BASE" in
         ;;
 esac
 
+if [[ -z "$ODL_GATE_V2DRIVER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
+    ODL_GATE_V2DRIVER=v2driver
+fi
 case "$ODL_GATE_V2DRIVER" in
     v2driver)
         ODL_V2DRIVER=True
