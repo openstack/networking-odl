@@ -58,6 +58,17 @@ case "$ODL_GATE_PORT_BINDING" in
         ;;
 esac
 
+if [[ -z "$ODL_GATE_SERVICE_PROVIDER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
+    case "$ODL_RELEASE_BASE" in
+        beryllium-snapshot)
+            # new netvirt was introduced from boron
+            ODL_GATE_SERVICE_PROVIDER=netvirt
+            ;;
+        *)
+            ODL_GATE_SERVICE_PROVIDER=vpnservice
+            ;;
+    esac
+fi
 case "$ODL_GATE_SERVICE_PROVIDER" in
     vpnservice)
         ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack
