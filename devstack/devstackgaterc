@@ -113,6 +113,16 @@ r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_ho
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)"
 r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)"
 
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1656129
+# exluding some tests temporarily
+if [ -n $DEVSTACK_GATE_GRENADE ]; then
+    # Disable some tempest tests temporarily on
+    # grenade job
+    r="$r|(?:tempest\.scenario\.test_encrypted_cinder_volumes\.TestEncryptedCinderVolumes\.test_encrypted_cinder_volumes_cryptsetup.*)"
+    r="$r|(?:tempest\.scenario\.test_encrypted_cinder_volumes\.TestEncryptedCinderVolumes\.test_encrypted_cinder_volumes_luks.*)"
+    r="$r|(?:tempest\.scenario\.test_minimum_basic\.TestMinimumBasicScenario\.test_minimum_basic_scenario.*)"
+fi
+
 # End list of exclusions.
 r="$r)"
 
