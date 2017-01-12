@@ -54,6 +54,12 @@ if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
     export DEVSTACK_SUBNODE_CONFIG+=$'\n'"LIBVIRT_TYPE=qemu"
 fi
 
+# For V2 driver some test are failing randomly so run them in a separate job
+if [[ "$ODL_TEST_SUFFIX" == "-nv" && "$ODL_GATE_V2DRIVER" == "v2driver" ]]; then
+    export DEVSTACK_GATE_TEMPEST_REGEX="^tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*$"
+    return 0
+fi
+
 # Begin list of exclusions.
 r="^(?!.*"
 
@@ -79,6 +85,11 @@ r="$r|(?:tempest\.api\.volume.*)"
 # unsupported features
 # ODL legacy netvirt doesn't support ipv6
 r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
+
+# V2 driver is finicky with these tests, run them in a separate job.
+if [[ "$ODL_GATE_V2DRIVER" == "v2driver" ]]; then
+    r="$r|(?:tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*)"
+fi
 
 # Current list of failing tests that need to be triaged, have bugs filed, and
 # fixed as appropriate.
