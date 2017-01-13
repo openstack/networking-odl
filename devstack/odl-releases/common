@@ -30,16 +30,22 @@ export ODL_NETVIRT_KARAF_FEATURE_OVSDB=${ODL_NETVIRT_KARAF_FEATURE_OVSDB:-odl-ov
 # The network virtualization newer feature name (vpnservice based)
 export ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE=${ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE:-odl-netvirt-openstack}
 
-ODL_NETVIRT_KARAF_FEATURE_DEFAULT=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,$ODL_NETVIRT_KARAF_FEATURE_OVSDB
+ODL_NETVIRT_KARAF_FEATURE_DEFAULT=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs
+# new netvirt has been introduced into netvirt from Boron release
 # odl-neutron-logger has been introduced from Boron release
 case "$ODL_BUNDLEVERSION" in
     # in Helium case, ODL_NETVIRT_KARAF_FEATURE is defined
     # so ODL_NETVIRT_KARAF_FEATURE_DEFAULT doesn't matter
-    0.3.?-Lithium-SR?|0.4.0-Beryllium|0.4.?-Beryllium-SR?|0.4.?-SNAPSHOT)
+    # Nothing to do
+    0.2.?-*)
+        ;;
+    0.3.?-*|0.4.?-*)
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_OVSDB
         ;;
     *)
-        # 0.5.?-Boron-SR?|0.5.?-SNAPSHOT|0.6.?-SNAPSHOT)
-        ODL_NETVIRT_KARAF_FEATURE_DEFAULT=$ODL_NETVIRT_KARAF_FEATURE_DEFAULT,odl-neutron-logger
+        # 0.5.?-*, 0.6.?-* or later
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,odl-neutron-logger
         ;;
 esac
 

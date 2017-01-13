@@ -1,0 +1,13 @@
+---
+prelude: >
+    The default setting for OpenDayligut openstack
+    service provider was changed from ovsdb netvirt
+    (odl-ovsdb-openstack) to new
+    netvirt(odl-netvirt-openstack) for OpenDaylight
+    Boron/Carbon or later.
+other:
+  - With devstack by default with OpenDaylight after
+    Boron version, new netvirt openstack service
+    provider(odl-netvirt-openstack) is used instead
+    of legacy netvirt(odl-ovsdb-openstack).
+
