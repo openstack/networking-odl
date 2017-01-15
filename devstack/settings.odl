@@ -57,7 +57,7 @@ ODL_TIMEOUT=${ODL_TIMEOUT:-""}
 
 # use v2 type driver
 # this requires post mitaka
-ODL_V2DRIVER=${ODL_V2DRIVER:-False}
+ODL_V2DRIVER=${ODL_V2DRIVER:-True}
 
 # The OpenDaylight URL PREFIX
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
