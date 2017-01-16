@@ -128,3 +128,13 @@
         > cat local.conf
         [[local|localrc]]
         ODL_LEGACY_NETVIRT_CONNTRACK=True
+
+14. Note: Enable Vlan Aware VMs (Trunk) with OpenDaylight Backend
+    enable the trunk service plugin by making following entry in local.conf::
+
+     > cat local.conf
+     [[local|localrc]]
+     Q_SERVICE_PLUGIN_CLASSES=trunk
+
+    V1 or V2 version of trunk driver will be determined by which version
+    of ML2 mechanism driver is configured, no extra configuration required.

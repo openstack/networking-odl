@@ -42,6 +42,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.common import utils as odl_utils
 from networking_odl.ml2 import port_binding
+from networking_odl.trunk import trunk_driver_v1 as trunk_driver
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -460,6 +461,7 @@ class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
         self.username = cfg.CONF.ml2_odl.username
         self.password = cfg.CONF.ml2_odl.password
         self.odl_drv = OpenDaylightDriver()
+        self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV1.create()
 
     # Postcommit hooks are used to trigger synchronization.
 

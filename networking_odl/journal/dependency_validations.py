@@ -109,11 +109,17 @@ def _generate_floatingip_deps(row):
     return object_ids
 
 
+def _generate_trunk_deps(row):
+    portids = [subport['port_id'] for subport in row.data['sub_ports']]
+    portids.append(row.data['port_id'])
+    return portids
+
 _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_SUBNET: _generate_sunbet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
     odl_const.ODL_ROUTER: _generate_router_deps,
     odl_const.ODL_FLOATINGIP: _generate_floatingip_deps,
+    odl_const.ODL_TRUNK: _generate_trunk_deps,
 }
 
 
@@ -122,6 +128,7 @@ _DELETE_DEPENDENCIES = {
                             odl_const.ODL_ROUTER),
     odl_const.ODL_SUBNET: (odl_const.ODL_PORT,),
     odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP),
+    odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
 }
 
 
