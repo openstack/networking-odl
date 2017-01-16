@@ -57,6 +57,8 @@ odl_opts = [
                default="/restconf/operational/neutron:neutron/hostconfigs"),
     cfg.IntOpt('restconf_poll_interval', default=30,
                help=_("Poll interval in seconds for getting ODL hostconfig")),
+    cfg.BoolOpt('enable_websocket_pseudo_agentdb', default=False,
+                help=_('Enable websocket for pseudo-agent-port-binding.')),
 
 ]
 

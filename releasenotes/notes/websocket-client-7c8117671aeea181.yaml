@@ -1,0 +1,8 @@
+---
+prelude: >
+    Websocket-client provides framework to create
+    webscket clients for ODL.
+features:
+  - Features include callback on new notifications
+    and callback on reconnection which includes
+    status information.
