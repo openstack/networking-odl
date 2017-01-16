@@ -2,12 +2,15 @@
 #
 # functions - OpenDaylight driver utility functions
 
-# Get build information
-function odl_update_maven_metadata_xml {
+function _odl_nexus_path {
+    local ODL_URL_PREFIX=$1
+    echo "${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
+}
+
+function _wget {
     local MAVENMETAFILE=$1
-    local NEXUSPATH=$2
-    local BUNDLEVERSION=$3
-    local OFFLINE=$4
+    local URL=$2
+    local $OFFLINE=$3
 
     if [[ "$OFFLINE" == "True" ]]; then
         return
@@ -17,7 +20,48 @@ function odl_update_maven_metadata_xml {
     rm -f $MAVENMETAFILE
 
     # Acquire the timestamp information from maven-metadata.xml
-    wget -O $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml
+    wget -O $MAVENMETAFILE $URL
+}
+
+function _xpath {
+    local XPATH=$1
+    local MAVENMETAFILE=$2
+    local result=""
+    if is_ubuntu; then
+        install_package libxml-xpath-perl >/dev/null
+        result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
+    elif is_fedora; then
+        yum_install perl-XML-XPath >/dev/null
+        result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
+    else
+        yum_install perl-XML-XPath >/dev/null
+        result=`xpath $MAVENMETAFILE "$XPATH" 2>/dev/null`
+    fi
+    echo $result
+}
+
+# get snapshot version <major>.<minor> -> <maor>.<minor>.<reivision>
+function odl_snapshot_full_version {
+    local ODL_DIR=$1
+    local ODL_URL_PREFIX=$2
+    local MAJOR_MINOR=$1
+    local OFFLINE=$4
+
+    local MAVENMETAFILE=$ODL_DIR/maven-metadata-snapshot.xml
+    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
+    if [[ ! -r $MAVENMETAFILE ]]; then
+        echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False and check internet connection to $NEXUSPATH"
+        exit 1
+    fi
+
+    if [[ "$MAJOR_MINOR" == "latest" ]]; then
+        local ODL_FULL_VERSION=$(_xpath "//latest/text()" $MAVENMETAFILE)
+    else
+        local ODL_FULL_VERSION=$(_xpath "//version[starts-with(text(), '$MAOR_MINOR')][last()]/text()" $MAVENMETAFILE)
+    fi
+    ODL_FULL_VERSION=${ODL_FULL_VERSION/-SNAPSHOT/}
+    echo $ODL_FULL_VERSION
 }
 
 function _odl_export_snapshot_url_pkg {
@@ -28,20 +72,12 @@ function _odl_export_snapshot_url_pkg {
     local BUNDLE_TIMESTAMP=$5
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
-    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
+    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
 
     if [ "$BUNDLE_TIMESTAMP" == "latest" ]; then
-        odl_update_maven_metadata_xml $MAVENMETAFILE $NEXUSPATH $BUNDLEVERSION $OFFLINE
-        if is_ubuntu; then
-            install_package libxml-xpath-perl
-            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
-        elif is_fedora; then
-            yum_install perl-XML-XPath
-            BUNDLE_TIMESTAMP=`xpath -e "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE 2>/dev/null`
-        else
-            yum_install perl-XML-XPath
-            BUNDLE_TIMESTAMP=`xpath $MAVENMETAFILE "//snapshotVersion[extension='zip'][1]/value/text()" 2>/dev/null`
-        fi
+        # Get build information
+        _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+        BUNDLE_TIMESTAMP=$(_xpath "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE)
     fi
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}

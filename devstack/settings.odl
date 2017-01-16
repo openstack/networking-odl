@@ -3,7 +3,10 @@
 
 # What release to use. Choices are:
 #
+#   latest-snapshot          (master latest snapshot)
+#   carbon-snapshot-0.6      (master latest carbon snapshot)
 #   carbon-snapshot-0.6.0    (master)
+#   boron-snapshot-0.5       (stable/boron latest boron snapshot)
 #   boron-snapshot-0.5.3     (stable/boron)
 #   boron-0.5.2-SR2
 #   boron-0.5.1-SR1
@@ -20,7 +23,7 @@
 #   lithium-0.3.1-SR1      (SR1)
 #   helium-0.2.3-SR3
 
-ODL_RELEASE=${ODL_RELEASE:-carbon-snapshot-0.6.0}
+ODL_RELEASE=${ODL_RELEASE:-latest-snapshot}
 
 # The IP address of ODL. Set this in local.conf.
 ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
