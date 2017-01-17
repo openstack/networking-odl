@@ -54,6 +54,9 @@ ODL_TRUNKS = 'trunks'
 ODL_ML2_MECH_DRIVER_V1 = "opendaylight"
 ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"
 
+ODL_L2GATEWAY = 'l2_gateway'
+ODL_L2GATEWAY_CONNECTION = 'l2gateway_connection'
+
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'

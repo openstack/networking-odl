@@ -138,3 +138,16 @@
 
     V1 or V2 version of trunk driver will be determined by which version
     of ML2 mechanism driver is configured, no extra configuration required.
+
+16. Enabling L2Gateway Backend for OpenDaylight
+
+- The package networking-l2gw must be installed as a pre-requisite.
+
+  So include in your localrc (or local.conf) the following:
+  enable_plugin networking-l2gw http://git.openstack.org/openstack/networking-l2gw
+  enable_service l2gw_plugin
+  NETWORKING_L2GW_SERVICE_DRIVER=L2GW:OpenDaylight:networking_odl.l2gateway.driver_v2.OpenDaylightL2gwDriver:default
+
+- Now stack up Devstack and after stacking completes, we are all set to use
+  l2gateway-as-a-service with OpenDaylight.
+

@@ -114,21 +114,38 @@ def _generate_trunk_deps(row):
     portids.append(row.data['port_id'])
     return portids
 
+
+def _generate_l2gateway_connection_deps(row):
+    object_ids = []
+    network_id = row.data.get('network_id')
+    if network_id is not None:
+        object_ids.append(network_id)
+
+    gateway_id = row.data.get('gateway_id')
+    if gateway_id is not None:
+        object_ids.append(gateway_id)
+
+    return object_ids
+
+
 _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_SUBNET: _generate_sunbet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
     odl_const.ODL_ROUTER: _generate_router_deps,
     odl_const.ODL_FLOATINGIP: _generate_floatingip_deps,
     odl_const.ODL_TRUNK: _generate_trunk_deps,
+    odl_const.ODL_L2GATEWAY_CONNECTION: _generate_l2gateway_connection_deps,
 }
 
 
 _DELETE_DEPENDENCIES = {
     odl_const.ODL_NETWORK: (odl_const.ODL_SUBNET, odl_const.ODL_PORT,
-                            odl_const.ODL_ROUTER),
+                            odl_const.ODL_ROUTER,
+                            odl_const.ODL_L2GATEWAY_CONNECTION),
     odl_const.ODL_SUBNET: (odl_const.ODL_PORT,),
     odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP),
     odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
+    odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION),
 }
 
 

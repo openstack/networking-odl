@@ -1,0 +1,10 @@
+---
+prelude: >
+    L2Gateway Driver v2 or networking-odl.
+features:
+  - |
+    A new version of L2Gateway driver that integrate OpenStack neutron
+    L2Gateway API with OpenDaylight backend. It supports CRUD operations
+    for l2gateway and l2gateway_connection. This driver uses journalling
+    mechanism, unlike v1 driver, which will first log the operation in
+    journal table before execution.

@@ -57,6 +57,7 @@ def subnet_succeed_network_dep(net_op, subnet_op):
             'second_data': None}
 
 
+# TODO(vthapar) add tests for l2gw dependency validations
 class BaseDependencyValidationsTestCase(object):
     def test_dependency(self):
         db.create_pending_row(
@@ -254,49 +255,47 @@ def trunk_dep(first_type, second_type, first_op, second_op, result,
             'second_data': trunk_data(second_type, second_op)}
 
 
-class TrunkDependencyValidationsTestCase(
+def get_data(res_type):
+    if res_type == const.ODL_NETWORK:
+        return 'NET_ID'
+    elif res_type == const.ODL_L2GATEWAY:
+        return {'id': 'l2gw_id'}
+    elif res_type == const.ODL_L2GATEWAY_CONNECTION:
+        return {'id': 'l2gwconn_id',
+                'network_id': 'NET_ID',
+                'gateway_id': 'l2gw_id'}
+    return []
+
+
+def l2gw_dep(first_type, second_type, first_op, second_op, result):
+    expected = {'fail': (None, False), 'pass': (True, None)}
+    type_id = {const.ODL_NETWORK: 'NET_ID',
+               const.ODL_L2GATEWAY: 'l2gw_id',
+               const.ODL_L2GATEWAY_CONNECTION: 'l2gwconn_id'}
+    return {'expected': expected[result],
+            'first_type': first_type,
+            'first_operation': first_op,
+            'first_id': type_id[first_type],
+            'first_data': get_data(first_type),
+            'second_type': second_type,
+            'second_operation': second_op,
+            'second_id': type_id[second_type],
+            'second_data': get_data(second_type)}
+
+
+class L2GWDependencyValidationsTestCase(
         test_base_db.ODLBaseDbTestCase, BaseDependencyValidationsTestCase):
     scenarios = (
-        ("trunk_create_depends_on_older_port_create",
-         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
-                   const.ODL_CREATE, const.ODL_CREATE, 'fail')),
-        ("trunk_create_doesnt_depend_on_newer_port_create",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_CREATE, const.ODL_CREATE, 'pass')),
-        ("trunk_create_doesnt_depend_on_port_update",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_CREATE, const.ODL_UPDATE, 'pass')),
-        ("trunk_create_doesnt_depend_on_newer_port_delete",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
-        # TODO(vthapar): add more/better validations for subport
-        # trunk update means subport add/delete
-        ("trunk_update_depends_on_older_trunk_create",
-         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
-                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
-        ("trunk_update_depends_on_older_port_create",
-         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
-                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
-        ("trunk_update_doesnt_depend_on_newer_port_create",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_UPDATE, const.ODL_CREATE, 'pass', True)),
-        ("trunk_update_doesnt_depend_on_port_update",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_UPDATE, const.ODL_UPDATE, 'pass', True)),
-        ("trunk_update_doesnt_depend_on_newer_port_delete",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_UPDATE, const.ODL_DELETE, 'pass', True)),
-        # trunk delete cases
-        ("trunk_delete_depends_on_older_trunk_create",
-         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
-                   const.ODL_CREATE, const.ODL_DELETE, 'fail', True)),
-        ("trunk_delete_depends_on_older_trunk_update",
-         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
-                   const.ODL_UPDATE, const.ODL_DELETE, 'fail', True)),
-        ("trunk_delete_doesnt_depend_on_older_port_create",
-         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
-                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
-        ("trunk_delete_doesnt_depend_on_newer_port_delete",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_DELETE, const.ODL_DELETE, 'pass')),
+        ("L2GWConn_create_depends_on_older_network_create",
+         l2gw_dep(const.ODL_NETWORK, const.ODL_L2GATEWAY_CONNECTION,
+                  const.ODL_CREATE, const.ODL_CREATE, 'fail')),
+        ("L2GWConn_create_depends_on_older_L2GW_create",
+         l2gw_dep(const.ODL_L2GATEWAY, const.ODL_L2GATEWAY_CONNECTION,
+                  const.ODL_CREATE, const.ODL_CREATE, 'fail')),
+        ("L2GWConn_create_doesnt_depend_on_newer_network_create",
+         l2gw_dep(const.ODL_L2GATEWAY_CONNECTION, const.ODL_NETWORK,
+                  const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("L2GWConn_create_doesnt_depend_on_newer_L2GW_create",
+         l2gw_dep(const.ODL_L2GATEWAY_CONNECTION, const.ODL_L2GATEWAY,
+                  const.ODL_CREATE, const.ODL_CREATE, 'pass')),
     )
