@@ -1,0 +1,7 @@
+---
+prelude: >
+    Changed devstack default to V2 driver.
+other:
+  - Starting with Ocata, Devstack will use V2 drivers (where available) by
+    default. To force the use of V1 architecture drivers you can specify
+    'ODL_V2DRIVER=False' in the local.conf file.
