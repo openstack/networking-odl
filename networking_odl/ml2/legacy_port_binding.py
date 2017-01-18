@@ -16,9 +16,9 @@
 
 from oslo_log import log
 
-from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
 
 from networking_odl.ml2 import port_binding
@@ -79,7 +79,7 @@ class LegacyPortBindingManager(port_binding.PortBindingController):
         """Get VIF type string for given PortContext
 
         Dummy implementation: it always returns following constant.
-        neutron.extensions.portbindings.VIF_TYPE_OVS
+        neutron_lib.api.definitions.portbindings.VIF_TYPE_OVS
         """
 
         return portbindings.VIF_TYPE_OVS

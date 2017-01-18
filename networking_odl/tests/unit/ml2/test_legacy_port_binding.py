@@ -15,10 +15,10 @@
 
 import mock
 
-from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_constants
 
 from networking_odl.ml2 import legacy_port_binding

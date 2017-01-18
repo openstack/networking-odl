@@ -20,7 +20,7 @@ import logging
 import six
 from six.moves.urllib import parse
 
-from neutron.extensions import portbindings
+from neutron_lib.api.definitions import portbindings
 from oslo_log import log
 from oslo_serialization import jsonutils
 

@@ -16,8 +16,8 @@
 import logging
 
 from neutron import context
-from neutron.extensions import portbindings
 from neutron.plugins.ml2 import driver_api
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as nl_const
 from neutron_lib.plugins import directory
 from oslo_config import cfg

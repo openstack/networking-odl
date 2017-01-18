@@ -22,10 +22,10 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 import requests
 
-from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
+from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_constants
 
 from networking_odl.common import cache

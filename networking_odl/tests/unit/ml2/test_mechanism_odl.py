@@ -26,7 +26,6 @@ import webob.exc
 
 from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.extensions import portbindings
 from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
@@ -35,6 +34,7 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+from neutron_lib.api.definitions import portbindings
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
 
