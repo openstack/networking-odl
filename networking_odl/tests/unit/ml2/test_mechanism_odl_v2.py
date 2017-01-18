@@ -22,11 +22,11 @@ import testscenarios
 from neutron.db import api as neutron_db_api
 from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.extensions import providernet
 from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_serialization import jsonutils
