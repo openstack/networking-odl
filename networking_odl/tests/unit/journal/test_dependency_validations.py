@@ -33,6 +33,9 @@ _SUBNET_DATA = {'network_id': _NET_ID}
 _PORT_ID = 'PORT_ID'
 _PORT_DATA = {'network_id': _NET_ID,
               'fixed_ips': [{'subnet_id': _SUBNET_ID}]}
+_ROUTER_ID = 'ROUTER_ID'
+_ROUTER_DATA = {'id': 'ROUTER_ID',
+                'gw_port_id': 'GW_PORT_ID'}
 _L2GW_ID = 'l2gw_id'
 _L2GW_DATA = {'id': _L2GW_ID}
 _L2GWCONN_ID = 'l2gwconn_id'
@@ -44,6 +47,7 @@ _SUBPORT_ID = 'CPORT_ID'
 _TRUNK_DATA = {'trunk_id': _TRUNK_ID,
                'port_id': _PORT_ID,
                'sub_ports': [{'port_id': _SUBPORT_ID}]}
+_BGPVPN_ID = 'BGPVPN_ID'
 
 
 def get_data(res_type, operation):
@@ -58,6 +62,8 @@ def get_data(res_type, operation):
         if operation == const.ODL_DELETE:
             return [_NET_ID, _SUBNET_ID]
         return _PORT_DATA
+    elif res_type == const.ODL_ROUTER:
+        return _ROUTER_DATA
     elif res_type == const.ODL_L2GATEWAY:
         return _L2GW_DATA
     elif res_type == const.ODL_L2GATEWAY_CONNECTION:
@@ -66,6 +72,18 @@ def get_data(res_type, operation):
         if operation == const.ODL_DELETE:
             return [_PORT_ID, _SUBPORT_ID]
         return _TRUNK_DATA
+    elif res_type == const.ODL_BGPVPN:
+        if operation == const.ODL_DELETE:
+            return [_NET_ID, _ROUTER_ID]
+        else:
+            routers = []
+            networks = []
+            if operation == const.ODL_UPDATE:
+                routers = [_ROUTER_ID]
+                networks = [_NET_ID]
+            return {'id': _BGPVPN_ID, 'networks': networks,
+                    'routers': routers,
+                    'route_distinguishers': ['100:1']}
     return []
 
 
@@ -340,4 +358,68 @@ class L2GWDependencyValidationsTestCase(
         ("L2GWConn_create_doesnt_depend_on_newer_L2GW_create",
          l2gw_dep(const.ODL_L2GATEWAY_CONNECTION, const.ODL_L2GATEWAY,
                   const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+    )
+
+
+# TODO(vthapar): Refactor *_dep into a common method
+def bgpvpn_dep(first_type, second_type, first_op, second_op, result):
+    if first_type == second_type:
+        expected = {'fail': (True, False), 'pass': (True, True)}
+    else:
+        expected = {'fail': (None, False), 'pass': (True, None)}
+    type_id = {const.ODL_NETWORK: _NET_ID,
+               const.ODL_ROUTER: _ROUTER_ID,
+               const.ODL_BGPVPN: _BGPVPN_ID}
+    return {'expected': expected[result],
+            'first_type': first_type,
+            'first_operation': first_op,
+            'first_id': type_id[first_type],
+            'second_type': second_type,
+            'second_operation': second_op,
+            'second_id': type_id[second_type]}
+
+
+class BGPVPNDependencyValidationsTestCase(
+        test_base_db.ODLBaseDbTestCase, BaseDependencyValidationsTestCase):
+    scenarios = (
+        ("bgpvpn_create_doesnt_depend_on_older_network_create",
+         bgpvpn_dep(const.ODL_NETWORK, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("bgpvpn_create_doesnt_depend_on_newer_network_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_NETWORK,
+                    const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("bgpvpn_create_doesnt_depend_on_older_router_create",
+         bgpvpn_dep(const.ODL_ROUTER, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("bgpvpn_create_doesnt_depend_on_newer_router_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_ROUTER,
+                    const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("bgpvpn_update_depends_on_older_bgpvpn_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_UPDATE, 'fail')),
+        ("bgpvpn_update_depends_on_older_network_create",
+         bgpvpn_dep(const.ODL_NETWORK, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_UPDATE, 'fail')),
+        ("bgpvpn_update_doesnt_depend_on_newer_network_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_NETWORK,
+                    const.ODL_UPDATE, const.ODL_CREATE, 'pass')),
+        ("bgpvpn_update_depends_on_older_router_create",
+         bgpvpn_dep(const.ODL_ROUTER, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_UPDATE, 'fail')),
+        ("bgpvpn_update_doesnt_depend_on_newer_router_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_ROUTER,
+                    const.ODL_UPDATE, const.ODL_CREATE, 'pass')),
+        # bgpvpn delete cases
+        ("bgpvpn_delete_depends_on_older_bgpvpn_create",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_DELETE, 'fail')),
+        ("bgpvpn_delete_depends_on_older_bgpvpn_update",
+         bgpvpn_dep(const.ODL_BGPVPN, const.ODL_BGPVPN,
+                    const.ODL_UPDATE, const.ODL_DELETE, 'fail')),
+        ("bgpvpn_delete_doesnt_depend_on_older_network_create",
+         bgpvpn_dep(const.ODL_NETWORK, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_DELETE, 'pass')),
+        ("bgpvpn_delete_doesnt_depend_on_older_router_create",
+         bgpvpn_dep(const.ODL_ROUTER, const.ODL_BGPVPN,
+                    const.ODL_CREATE, const.ODL_DELETE, 'pass')),
     )

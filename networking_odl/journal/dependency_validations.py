@@ -152,6 +152,21 @@ def _generate_sfc_port_chain_deps(row):
     flow_classifiers = [flow_classifier['id'] for flow_classifier in
                         row.data['flow_classifiers']]
     object_ids.extend(flow_classifiers)
+
+    return object_ids
+
+
+def _generate_bgpvpn_deps(row):
+    object_ids = []
+
+    network_ids = row.data.get('networks')
+    if network_ids is not None:
+        object_ids.extend(network_ids)
+
+    router_ids = row.data.get('routers')
+    if router_ids is not None:
+        object_ids.extend(router_ids)
+
     return object_ids
 
 
@@ -165,15 +180,18 @@ _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_SFC_PORT_PAIR: _generate_sfc_port_pair_deps,
     odl_const.ODL_SFC_PORT_PAIR_GROUP: _generate_sfc_port_pair_group_deps,
     odl_const.ODL_SFC_PORT_CHAIN: _generate_sfc_port_chain_deps,
+    odl_const.ODL_BGPVPN: _generate_bgpvpn_deps,
 }
 
 
 _DELETE_DEPENDENCIES = {
     odl_const.ODL_NETWORK: (odl_const.ODL_SUBNET, odl_const.ODL_PORT,
                             odl_const.ODL_ROUTER,
-                            odl_const.ODL_L2GATEWAY_CONNECTION),
+                            odl_const.ODL_L2GATEWAY_CONNECTION,
+                            odl_const.ODL_BGPVPN),
     odl_const.ODL_SUBNET: (odl_const.ODL_PORT,),
-    odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP),
+    odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP,
+                           odl_const.ODL_BGPVPN),
     odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
     odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION,),
     odl_const.ODL_SFC_FLOW_CLASSIFIER: (odl_const.ODL_SFC_PORT_CHAIN,),

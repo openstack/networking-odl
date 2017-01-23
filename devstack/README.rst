@@ -139,7 +139,7 @@
     V1 or V2 version of trunk driver will be determined by which version
     of ML2 mechanism driver is configured, no extra configuration required.
 
-16. Enabling L2Gateway Backend for OpenDaylight
+15. Enabling L2Gateway Backend for OpenDaylight
 
 - The package networking-l2gw must be installed as a pre-requisite.
 
@@ -151,7 +151,7 @@
 - Now stack up Devstack and after stacking completes, we are all set to use
   l2gateway-as-a-service with OpenDaylight.
 
-17. Note: To enable networking-sfc (version 2) driver to use with OpenDaylight
+16. Note: To enable networking-sfc (version 2) driver to use with OpenDaylight
     controller, please add following configuration::
 
       > in /etc/neutron/neutron.conf
@@ -160,3 +160,16 @@
 
       [flowclassifier]
       drivers = odl_v2
+
+17. Enabling BGPVPN with OpenDaylight Backend using the Version 2 OpenDaylight
+Driver for BGPVPN:
+
+Include the following lines in your localrc (or local.conf)
+
+enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
+
+[[post-config|$NETWORKING_BGPVPN_CONF]]
+[service_providers]
+service_provider=BGPVPN:OpenDaylight.networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
+
+and then stack up your devstack.

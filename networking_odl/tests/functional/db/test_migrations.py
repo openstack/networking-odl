@@ -52,9 +52,16 @@ L2GW_TABLES = [
     'vlan_bindings',
 ]
 
+BGPVPN_TABLES = [
+    'bgpvpns',
+    'bgpvpn_network_associations',
+    'bgpvpn_router_associations',
+]
+
 # EXTERNAL_TABLES should contain all names of tables that are not related to
 # current repo.
-EXTERNAL_TABLES = set(external.TABLES + FWAAS_TABLES + L2GW_TABLES)
+EXTERNAL_TABLES = set(external.TABLES + FWAAS_TABLES +
+                      L2GW_TABLES + BGPVPN_TABLES)
 
 VERSION_TABLE = 'odl_alembic_version'
 

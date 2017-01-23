@@ -24,7 +24,7 @@ from neutron.tests.unit.testlib_api import SqlTestCaseLight
 class ODLBaseDbTestCase(SqlTestCaseLight):
     def setUp(self):
         super(ODLBaseDbTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_reader_session()
         self.addCleanup(self._db_cleanup)
 
     def _db_cleanup(self):

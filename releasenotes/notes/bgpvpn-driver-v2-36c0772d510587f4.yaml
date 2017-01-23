@@ -1,0 +1,10 @@
+---
+prelude: >
+    BGPVPN Version 2 Driver for OpenDaylight.
+features:
+  - |
+    A new version of BGPVPN driver that integrate OpenStack Neutron
+    BGPVPN API with OpenDaylight backend. It supports CRUD operations
+    for BGPVPN and enables networks and routers to be associated to
+    such BGPVPNs. This driver uses journaling mechanism, unlike v1 driver,
+    which will first log the operation in journal table before execution.
