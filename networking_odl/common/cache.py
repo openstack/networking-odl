@@ -142,7 +142,7 @@ class Cache(object):
                 self._entries.update(new_entries)
 
             missing_keys = []
-            for key, entry in six.iteritems(missing):
+            for key, entry in missing.items():
                 if entry.values:
                     # yield entries that was missing before
                     for value in entry.values:

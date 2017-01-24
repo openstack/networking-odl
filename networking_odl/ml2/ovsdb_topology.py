@@ -18,7 +18,6 @@ import collections
 import os
 
 from oslo_log import log
-import six
 from six.moves.urllib import parse
 
 from neutron.plugins.common import constants
@@ -66,7 +65,7 @@ class OvsdbNetworkTopologyParser(network_topology.NetworkTopologyParser):
 
         # There can be more OVS instances connected beside the same IP address
         # Cache will yield more instaces for the same key
-        for __, element in six.iteritems(elements_by_uuid):
+        for __, element in elements_by_uuid.items():
             yield element
 
     def _update_element_from_json_ovsdb_topology_node(
@@ -126,7 +125,7 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
     port_prefix = 'vhu'
 
     def __init__(self, **kwargs):
-        for name, value in six.iteritems(kwargs):
+        for name, value in kwargs.items():
             setattr(self, name, value)
 
     @property
