@@ -175,6 +175,8 @@ function _install_opendaylight {
     source $DEVSTACK_PATH/lib/neutron-legacy
     neutron_plugin_configure_common
     _create_neutron_conf_dir
+    mkdir -p $NEUTRON_CONF_DIR
+    touch $NEUTRON_CONF
     mkdir -p /$Q_PLUGIN_CONF_PATH
     Q_PLUGIN_CONF_FILE=$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
     touch /$Q_PLUGIN_CONF_FILE
