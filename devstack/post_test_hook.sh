@@ -24,6 +24,7 @@ function _odl_show_info {
     sudo ip address
     sudo ip link
     sudo ip route
+    sudo ovsdb-client dump
     sudo ovs-vsctl show
     for br in $(sudo ovs-vsctl list-br)
     do
@@ -43,7 +44,12 @@ echo "Some pre-process info"
 _odl_show_info
 
 echo "Running networking-odl test suite"
+set +e
 sudo -H -u $owner $sudo_env tox -eall -- "$DEVSTACK_GATE_TEMPEST_REGEX" --serial
+retval=$?
+set -e
 
 echo "Some post-process info"
 _odl_show_info
+
+return $retval
