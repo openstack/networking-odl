@@ -141,7 +141,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
                 return cls._make_response(OK, r_list)
 
         r_list = [{resource_type[:-1]: deepcopy(res)}
-                  for res in six.itervalues(resource_dict)]
+                  for res in resource_dict.values()]
 
         return cls._make_response(OK, r_list)
 
