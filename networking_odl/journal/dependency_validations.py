@@ -213,14 +213,3 @@ def validate(session, row):
         return True
 
     return _VALIDATION_MAP[row.object_type](session, row)
-
-
-def register_validator(object_type, validator):
-    """Register validator function for given resource.
-
-    :param object_type: neutron resource type
-    :param validator: function to be registered which validates resource
-         dependencies
-    """
-    assert object_type not in _VALIDATION_MAP
-    _VALIDATION_MAP[object_type] = validator

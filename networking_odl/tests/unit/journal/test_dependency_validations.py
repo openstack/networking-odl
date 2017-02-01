@@ -15,10 +15,7 @@
 #  under the License.
 #
 
-import mock
 import testscenarios
-
-from neutron.tests import base
 
 from networking_odl.common import constants as const
 from networking_odl.db import db
@@ -27,28 +24,6 @@ from networking_odl.tests.unit import test_base_db
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
-
-
-class DependencyValidationsTestCase(base.DietTestCase):
-    _RESOURCE_DUMMY = 'test_type'
-
-    def setUp(self):
-        super(DependencyValidationsTestCase, self).setUp()
-        mock_validation_map = mock.patch.dict(
-            dependency_validations._VALIDATION_MAP)
-        mock_validation_map.start()
-        self.addCleanup(mock_validation_map.stop)
-
-    def test_register_validator(self):
-        mock_session = mock.Mock()
-        mock_validator = mock.Mock(return_value=False)
-        mock_row = mock.Mock()
-        mock_row.object_type = self._RESOURCE_DUMMY
-        dependency_validations.register_validator(self._RESOURCE_DUMMY,
-                                                  mock_validator)
-        valid = dependency_validations.validate(mock_session, mock_row)
-        mock_validator.assert_called_once_with(mock_session, mock_row)
-        self.assertFalse(valid)
 
 
 def subnet_data(operation):
