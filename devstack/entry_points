@@ -156,25 +156,10 @@ function configure_neutron_odl {
     # config drive to provide instances with metadata. If conventional DHCP agent
     # is used instead, configure it to provide instances with metadata.
     if is_service_enabled q-dhcp; then
-        if [[ -n "${RALLY_SCENARIO}"  ]] ; then
-            # NOTE(yamahata): When rally is run, sometimes OOM-killer is triggered
-            # due to too many metadata-ns-proxy.
-            # For now, disable metadata server as rally is API micro baenchmark
-            #
-            # https://bugs.launchpad.net/neutron/+bug/1524916
-            # neutron-ns-metadata-proxy uses ~25MB/router in production
-            # example: from openstack CI log, based on syslog.txt.gz
-            # 189 neutron-ns-metadata-proxy were running when OOM killer
-            # killed javavm of ODL.
-            iniset $Q_DHCP_CONF_FILE DEFAULT enable_isolated_metadata False
-            iniset $Q_DHCP_CONF_FILE DEFAULT enable_metadata_network False
-            iniset $Q_DHCP_CONF_FILE DEFAULT force_metadata False
-        else
-            # Conventional DHCP agent must provide all metadata when ODL
-            # layer-3 is enabled. The conventional DHCP agent will be forced
-            # to provide metadata for all networks.
-            iniset $Q_DHCP_CONF_FILE DEFAULT force_metadata True
-        fi
+        # Conventional DHCP agent must provide all metadata when ODL
+        # layer-3 is enabled. The conventional DHCP agent will be forced
+        # to provide metadata for all networks.
+        iniset $Q_DHCP_CONF_FILE DEFAULT force_metadata True
     fi
     if [[ "$ODL_L3" == "True" ]]; then
         if is_service_enabled n-cpu; then
