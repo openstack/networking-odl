@@ -64,6 +64,7 @@ case "$ODL_GATE_PORT_BINDING" in
         ;;
 esac
 
+ODL_GATE_SERVICE_PROVIDER=${ODL_GATE_SERVICE_PROVIDER%-}
 if [[ -z "$ODL_GATE_SERVICE_PROVIDER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
     case "$ODL_RELEASE_BASE" in
         beryllium-snapshot)
