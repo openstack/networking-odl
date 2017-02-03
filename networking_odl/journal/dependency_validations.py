@@ -194,31 +194,12 @@ def validate_floatingip_operation(session, row):
     return True
 
 
-def validate_security_group_operation(session, row):
-    """Validate security_group operation based on dependencies.
-
-    Validate security_group operation depending on whether it's dependencies
-    are still in 'pending' or 'processing' state. e.g.
-    """
-    return True
-
-
-def validate_security_group_rule_operation(session, row):
-    """Validate security_group_rule operation based on dependencies.
-
-    Validate security_group_rule operation depending on whether it's
-    dependencies are still in 'pending' or 'processing' state. e.g.
-    """
-    return True
-
 _VALIDATION_MAP = {
     odl_const.ODL_NETWORK: validate_network_operation,
     odl_const.ODL_SUBNET: validate_subnet_operation,
     odl_const.ODL_PORT: validate_port_operation,
     odl_const.ODL_ROUTER: validate_router_operation,
     odl_const.ODL_FLOATINGIP: validate_floatingip_operation,
-    odl_const.ODL_SG: validate_security_group_operation,
-    odl_const.ODL_SG_RULE: validate_security_group_rule_operation,
 }
 
 
@@ -228,6 +209,9 @@ def validate(session, row):
     :param session: db session
     :param row: entry in journal entry to be validated
     """
+    if row.object_type not in _VALIDATION_MAP:
+        return True
+
     return _VALIDATION_MAP[row.object_type](session, row)
 
 
