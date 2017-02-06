@@ -13,7 +13,7 @@ controller.
 The journal entries can wind up in several states due to various reasons:
 
 * PROCESSING - Stale lock left by a thread due to thread dying or other error
-* COMPLETED - After the operation is processed succesfully
+* COMPLETED - After the operation is processed successfully
 * FAILED - If there was an unexpected error during the operation
 
 These journal entries need to be dealt with appropriately, hence a maintenance
