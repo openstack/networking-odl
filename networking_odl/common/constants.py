@@ -48,6 +48,12 @@ ODL_SFC_PORT_PAIR = 'portpair'
 ODL_SFC_PORT_PAIR_GROUP = 'portpairgroup'
 ODL_SFC_PORT_CHAIN = 'portchain'
 
+ODL_TRUNK = 'trunk'
+ODL_TRUNKS = 'trunks'
+
+ODL_ML2_MECH_DRIVER_V1 = "opendaylight"
+ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"
+
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'

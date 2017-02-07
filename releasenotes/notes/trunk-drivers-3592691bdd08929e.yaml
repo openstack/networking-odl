@@ -1,0 +1,9 @@
+---
+prelude: >
+    Trunk Drivers v1 and v2 for networking-odl.
+features:
+  - |
+    A new driver to integrate OpenStack TrunkPort API with OpenDayLight
+    backend. It supports CRUD operations for TrunkPorts. The version v2
+    driver will first log the call in journal table before execution.
+    Version v1 driver doesn't log any calls.

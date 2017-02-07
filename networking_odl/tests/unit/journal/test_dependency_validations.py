@@ -219,3 +219,84 @@ class PortDependencyValidationsTestCase(
         ("port_update_doesnt_depend_on_newer_subnet_delete",
          port_succeed_subnet_dep(const.ODL_DELETE, const.ODL_UPDATE)),
     )
+
+
+def trunk_data(res_type, op):
+    if res_type == const.ODL_PORT:
+        return port_data
+    if res_type == const.ODL_TRUNK:
+        if op == const.ODL_DELETE:
+            return {'PORT_ID', 'CPORT_ID'}
+        else:
+            return {'trunk_id': 'TRUNK_ID',
+                    'port_id': 'PORT_ID',
+                    'sub_ports': [{'port_id': 'CPORT_ID'}]}
+    return []
+
+
+def trunk_dep(first_type, second_type, first_op, second_op, result,
+              sub_port=False):
+    if first_type == second_type:
+        expected = {'fail': (True, False), 'pass': (True, True)}
+    else:
+        expected = {'fail': (None, False), 'pass': (True, None)}
+    port_id = 'CPORT_ID' if sub_port else 'PORT_ID'
+    type_id = {const.ODL_PORT: port_id,
+               const.ODL_TRUNK: 'TRUNK_ID'}
+    return {'expected': expected[result],
+            'first_type': first_type,
+            'first_operation': first_op,
+            'first_id': type_id[first_type],
+            'first_data': trunk_data(first_type, first_op),
+            'second_type': second_type,
+            'second_operation': second_op,
+            'second_id': type_id[second_type],
+            'second_data': trunk_data(second_type, second_op)}
+
+
+class TrunkDependencyValidationsTestCase(
+        test_base_db.ODLBaseDbTestCase, BaseDependencyValidationsTestCase):
+    scenarios = (
+        ("trunk_create_depends_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_CREATE, 'fail')),
+        ("trunk_create_doesnt_depend_on_newer_port_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("trunk_create_doesnt_depend_on_port_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'pass')),
+        ("trunk_create_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
+        # TODO(vthapar): add more/better validations for subport
+        # trunk update means subport add/delete
+        ("trunk_update_depends_on_older_trunk_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
+        ("trunk_update_depends_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
+        ("trunk_update_doesnt_depend_on_newer_port_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_CREATE, 'pass', True)),
+        ("trunk_update_doesnt_depend_on_port_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_UPDATE, 'pass', True)),
+        ("trunk_update_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_DELETE, 'pass', True)),
+        # trunk delete cases
+        ("trunk_delete_depends_on_older_trunk_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_DELETE, 'fail', True)),
+        ("trunk_delete_depends_on_older_trunk_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_UPDATE, const.ODL_DELETE, 'fail', True)),
+        ("trunk_delete_doesnt_depend_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
+        ("trunk_delete_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_DELETE, const.ODL_DELETE, 'pass')),
+    )
