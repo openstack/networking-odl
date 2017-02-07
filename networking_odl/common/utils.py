@@ -49,7 +49,7 @@ def get_addresses_by_name(name, time_to_live=60.0):
 
     This is a cached wrapper for function 'socket.getaddrinfo'.
 
-    :returns: a sequence of unique addresses binded to given hostname.
+    :returns: a sequence of unique addresses bound to given hostname.
     """
 
     try:
