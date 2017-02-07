@@ -100,12 +100,12 @@ the error shouldn't stop processing of further entries.
 
 
 The implementation could be done in two phases where the parent handling is
-done in a second pahse.
+done in a second phase.
 For the first phase if we detect an entry that is in failed for a create/update
 operation and the resource doesn't exist on ODL we create a new "create
 resource" journal entry for the resource.
 
-This propsal utilises the journal mechanism for it's operation while the only
+This proposal utilises the journal mechanism for it's operation while the only
 part that deviates from the standard mode of operation is when it queries ODL
 directly. This direct query has to be done to get ODL's representation of the
 resource.
