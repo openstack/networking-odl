@@ -134,10 +134,12 @@ function configure_opendaylight {
 function configure_neutron_odl {
     echo "Configuring ML2 for OpenDaylight"
 
-    # bug work around
     # https://bugs.launchpad.net/neutron/+bug/1614766
-    # TODO(yamahata): once the bug is fixed, remove this bug work around
-    iniset $NEUTRON_CONF OVS ovsdb_interface vsctl
+    # Allow ovsdb_interface native by avoiding port conflict.
+    if [[ -n "$ODL_OVSDB_ALTPORT" ]]; then
+        iniset $NEUTRON_CONF OVS ovsdb_connection tcp:127.0.0.1:$ODL_OVSDB_ALTPORT
+        iniset $NEUTRON_DHCP_CONF OVS ovsdb_connection tcp:127.0.0.1:$ODL_OVSDB_ALTPORT
+    fi
 
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
     populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
