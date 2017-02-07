@@ -92,7 +92,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
             elements = [ovsdb_topology.OvsdbNetworkTopologyElement()]
 
         # TODO(Federico Ressi): in the case there are more candidate virtual
-        # switches instances for the same host it choses one for binding
+        # switches instances for the same host it chooses one for binding
         # port. As there isn't any know way to perform this selection it
         # selects a VIF type that is valid for all switches that have
         # been found and a VIF type valid for all them. This has to be improved
