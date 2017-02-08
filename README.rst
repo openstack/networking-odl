@@ -24,7 +24,7 @@ Any new code submission or proposal must follow the development
 guidelines detailed in HACKING.rst and for further details this
 link can be checked:
 
-   http://docs.openstack.org/developer/neutron/
+   http://docs.openstack.org/developer/networking-odl/
 
 
 External Resources
@@ -32,4 +32,4 @@ External Resources
 
 The OpenDaylight homepage:
 
-   http://www.opendaylight.org/
+   https://www.opendaylight.org/
