@@ -45,7 +45,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
 
     # TODO(mzmalick): binary, topic and resource_versions to be provided
     # by ODL, Pending ODL NB patches.
-    agentdb_row = {
+    _AGENTDB_ROW = {
         'binary': AGENTDB_BINARY,
         'host': '',
         'topic': nl_const.L2_AGENT_TOPIC,
@@ -53,7 +53,6 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         'resource_versions': '',
         'agent_type': L2_TYPE,
         'start_flag': True}
-    # We are not running host agents, so above start_flag is redundant
 
     def __init__(self, hostconf_uri=None, db_plugin=None):
         """Initialization."""
@@ -72,6 +71,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
 
         # Neutron DB plugin instance
         self.agents_db = db_plugin
+        self._known_agents = set()
 
         # Start polling ODL restconf using maintenance thread.
         # default: 30s (should be <=  agent keep-alive poll interval)
@@ -160,15 +160,22 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                             " update on next poll"))
             return  # Retry on next poll
 
+        old_agents = self._known_agents
+        self._known_agents = set()
         for host_config in hostconfigs:
             try:
-                self.agentdb_row['host'] = host_config['host-id']
-                self.agentdb_row['agent_type'] = host_config['host-type']
-                self.agentdb_row['configurations'] = jsonutils.loads(
+                agentdb_row = self._AGENTDB_ROW.copy()
+                host_id = host_config['host-id']
+                agent_type = host_config['host-type']
+                agentdb_row['host'] = host_id
+                agentdb_row['agent_type'] = agent_type
+                agentdb_row['configurations'] = jsonutils.loads(
                     host_config['config'])
-
+                if (host_id, agent_type) in old_agents:
+                    agentdb_row.pop('start_flag', None)
                 agents_db.create_or_update_agent(
-                    context.get_admin_context(), self.agentdb_row)
+                    context.get_admin_context(), agentdb_row)
+                self._known_agents.add((host_id, agent_type))
             except Exception:
                 LOG.exception(_LE("Unable to update agentdb."))
                 continue  # try next hostcofig
