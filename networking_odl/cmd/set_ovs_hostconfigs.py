@@ -265,6 +265,14 @@ def set_ovs_extid_hostconfigs(conf, ovs_vsctl):
     for name in sorted(hostconfigs):
         ovs_vsctl.set_host_config(name, hostconfigs[name])
 
+    # for new netvirt
+    if conf.local_ip:
+        ovs_vsctl.set_local_ip(conf.local_ip)
+    if conf.bridge_mappings:
+        provider_mappings = ",".join(
+            "{}:{}".format(k, v) for k, v in conf.bridge_mappings.items())
+        ovs_vsctl.set_provider_mappings(provider_mappings)
+
 
 def _hostconfigs_from_conf(conf, uuid, userspace_datapath_types):
     vif_type = _vif_type_from_conf(
@@ -413,12 +421,22 @@ class OvsVsctl(object):
             name='odl_os_hostconfig_config_' + name.lower().replace(' ', '_'),
             value=jsonutils.dumps(value))
 
+    def set_local_ip(self, local_ip):
+        self._set_other_config("local_ip", local_ip)
+
+    def set_provider_mappings(self, provider_mappings):
+        self._set_other_config("provider_mappings", provider_mappings)
+
     # --- implementation details ----------------------------------------------
 
     def _set_external_ids(self, name, value):
         # Refer below for ovs ext-id strings
         # https://review.openstack.org/#/c/309630/
         value = 'external_ids:{}={}'.format(name, value)
+        self._set(record=self.uuid(), value=value)
+
+    def _set_other_config(self, name, value):
+        value = 'other_config:{}={}'.format(name, value)
         self._set(record=self.uuid(), value=value)
 
     def _get(self, record, name):
