@@ -220,7 +220,7 @@ opendaylight-with-openstack/openstack-with-ovsdb.html>`_ can be referred to.
 
       # sudo neutron-odl-ovs-hostconfig
 
-#. Verify the OVS serivce.
+#. Verify the OVS service.
 
    .. code-block:: console
 
