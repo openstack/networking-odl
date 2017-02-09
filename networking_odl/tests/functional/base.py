@@ -14,8 +14,11 @@
 #  under the License.
 #
 
+import functools
+
 from neutron.common import utils
 from neutron.plugins.ml2 import config
+from neutron.tests.unit.plugins.ml2 import test_plugin
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -38,6 +41,26 @@ class OdlTestsBase(object):
                                      group='ml2')
         self.client = client.OpenDaylightRestClient.create_client()
         super(OdlTestsBase, self).setUp()
+
+    def setup_parent(self):
+        """Perform parent setup with the common plugin configuration class."""
+        # Ensure that the parent setup can be called without arguments
+        # by the common configuration setUp.
+        service_plugins = {'l3_plugin_name': self.l3_plugin}
+        service_plugins.update(self.get_additional_service_plugins())
+        parent_setup = functools.partial(
+            super(test_plugin.Ml2PluginV2TestCase, self).setUp,
+            plugin=self.get_plugins(),
+            ext_mgr=self.get_ext_managers(),
+            service_plugins=service_plugins
+        )
+        self.useFixture(test_plugin.Ml2ConfFixture(parent_setup))
+
+    def get_plugins(self):
+        return test_plugin.PLUGIN_NAME
+
+    def get_ext_managers(self):
+        return None
 
     def get_odl_resource(self, resource_type, resource):
         return self.client.get_resource(
