@@ -87,7 +87,10 @@ class OdlSecurityGroupsHandler(object):
                    'res_id': res_id, 'odl_res_dict': odl_res_dict,
                    'kwargs': kwargs})
 
-        callback(context, odl_ops, odl_res_type, res_id, odl_res_dict)
+        copy_kwargs = kwargs.copy()
+        copy_kwargs.pop('context')
+        callback(context, odl_ops, odl_res_type, res_id, odl_res_dict,
+                 **copy_kwargs)
 
     def sg_callback_precommit(self, resource, event, trigger, **kwargs):
         self._sg_callback(self._precommit, resource, event, trigger, **kwargs)

@@ -178,7 +178,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                                rule['id'], odl_const.ODL_CREATE, res_rule)
 
     def sync_from_callback_precommit(self, context, operation, res_type,
-                                     res_id, resource_dict):
+                                     res_id, resource_dict, **kwargs):
         object_type = res_type.singular
         if resource_dict is not None:
             resource_dict = resource_dict[object_type]
@@ -237,9 +237,18 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                     _("unsupporetd bulk creation of security group rule"))
         journal.record(context, None, object_type, object_uuid,
                        operation, resource_dict)
+        # NOTE(yamahata): DB auto deletion
+        # Security Group Rule under this Security Group needs to
+        # be deleted. At NeutronDB layer rules are auto deleted with
+        # cascade='all,delete'.
+        if (object_type == odl_const.ODL_SG and
+                operation == odl_const.ODL_DELETE):
+            for rule in kwargs['security_group'].rules:
+                journal.record(context, None, odl_const.ODL_SG_RULE,
+                               rule.id, odl_const.ODL_DELETE, [object_uuid])
 
     def sync_from_callback_postcommit(self, context, operation, res_type,
-                                      res_id, resource_dict):
+                                      res_id, resource_dict, **kwargs):
         self._postcommit(context)
 
     def _postcommit(self, context):

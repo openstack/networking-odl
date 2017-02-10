@@ -263,6 +263,7 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
                                       'project_id': 'test-tenant',
                                       'tenant_id': 'test-tenant',
                                       'description': 'test-description',
+                                      'rules': [],
                                       'id': SG_FAKE_ID}}
         return context
 
@@ -324,18 +325,26 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
             context_ = (copy.deepcopy(context)
                         if operation != odl_const.ODL_DELETE else None)
             if (object_type == odl_const.ODL_SG and
-                    operation == odl_const.ODL_CREATE):
+                    operation in [odl_const.ODL_CREATE, odl_const.ODL_DELETE]):
                 # TODO(yamahata): remove this work around once
                 # https://review.openstack.org/#/c/281693/
                 # is merged.
-                sg = securitygroup.SecurityGroup(
-                    id=res_id, name=context_[object_type]['name'],
-                    tenant_id=context_[object_type]['tenant_id'],
-                    description=context_[object_type]['description'])
-                plugin_context_mock.session.add(sg)
-                context_[odl_const.ODL_SG].pop('id', None)
-            self.mech.sync_from_callback_precommit(
-                plugin_context_mock, operation, res_type, res_id, context_)
+                if operation == odl_const.ODL_CREATE:
+                    sg = securitygroup.SecurityGroup(
+                        id=res_id, name=context_[object_type]['name'],
+                        tenant_id=context_[object_type]['tenant_id'],
+                        description=context_[object_type]['description'])
+                    plugin_context_mock.session.add(sg)
+                    context_[odl_const.ODL_SG].pop('id', None)
+                if operation == odl_const.ODL_DELETE:
+                    sg = mock.Mock()
+                    sg.rules = []
+                self.mech.sync_from_callback_precommit(
+                    plugin_context_mock, operation, res_type, res_id, context_,
+                    security_group=sg)
+            else:
+                self.mech.sync_from_callback_precommit(
+                    plugin_context_mock, operation, res_type, res_id, context_)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
@@ -375,6 +384,10 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
         else:
             url = '%s/%ss' % (cfg.CONF.ml2_odl.url, url_object_type)
 
+        if (object_type == odl_const.ODL_SG and
+                operation == odl_const.ODL_CREATE):
+            context = copy.deepcopy(context)
+            context[odl_const.ODL_SG].pop('rules')
         if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE]:
             kwargs = {
                 'url': url,
@@ -593,6 +606,34 @@ class OpenDaylightMechanismDriverTestCase(OpenDaylightConfigBase):
 
     def test_sg_rule(self):
         self._test_object_type(odl_const.ODL_SG_RULE)
+
+    def test_sg_delete(self):
+        with mock.patch.object(journal, 'record') as record:
+            context = self._get_mock_operation_context(odl_const.ODL_SG)
+            res_id = context[odl_const.ODL_SG]['id']
+            plugin_context_mock = mock.Mock()
+            plugin_context_mock.session = neutron_db_api.get_session()
+            rule = mock.Mock()
+            rule.id = SG_RULE_FAKE_ID
+            rule.security_group_id = SG_FAKE_ID
+            sg = mock.Mock()
+            sg.id = SG_FAKE_ID
+            sg.rules = [rule]
+            kwargs = {'security_group': sg}
+            self.mech.sync_from_callback_precommit(
+                plugin_context_mock, odl_const.ODL_DELETE,
+                callback._RESOURCE_MAPPING[odl_const.ODL_SG],
+                res_id, context, **kwargs)
+            record.assert_has_calls(
+                [mock.call(mock.ANY, None, 'security_group', 'sg_fake_uuid',
+                           'delete',
+                           {'description': 'test-description',
+                            'project_id': 'test-tenant',
+                            'rules': [],
+                            'tenant_id': 'test-tenant',
+                            'id': 'sg_fake_uuid', 'name': 'test_sg'}),
+                 mock.call(mock.ANY, None, 'security_group_rule',
+                           'sg_rule_fake_uuid', 'delete', ['sg_fake_uuid'])])
 
     def test_sync_multiple_updates(self):
         # add 2 updates

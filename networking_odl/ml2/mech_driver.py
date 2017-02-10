@@ -379,8 +379,8 @@ class OpenDaylightDriver(object):
                            'object_id': obj_id})
                 self.out_of_sync = True
 
-    def sync_from_callback(self, context,
-                           operation, res_type, res_id, resource_dict):
+    def sync_from_callback(self, context, operation, res_type,
+                           res_id, resource_dict, **kwrags):
         object_type = odl_utils.neutronify(res_type.plural)
         try:
             if operation == odl_const.ODL_DELETE:
