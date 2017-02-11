@@ -38,6 +38,14 @@ function _odl_show_info {
     neutron port-list
     neutron subnet-list
     neutron router-list
+
+    # ODL_UESRNAME=admin
+    # ODL_PASSWORD=admin
+    # ODL_MGR_IP=$SERVICE_HOST
+    # ODL_PORT=8087
+    # There is no good way to retrieve from setting.odl at the moment
+    curl --silent --user admin:admin "http://localhost:8087/restconf/config/neutron:neutron?prettyPrint=true"
+    echo -e "\n"
 }
 
 echo "Some pre-process info"
