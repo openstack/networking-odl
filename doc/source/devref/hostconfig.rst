@@ -60,7 +60,8 @@ Config is a Json string. Some examples of config:
 
 ::
 
-    {“supported_vnic_types”: [{
+   OVS configuration example:
+   {“supported_vnic_types”: [{
             “vnic_type”: “normal”,
             “vif_type”: “ovs”,
             “vif_details”: “{}”
@@ -69,14 +70,45 @@ Config is a Json string. Some examples of config:
         “bridge_mappings”: {“physnet1":"br-ex”}
    }"
 
+::
+
+   OVS_DPDK configuration example:
    {“supported_vnic_types”: [{
             “vnic_type”: “normal”,
             “vif_type”: “vhostuser”,
-            “vif_details”: “{“port_filter”: “False”, “vhostuser_socket”: “/var/run/openvswitch”}”
+            “vif_details”: {
+                "uuid": "TEST_UUID",
+                "has_datapath_type_netdev": True,
+                "support_vhost_user": True,
+                "port_prefix": "vhu_",
+                # Assumption: /var/run mounted as tmpfs
+                "vhostuser_socket_dir": "/var/run/openvswitch",
+                "vhostuser_ovs_plug": True,
+                "vhostuser_mode": "client",
+                "vhostuser_socket": "/var/run/openvswitch/vhu_$PORT_ID"}
         }]
         “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
         “bridge_mappings”: {“physnet1":"br-ex”}
    }"
+
+::
+
+   VPP configuration example:
+   { {"supported_vnic_types": [
+        {"vnic_type": "normal",
+         "vif_type": “vhostuser”,
+         "vif_details": {
+             "uuid": "TEST_UUID",
+             "has_datapath_type_netdev": True,
+             "support_vhost_user": True,
+             "port_prefix": "socket_",
+             "vhostuser_socket_dir": "/tmp",
+             "vhostuser_ovs_plug": True,
+             "vhostuser_mode": "server",
+             "vhostuser_socket": "/tmp/socket_$PORT_ID"
+         }}],
+        "allowed_network_types": ["local", "vlan", "vxlan", "gre"],
+        "bridge_mappings": {"physnet1": "br-ex"}}}
 
 **Host Config URL**
 
