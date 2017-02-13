@@ -79,9 +79,13 @@ fi
 case "$ODL_GATE_SERVICE_PROVIDER" in
     vpnservice)
         ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack
+        # $PUBLIC_PHYSICAL_NETWORK = public by default
+        ODL_MAPPING_KEY=public
         ;;
     netvirt|*)
         ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack
+        # $PUBLIC_BRIDGE = br-ex by default
+        ODL_MAPPING_KEY=br-ex
         ;;
 esac
 # add odl-neutron-logger for debugging
@@ -120,7 +124,7 @@ ODL_L3=True
 Q_USE_PUBLIC_VETH=True
 Q_PUBLIC_VETH_EX=veth-pub-ex
 Q_PUBLIC_VETH_INT=veth-pub-int
-ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:\${Q_PUBLIC_VETH_INT}}
+ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-${ODL_MAPPING_KEY}:\${Q_PUBLIC_VETH_INT}}
 
 # Enable debug logs for odl ovsdb
 ODL_NETVIRT_DEBUG_LOGS=True

@@ -59,7 +59,7 @@ class TestSetOvsHostconfigs(base.DietTestCase):
         ])
 
         expected = ovs_hostconfigs['ODL L2']
-        _, actual_json = execute.call_args[0][0][4].split("=", 1)
+        _, actual_json = execute.call_args_list[2][0][0][4].split("=", 1)
         self.assertEqual(match.json(expected), actual_json)
 
     @mock.patch.object(
@@ -182,7 +182,7 @@ class TestSetOvsHostconfigs(base.DietTestCase):
                     conf.vhostuser_port_prefix + "$PORTID"),
             }
 
-        _, actual_json = execute.call_args[0][0][4].split("=", 1)
+        _, actual_json = execute.call_args_list[3][0][0][4].split("=", 1)
         expected = {
             "allowed_network_types": conf.allowed_network_types,
             "bridge_mappings": conf.bridge_mappings,

@@ -324,29 +324,37 @@ function unbind_opendaylight_controller {
 }
 
 
-# configure_opendaylight_l3() - configure bridges for OpenDaylight L3 forwarding
-function configure_opendaylight_l3 {
+function _configure_veth {
+    ip link show $Q_PUBLIC_VETH_INT > /dev/null 2>&1 ||
+        sudo ip link add $Q_PUBLIC_VETH_INT type veth \
+             peer name $Q_PUBLIC_VETH_EX
+    sudo ip link set $Q_PUBLIC_VETH_INT up
+    sudo ip link set $Q_PUBLIC_VETH_EX up
+    sudo ip addr flush dev $Q_PUBLIC_VETH_EX
+    if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]]; then
+        local OVSBR_EX=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
+        sudo ovs-vsctl --may-exist add-port $OVSBR_EX $Q_PUBLIC_VETH_INT
+    else
+        sudo ovs-vsctl --may-exist add-port $OVS_BR $Q_PUBLIC_VETH_INT
+    fi
+
+    local cidr_len=${FLOATING_RANGE#*/}
+    sudo ip addr replace ${PUBLIC_NETWORK_GATEWAY}/$cidr_len dev $Q_PUBLIC_VETH_EX
+    if [[ -n "$IPV6_PUBLIC_RANGE" ]] && [[ -n "$IPV6_PUBLIC_NETWORK_GATEWAY" ]] && [[ -n "$FIXED_RANGE_V6" ]] && [[ -n "$IPV6_ROUTER_GW_IP" ]]; then
+        local ipv6_cidr_len=${IPV6_PUBLIC_RANGE#*/}
+        sudo ip -6 addr replace ${IPV6_PUBLIC_NETWORK_GATEWAY}/$ipv6_cidr_len dev ${Q_PUBLIC_VETH_EX}
+    fi
+}
+
+function _configure_opendaylight_l3_legacy_netvirt {
     wait_for_active_bridge $PUBLIC_BRIDGE $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
 
     # Note: as of Lithium-SR3 and Beryllium releases, ODL will add the OVS port(s)
     #       to the external bridge via the ODL_PROVIDER_MAPPINGS method. Being so,
     #       the usage of PUBLIC_INTERFACE is no longer necessary in ODL devstack.
 
-    if [[ "$Q_USE_PUBLIC_VETH" = "True" ]]; then
-        ip link show $Q_PUBLIC_VETH_INT > /dev/null 2>&1 ||
-        sudo ip link add $Q_PUBLIC_VETH_INT type veth \
-            peer name $Q_PUBLIC_VETH_EX
-        sudo ip link set $Q_PUBLIC_VETH_INT up
-        sudo ip link set $Q_PUBLIC_VETH_EX up
-        sudo ip addr flush dev $Q_PUBLIC_VETH_EX
-        local OVSBR_EX=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
-        sudo ovs-vsctl --may-exist add-port $OVSBR_EX $Q_PUBLIC_VETH_INT
-        local cidr_len=${FLOATING_RANGE#*/}
-        sudo ip addr replace ${PUBLIC_NETWORK_GATEWAY}/$cidr_len dev $Q_PUBLIC_VETH_EX
-        if [[ -n "$IPV6_PUBLIC_RANGE" ]] && [[ -n "$IPV6_PUBLIC_NETWORK_GATEWAY" ]] && [[ -n "$FIXED_RANGE_V6" ]] && [[ -n "$IPV6_ROUTER_GW_IP" ]]; then
-            local ipv6_cidr_len=${IPV6_PUBLIC_RANGE#*/}
-            sudo ip -6 addr replace ${IPV6_PUBLIC_NETWORK_GATEWAY}/$ipv6_cidr_len dev ${Q_PUBLIC_VETH_EX}
-        fi
+    if [[ "$Q_USE_PUBLIC_VETH" == "True" ]]; then
+        _configure_veth
     else
         # DEPRECATED: Add public interface to public bridge, if needed
         if [[ -n "$PUBLIC_INTERFACE" && "$PUBLIC_INTERFACE" != "br100" ]]; then
@@ -357,5 +365,21 @@ function configure_opendaylight_l3 {
         fi
 
         move_interface_addresses "into_bridge"
+    fi
+}
+
+function _configure_opendaylight_l3_new_netvirt {
+    if [[ "$Q_USE_PUBLIC_VETH" == "True" ]]; then
+        _configure_veth
+    fi
+}
+
+
+# configure_opendaylight_l3() - configure bridges for OpenDaylight L3 forwarding
+function configure_opendaylight_l3 {
+    if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]]; then
+        _configure_opendaylight_l3_legacy_netvirt
+    else
+        _configure_opendaylight_l3_new_netvirt
     fi
 }
