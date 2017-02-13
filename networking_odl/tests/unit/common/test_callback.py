@@ -50,7 +50,7 @@ class ODLCallbackTestCase(testtools.TestCase):
         self._precommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP], sg_id,
-            expected_dict)
+            expected_dict, security_group=sg, security_group_id=sg_id)
 
     def _test_callback_postcommit_for_sg(self, event, op, sg, sg_id):
         plugin_context_mock = mock.Mock()
@@ -66,7 +66,7 @@ class ODLCallbackTestCase(testtools.TestCase):
         self._postcommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP], sg_id,
-            expected_dict)
+            expected_dict, security_group=sg, security_group_id=sg_id)
 
     def test_callback_precommit_sg_create(self):
         sg = mock.Mock()
@@ -112,7 +112,8 @@ class ODLCallbackTestCase(testtools.TestCase):
         self._precommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE],
-            sg_rule_id, expected_dict)
+            sg_rule_id, expected_dict, security_group_rule=sg_rule,
+            security_group_rule_id=sg_rule_id)
 
     @mock.patch.object(OpenDaylightDriver, 'sync_from_callback')
     def _test_callback_postcommit_for_sg_rules(
@@ -130,7 +131,9 @@ class ODLCallbackTestCase(testtools.TestCase):
         self._postcommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE],
-            sg_rule_id, expected_dict)
+            sg_rule_id, expected_dict,
+            security_group_rule=sg_rule, security_group_rule_id=sg_rule_id,
+        )
 
     def test_callback_precommit_sg_rules_create(self):
         rule = mock.Mock()
