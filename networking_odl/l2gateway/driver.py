@@ -13,16 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import abc
 import copy
 
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
-from networking_odl._i18n import _LI
+from networking_odl._i18n import _LI, _LW
 from networking_odl.common import client as odl_client
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -33,7 +31,6 @@ L2GATEWAYS = 'l2-gateways'
 L2GATEWAY_CONNECTIONS = 'l2gateway-connections'
 
 
-@six.add_metaclass(abc.ABCMeta)
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
     """Opendaylight L2Gateway Service Driver
 
@@ -45,7 +42,9 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         super(OpenDaylightL2gwDriver, self).__init__(service_plugin, validator)
         self.service_plugin = service_plugin
         self.client = odl_client.OpenDaylightRestClient.create_client()
-        LOG.info(_LI("ODL: Started OpenDaylight L2Gateway driver"))
+        LOG.warning(
+            _LW("ODL: OpenDaylight L2gateway driver has been deprecated"
+                "and will be removed. Switch to driver_v2."))
 
     @property
     def service_type(self):
