@@ -145,7 +145,7 @@ _DELETE_DEPENDENCIES = {
     odl_const.ODL_SUBNET: (odl_const.ODL_PORT,),
     odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP),
     odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
-    odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION),
+    odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION,),
 }
 
 
