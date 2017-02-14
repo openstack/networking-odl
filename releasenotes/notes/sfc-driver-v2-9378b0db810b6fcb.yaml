@@ -1,0 +1,16 @@
+---
+prelude: >
+    Networking SFC V2 driver for networking-odl.
+features:
+  - Second version of the driver to support networking-sfc
+    API through OpenDaylight controller. This driver
+    support CRUD operation for flow classifier, port-pair,
+    port-pair-group and port-pair-chain. This is version 2
+    driver and it does support the journal based
+    implementation, where operations are committed in the
+    data store first and then journal thread sycn it with
+    OpenDaylight. This implementation guarantee the ordering
+    of the CRUD events.
+    networking-sfc ocata or later is required.
+    https://review.openstack.org/#/c/363893/ is the corresponding patch
+    of networking-sfc in Ocata cycle.

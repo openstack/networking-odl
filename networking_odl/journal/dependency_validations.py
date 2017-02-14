@@ -128,6 +128,33 @@ def _generate_l2gateway_connection_deps(row):
     return object_ids
 
 
+def _generate_sfc_port_pair_deps(row):
+    object_ids = []
+    ingress_port = row.data.get('ingress')
+    if ingress_port is not None:
+        object_ids.append(ingress_port)
+
+    egress_port = row.data.get('egress')
+    if egress_port is not None:
+        object_ids.append(egress_port)
+
+    return object_ids
+
+
+def _generate_sfc_port_pair_group_deps(row):
+    port_pairs = [port_pair['id'] for port_pair in row.data['port_pairs']]
+    return port_pairs
+
+
+def _generate_sfc_port_chain_deps(row):
+    object_ids = [port_pair_group['id'] for port_pair_group in
+                  row.data['port_pair_groups']]
+    flow_classifiers = [flow_classifier['id'] for flow_classifier in
+                        row.data['flow_classifiers']]
+    object_ids.extend(flow_classifiers)
+    return object_ids
+
+
 _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_SUBNET: _generate_subnet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
@@ -135,6 +162,9 @@ _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_FLOATINGIP: _generate_floatingip_deps,
     odl_const.ODL_TRUNK: _generate_trunk_deps,
     odl_const.ODL_L2GATEWAY_CONNECTION: _generate_l2gateway_connection_deps,
+    odl_const.ODL_SFC_PORT_PAIR: _generate_sfc_port_pair_deps,
+    odl_const.ODL_SFC_PORT_PAIR_GROUP: _generate_sfc_port_pair_group_deps,
+    odl_const.ODL_SFC_PORT_CHAIN: _generate_sfc_port_chain_deps,
 }
 
 
@@ -146,6 +176,9 @@ _DELETE_DEPENDENCIES = {
     odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP),
     odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
     odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION,),
+    odl_const.ODL_SFC_FLOW_CLASSIFIER: (odl_const.ODL_SFC_PORT_CHAIN,),
+    odl_const.ODL_SFC_PORT_PAIR: (odl_const.ODL_SFC_PORT_PAIR_GROUP,),
+    odl_const.ODL_SFC_PORT_PAIR_GROUP: (odl_const.ODL_SFC_PORT_CHAIN,),
 }
 
 
