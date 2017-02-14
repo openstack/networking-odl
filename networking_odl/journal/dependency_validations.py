@@ -79,7 +79,7 @@ def _no_older_operations(session, object_id, row):
     return True
 
 
-def _generate_sunbet_deps(row):
+def _generate_subnet_deps(row):
     return row.data['network_id']
 
 
@@ -129,7 +129,7 @@ def _generate_l2gateway_connection_deps(row):
 
 
 _CREATE_OR_UPDATE_DEP_GENERATOR = {
-    odl_const.ODL_SUBNET: _generate_sunbet_deps,
+    odl_const.ODL_SUBNET: _generate_subnet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
     odl_const.ODL_ROUTER: _generate_router_deps,
     odl_const.ODL_FLOATINGIP: _generate_floatingip_deps,
