@@ -156,31 +156,6 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
         self.assertEqual(2, update_mock.call_count)
 
-    def _test_get_all_pending_and_processing_rows(self):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        row1 = [odl_const.ODL_PORT, 'id', odl_const.ODL_UPDATE,
-                {'test': 'data'}]
-        db.create_pending_row(self.db_session, *row1)
-        rows = db.get_pending_and_processing_rows(
-            self.db_session, [odl_const.ODL_NETWORK, odl_const.ODL_PORT])
-        self.assertEqual(len(rows.all()), 2)
-        return rows
-
-    def test_get_all_pending_and_processing_rows(self):
-        rows = self._test_get_all_pending_and_processing_rows()
-        for row in rows:
-            if row.object_type == odl_const.ODL_PORT:
-                db.update_db_row_state(self.db_session, row,
-                                       odl_const.PROCESSING)
-        rows = db.get_pending_and_processing_rows(
-            self.db_session, [odl_const.ODL_NETWORK, odl_const.ODL_PORT])
-        self.assertEqual(len(rows.all()), 2)
-        for row in rows:
-            if row.object_type == odl_const.ODL_NETWORK:
-                self.assertEqual(row.state, odl_const.PENDING)
-            elif row.object_type == odl_const.ODL_PORT:
-                self.assertEqual(row.state, odl_const.PROCESSING)
-
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
