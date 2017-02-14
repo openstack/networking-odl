@@ -67,7 +67,8 @@ class BaseDependencyValidationsTestCase(object):
             self.db_session, self.second_type, self.second_id,
             self.second_operation, self.second_data)
 
-        for idx, row in enumerate(db.get_all_db_rows(self.db_session)):
+        for idx, row in enumerate(sorted(db.get_all_db_rows(self.db_session),
+                                         key=lambda x: x.seqnum)):
             if self.expected[idx] is not None:
                 self.assertEqual(
                     self.expected[idx],
