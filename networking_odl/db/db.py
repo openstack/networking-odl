@@ -80,6 +80,17 @@ def get_all_db_rows(session):
     return session.query(models.OpendaylightJournal).all()
 
 
+# NOTE(manjeets) This method will help in dependency
+# validation when data b/w dependent operations isn't
+# related
+def get_pending_and_processing_rows(session, resources):
+    query = session.query(models.OpendaylightJournal).filter(
+        or_(models.OpendaylightJournal.state == odl_const.PENDING,
+            models.OpendaylightJournal.state == odl_const.PROCESSING))
+    return query.filter(models.OpendaylightJournal.object_type.in_(
+        resources))
+
+
 def get_all_db_rows_by_state(session, state):
     return session.query(models.OpendaylightJournal).filter_by(
         state=state).all()
