@@ -263,6 +263,54 @@ def trunk_dep(first_type, second_type, first_op, second_op, result,
             'second_id': type_id[second_type]}
 
 
+class TrunkDependencyValidationsTestCase(
+        test_base_db.ODLBaseDbTestCase, BaseDependencyValidationsTestCase):
+    scenarios = (
+        ("trunk_create_depends_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_CREATE, 'fail')),
+        ("trunk_create_doesnt_depend_on_newer_port_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_CREATE, 'pass')),
+        ("trunk_create_doesnt_depend_on_port_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'pass')),
+        ("trunk_create_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
+        # TODO(vthapar): add more/better validations for subport
+        # trunk update means subport add/delete
+        ("trunk_update_depends_on_older_trunk_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
+        ("trunk_update_depends_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_UPDATE, 'fail', True)),
+        ("trunk_update_doesnt_depend_on_newer_port_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_CREATE, 'pass', True)),
+        ("trunk_update_doesnt_depend_on_port_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_UPDATE, 'pass', True)),
+        ("trunk_update_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_UPDATE, const.ODL_DELETE, 'pass', True)),
+        # trunk delete cases
+        ("trunk_delete_depends_on_older_trunk_create",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_DELETE, 'fail', True)),
+        ("trunk_delete_depends_on_older_trunk_update",
+         trunk_dep(const.ODL_TRUNK, const.ODL_TRUNK,
+                   const.ODL_UPDATE, const.ODL_DELETE, 'fail', True)),
+        ("trunk_delete_doesnt_depend_on_older_port_create",
+         trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
+                   const.ODL_CREATE, const.ODL_DELETE, 'pass')),
+        ("trunk_delete_doesnt_depend_on_newer_port_delete",
+         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
+                   const.ODL_DELETE, const.ODL_DELETE, 'pass')),
+    )
+
+
 def l2gw_dep(first_type, second_type, first_op, second_op, result):
     expected = {'fail': (None, False), 'pass': (True, None)}
     type_id = {const.ODL_NETWORK: _NET_ID,
