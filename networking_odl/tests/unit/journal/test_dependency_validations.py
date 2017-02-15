@@ -26,35 +26,67 @@ from networking_odl.tests.unit import test_base_db
 load_tests = testscenarios.load_tests_apply_scenarios
 
 
-def subnet_data(operation):
-    if operation == const.ODL_DELETE:
-        return 'NET_ID'
+_NET_ID = 'NET_ID'
+_NET_DATA = {'id': _NET_ID}
+_SUBNET_ID = 'SUBNET_ID'
+_SUBNET_DATA = {'network_id': _NET_ID}
+_PORT_ID = 'PORT_ID'
+_PORT_DATA = {'network_id': _NET_ID,
+              'fixed_ips': [{'subnet_id': _SUBNET_ID}]}
+_L2GW_ID = 'l2gw_id'
+_L2GW_DATA = {'id': _L2GW_ID}
+_L2GWCONN_ID = 'l2gwconn_id'
+_L2GWCONN_DATA = {'id': _L2GWCONN_ID,
+                  'network_id': _NET_ID,
+                  'gateway_id': _L2GW_ID}
+_TRUNK_ID = 'TRUNK_ID'
+_SUBPORT_ID = 'CPORT_ID'
+_TRUNK_DATA = {'trunk_id': _TRUNK_ID,
+               'port_id': _PORT_ID,
+               'sub_ports': [{'port_id': _SUBPORT_ID}]}
 
-    return {'network_id': 'NET_ID'}
+
+def get_data(res_type, operation):
+    if res_type == const.ODL_NETWORK:
+        return _NET_DATA
+    elif res_type == const.ODL_SUBNET:
+        if operation == const.ODL_DELETE:
+            return [_NET_ID]
+        return _SUBNET_DATA
+    elif res_type == const.ODL_PORT:
+        # TODO(yamahata): test case of (ODL_port, ODL_DELETE) is missing
+        if operation == const.ODL_DELETE:
+            return [_NET_ID, _SUBNET_ID]
+        return _PORT_DATA
+    elif res_type == const.ODL_L2GATEWAY:
+        return _L2GW_DATA
+    elif res_type == const.ODL_L2GATEWAY_CONNECTION:
+        return _L2GWCONN_DATA
+    elif res_type == const.ODL_TRUNK:
+        if operation == const.ODL_DELETE:
+            return [_PORT_ID, _SUBPORT_ID]
+        return _TRUNK_DATA
+    return []
 
 
 def subnet_fail_network_dep(net_op, subnet_op):
     return {'expected': (None, False),
             'first_type': const.ODL_NETWORK,
             'first_operation': net_op,
-            'first_id': 'NET_ID',
-            'first_data': None,
+            'first_id': _NET_ID,
             'second_type': const.ODL_SUBNET,
             'second_operation': subnet_op,
-            'second_id': 'SUBNET_ID',
-            'second_data': subnet_data(subnet_op)}
+            'second_id': _SUBNET_ID}
 
 
 def subnet_succeed_network_dep(net_op, subnet_op):
     return {'expected': (True, None),
             'first_type': const.ODL_SUBNET,
             'first_operation': subnet_op,
-            'first_id': 'SUBNET_ID',
-            'first_data': subnet_data(subnet_op),
+            'first_id': _SUBNET_ID,
             'second_type': const.ODL_NETWORK,
             'second_operation': net_op,
-            'second_id': 'NET_ID',
-            'second_data': None}
+            'second_id': _NET_ID}
 
 
 # TODO(vthapar) add tests for l2gw dependency validations
@@ -62,10 +94,12 @@ class BaseDependencyValidationsTestCase(object):
     def test_dependency(self):
         db.create_pending_row(
             self.db_session, self.first_type, self.first_id,
-            self.first_operation, self.first_data)
+            self.first_operation,
+            get_data(self.first_type, self.first_operation))
         db.create_pending_row(
             self.db_session, self.second_type, self.second_id,
-            self.second_operation, self.second_data)
+            self.second_operation,
+            get_data(self.second_type, self.second_operation))
 
         for idx, row in enumerate(sorted(db.get_all_db_rows(self.db_session),
                                          key=lambda x: x.seqnum)):
@@ -117,56 +151,44 @@ class SubnetDependencyValidationsTestCase(
     )
 
 
-port_data = {'network_id': 'NET_ID',
-             'fixed_ips': [{'subnet_id': 'SUBNET_ID'}]}
-
-
 def port_fail_network_dep(net_op, port_op):
     return {'expected': (None, False),
             'first_type': const.ODL_NETWORK,
             'first_operation': net_op,
-            'first_id': 'NET_ID',
-            'first_data': None,
+            'first_id': _NET_ID,
             'second_type': const.ODL_PORT,
             'second_operation': port_op,
-            'second_id': 'PORT_ID',
-            'second_data': port_data}
+            'second_id': _PORT_ID}
 
 
 def port_succeed_network_dep(net_op, port_op):
     return {'expected': (True, None),
             'first_type': const.ODL_PORT,
             'first_operation': port_op,
-            'first_id': 'PORT_ID',
-            'first_data': port_data,
+            'first_id': _PORT_ID,
             'second_type': const.ODL_NETWORK,
             'second_operation': net_op,
-            'second_id': 'NET_ID',
-            'second_data': None}
+            'second_id': _NET_ID}
 
 
-def port_fail_subnet_dep(net_op, port_op):
+def port_fail_subnet_dep(subnet_op, port_op):
     return {'expected': (None, False),
             'first_type': const.ODL_SUBNET,
-            'first_operation': net_op,
-            'first_id': 'SUBNET_ID',
-            'first_data': None,
+            'first_operation': subnet_op,
+            'first_id': _SUBNET_ID,
             'second_type': const.ODL_PORT,
             'second_operation': port_op,
-            'second_id': 'PORT_ID',
-            'second_data': port_data}
+            'second_id': _PORT_ID}
 
 
-def port_succeed_subnet_dep(net_op, port_op):
+def port_succeed_subnet_dep(subnet_op, port_op):
     return {'expected': (True, None),
             'first_type': const.ODL_PORT,
             'first_operation': port_op,
-            'first_id': 'PORT_ID',
-            'first_data': port_data,
+            'first_id': _PORT_ID,
             'second_type': const.ODL_SUBNET,
-            'second_operation': net_op,
-            'second_id': 'SUBNET_ID',
-            'second_data': None}
+            'second_operation': subnet_op,
+            'second_id': _SUBNET_ID}
 
 
 class PortDependencyValidationsTestCase(
@@ -223,65 +245,36 @@ class PortDependencyValidationsTestCase(
     )
 
 
-def trunk_data(res_type, op):
-    if res_type == const.ODL_PORT:
-        return port_data
-    if res_type == const.ODL_TRUNK:
-        if op == const.ODL_DELETE:
-            return {'PORT_ID', 'CPORT_ID'}
-        else:
-            return {'trunk_id': 'TRUNK_ID',
-                    'port_id': 'PORT_ID',
-                    'sub_ports': [{'port_id': 'CPORT_ID'}]}
-    return []
-
-
 def trunk_dep(first_type, second_type, first_op, second_op, result,
               sub_port=False):
     if first_type == second_type:
         expected = {'fail': (True, False), 'pass': (True, True)}
     else:
         expected = {'fail': (None, False), 'pass': (True, None)}
-    port_id = 'CPORT_ID' if sub_port else 'PORT_ID'
+    port_id = _SUBPORT_ID if sub_port else _PORT_ID
     type_id = {const.ODL_PORT: port_id,
-               const.ODL_TRUNK: 'TRUNK_ID'}
+               const.ODL_TRUNK: _TRUNK_ID}
     return {'expected': expected[result],
             'first_type': first_type,
             'first_operation': first_op,
             'first_id': type_id[first_type],
-            'first_data': trunk_data(first_type, first_op),
             'second_type': second_type,
             'second_operation': second_op,
-            'second_id': type_id[second_type],
-            'second_data': trunk_data(second_type, second_op)}
-
-
-def get_data(res_type):
-    if res_type == const.ODL_NETWORK:
-        return 'NET_ID'
-    elif res_type == const.ODL_L2GATEWAY:
-        return {'id': 'l2gw_id'}
-    elif res_type == const.ODL_L2GATEWAY_CONNECTION:
-        return {'id': 'l2gwconn_id',
-                'network_id': 'NET_ID',
-                'gateway_id': 'l2gw_id'}
-    return []
+            'second_id': type_id[second_type]}
 
 
 def l2gw_dep(first_type, second_type, first_op, second_op, result):
     expected = {'fail': (None, False), 'pass': (True, None)}
-    type_id = {const.ODL_NETWORK: 'NET_ID',
-               const.ODL_L2GATEWAY: 'l2gw_id',
-               const.ODL_L2GATEWAY_CONNECTION: 'l2gwconn_id'}
+    type_id = {const.ODL_NETWORK: _NET_ID,
+               const.ODL_L2GATEWAY: _L2GW_ID,
+               const.ODL_L2GATEWAY_CONNECTION: _L2GWCONN_ID}
     return {'expected': expected[result],
             'first_type': first_type,
             'first_operation': first_op,
             'first_id': type_id[first_type],
-            'first_data': get_data(first_type),
             'second_type': second_type,
             'second_operation': second_op,
-            'second_id': type_id[second_type],
-            'second_data': get_data(second_type)}
+            'second_id': type_id[second_type]}
 
 
 class L2GWDependencyValidationsTestCase(
