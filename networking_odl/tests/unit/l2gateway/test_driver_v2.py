@@ -28,7 +28,7 @@ class OpendaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
         super(OpendaylightL2GWDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.driver = driverv2.OpenDaylightL2gwDriver(service_plugin=None)
         self.context = self._get_mock_context()
 

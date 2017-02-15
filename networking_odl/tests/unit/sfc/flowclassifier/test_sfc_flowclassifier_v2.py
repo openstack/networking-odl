@@ -29,7 +29,7 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(TestOpenDaylightSFCFlowClassifierDriverV2, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.handler = sfc_fc.OpenDaylightSFCFlowClassifierDriverV2()
         self.handler.initialize()
 

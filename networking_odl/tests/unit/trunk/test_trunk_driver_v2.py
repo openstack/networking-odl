@@ -51,7 +51,7 @@ FAKE_TRUNK = {
 class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         super(TestTrunkHandler, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.handler = (trunk_driver.
                         OpenDaylightTrunkHandlerV2())
 

@@ -28,7 +28,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(TestOpenDaylightSFCDriverV2, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.handler = sfc.OpenDaylightSFCDriverV2()
         self.handler.initialize()
 

@@ -31,7 +31,7 @@ from networking_odl.tests import base
 class RecoveryTestCase(SqlTestCaseLight):
     def setUp(self):
         super(RecoveryTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
 
         self.useFixture(
             base.OpenDaylightRestClientGlobalFixture(recovery._CLIENT))
