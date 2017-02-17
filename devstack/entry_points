@@ -310,7 +310,18 @@ function bind_opendaylight_controller {
     sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
     # for pseudo agent port binding
     if [ "$ODL_PORT_BINDING_CONTROLLER" == "pseudo-agentdb-binding" ]; then
-        sudo neutron-odl-ovs-hostconfig --config-file=$NEUTRON_CONF $ODL_OVS_HOSTCONFIGS_OPTIONS
+        ODL_OVS_HOSTCONFIGS_OPTIONS=${ODL_OVS_HOSTCONFIGS_OPTIONS:---debug --noovs_dpdk}
+        if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
+            ODL_OVS_HOSTCONFIGS_OPTIONS="${ODL_OVS_HOSTCONFIGS_OPTIONS} --bridge_mappings=${ODL_PROVIDER_MAPPINGS}"
+        fi
+        if [[ -n "$ODL_OVS_HOSTCONFIGS" ]]; then
+            ODL_OVS_HOSTCONFIGS_OPTIONS=${ODL_OVS_HOSTCONFIGS_OPTIONS} --ovs_hostconfigs="$ODL_OVS_HOSTCONFIGS"
+        fi
+        if [[ ! -f $NEUTRON_CONF ]]; then
+            sudo neutron-odl-ovs-hostconfig  $ODL_OVS_HOSTCONFIGS_OPTIONS
+        else
+            sudo neutron-odl-ovs-hostconfig --config-file=$NEUTRON_CONF $ODL_OVS_HOSTCONFIGS_OPTIONS
+        fi
     fi
 }
 
