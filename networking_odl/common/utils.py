@@ -16,12 +16,8 @@
 import collections
 import socket
 
-from oslo_log import log
-
 from networking_odl.common import cache
 from networking_odl.common import constants as odl_const
-
-LOG = log.getLogger(__name__)
 
 
 def try_del(d, keys):
