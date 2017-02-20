@@ -101,7 +101,9 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_delete_bgpvpn(self):
         fake_data = self._get_fake_bgpvpn()
-        self.driver.delete_bgpvpn_postcommit(self.context, fake_data)
+        self.driver.delete_bgpvpn_precommit(self.context, fake_data)
+        self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_BGPVPN,
+                        fake_data)
         self.thread.run_sync_thread(exit_after_run=True)
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_BGPVPN,
                         fake_data, False)
@@ -128,8 +130,11 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         fake_bgpvpn_data = self._get_fake_bgpvpn(router=False)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
-            self.driver.delete_router_assoc_postcommit(self.context,
-                                                       fake_rtr_assoc_data)
+            self.driver.delete_router_assoc_precommit(self.context,
+                                                      fake_rtr_assoc_data)
+            self._assert_op(odl_const.ODL_UPDATE,
+                            odl_const.ODL_BGPVPN,
+                            fake_bgpvpn_data)
             self.thread.run_sync_thread(exit_after_run=True)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
@@ -156,8 +161,11 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         fake_bgpvpn_data = self._get_fake_bgpvpn(net=False)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
-            self.driver.delete_net_assoc_postcommit(self.context,
-                                                    fake_net_assoc_data)
+            self.driver.delete_net_assoc_precommit(self.context,
+                                                   fake_net_assoc_data)
+            self._assert_op(odl_const.ODL_UPDATE,
+                            odl_const.ODL_BGPVPN,
+                            fake_bgpvpn_data)
             self.thread.run_sync_thread(exit_after_run=True)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
