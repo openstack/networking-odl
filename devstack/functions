@@ -40,11 +40,11 @@ function _xpath {
     echo $result
 }
 
-# get snapshot version <major>.<minor> -> <maor>.<minor>.<reivision>
+# get snapshot version <major>.<minor> -> <major>.<minor>.<reivision>
 function odl_snapshot_full_version {
     local ODL_DIR=$1
     local ODL_URL_PREFIX=$2
-    local MAJOR_MINOR=$1
+    local MAJOR_MINOR=$3
     local OFFLINE=$4
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-snapshot.xml
@@ -58,7 +58,7 @@ function odl_snapshot_full_version {
     if [[ "$MAJOR_MINOR" == "latest" ]]; then
         local ODL_FULL_VERSION=$(_xpath "//latest/text()" $MAVENMETAFILE)
     else
-        local ODL_FULL_VERSION=$(_xpath "//version[starts-with(text(), '$MAOR_MINOR')][last()]/text()" $MAVENMETAFILE)
+        local ODL_FULL_VERSION=$(_xpath "//version[starts-with(text(), '$MAJOR_MINOR')][last()]/text()" $MAVENMETAFILE)
     fi
     ODL_FULL_VERSION=${ODL_FULL_VERSION/-SNAPSHOT/}
     echo $ODL_FULL_VERSION

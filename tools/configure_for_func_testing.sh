@@ -74,6 +74,8 @@ function _init {
     FILES=$DEVSTACK_PATH/files
     TOP_DIR=$DEVSTACK_PATH
 
+    source $DEVSTACK_PATH/inc/meta-config
+    extract_localrc_section $TOP_DIR/local.conf $TOP_DIR/localrc $TOP_DIR/.localrc.auto
     source $DEVSTACK_PATH/stackrc
 
     # Allow the gate to override values set by stackrc.
