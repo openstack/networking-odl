@@ -5,6 +5,8 @@ set -xe
 # Drop a token that marks the build as coming from openstack infra
 GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
+# for localrc_set
+source $DEVSTACK_PATH/inc/ini-config
 
 case "$ODL_RELEASE_BASE" in
     latest-snapshot)
@@ -98,40 +100,40 @@ case "$ODL_RELEASE_BASE" in
         ;;
 esac
 
-cat <<EOF >> $DEVSTACK_PATH/localrc
+local localrc_file=$DEVSTACK_PATH/local.conf
 
-IS_GATE=True
+localrc_set $localrc_file "IS_GATE" "True"
 
 # Set here the ODL release to use for the Gate job
-ODL_RELEASE=${ODL_RELEASE}
+localrc_set $localrc_file "ODL_RELEASE" "${ODL_RELEASE}"
 
 # Set here which driver, v1 or v2 driver
-ODL_V2DRIVER=${ODL_V2DRIVER}
+localrc_set $localrc_file "ODL_V2DRIVER" "${ODL_V2DRIVER}"
 
 # Set timeout in seconds for http client to ODL neutron northbound
-ODL_TIMEOUT=60
+localrc_set $localrc_file "ODL_TIMEOUT" "60"
 
 # Set here which port binding controller
-ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER}
+localrc_set $localrc_file "ODL_PORT_BINDING_CONTROLLER" "${ODL_PORT_BINDING_CONTROLLER}"
 
 # Set here which ODL openstack service provider to use
-ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE}
+localrc_set $localrc_file "ODL_NETVIRT_KARAF_FEATURE" "${ODL_NETVIRT_KARAF_FEATURE}"
 
 # Switch to using the ODL's L3 implementation
-ODL_L3=True
+localrc_set $localrc_file "ODL_L3" "True"
 
 # TODO(yamahata): only for legacy netvirt
-Q_USE_PUBLIC_VETH=True
-Q_PUBLIC_VETH_EX=veth-pub-ex
-Q_PUBLIC_VETH_INT=veth-pub-int
-ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-${ODL_MAPPING_KEY}:\${Q_PUBLIC_VETH_INT}}
+# Since localrc_set adds it in reverse order, ODL_PROVIDER_MAPPINGS needs to be
+# before depending variables
+localrc_set $localrc_file "ODL_PROVIDER_MAPPINGS" "\${ODL_PROVIDER_MAPPINGS:-${ODL_MAPPING_KEY}:\${Q_PUBLIC_VETH_INT}}"
+localrc_set $localrc_file "Q_USE_PUBLIC_VETH" "True"
+localrc_set $localrc_file "Q_PUBLIC_VETH_EX" "veth-pub-ex"
+localrc_set $localrc_file "Q_PUBLIC_VETH_INT" "veth-pub-int"
 
 # Enable debug logs for odl ovsdb
-ODL_NETVIRT_DEBUG_LOGS=True
+localrc_set $localrc_file "ODL_NETVIRT_DEBUG_LOGS" "True"
 
-RALLY_SCENARIO=${RALLY_SCENARIO}
-
-EOF
+localrc_set $localrc_file "RALLY_SCENARIO" "${RALLY_SCENARIO}"
 
 # delete private network to workaroud netvirt bug:
 # https://bugs.opendaylight.org/show_bug.cgi?id=7456
