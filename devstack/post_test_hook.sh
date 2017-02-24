@@ -6,7 +6,7 @@ GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
 
 source $DEVSTACK_PATH/functions
-source $DEVSTACK_PATH/localrc
+source $DEVSTACK_PATH/openrc admin admin
 
 TEMPEST_CODE_DIR="$BASE/new/tempest"
 TEMPEST_DATA_DIR="$DATA_DIR/tempest"
