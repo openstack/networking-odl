@@ -5,4 +5,4 @@
 pbr>=1.8 # Apache-2.0
 Babel>=2.3.4 # BSD
 stevedore>=1.17.1 # Apache-2.0
-neutron-lib>=1.1.0 # Apache-2.0
+neutron-lib>=1.2.0 # Apache-2.0
