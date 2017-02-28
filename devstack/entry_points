@@ -340,9 +340,11 @@ function _configure_veth {
 
     local cidr_len=${FLOATING_RANGE#*/}
     sudo ip addr replace ${PUBLIC_NETWORK_GATEWAY}/$cidr_len dev $Q_PUBLIC_VETH_EX
+    sudo ip route replace $FLOATING_RANGE dev $Q_PUBLIC_VETH_EX
     if [[ -n "$IPV6_PUBLIC_RANGE" ]] && [[ -n "$IPV6_PUBLIC_NETWORK_GATEWAY" ]] && [[ -n "$FIXED_RANGE_V6" ]] && [[ -n "$IPV6_ROUTER_GW_IP" ]]; then
         local ipv6_cidr_len=${IPV6_PUBLIC_RANGE#*/}
         sudo ip -6 addr replace ${IPV6_PUBLIC_NETWORK_GATEWAY}/$ipv6_cidr_len dev ${Q_PUBLIC_VETH_EX}
+        sudo ip -6 route replace $IPV6_PUBLIC_RANGE dev $Q_PUBLIC_VETH_EX
     fi
 }
 
