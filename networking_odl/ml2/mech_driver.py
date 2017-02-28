@@ -18,12 +18,12 @@ import copy
 import six
 
 import netaddr
+from neutron_lib.callbacks import resources
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
-from neutron.callbacks import resources
 from neutron.common import utils
 from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import multiprovidernet as mpnet

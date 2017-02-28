@@ -19,10 +19,9 @@ from networking_odl.ml2.mech_driver import OpenDaylightDriver
 from networking_odl.tests import base
 
 import mock
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import resources
 import testtools
-
-from neutron.callbacks import events
-from neutron.callbacks import resources
 
 
 FAKE_ID = 'fakeid'

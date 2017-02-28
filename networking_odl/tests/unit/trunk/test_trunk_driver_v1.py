@@ -22,10 +22,10 @@ from networking_odl.common import constants as odl_const
 from networking_odl.tests import base as odl_base
 from networking_odl.trunk import trunk_driver_v1 as trunk_driver
 
-from neutron.callbacks import events
 from neutron.services.trunk import callbacks
 from neutron.services.trunk import constants as trunk_consts
 
+from neutron_lib.callbacks import events
 from oslo_config import cfg
 
 

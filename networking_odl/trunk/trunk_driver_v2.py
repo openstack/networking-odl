@@ -14,11 +14,11 @@
 #  under the License.
 #
 
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from neutron.callbacks import events
-from neutron.callbacks import registry
 from neutron.services.trunk import constants as t_consts
 from neutron.services.trunk.drivers import base as trunk_base
 

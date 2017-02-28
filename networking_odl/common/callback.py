@@ -15,11 +15,10 @@
 
 import collections
 
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
+from neutron_lib.callbacks import resources
 from oslo_log import log as logging
-
-from neutron.callbacks import events
-from neutron.callbacks import registry
-from neutron.callbacks import resources
 
 from networking_odl.common import constants as odl_const
 
