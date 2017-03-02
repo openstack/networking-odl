@@ -25,7 +25,6 @@ import requests
 
 from neutron.callbacks import resources
 from neutron.common import utils
-from neutron import context as neutron_context
 from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import securitygroup as sg
@@ -33,6 +32,7 @@ from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import provider_net as providernet
+from neutron_lib import context as neutron_context
 from neutron_lib import exceptions as n_exc
 
 from networking_odl._i18n import _LE

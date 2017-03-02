@@ -16,8 +16,8 @@
 
 import requests
 
-from neutron import context as neutron_context
 from neutron_lib import constants
+from neutron_lib import context as neutron_context
 from neutron_lib.plugins import directory
 
 from networking_odl.common import client

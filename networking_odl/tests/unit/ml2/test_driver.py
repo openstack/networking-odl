@@ -14,8 +14,8 @@
 #    under the License.
 
 import mock
-from neutron import context
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from neutron_lib import context
 
 from networking_odl.common import constants as const
 from networking_odl.ml2 import mech_driver as driver

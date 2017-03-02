@@ -16,7 +16,6 @@
 import mock
 import requests
 
-from neutron import context
 from neutron.db import api as neutron_db_api
 from neutron.extensions import external_net as external_net
 from neutron.plugins.ml2 import plugin
@@ -24,6 +23,7 @@ from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit import testlib_api
 from neutron_lib import constants
+from neutron_lib import context
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_serialization import jsonutils
