@@ -274,14 +274,13 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def _test_operation(self, method, status_code, expected_calls,
                         *args, **kwargs):
         request_response = self._get_mock_request_response(status_code)
-        with mock.patch('requests.request',
+        with mock.patch('requests.sessions.Session.request',
                         return_value=request_response) as mock_method:
             method(exit_after_run=True)
 
         if expected_calls:
             mock_method.assert_called_with(
                 headers={'Content-Type': 'application/json'},
-                auth=(cfg.CONF.ml2_odl.username, cfg.CONF.ml2_odl.password),
                 timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
         self.assertEqual(expected_calls, mock_method.call_count)
 

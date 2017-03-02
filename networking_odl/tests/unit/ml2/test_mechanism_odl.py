@@ -364,7 +364,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                                exc_class=None, *args, **kwargs):
         self.mech.odl_drv.out_of_sync = False
         request_response = self._get_mock_request_response(status_code)
-        with mock.patch('requests.request',
+        with mock.patch('requests.sessions.Session.request',
                         return_value=request_response) as mock_method:
             if exc_class is not None:
                 self.assertRaises(exc_class, method, context)
@@ -372,8 +372,6 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                 method(context)
         mock_method.assert_called_once_with(
             headers={'Content-Type': 'application/json'},
-            auth=(config.cfg.CONF.ml2_odl.username,
-                  config.cfg.CONF.ml2_odl.password),
             timeout=config.cfg.CONF.ml2_odl.timeout, *args, **kwargs)
 
     def _test_create_resource_postcommit(self, object_type, status_code,

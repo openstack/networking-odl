@@ -170,7 +170,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
     def _test_operation(self, status_code, expected_calls, *args, **kwargs):
         request_response = self._get_mock_request_response(status_code)
-        with mock.patch('requests.request',
+        with mock.patch('requests.sessions.Session.request',
                         return_value=request_response) as mock_method:
             with mock.patch.object(self.thread.event, 'wait',
                                    return_value=False):
@@ -179,8 +179,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         if expected_calls:
             mock_method.assert_called_with(
                 headers={'Content-Type': 'application/json'},
-                auth=(cfg.CONF.ml2_odl.username,
-                      cfg.CONF.ml2_odl.password),
                 timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
         self.assertEqual(expected_calls, mock_method.call_count)
 
