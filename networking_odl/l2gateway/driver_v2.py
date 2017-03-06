@@ -50,19 +50,19 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
 
     @log_helpers.log_method_call
     def create_l2_gateway_precommit(self, context, l2_gateway):
-        journal.record(context, None, odl_const.ODL_L2GATEWAY,
+        journal.record(context, odl_const.ODL_L2GATEWAY,
                        l2_gateway['id'], odl_const.ODL_CREATE,
                        l2_gateway)
 
     @log_helpers.log_method_call
     def update_l2_gateway_precommit(self, context, l2_gateway):
-        journal.record(context, None, odl_const.ODL_L2GATEWAY,
+        journal.record(context, odl_const.ODL_L2GATEWAY,
                        l2_gateway['id'], odl_const.ODL_UPDATE,
                        l2_gateway)
 
     @log_helpers.log_method_call
     def delete_l2_gateway_precommit(self, context, l2_gateway_id):
-        journal.record(context, None, odl_const.ODL_L2GATEWAY,
+        journal.record(context, odl_const.ODL_L2GATEWAY,
                        l2_gateway_id, odl_const.ODL_DELETE,
                        l2_gateway_id)
 
@@ -73,7 +73,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         odl_l2_gateway_connection['gateway_id'] = (
             l2_gateway_connection['l2_gateway_id'])
         odl_l2_gateway_connection.pop('l2_gateway_id')
-        journal.record(context, None, odl_const.ODL_L2GATEWAY_CONNECTION,
+        journal.record(context, odl_const.ODL_L2GATEWAY_CONNECTION,
                        odl_l2_gateway_connection['id'],
                        odl_const.ODL_CREATE,
                        odl_l2_gateway_connection)
@@ -81,7 +81,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
     @log_helpers.log_method_call
     def delete_l2_gateway_connection_precommit(self, context,
                                                l2_gateway_connection_id):
-        journal.record(context, None, odl_const.ODL_L2GATEWAY_CONNECTION,
+        journal.record(context, odl_const.ODL_L2GATEWAY_CONNECTION,
                        l2_gateway_connection_id,
                        odl_const.ODL_DELETE,
                        l2_gateway_connection_id)
