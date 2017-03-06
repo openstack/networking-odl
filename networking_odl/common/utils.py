@@ -62,14 +62,9 @@ def get_addresses_by_name(name, time_to_live=60.0):
 
 
 def make_url_object(object_type):
-    if object_type[-1:] == 'y':
-        obj_pl = neutronify(object_type[:-1] + 'ies')
-    else:
+    obj_pl = odl_const.RESOURCE_URL_MAPPINGS.get(object_type, None)
+    if obj_pl is None:
         obj_pl = neutronify(object_type + 's')
-
-    prefix = odl_const.PREFIXES.get(object_type, None)
-    if prefix is not None:
-        obj_pl = prefix + '/' + obj_pl
     return obj_pl
 
 
