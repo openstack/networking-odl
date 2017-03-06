@@ -31,16 +31,13 @@ class TestUtils(base.DietTestCase):
     def test_neutronify_empty(self):
         self.assertEqual('', utils.neutronify(''))
 
-    def test_make_url_object_with_prefix(self):
+    def test_make_url_object_in_resource_map(self):
         url_object = utils.make_url_object('policy')
         self.assertEqual('qos/policies', url_object)
 
-    def test_make_url_object_without_prefix(self):
-        self.assertEqual('networks', utils.make_url_object('network'))
-
     def test_make_url_object_conversion(self):
-        self.assertEqual('net-ip-availabilities',
-                         utils.make_url_object('net_ip_availability'))
+        self.assertEqual('networks', utils.make_url_object('network'))
+        self.assertEqual('l2-gateways', utils.make_url_object('l2_gateway'))
 
 
 class TestGetAddressesByName(base.DietTestCase):

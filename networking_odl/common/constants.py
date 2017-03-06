@@ -78,5 +78,5 @@ PROCESSING = 'processing'
 FAILED = 'failed'
 COMPLETED = 'completed'
 
-# dict to store url prefixes
-PREFIXES = {ODL_QOS_POLICY: 'qos'}
+# dict to store url mappings
+RESOURCE_URL_MAPPINGS = {ODL_QOS_POLICY: ODL_QOS_POLICIES}
