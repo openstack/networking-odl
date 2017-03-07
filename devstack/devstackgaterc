@@ -138,12 +138,6 @@ if [ -n $DEVSTACK_GATE_GRENADE ]; then
     r="$r|(?:tempest\.scenario\.test_minimum_basic\.TestMinimumBasicScenario\.test_minimum_basic_scenario.*)"
 fi
 
-# BUG: https://bugs.opendaylight.org/show_bug.cgi?id=7848
-# port security enabled isn't honored by ODL neutron northbound.
-# Once the patch, https://git.opendaylight.org/gerrit/#/c/52267/, is merged,
-# remove this.
-r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_port_security_macspoofing_port.*)"
-
 # End list of exclusions.
 r="$r)"
 
