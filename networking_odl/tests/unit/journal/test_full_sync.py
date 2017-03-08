@@ -51,8 +51,11 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             {'id': expected_journal[odl_const.ODL_NETWORK]}]
         plugin_instance.get_subnets.return_value = [
             {'id': expected_journal[odl_const.ODL_SUBNET]}]
-        plugin_instance.get_ports.side_effect = ([
-            {'id': expected_journal[odl_const.ODL_PORT]}], [])
+
+        port = {'id': expected_journal[odl_const.ODL_PORT],
+                odl_const.ODL_SGS: None,
+                'tenant_id': '123'}
+        plugin_instance.get_ports.side_effect = ([port], [])
         return expected_journal
 
     def _filter_out_canary(self, rows):
