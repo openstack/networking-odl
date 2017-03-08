@@ -26,7 +26,6 @@ from neutron_lib import constants as q_const
 
 from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const
-from networking_odl.db import db
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
@@ -70,9 +69,9 @@ class OpenDaylightL3RouterPlugin(
             router_dict = super(
                 OpenDaylightL3RouterPlugin, self).create_router(context,
                                                                 router)
-            db.create_pending_row(context.session, odl_const.ODL_ROUTER,
-                                  router_dict['id'], odl_const.ODL_CREATE,
-                                  router_dict)
+            journal.record(context, None, odl_const.ODL_ROUTER,
+                           router_dict['id'], odl_const.ODL_CREATE,
+                           router_dict)
         return router_dict
 
     @journal.call_thread_on_end
@@ -82,8 +81,8 @@ class OpenDaylightL3RouterPlugin(
             router_dict = super(
                 OpenDaylightL3RouterPlugin, self).update_router(
                     context, router_id, router)
-            db.create_pending_row(context.session, odl_const.ODL_ROUTER,
-                                  router_id, odl_const.ODL_UPDATE, router_dict)
+            journal.record(context, None, odl_const.ODL_ROUTER,
+                           router_id, odl_const.ODL_UPDATE, router_dict)
         return router_dict
 
     @journal.call_thread_on_end
@@ -94,9 +93,8 @@ class OpenDaylightL3RouterPlugin(
         with session.begin(subtransactions=True):
             super(OpenDaylightL3RouterPlugin, self).delete_router(context,
                                                                   router_id)
-            db.create_pending_row(context.session, odl_const.ODL_ROUTER,
-                                  router_id, odl_const.ODL_DELETE,
-                                  dependency_list)
+            journal.record(context, None, odl_const.ODL_ROUTER, router_id,
+                           odl_const.ODL_DELETE, dependency_list)
 
     @journal.call_thread_on_end
     def create_floatingip(self, context, floatingip,
@@ -106,9 +104,8 @@ class OpenDaylightL3RouterPlugin(
             fip_dict = super(
                 OpenDaylightL3RouterPlugin, self).create_floatingip(
                     context, floatingip, initial_status)
-            db.create_pending_row(context.session, odl_const.ODL_FLOATINGIP,
-                                  fip_dict['id'], odl_const.ODL_CREATE,
-                                  fip_dict)
+            journal.record(context, None, odl_const.ODL_FLOATINGIP,
+                           fip_dict['id'], odl_const.ODL_CREATE, fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
@@ -127,9 +124,8 @@ class OpenDaylightL3RouterPlugin(
             self.update_floatingip_status(context, floatingip_id,
                                           fip_dict['status'])
 
-            db.create_pending_row(context.session, odl_const.ODL_FLOATINGIP,
-                                  floatingip_id, odl_const.ODL_UPDATE,
-                                  fip_dict)
+            journal.record(context, None, odl_const.ODL_FLOATINGIP,
+                           floatingip_id, odl_const.ODL_UPDATE, fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
@@ -141,9 +137,9 @@ class OpenDaylightL3RouterPlugin(
         with session.begin(subtransactions=True):
             super(OpenDaylightL3RouterPlugin, self).delete_floatingip(
                 context, floatingip_id)
-            db.create_pending_row(context.session, odl_const.ODL_FLOATINGIP,
-                                  floatingip_id, odl_const.ODL_DELETE,
-                                  dependency_list)
+            journal.record(context, None, odl_const.ODL_FLOATINGIP,
+                           floatingip_id, odl_const.ODL_DELETE,
+                           dependency_list)
 
     @journal.call_thread_on_end
     def add_router_interface(self, context, router_id, interface_info):
