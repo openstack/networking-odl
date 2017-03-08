@@ -148,7 +148,7 @@ class OpendaylightJournalThread(object):
                 self.event.wait()
                 self.event.clear()
 
-                session = neutron_db_api.get_session()
+                session = neutron_db_api.get_writer_session()
                 self._sync_pending_rows(session, exit_after_run)
 
                 LOG.debug("Clearing sync thread event")

@@ -151,7 +151,7 @@ class AttributeDict(dict):
 class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
         self.thread = journal.OpendaylightJournalThread()
@@ -170,7 +170,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    'id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
                    'provider:segmentation_id': None}
         context = mock.Mock(current=current)
-        context._plugin_context.session = neutron_db_api.get_session()
+        context._plugin_context.session = neutron_db_api.get_writer_session()
         return context
 
     @staticmethod
@@ -191,7 +191,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    'ip_version': 4,
                    'shared': False}
         context = mock.Mock(current=current)
-        context._plugin_context.session = neutron_db_api.get_session()
+        context._plugin_context.session = neutron_db_api.get_writer_session()
         return context
 
     @staticmethod
@@ -217,10 +217,11 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         _network = OpenDaylightMechanismDriverTestCase.\
             _get_mock_network_operation_context().current
         _plugin = directory.get_plugin()
-        _plugin.get_security_group = mock.Mock(return_value=SECURITY_GROUP)
+        _plugin.writer_get_security_group = mock.Mock(
+            return_value=SECURITY_GROUP)
         _plugin.get_port = mock.Mock(return_value=current)
         _plugin.get_network = mock.Mock(return_value=_network)
-        _plugin_context_mock = {'session': neutron_db_api.get_session()}
+        _plugin_context_mock = {'session': neutron_db_api.get_writer_session()}
         _network_context_mock = {'_network': _network}
         context = {'current': AttributeDict(current),
                    '_plugin': _plugin,
@@ -289,7 +290,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
             plugin_context_mock = mock.Mock()
-            plugin_context_mock.session = neutron_db_api.get_session()
+            plugin_context_mock.session = neutron_db_api.get_writer_session()
             res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
                         if rt.singular == object_type][0]
             res_id = context[object_type]['id']
@@ -583,7 +584,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             context = self._get_mock_operation_context(odl_const.ODL_SG)
             res_id = context[odl_const.ODL_SG]['id']
             plugin_context_mock = mock.Mock()
-            plugin_context_mock.session = neutron_db_api.get_session()
+            plugin_context_mock.session = neutron_db_api.get_writer_session()
             rule = mock.Mock()
             rule.id = SG_RULE_FAKE_ID
             rule.security_group_id = SG_FAKE_ID

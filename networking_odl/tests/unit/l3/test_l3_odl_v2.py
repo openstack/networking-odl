@@ -120,7 +120,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                           'sync_from_callback_postcommit').start()
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.plugin = directory.get_plugin()
         self.plugin._network_is_external = mock.Mock(return_value=True)
         self.driver = directory.get_plugin(constants.L3)
