@@ -13,9 +13,9 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 #
-
-from neutron.extensions import portbindings
 from neutron.services.trunk import constants as t_consts
+from neutron_lib.api.definitions import portbindings
+
 
 SUPPORTED_INTERFACES = (
     portbindings.VIF_TYPE_OVS,
