@@ -90,7 +90,7 @@ class OpendaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
             self.assertEqual(object_type, row['object_type'])
             self.assertEqual(data['id'], row['object_uuid'])
         else:
-            self.assertEqual(None, row)
+            self.assertIsNone(row)
 
     def test_create_l2_gateway(self):
         fake_data = self._get_fake_l2_gateway()

@@ -80,7 +80,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
             self.assertEqual(operation, row['operation'])
             self.assertEqual(object_type, row['object_type'])
         elif timing == 'after':
-            self.assertEqual(None, row)
+            self.assertIsNone(row)
 
     # TODO(yamahata): utilize test scenarios
     def test_create_port_pair_precommit(self):
