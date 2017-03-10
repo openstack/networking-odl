@@ -198,7 +198,7 @@ function _install_opendaylight {
     set +e
     curl -o /dev/null --fail --silent --head -u \
          ${ODL_USERNAME}:${ODL_PASSWORD} \
-         http://${ODL_MGR_IP}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}
+         http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}
     local result=$?
     set -e
     if [ $result -eq 0 ]; then

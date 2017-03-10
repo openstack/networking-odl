@@ -26,15 +26,20 @@
 ODL_RELEASE=${ODL_RELEASE:-latest-snapshot}
 
 # The IP address of ODL. Set this in local.conf.
-ODL_MGR_IP=${ODL_MGR_IP:-$SERVICE_HOST}
+
+#Set ODL_MGR_HOST to ODL_MGR_IP if ODL_MGR_HOST is not set
+ODL_MGR_HOST=${ODL_MGR_HOST:-$ODL_MGR_IP}
+
+# Set ODL_MGR_HOST to SERVICE_HOST if neither ODL_MGR_HOST nor ODL_MGR_IP is set
+ODL_MGR_HOST=${ODL_MGR_HOST:-$SERVICE_HOST}
 
 # The list of IP addresses used as OVS manager, separated by a comma.
-# In non-clustering cases, this is normally the same as ODL_MGR_IP. However,
+# In non-clustering cases, this is normally the same as ODL_MGR_HOST. However,
 # for HA deployments the southbound portion to ODL is expected to
 # use the ip addresses of the ODL instances instead of a single vip. That
 # enables OVS to simultaneously connect to more than one ODL instance.
 # Example of expected format: ODL_OVS_MANAGERS=1.1.1.1,2.2.2.2,3.3.3.3
-ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_IP}
+ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_HOST}
 
 # The default ODL port for Tomcat to use
 # NOTE: We make this configurable because by default, ODL uses port 8080 for
@@ -43,7 +48,7 @@ ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_IP}
 ODL_PORT=${ODL_PORT:-8087}
 
 # The ODL endpoint URL
-ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_IP}:${ODL_PORT}/controller/nb/v2/neutron}
+ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_HOST}:${ODL_PORT}/controller/nb/v2/neutron}
 
 # The ODL username
 ODL_USERNAME=${ODL_USERNAME:-admin}
