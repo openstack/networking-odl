@@ -94,7 +94,7 @@ class OpendaylightJournalThread(object):
     def __init__(self):
         self.client = client.OpenDaylightRestClient.create_client()
         self._odl_sync_timeout = cfg.CONF.ml2_odl.sync_timeout
-        self._row_retry_count = cfg.CONF.ml2_odl.retry_count
+        self._max_retry_count = cfg.CONF.ml2_odl.retry_count
         self.event = threading.Event()
         self.lock = threading.Lock()
         self._odl_sync_thread = self.start_odl_sync_thread()
@@ -112,7 +112,6 @@ class OpendaylightJournalThread(object):
     def set_sync_event(self):
         # Prevent race when starting the timer
         with self.lock:
-            LOG.debug("Resetting thread timer")
             self._timer.cancel()
             self._start_sync_timer()
         self.event.set()
@@ -149,9 +148,8 @@ class OpendaylightJournalThread(object):
                 self.event.clear()
 
                 session = neutron_db_api.get_writer_session()
-                self._sync_pending_rows(session, exit_after_run)
+                self._sync_pending_entries(session, exit_after_run)
 
-                LOG.debug("Clearing sync thread event")
                 if exit_after_run:
                     # Permanently waiting thread model breaks unit tests
                     # Adding this arg to exit here only for unit tests
@@ -160,53 +158,45 @@ class OpendaylightJournalThread(object):
                 # Catch exceptions to protect the thread while running
                 LOG.exception(_LE("Error on run_sync_thread"))
 
-    def _sync_pending_rows(self, session, exit_after_run):
-        while True:
-            LOG.debug("Thread walking database")
-            row = db.get_oldest_pending_db_row_with_lock(session)
-            if not row:
-                LOG.debug("No rows to sync")
-                break
+    def _sync_pending_entries(self, session, exit_after_run):
+        LOG.debug("Start processing journal entries")
+        entry = db.get_oldest_pending_db_row_with_lock(session)
+        if entry is None:
+            LOG.debug("No journal entries to process")
+            return
 
-            # Validate the operation
-            valid = dependency_validations.validate(session, row)
+        while entry is not None:
+            log_dict = {'op': entry.operation, 'type': entry.object_type,
+                        'id': entry.object_uuid}
+
+            valid = dependency_validations.validate(session, entry)
             if not valid:
-                LOG.info(_LI("%(operation)s %(type)s %(uuid)s is not a "
-                             "valid operation yet, skipping for now"),
-                         {'operation': row.operation,
-                          'type': row.object_type,
-                          'uuid': row.object_uuid})
+                db.update_db_row_state(session, entry, odl_const.PENDING)
+                LOG.info(_LI("Skipping %(op)s %(type)s %(id)s due to"
+                             "unprocessed dependencies."), log_dict)
 
-                # Set row back to pending.
-                db.update_db_row_state(session, row, odl_const.PENDING)
                 if exit_after_run:
                     break
                 continue
 
-            LOG.info(_LI("Syncing %(operation)s %(type)s %(uuid)s"),
-                     {'operation': row.operation, 'type': row.object_type,
-                      'uuid': row.object_uuid})
-
-            # Add code to sync this to ODL
-            method, urlpath, to_send = self._json_data(row)
+            LOG.info(_LI("Processing - %(op)s %(type)s %(id)s"), log_dict)
+            method, urlpath, to_send = self._json_data(entry)
 
             try:
                 self.client.sendjson(method, urlpath, to_send)
-                db.update_db_row_state(session, row, odl_const.COMPLETED)
+                db.update_db_row_state(session, entry, odl_const.COMPLETED)
             except exceptions.ConnectionError as e:
-                # Don't raise the retry count, just log an error
-                LOG.error(_LE("Cannot connect to the Opendaylight Controller"))
-                # Set row back to pending
-                db.update_db_row_state(session, row, odl_const.PENDING)
-                # Break our of the loop and retry with the next
-                # timer interval
+                # Don't raise the retry count, just log an error & break
+                db.update_db_row_state(session, entry, odl_const.PENDING)
+                LOG.error(_LE("Cannot connect to the OpenDaylight Controller,"
+                              " will not process additional entries"))
                 break
             except Exception as e:
-                LOG.error(_LE("Error syncing %(type)s %(operation)s,"
-                              " id %(uuid)s Error: %(error)s"),
-                          {'type': row.object_type,
-                           'uuid': row.object_uuid,
-                           'operation': row.operation,
-                           'error': e.message})
-                db.update_pending_db_row_retry(session, row,
-                                               self._row_retry_count)
+                log_dict['error'] = e.message
+                LOG.error(_LE("Error while processing %(op)s %(type)s %(id);"
+                              " Error: %(error)s"), log_dict)
+                db.update_pending_db_row_retry(
+                    session, entry, self._max_retry_count)
+
+            entry = db.get_oldest_pending_db_row_with_lock(session)
+        LOG.debug("Finished processing journal entries")
