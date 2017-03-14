@@ -74,11 +74,11 @@ def _sync_resource_to_odl(session, row, operation_type, exists_on_odl):
     except nexc.NotFound:
         if exists_on_odl:
             journal.record(
-                neutron_context.get_admin_context(), None, row.object_type,
+                neutron_context.get_admin_context(), row.object_type,
                 row.object_uuid, odl_const.ODL_DELETE, [])
     else:
         journal.record(
-            neutron_context.get_admin_context(), None, row.object_type,
+            neutron_context.get_admin_context(), row.object_type,
             row.object_uuid, operation_type, resource)
 
     db.update_db_row_state(session, row, odl_const.COMPLETED)

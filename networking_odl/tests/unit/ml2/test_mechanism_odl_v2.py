@@ -597,14 +597,14 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                 callback._RESOURCE_MAPPING[odl_const.ODL_SG],
                 res_id, context, **kwargs)
             record.assert_has_calls(
-                [mock.call(mock.ANY, None, 'security_group', 'sg_fake_uuid',
+                [mock.call(mock.ANY, 'security_group', 'sg_fake_uuid',
                            'delete',
                            {'description': 'test-description',
                             'project_id': 'test-tenant',
                             'rules': [],
                             'tenant_id': 'test-tenant',
                             'id': 'sg_fake_uuid', 'name': 'test_sg'}),
-                 mock.call(mock.ANY, None, 'security_group_rule',
+                 mock.call(mock.ANY, 'security_group_rule',
                            'sg_rule_fake_uuid', 'delete', ['sg_fake_uuid'])])
 
     def test_sync_multiple_updates(self):

@@ -40,7 +40,7 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
     def _record_in_journal(context, object_type, operation, data=None):
         if data is None:
             data = context.current
-        journal.record(context._plugin_context, context, object_type,
+        journal.record(context._plugin_context, object_type,
                        context.current['id'], operation, data)
 
     def create_port_pair_precommit(self, context):

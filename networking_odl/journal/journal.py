@@ -78,8 +78,8 @@ def _enrich_port(plugin_context, ml2_context, object_type, operation, data):
     return new_data
 
 
-def record(plugin_context, ml2_context,
-           object_type, object_uuid, operation, data):
+def record(plugin_context, object_type, object_uuid, operation, data,
+           ml2_context=None):
     if (object_type == odl_const.ODL_PORT and
             operation in (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)):
         data = _enrich_port(

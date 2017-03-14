@@ -39,8 +39,7 @@ class OpenDaylightTrunkHandlerV2(object):
 
     @staticmethod
     def _record_in_journal(context, trunk_id, operation, data):
-        journal.record(context, context, odl_const.ODL_TRUNK,
-                       trunk_id, operation, data)
+        journal.record(context, odl_const.ODL_TRUNK, trunk_id, operation, data)
 
     # TODO(vthapar) Revisit status updates once websockets are fully
     # implemented - https://review.openstack.org/#/c/421127/

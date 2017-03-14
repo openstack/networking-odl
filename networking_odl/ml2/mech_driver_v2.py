@@ -76,8 +76,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
     def _record_in_journal(context, object_type, operation, data=None):
         if data is None:
             data = context.current
-        journal.record(context._plugin_context, context, object_type,
-                       context.current['id'], operation, data)
+        journal.record(context._plugin_context, object_type,
+                       context.current['id'], operation, data,
+                       ml2_context=context)
 
     def create_network_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
@@ -166,7 +167,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         for sg in sgs:
             sg_id = sg['id']
             res = self._make_security_group_dict(sg)
-            journal.record(context, None, object_type, sg_id, operation, res)
+            journal.record(context, object_type, sg_id, operation, res)
             # NOTE(yamahata): when security group is created, default rules
             # are also created.
             # NOTE(yamahata): at this point, rule.security_group_id isn't
@@ -176,7 +177,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                          rule.security_group == sg)]
             for rule in rules:
                 res_rule = self._make_security_group_rule_dict(rule, sg_id)
-                journal.record(context, None, odl_const.ODL_SG_RULE,
+                journal.record(context, odl_const.ODL_SG_RULE,
                                rule['id'], odl_const.ODL_CREATE, res_rule)
 
     def sync_from_callback_precommit(self, context, operation, res_type,
@@ -237,7 +238,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 LOG.error(_LE("bulk creation of sgrule isn't supported"))
                 raise NotImplementedError(
                     _("unsupporetd bulk creation of security group rule"))
-        journal.record(context, None, object_type, object_uuid,
+        journal.record(context, object_type, object_uuid,
                        operation, resource_dict)
         # NOTE(yamahata): DB auto deletion
         # Security Group Rule under this Security Group needs to
@@ -246,7 +247,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if (object_type == odl_const.ODL_SG and
                 operation == odl_const.ODL_DELETE):
             for rule in kwargs['security_group'].rules:
-                journal.record(context, None, odl_const.ODL_SG_RULE,
+                journal.record(context, odl_const.ODL_SG_RULE,
                                rule.id, odl_const.ODL_DELETE, [object_uuid])
 
     def sync_from_callback_postcommit(self, context, operation, res_type,

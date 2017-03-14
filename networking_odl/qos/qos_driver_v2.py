@@ -51,7 +51,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     @log_helpers.log_method_call
     def create_policy(self, context, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context, context,
+        journal.record(context,
                        odl_const.ODL_QOS_POLICY, data['id'],
                        odl_const.ODL_CREATE, data)
         self.journal.set_sync_event()
@@ -59,7 +59,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     @log_helpers.log_method_call
     def update_policy(self, context, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context, context,
+        journal.record(context,
                        odl_const.ODL_QOS_POLICY, data['id'],
                        odl_const.ODL_UPDATE, data)
         self.journal.set_sync_event()
@@ -67,7 +67,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     @log_helpers.log_method_call
     def delete_policy(self, context, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context, context,
+        journal.record(context,
                        odl_const.ODL_QOS_POLICY, data['id'],
                        odl_const.ODL_DELETE, data)
         self.journal.set_sync_event()
