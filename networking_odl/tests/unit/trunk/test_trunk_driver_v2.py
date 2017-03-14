@@ -87,7 +87,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
             self.assertEqual(odl_const.ODL_TRUNK, row['object_type'])
             self.assertEqual(fake_payload.trunk_id, row['object_uuid'])
         elif timing == 'after':
-            self.assertEqual(None, row)
+            self.assertIsNone(row)
 
     def test_trunk_create_precommit(self):
         self._test_event("create", "precommit")

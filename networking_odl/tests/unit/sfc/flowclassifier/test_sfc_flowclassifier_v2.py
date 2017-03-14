@@ -57,7 +57,7 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
             self.assertEqual(
                 odl_const.ODL_SFC_FLOW_CLASSIFIER, row['object_type'])
         elif timing == 'after':
-            self.assertEqual(None, row)
+            self.assertIsNone(row)
 
     # TODO(yamahata): utilize test scenarios
     def test_create_flow_classifier_precommit(self):
