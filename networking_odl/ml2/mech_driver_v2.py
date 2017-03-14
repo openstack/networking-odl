@@ -18,9 +18,9 @@ from oslo_log import log as logging
 
 from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api as api
 from neutron_lib.api.definitions import provider_net as providernet
+from neutron_lib import constants as p_const
 from neutron_lib.plugins import directory
 
 from networking_odl._i18n import _, _LE
