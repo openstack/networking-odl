@@ -30,7 +30,7 @@ function _xpath {
     if is_ubuntu; then
         install_package libxml-xpath-perl >/dev/null
         result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
-    elif is_fedora; then
+    elif [ "$os_VENDOR" = "Fedora" ]; then
         yum_install perl-XML-XPath >/dev/null
         result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
     else
