@@ -193,7 +193,7 @@ class OpendaylightJournalThread(object):
                 break
             except Exception as e:
                 log_dict['error'] = e.message
-                LOG.error(_LE("Error while processing %(op)s %(type)s %(id);"
+                LOG.error(_LE("Error while processing %(op)s %(type)s %(id)s;"
                               " Error: %(error)s"), log_dict)
                 db.update_pending_db_row_retry(
                     session, entry, self._max_retry_count)
