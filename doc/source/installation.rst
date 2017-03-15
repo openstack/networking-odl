@@ -116,7 +116,7 @@ All related neutron services need to be restarted after configuration change.
 
         [ml2]
         ...
-        mechanism_drivers = opendaylight
+        mechanism_drivers = opendaylight_v2
         type_drivers = local,flat,vlan,vxlan
         tenant_network_types = vxlan
         extension_drivers = port_security, qos

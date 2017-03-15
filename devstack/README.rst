@@ -65,7 +65,6 @@
      enable_plugin networking-ovs-dpdk http://git.openstack.org/openstack/networking-ovs-dpdk
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
      SKIP_OVS_INSTALL=True
-     Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight
 
 10. Note: Optionally, to use the new netvirt implementation
     (netvirt-vpnservice-openstack), add the following to the local.conf file
@@ -79,8 +78,8 @@
       ODL_NETVIRT_KARAF_FEATURE=odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-vpnservice-openstack
       ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/ # Workaround since netvirt:1 no longer exists in DS!
 
-11. Note: Enable Quality Of Service (QoS) with OpenDaylight Backend
-    enable the qos service plugin by adding qos to service_plugins::
+11. Note: To enable Quality Of Service (QoS) with OpenDaylight Backend,
+    add the following lines in neutron.conf::
 
       > in /etc/neutron/neutron.conf
       service_plugins = qos, odl-router
@@ -102,17 +101,8 @@
 
     restart neutron service q-svc
 
-12. Note: To enable networking-sfc driver to use with OpenDaylight controller
-    please add following configuration::
 
-      > in /etc/neutron/neutron.conf
-      [sfc]
-      drivers = odl
-
-      [flowclassifier]
-      drivers = odl
-
-13. Note: legacy netvirt specific options
+12. Note: legacy netvirt specific options
 
     - OVS conntrack support
 
@@ -133,17 +123,14 @@
         [[local|localrc]]
         ODL_LEGACY_NETVIRT_CONNTRACK=True
 
-14. Note: Enable Vlan Aware VMs (Trunk) with OpenDaylight Backend
-    enable the trunk service plugin by making following entry in local.conf::
+13. Note: To enable Vlan Aware VMs (Trunk) with OpenDaylight Backend,
+    make the following entries in local.conf::
 
      > cat local.conf
      [[local|localrc]]
      Q_SERVICE_PLUGIN_CLASSES=trunk
 
-    V1 or V2 version of trunk driver will be determined by which version
-    of ML2 mechanism driver is configured, no extra configuration required.
-
-15. Enabling L2Gateway Backend for OpenDaylight
+14. Enabling L2Gateway Backend for OpenDaylight
 
 - The package networking-l2gw must be installed as a pre-requisite.
 
@@ -155,7 +142,7 @@
 - Now stack up Devstack and after stacking completes, we are all set to use
   l2gateway-as-a-service with OpenDaylight.
 
-16. Note: To enable networking-sfc (version 2) driver to use with OpenDaylight
+15. Note: To enable networking-sfc driver to use with OpenDaylight
     controller, please add following configuration::
 
       > in /etc/neutron/neutron.conf
@@ -165,8 +152,7 @@
       [flowclassifier]
       drivers = odl_v2
 
-17. Enabling BGPVPN with OpenDaylight Backend using the Version 2 OpenDaylight
-Driver for BGPVPN:
+16. To enable BGPVPN driver to use with OpenDaylight controller
 
 Include the following lines in your localrc (or local.conf)
 
