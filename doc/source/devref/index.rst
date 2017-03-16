@@ -32,6 +32,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   quickstart.rst
    drivers_architecture
    hostconfig
    maintenance
