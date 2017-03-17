@@ -31,6 +31,7 @@ from networking_odl.trunk import constants as odltrunk_const
 LOG = logging.getLogger(__name__)
 
 
+@registry.has_registry_receivers
 class OpenDaylightTrunkHandlerV2(object):
     def __init__(self):
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
@@ -75,6 +76,7 @@ class OpenDaylightTrunkHandlerV2(object):
         self.journal.set_sync_event()
 
 
+@registry.has_registry_receivers
 class OpenDaylightTrunkDriverV2(trunk_base.DriverBase):
     @property
     def is_loaded(self):
@@ -84,6 +86,7 @@ class OpenDaylightTrunkDriverV2(trunk_base.DriverBase):
         except cfg.NoSuchOptError:
             return False
 
+    @registry.receives(t_consts.TRUNK_PLUGIN, [events.AFTER_INIT])
     def register(self, resource, event, trigger, **kwargs):
         super(OpenDaylightTrunkDriverV2, self).register(
             resource, event, trigger, **kwargs)

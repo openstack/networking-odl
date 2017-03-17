@@ -37,6 +37,7 @@ LOG = logging.getLogger(__name__)
 # In case of failure in rest, it resets it to DEGRADED.
 
 
+@registry.has_registry_receivers
 class OpenDaylightTrunkHandlerV1(object):
     def __init__(self):
         self.client = odl_client.OpenDaylightRestClient.create_client()
@@ -68,6 +69,9 @@ class OpenDaylightTrunkHandlerV1(object):
             with excutils.save_and_reraise_exception():
                 updated.update(status=t_consts.DEGRADED_STATUS)
 
+    @registry.receives(t_consts.TRUNK, (events.AFTER_CREATE,
+                                        events.AFTER_DELETE,
+                                        events.AFTER_UPDATE))
     def trunk_event(self, resource, event, trunk_plugin, payload):
         if event == events.AFTER_CREATE:
             self.trunk_create_postcommit(payload.current_trunk)
@@ -76,6 +80,8 @@ class OpenDaylightTrunkHandlerV1(object):
         elif event == events.AFTER_DELETE:
             self.trunk_delete_postcommit(payload.original_trunk)
 
+    @registry.receives(t_consts.SUBPORTS, (events.AFTER_CREATE,
+                                           events.AFTER_DELETE))
     def subport_event(self, resource, event, trunk_plugin, payload):
         self.trunk_update_postcommit(payload.current_trunk)
 
@@ -89,19 +95,11 @@ class OpenDaylightTrunkDriverV1(trunk_base.DriverBase):
         except cfg.NoSuchOptError:
             return False
 
+    @registry.receives(t_consts.TRUNK_PLUGIN, [events.AFTER_INIT])
     def register(self, resource, event, trigger, **kwargs):
         super(OpenDaylightTrunkDriverV1, self).register(
             resource, event, trigger, **kwargs)
         self._handler = OpenDaylightTrunkHandlerV1()
-        for event in (events.AFTER_CREATE, events.AFTER_DELETE,
-                      events.AFTER_UPDATE):
-            registry.subscribe(self._handler.trunk_event,
-                               t_consts.TRUNK,
-                               event)
-        for event in (events.AFTER_CREATE, events.AFTER_DELETE):
-            registry.subscribe(self._handler.subport_event,
-                               t_consts.SUBPORTS,
-                               event)
 
     @classmethod
     def create(cls):
