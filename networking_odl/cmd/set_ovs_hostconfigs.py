@@ -333,18 +333,18 @@ def _vif_type_from_conf(conf, userspace_datapath_types):
 
 
 def _vif_details_from_conf(conf, uuid, vif_type):
-    host_addrasses = [conf.local_ip or conf.host]
+    host_addresses = [conf.local_ip or conf.host]
     if vif_type == 'ovs':
         # OVS legacy mode
         return {"uuid": uuid,
-                "host_addresses": host_addrasses,
+                "host_addresses": host_addresses,
                 "has_datapath_type_netdev": False,
                 "support_vhost_user": False}
 
     elif vif_type == 'vhostuser':
         # enable VHOSTUSER
         return {"uuid": uuid,
-                "host_addresses": host_addrasses,
+                "host_addresses": host_addresses,
                 "has_datapath_type_netdev": True,
                 "support_vhost_user": True,
                 "port_prefix": conf.vhostuser_port_prefix,
@@ -440,12 +440,12 @@ class OvsVsctl(object):
         self._set(record=self.uuid(), value=value)
 
     def _get(self, record, name):
-        return self._excute('get', self.TABLE, record, name)
+        return self._execute('get', self.TABLE, record, name)
 
     def _set(self, record, value):
-        self._excute('set', self.TABLE, record, value)
+        self._execute('set', self.TABLE, record, value)
 
-    def _excute(self, *args):
+    def _execute(self, *args):
         command_line = (self.COMMAND,) + args
         LOG.info(
             _LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(command_line))
