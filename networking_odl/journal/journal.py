@@ -140,25 +140,20 @@ class OpendaylightJournalThread(object):
 
         return method, urlpath, to_send
 
-    def run_sync_thread(self, exit_after_run=False):
+    def run_sync_thread(self):
         while True:
             try:
                 self.event.wait()
                 self.event.clear()
 
-                session = neutron_db_api.get_writer_session()
-                self._sync_pending_entries(session, exit_after_run)
-
-                if exit_after_run:
-                    # Permanently waiting thread model breaks unit tests
-                    # Adding this arg to exit here only for unit tests
-                    break
+                self.sync_pending_entries()
             except Exception:
                 # Catch exceptions to protect the thread while running
                 LOG.exception("Error on run_sync_thread")
 
-    def _sync_pending_entries(self, session, exit_after_run):
+    def sync_pending_entries(self, exit_after_run=False):
         LOG.debug("Start processing journal entries")
+        session = neutron_db_api.get_writer_session()
         entry = db.get_oldest_pending_db_row_with_lock(session)
         if entry is None:
             LOG.debug("No journal entries to process")

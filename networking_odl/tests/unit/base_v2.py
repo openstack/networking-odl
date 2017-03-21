@@ -39,6 +39,11 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
             maintenance.MaintenanceThread, 'start').start()
+        self.thread = journal.OpendaylightJournalThread()
+
+    def run_journal_processing(self):
+        """Cause the journal to process the first pending entry"""
+        self.thread.sync_pending_entries(exit_after_run=True)
 
 
 class OpenDaylightTestCase(OpenDaylightConfigBase):

@@ -154,7 +154,6 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
-        self.thread = journal.OpendaylightJournalThread()
 
     @staticmethod
     def _get_mock_network_operation_context():
@@ -271,12 +270,12 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                 cls._status_code_msgs[status_code])))
         return response
 
-    def _test_operation(self, method, status_code, expected_calls,
+    def _test_operation(self, status_code, expected_calls,
                         *args, **kwargs):
         request_response = self._get_mock_request_response(status_code)
         with mock.patch('requests.sessions.Session.request',
                         return_value=request_response) as mock_method:
-            method(exit_after_run=True)
+            self.run_journal_processing()
 
         if expected_calls:
             mock_method.assert_called_with(
@@ -365,10 +364,9 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                 'data': DataMatcher(operation, object_type, context)}
         else:
             kwargs = {'url': url, 'data': None}
-        with mock.patch.object(self.thread.event, 'wait',
-                               return_value=False):
-            self._test_operation(self.thread.run_sync_thread, status_code,
-                                 expected_calls, http_request, **kwargs)
+
+        self._test_operation(status_code, expected_calls, http_request,
+                             **kwargs)
 
     def _test_object_type(self, object_type):
         # Add and process create request.

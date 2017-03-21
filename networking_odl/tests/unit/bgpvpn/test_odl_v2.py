@@ -21,7 +21,6 @@ from neutron.db import api as neutron_db_api
 from networking_odl.bgpvpn import odl_v2 as driverv2
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
-from networking_odl.journal import journal
 from networking_odl.tests.unit import base_v2
 
 
@@ -32,9 +31,6 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.db_session = neutron_db_api.get_reader_session()
         self.driver = driverv2.OpenDaylightBgpvpnDriver(service_plugin=None)
         self.context = self._get_mock_context()
-        self.mock_sync_thread = mock.patch.object(
-            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
-        self.thread = journal.OpendaylightJournalThread()
 
     def _get_mock_context(self):
         context = mock.Mock()
@@ -48,12 +44,9 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             router_id = ['ROUTER_ID']
         if net:
             net_id = ['NET_ID']
-        fake_bgpvpn = {'export_targets': mock.ANY, 'name': mock.ANY,
-                       'route_targets': '100:1', 'tenant_id': mock.ANY,
-                       'project_id': mock.ANY,
-                       'import_targets': mock.ANY,
+        fake_bgpvpn = {'route_targets': '100:1',
                        'route_distinguishers': ['100:1'],
-                       'type': mock.ANY, 'id': 'BGPVPN_ID',
+                       'id': 'BGPVPN_ID',
                        'networks': net_id,
                        'routers': router_id}
         return fake_bgpvpn
@@ -86,7 +79,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.driver.create_bgpvpn_precommit(self.context, fake_data)
         self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_BGPVPN,
                         fake_data)
-        self.thread.run_sync_thread(exit_after_run=True)
+        self.run_journal_processing()
         self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_BGPVPN,
                         fake_data, False)
 
@@ -95,7 +88,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.driver.update_bgpvpn_precommit(self.context, fake_data)
         self._assert_op(odl_const.ODL_UPDATE, odl_const.ODL_BGPVPN,
                         fake_data)
-        self.thread.run_sync_thread(exit_after_run=True)
+        self.run_journal_processing()
         self._assert_op(odl_const.ODL_UPDATE, odl_const.ODL_BGPVPN,
                         fake_data, False)
 
@@ -104,7 +97,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.driver.delete_bgpvpn_precommit(self.context, fake_data)
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_BGPVPN,
                         fake_data)
-        self.thread.run_sync_thread(exit_after_run=True)
+        self.run_journal_processing()
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_BGPVPN,
                         fake_data, False)
 
@@ -120,7 +113,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_rtr_upd_bgpvpn_data)
-            self.thread.run_sync_thread(exit_after_run=True)
+            self.run_journal_processing()
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_rtr_upd_bgpvpn_data, False)
@@ -135,7 +128,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_bgpvpn_data)
-            self.thread.run_sync_thread(exit_after_run=True)
+            self.run_journal_processing()
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_bgpvpn_data, False)
@@ -151,7 +144,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_net_upd_bgpvpn_data)
-            self.thread.run_sync_thread(exit_after_run=True)
+            self.run_journal_processing()
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_net_upd_bgpvpn_data, False)
@@ -166,7 +159,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_bgpvpn_data)
-            self.thread.run_sync_thread(exit_after_run=True)
+            self.run_journal_processing()
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_bgpvpn_data, False)
