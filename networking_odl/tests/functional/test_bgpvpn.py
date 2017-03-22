@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-import functools
 import webob.exc
 
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -47,17 +46,14 @@ class _TestBGPVPNBase(base.OdlTestsBase):
         self.ext_mgr_arg = ext_mgr
         super(_TestBGPVPNBase, self).setUp()
 
-    def setup_parent(self):
-        """Perform parent setup with the common plugin configuration class."""
-        # Ensure that the parent setup can be called without arguments
-        # by the common configuration setUp.
-        parent_setup = functools.partial(
-            super(test_plugin.Ml2PluginV2TestCase, self).setUp,
-            plugin=self.plugin_arg,
-            ext_mgr=self.ext_mgr_arg,
-            service_plugins=self.service_plugin_arg
-        )
-        self.useFixture(test_plugin.Ml2ConfFixture(parent_setup))
+    def get_ext_managers(self):
+        return self.ext_mgr_arg
+
+    def get_plugins(self):
+        return self.plugin_arg
+
+    def get_additional_service_plugins(self):
+        return self.service_plugin_arg
 
     def _assert_networks_associated(self, net_ids, bgpvpn):
         response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
