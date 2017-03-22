@@ -23,6 +23,7 @@ from neutron_lib.plugins import directory
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.journal import full_sync
+from networking_odl.journal import journal
 from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
 
@@ -80,6 +81,29 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_no_full_sync_when_canary_is_processing(self):
         self._test_no_full_sync_when_canary_in_journal(odl_const.PROCESSING)
+
+    @mock.patch.object(db, 'delete_pending_rows')
+    @mock.patch.object(full_sync, '_full_sync_needed')
+    @mock.patch.object(full_sync, '_sync_resources')
+    @mock.patch.object(journal, 'record')
+    def test_sync_resource_order(
+            self, record_mock, _sync_resources_mock, _full_sync_needed_mock,
+            delete_pending_rows_mock):
+        _full_sync_needed_mock._full_sync_needed.return_value = True
+        session = mock.MagicMock()
+        full_sync.full_sync(session)
+
+        _sync_resources_mock.assert_has_calls(
+            [mock.call(session, mock.ANY, mock.ANY,
+                       object_type, collection_name)
+                for (object_type, collection_name) in [
+                    (odl_const.ODL_SG, odl_const.ODL_SGS),
+                    (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
+                    (odl_const.ODL_NETWORK, odl_const.ODL_NETWORKS),
+                    (odl_const.ODL_SUBNET, odl_const.ODL_SUBNETS),
+                    (odl_const.ODL_PORT, odl_const.ODL_PORTS),
+                    (odl_const.ODL_ROUTER, odl_const.ODL_ROUTERS),
+                    (odl_const.ODL_FLOATINGIP, odl_const.ODL_FLOATINGIPS)]])
 
     def test_client_error_propagates(self):
         class TestException(Exception):

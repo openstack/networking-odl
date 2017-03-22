@@ -17,7 +17,6 @@
 import requests
 
 from neutron import context as neutron_context
-from neutron_lib import constants
 from neutron_lib.plugins import directory
 
 from networking_odl.common import client
@@ -36,6 +35,19 @@ _OPS_TO_DELETE_ON_SYNC = (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)
 _CLIENT = client.OpenDaylightRestClientGlobal()
 
 
+# TODO(yamahata): to add more resources.
+#                 e.g. bgpvpn, fwaas, l2gw, lbaas, qos, sfc
+#                 and as more services are added
+_ORDERED_ODL_RESOURCES = (
+    odl_const.ODL_SG,
+    odl_const.ODL_SG_RULE,
+    odl_const.ODL_NETWORK,
+    odl_const.ODL_SUBNET,
+    odl_const.ODL_PORT,
+    odl_const.ODL_ROUTER,
+    odl_const.ODL_FLOATINGIP)
+
+
 def full_sync(session):
     if not _full_sync_needed(session):
         return
@@ -43,15 +55,14 @@ def full_sync(session):
     db.delete_pending_rows(session, _OPS_TO_DELETE_ON_SYNC)
 
     dbcontext = neutron_context.get_admin_context()
-    plugin = directory.get_plugin()
-    for resource_type, collection_name in odl_const.L2_RESOURCES.items():
-        _sync_resources(session, plugin, dbcontext, resource_type,
-                        collection_name)
-
-    l3plugin = directory.get_plugin(constants.L3)
-    for resource_type, collection_name in odl_const.L3_RESOURCES.items():
-        _sync_resources(session, l3plugin, dbcontext, resource_type,
-                        collection_name)
+    for resource_type in _ORDERED_ODL_RESOURCES:
+        for plugin_alias, resource in odl_const.ALL_RESOURCES.items():
+            collection_name = resource.get(resource_type)
+            if collection_name is not None:
+                plugin = directory.get_plugin(plugin_alias)
+                _sync_resources(session, plugin, dbcontext, resource_type,
+                                collection_name)
+                break
 
     journal.record(dbcontext, None, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
                    odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
