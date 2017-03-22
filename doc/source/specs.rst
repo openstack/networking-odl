@@ -15,6 +15,7 @@ Specs:
    :glob:
    :maxdepth: 1
 
+   specs/completed/ocata/*
    specs/*
 
 Indices and tables

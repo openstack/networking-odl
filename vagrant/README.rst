@@ -26,4 +26,4 @@ vagrant destroy -f
 Integration
 -----------
 
-.. include:: integration/multinode/README.rst
+.. include:: ./integration/multinode/README.rst
