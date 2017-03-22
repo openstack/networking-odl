@@ -183,17 +183,26 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
     def _substitute_hconfig_tmpl(self, port_context, hconfig):
         # TODO(mzmalick): Explore options for inlines string splicing of
         #                 port-id to 14 bytes as required by vhostuser types
-        subs_ids = {
-            # $IDENTIFER string substitution in hostconfigs JSON string
-            'PORT_ID': port_context.current['id'][:14]
-        }
-
-        # Substitute identifiers and Convert JSON string to dict
-        hconfig_conf_json = Template(
-            jsonutils.dumps(hconfig['configurations']))
-        substituted_str = hconfig_conf_json.safe_substitute(subs_ids)
-        hconfig['configurations'] = jsonutils.loads(substituted_str)
-
+        port_id = port_context.current['id']
+        conf = hconfig.get('configurations')
+        vnics = conf.get('supported_vnic_types')
+        if vnics is None:
+            return hconfig
+        for vnic in vnics:
+            if vnic.get('vif_type') is portbindings.VIF_TYPE_VHOST_USER:
+                details = vnic.get('vif_details')
+                if details is None:
+                    continue
+                port_prefix = details.get('port_prefix')
+                port_prefix = port_prefix[:14]
+                subs_ids = {
+                    # $IDENTIFER string substitution in hostconfigs JSON string
+                    'PORT_ID': port_id[:(14 - len(port_prefix))],
+                }
+                # Substitute identifiers and Convert JSON string to dict
+                hconfig_conf_json = Template(jsonutils.dumps(details))
+                substituted_str = hconfig_conf_json.safe_substitute(subs_ids)
+                vnic['vif_details'] = jsonutils.loads(substituted_str)
         return hconfig
 
     def bind_port(self, port_context):
