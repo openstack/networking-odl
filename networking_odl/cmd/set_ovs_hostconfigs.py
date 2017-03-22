@@ -168,6 +168,19 @@ COMMAND_LINE_OPTIONS = [
             Default:
             """)),
 
+    cfg.BoolOpt(
+        'ovs_sriov_offload',
+        default=None,
+        help=_("""
+            It adds SR-IOV virtual interface support to allow ovs hardware
+            offload.
+
+            NOTE: This feature should be used with ovs>=2.8.0 and SR-IOV NIC
+            which support switchdev mode and tc offload.
+
+            Default:
+            """)),
+
     cfg.StrOpt(
         'ovs_hostconfigs',
         help=_("""
@@ -279,7 +292,7 @@ def _hostconfigs_from_conf(conf, uuid, userspace_datapath_types):
     vif_details = _vif_details_from_conf(
         conf=conf, uuid=uuid, vif_type=vif_type)
 
-    return {
+    host_config = {
         "ODL L2": {
             "allowed_network_types": conf.allowed_network_types,
             "bridge_mappings": conf.bridge_mappings,
@@ -289,10 +302,18 @@ def _hostconfigs_from_conf(conf, uuid, userspace_datapath_types):
                     "vif_details": vif_details,
                     "vif_type": vif_type,
                     "vnic_type": "normal",
-                }
+                },
             ]
         }
     }
+    if vif_type == 'ovs' and conf.ovs_sriov_offload:
+        direct_vnic = {
+            "vif_details": vif_details,
+            "vif_type": vif_type,
+            "vnic_type": "direct",
+        }
+        host_config["ODL L2"]["supported_vnic_types"].append(direct_vnic)
+    return host_config
 
 
 def _vif_type_from_conf(conf, userspace_datapath_types):

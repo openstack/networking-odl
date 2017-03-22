@@ -86,6 +86,9 @@ class TestSetOvsHostconfigs(base.DietTestCase):
     def test_given_noovs_dpdk(self):
         self._test_given_args(['--noovs_dpdk'])
 
+    def test_given_ovs_sriov_offload(self):
+        self._test_given_args(['--noovs_dpdk', '--ovs_sriov_offload'])
+
     def test_given_vhostuser_ovs_plug(self):
         self._test_given_args(['--vhostuser_ovs_plug'])
 
@@ -195,6 +198,14 @@ class TestSetOvsHostconfigs(base.DietTestCase):
                 }
             ]
         }
+
+        if vif_type == 'ovs' and conf.ovs_sriov_offload:
+            direct_vnic = {
+                "vif_details": vif_details,
+                "vif_type": vif_type,
+                "vnic_type": "direct",
+            }
+            expected["supported_vnic_types"].append(direct_vnic)
         self.assertEqual(match.json(expected), actual_json)
 
     def test_given_ovs_dpdk_undetected(self):

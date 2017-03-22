@@ -415,10 +415,6 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         # in this case ODL hostconfigs has the vif_type to bind for vnic_type
         vnic_type = port_context.current.get(portbindings.VNIC_TYPE)
 
-        if vnic_type != portbindings.VNIC_NORMAL:
-            LOG.error("Binding failed: unsupported VNIC %s", vnic_type)
-            return False
-
         vif_details = None
         for conf in confs:
             if conf["vnic_type"] == vnic_type:
@@ -427,9 +423,10 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                 vif_details = conf.get('vif_details', {})
                 break
         else:
-            vif_type = portbindings.VIF_TYPE_OVS  # default: OVS
-            LOG.warning("No supported vif type found for host %s!, "
-                        "defaulting to OVS", port_context.host)
+            LOG.error(
+                "Binding failed: unsupported VNIC %(vnic_type)s on %(host)s",
+                {'vnic_type': vnic_type, 'host': port_context.host})
+            return False
 
         if not vif_details:  # empty vif_details could be trouble, warn.
             LOG.warning("hostconfig:vif_details was empty!")

@@ -300,6 +300,21 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         "allowed_network_types": ["local", "vlan", "vxlan", "gre"],
         "bridge_mappings": {"physnet1": "br-ex"}}}
 
+    # Test data for vanilla OVS with SR-IOV offload
+    sample_hconfig_dbget_ovs_sriov_offload = {"configurations": {
+        "supported_vnic_types": [{
+            "vnic_type": "normal",
+            "vif_type": portbindings.VIF_TYPE_OVS,
+            "vif_details": {
+                "some_test_details": None}}, {
+            "vnic_type": "direct",
+            "vif_type": portbindings.VIF_TYPE_OVS,
+            "vif_details": {
+                "some_test_details": None
+            }}, ],
+        "allowed_network_types": ["local", "vlan", "vxlan", "gre"],
+        "bridge_mappings": {"physnet1": "br-ex"}}}
+
     # Test data for OVS-DPDK
     sample_hconfig_dbget_ovs_dpdk = {"configurations": {
         "supported_vnic_types": [{
@@ -432,6 +447,21 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
 
         self.mgr._hconfig_bind_port(
             port_context, self.sample_hconfig_dbget_ovs)
+
+        port_context.set_binding.assert_called_once_with(
+            self.test_valid_segment[ml2_api.ID], vif_type,
+            vif_details, status=n_const.PORT_STATUS_ACTIVE)
+
+    def test_bind_port_with_vif_type_ovs_with_sriov_offload(self):
+        """test bind_port with vanilla ovs with SR-IOV offload"""
+        port_context = self._fake_port_context(
+            fake_segments=[self.test_invalid_segment, self.test_valid_segment])
+
+        vif_type = portbindings.VIF_TYPE_OVS
+        vif_details = {'some_test_details': None}
+
+        self.mgr._hconfig_bind_port(
+            port_context, self.sample_hconfig_dbget_ovs_sriov_offload)
 
         port_context.set_binding.assert_called_once_with(
             self.test_valid_segment[ml2_api.ID], vif_type,

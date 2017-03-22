@@ -190,3 +190,14 @@
 
       [[local|localrc]]
       ODL_DHCP_SERVICE=True
+
+18. To enable ODL with OVS hardware Offload support
+    please use::
+
+      [[local|localrc]]
+      ODL_OVS_HOSTCONFIGS_OPTIONS="--noovs_dpdk --debug --ovs_sriov_offload"
+
+    Note: OVS offload support minimal version requirments -
+        Linux kernel from version 4.12
+        OVS from version 2.8.0
+        ODL from version Nitrogen

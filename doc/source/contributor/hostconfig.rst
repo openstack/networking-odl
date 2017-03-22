@@ -69,6 +69,20 @@ OVS configuration example::
         “bridge_mappings”: {“physnet1":"br-ex”}
    }"
 
+OVS SR-IOV Hardware Offload configuration example::
+
+   {“supported_vnic_types”: [{
+            “vnic_type”: “normal”,
+            “vif_type”: “ovs”,
+            “vif_details”: “{}”},
+            {“vnic_type”: “direct”,
+            “vif_type”: “ovs”,
+            “vif_details”: “{}”}
+        }]
+        “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
+        “bridge_mappings”: {“physnet1":"br-ex”}
+   }"
+
 OVS_DPDK configuration example::
 
    {“supported_vnic_types”: [{
