@@ -241,7 +241,7 @@ function start_opendaylight {
         echo "Waiting for Opendaylight to start via $ODL_BOOT_WAIT_URL ..."
         # Probe ODL restconf for netvirt until it is operational
         local testcmd="curl -o /dev/null --fail --silent --head -u \
-              ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_IP}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}"
+              ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}"
         test_with_retry "$testcmd" "Opendaylight did not start after $ODL_BOOT_WAIT" \
               $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
     else
@@ -292,12 +292,11 @@ function bind_opendaylight_controller {
     echo_summary "Initializing OpenDaylight"
     ODL_LOCAL_IP=${ODL_LOCAL_IP:-$HOST_IP}
     ODL_MGR_PORT=${ODL_MGR_PORT:-6640}
-    ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_IP}
     read ovstbl <<< $(sudo ovs-vsctl get Open_vSwitch . _uuid)
     local ODL_MANAGERS_PARAM=()
     for manager in $(echo $ODL_OVS_MANAGERS | tr "," "\n"); do
-        # ovsdbd doesn't understand localhost. replace it to numerical ip address
-        ODL_MANAGERS_PARAM=( "${ODL_MANAGERS_PARAM[@]}" "tcp:${manager/localhost/127.0.0.1}:$ODL_MGR_PORT" )
+        local manager_ip=$(gethostip -d ${manager})
+        ODL_MANAGERS_PARAM=( "${ODL_MANAGERS_PARAM[@]}" "tcp:${manager_ip}:$ODL_MGR_PORT" )
     done
     # don't overwrite the already existing managers
     local ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
