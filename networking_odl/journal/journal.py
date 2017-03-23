@@ -179,16 +179,15 @@ class OpendaylightJournalThread(object):
             try:
                 self.client.sendjson(method, urlpath, to_send)
                 db.update_db_row_state(session, entry, odl_const.COMPLETED)
-            except exceptions.ConnectionError as e:
+            except exceptions.ConnectionError:
                 # Don't raise the retry count, just log an error & break
                 db.update_db_row_state(session, entry, odl_const.PENDING)
                 LOG.error("Cannot connect to the OpenDaylight Controller,"
                           " will not process additional entries")
                 break
-            except Exception as e:
-                log_dict['error'] = e.message
-                LOG.error("Error while processing %(op)s %(type)s %(id)s;"
-                          " Error: %(error)s", log_dict)
+            except Exception:
+                LOG.error("Error while processing %(op)s %(type)s %(id)s",
+                          log_dict, exc_info=True)
                 db.update_pending_db_row_retry(
                     session, entry, self._max_retry_count)
 
