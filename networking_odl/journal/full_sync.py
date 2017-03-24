@@ -43,8 +43,8 @@ _ORDERED_ODL_RESOURCES = (
     odl_const.ODL_SG_RULE,
     odl_const.ODL_NETWORK,
     odl_const.ODL_SUBNET,
-    odl_const.ODL_PORT,
     odl_const.ODL_ROUTER,
+    odl_const.ODL_PORT,
     odl_const.ODL_FLOATINGIP)
 
 
