@@ -101,8 +101,8 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                     (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
                     (odl_const.ODL_NETWORK, odl_const.ODL_NETWORKS),
                     (odl_const.ODL_SUBNET, odl_const.ODL_SUBNETS),
-                    (odl_const.ODL_PORT, odl_const.ODL_PORTS),
                     (odl_const.ODL_ROUTER, odl_const.ODL_ROUTERS),
+                    (odl_const.ODL_PORT, odl_const.ODL_PORTS),
                     (odl_const.ODL_FLOATINGIP, odl_const.ODL_FLOATINGIPS)]])
 
     def test_client_error_propagates(self):
