@@ -72,3 +72,13 @@ class TestFilters(base.DietTestCase):
             n_const.PROTO_NUM_AH,
             filters._sgrule_scrub_unknown_protocol_name(n_const.PROTO_NAME_AH))
         self.assertEqual("1", filters._sgrule_scrub_unknown_protocol_name("1"))
+
+    def test_sgrule_scrub_icmpv6_name(self):
+        for protocol_name in (n_const.PROTO_NAME_ICMP,
+                              n_const.PROTO_NAME_IPV6_ICMP,
+                              n_const.PROTO_NAME_IPV6_ICMP_LEGACY):
+            sgrule = {'ethertype': n_const.IPv6,
+                      'protocol': protocol_name}
+            filters._sgrule_scrub_icmpv6_name(sgrule)
+            self.assertEqual(n_const.PROTO_NAME_IPV6_ICMP_LEGACY,
+                             sgrule['protocol'])

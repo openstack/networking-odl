@@ -108,6 +108,23 @@ def _filter_router_update(router):
     odl_utils.try_del(router, ['id', 'tenant_id', 'project_id', 'status'])
 
 
+# neutron has multiple ICMPv6 names
+# https://bugs.launchpad.net/tempest/+bug/1671366
+# REVISIT(yamahata): once neutron upstream is fixed to store unified form,
+#                    this can be removed.
+_ICMPv6_NAMES = (
+    n_const.PROTO_NAME_ICMP,
+    n_const.PROTO_NAME_IPV6_ICMP,
+    n_const.PROTO_NAME_IPV6_ICMP_LEGACY,
+)
+
+
+def _sgrule_scrub_icmpv6_name(sgrule):
+    if (sgrule.get('ethertype') == n_const.IPv6 and
+            sgrule.get('protocol') in _ICMPv6_NAMES):
+        sgrule['protocol'] = n_const.PROTO_NAME_IPV6_ICMP_LEGACY
+
+
 # ODL boron neturon northbound knows the following protocol names.
 # It's safe to pass those names
 _ODL_KNOWN_PROTOCOL_NAMES = (
@@ -134,6 +151,7 @@ def _sgrule_scrub_unknown_protocol_name(protocol):
 # TODO(yamahata): used by mech_driver.
 #                 make this private when v1 mech_driver is removed
 def filter_security_group_rule(sg_rule):
+    _sgrule_scrub_icmpv6_name(sg_rule)
     if sg_rule.get('protocol'):
         sg_rule['protocol'] = _sgrule_scrub_unknown_protocol_name(
             sg_rule['protocol'])
