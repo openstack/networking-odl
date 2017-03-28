@@ -42,6 +42,13 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
         """Returns string description of driver"""
         return "QoS ODL driver"
 
+    def _record_in_journal(self, context, op_const, qos_policy):
+        data = qos_utils.convert_rules_format(qos_policy.to_dict())
+        journal.record(context, odl_const.ODL_QOS_POLICY,
+                       data['id'], op_const, data)
+
+        self.journal.set_sync_event()
+
     # TODO(manjeets) QoS interface does not have precommit
     # and postcommit mechanism for now, Revisit this driver
     # once interface is fixed and separate record in journal
@@ -50,24 +57,12 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
 
     @log_helpers.log_method_call
     def create_policy(self, context, qos_policy):
-        data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context,
-                       odl_const.ODL_QOS_POLICY, data['id'],
-                       odl_const.ODL_CREATE, data)
-        self.journal.set_sync_event()
+        self._record_in_journal(context, odl_const.ODL_CREATE, qos_policy)
 
     @log_helpers.log_method_call
     def update_policy(self, context, qos_policy):
-        data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context,
-                       odl_const.ODL_QOS_POLICY, data['id'],
-                       odl_const.ODL_UPDATE, data)
-        self.journal.set_sync_event()
+        self._record_in_journal(context, odl_const.ODL_UPDATE, qos_policy)
 
     @log_helpers.log_method_call
     def delete_policy(self, context, qos_policy):
-        data = qos_utils.convert_rules_format(qos_policy.to_dict())
-        journal.record(context,
-                       odl_const.ODL_QOS_POLICY, data['id'],
-                       odl_const.ODL_DELETE, data)
-        self.journal.set_sync_event()
+        self._record_in_journal(context, odl_const.ODL_DELETE, qos_policy)
