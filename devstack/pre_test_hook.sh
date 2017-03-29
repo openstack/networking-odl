@@ -122,32 +122,42 @@ localrc_set $localrc_file "ODL_NETVIRT_KARAF_FEATURE" "${ODL_NETVIRT_KARAF_FEATU
 # Switch to using the ODL's L3 implementation
 localrc_set $localrc_file "ODL_L3" "True"
 
-# TODO(yamahata): only for legacy netvirt
 # Since localrc_set adds it in reverse order, ODL_PROVIDER_MAPPINGS needs to be
 # before depending variables
-localrc_set $localrc_file "ODL_PROVIDER_MAPPINGS" "\${ODL_PROVIDER_MAPPINGS:-${ODL_MAPPING_KEY}:\${Q_PUBLIC_VETH_INT}}"
-localrc_set $localrc_file "Q_USE_PUBLIC_VETH" "True"
-localrc_set $localrc_file "Q_PUBLIC_VETH_EX" "veth-pub-ex"
-localrc_set $localrc_file "Q_PUBLIC_VETH_INT" "veth-pub-int"
+
+if [[ "$ODL_GATE_SERVICE_PROVIDER" == "vpnservice" ]]; then
+    localrc_set $localrc_file "ODL_PROVIDER_MAPPINGS" "public:br-ex"
+    localrc_set $localrc_file "PUBLIC_PHYSICAL_NETWORK" "public"
+    localrc_set $localrc_file "PUBLIC_BRIDGE" "br-ex"
+    localrc_set $localrc_file "Q_USE_PUBLIC_VETH" "False"
+else
+    localrc_set $localrc_file "ODL_PROVIDER_MAPPINGS" "\${ODL_PROVIDER_MAPPINGS:-${ODL_MAPPING_KEY}:\${Q_PUBLIC_VETH_INT}}"
+    localrc_set $localrc_file "Q_USE_PUBLIC_VETH" "True"
+    localrc_set $localrc_file "Q_PUBLIC_VETH_EX" "veth-pub-ex"
+    localrc_set $localrc_file "Q_PUBLIC_VETH_INT" "veth-pub-int"
+fi
 
 # Enable debug logs for odl ovsdb
 localrc_set $localrc_file "ODL_NETVIRT_DEBUG_LOGS" "True"
 
 localrc_set $localrc_file "RALLY_SCENARIO" "${RALLY_SCENARIO}"
 
-# delete private network to workaroud netvirt bug:
+# delete and recreate network to workaroud netvirt bug:
 # https://bugs.opendaylight.org/show_bug.cgi?id=7456
-if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
+# https://bugs.opendaylight.org/show_bug.cgi?id=8133
+if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] || [[ "$ODL_GATE_SERVICE_PROVIDER" == "vpnservice" ]]; then
     cat <<EOF >> $DEVSTACK_PATH/local.sh
 #!/usr/bin/env bash
 
+sudo ifconfig br-ex 172.24.5.1/24 up
 source $DEVSTACK_PATH/openrc admin
-rid=\`neutron router-list | grep router1 | cut -f2 -d'|'\`
-neutron router-gateway-clear \$rid
-neutron router-port-list \$rid | grep subnet_id | cut -f4 -d'"' | xargs -I {} neutron router-interface-delete \$rid {}
-neutron router-delete \$rid
-neutron subnet-list | grep private | cut -f2 -d'|' | xargs neutron subnet-delete
-neutron net-list | grep private | cut -f2 -d'|' | xargs neutron net-delete
+openstack router unset --external-gateway router1
+openstack port list --router router1 -c ID -f value | xargs -I {} openstack router remove port router1 {}
+openstack router delete router1
+openstack subnet list | grep -e public -e private | cut -f2 -d'|' | xargs openstack subnet delete
+openstack network list | grep -e public -e private | cut -f2 -d'|' | xargs openstack network delete
+openstack network create public --external --provider-network-type=flat --provider-physical-network=public
+openstack subnet create --network=public --subnet-range=172.24.5.0/24 --gateway 172.24.5.1 public-subnet
 EOF
     chmod 755 $DEVSTACK_PATH/local.sh
 fi
