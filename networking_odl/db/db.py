@@ -17,6 +17,7 @@ import datetime
 from sqlalchemy import asc
 from sqlalchemy import func
 from sqlalchemy import or_
+from sqlalchemy.orm import aliased
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
@@ -92,13 +93,32 @@ def get_all_db_rows_by_state(session, state):
 @db_api.retry_db_errors
 def get_oldest_pending_db_row_with_lock(session):
     with session.begin():
-        row = session.query(models.OpenDaylightJournal).filter_by(
-            state=odl_const.PENDING).order_by(
+        journal_dep = aliased(models.OpenDaylightJournal)
+        dep_query = session.query(journal_dep).filter(
+            models.OpenDaylightJournal.seqnum == journal_dep.seqnum
+        ).outerjoin(
+            journal_dep.depending_on, aliased=True).filter(
+            or_(models.OpenDaylightJournal.state == odl_const.PENDING,
+                models.OpenDaylightJournal.state == odl_const.PROCESSING))
+        row = session.query(models.OpenDaylightJournal).filter(
+            models.OpenDaylightJournal.state == odl_const.PENDING,
+            ~ dep_query.exists()
+        ).order_by(
             asc(models.OpenDaylightJournal.last_retried)).first()
         if row:
             update_db_row_state(session, row, odl_const.PROCESSING)
 
     return row
+
+
+def delete_dependency(session, entry):
+    """Delete dependency upon the given ID"""
+    conn = session.connection()
+    stmt = models.journal_dependencies.delete(
+        models.journal_dependencies.c.depends_on == entry.seqnum)
+    conn.execute(stmt)
+
+    session.expire_all()
 
 
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
@@ -130,12 +150,15 @@ def delete_row(session, row=None, row_id=None):
 
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def create_pending_row(session, object_type, object_uuid,
-                       operation, data):
+                       operation, data, depending_on=None):
+    if depending_on is None:
+        depending_on = []
     row = models.OpenDaylightJournal(object_type=object_type,
                                      object_uuid=object_uuid,
                                      operation=operation, data=data,
                                      created_at=func.now(),
-                                     state=odl_const.PENDING)
+                                     state=odl_const.PENDING,
+                                     depending_on=depending_on)
     session.add(row)
     # Keep session flush for unit tests. NOOP for L2/L3 events since calls are
     # made inside database session transaction with subtransactions=True.

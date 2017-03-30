@@ -21,11 +21,22 @@ from neutron_lib.db import model_base
 from networking_odl.common import constants as odl_const
 
 
+IdType = sa.BigInteger().with_variant(sa.Integer(), 'sqlite')
+
+journal_dependencies = sa.Table(
+    'opendaylight_journal_deps', model_base.BASEV2.metadata,
+    sa.Column('depends_on', IdType,
+              sa.ForeignKey('opendaylightjournal.seqnum', ondelete='CASCADE'),
+              primary_key=True),
+    sa.Column('dependent', IdType,
+              sa.ForeignKey('opendaylightjournal.seqnum', ondelete='CASCADE'),
+              primary_key=True))
+
+
 class OpenDaylightJournal(model_base.BASEV2):
     __tablename__ = 'opendaylightjournal'
 
-    seqnum = sa.Column(sa.BigInteger().with_variant(sa.Integer(), 'sqlite'),
-                       primary_key=True, autoincrement=True)
+    seqnum = sa.Column(IdType, primary_key=True, autoincrement=True)
     object_type = sa.Column(sa.String(36), nullable=False)
     object_uuid = sa.Column(sa.String(36), nullable=False)
     operation = sa.Column(sa.String(36), nullable=False)
@@ -41,6 +52,12 @@ class OpenDaylightJournal(model_base.BASEV2):
     last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),
                              onupdate=sa.func.now())
     version_id = sa.Column(sa.Integer, server_default='0', nullable=False)
+    dependencies = sa.orm.relationship(
+        "OpenDaylightJournal", secondary=journal_dependencies,
+        primaryjoin=seqnum == journal_dependencies.c.depends_on,
+        secondaryjoin=seqnum == journal_dependencies.c.dependent,
+        backref="depending_on"
+    )
 
     __mapper_args__ = {
         'version_id_col': version_id
