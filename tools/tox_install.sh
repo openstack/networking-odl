@@ -4,7 +4,6 @@ set -e
 set -x
 
 DIR=$(dirname $0)
-PARENTDIR=$(dirname $DIR)
 ${DIR}/tox_install_project.sh neutron neutron $*
 ${DIR}/tox_install_project.sh neutron-fwaas neutron_fwaas $*
 ${DIR}/tox_install_project.sh neutron-lbaas neutron_lbaas $*
@@ -16,7 +15,7 @@ shift
 
 install_cmd="pip install"
 if [ $CONSTRAINTS_FILE != "unconstrained" ]; then
-    install_cmd="$install_cmd -c${PARENTDIR}/constraints.txt -c$CONSTRAINTS_FILE"
+    install_cmd="$install_cmd -c$CONSTRAINTS_FILE"
 fi
 
 $install_cmd -U $*

@@ -1,5 +1,0 @@
-# sqlalchemy bug workaround
-# https://bitbucket.org/zzzeek/sqlalchemy/issues/3952/
-# it's from 1.1.5
-# SQLAlchemy<=1.1.4
-SQLAlchemy===1.1.4

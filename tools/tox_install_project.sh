@@ -15,8 +15,6 @@
 # default:
 # pip install {opts} {packages}
 
-DIR=$(dirname $0)
-PARENTDIR=$(dirname $DIR)
 PROJ=$1
 MOD=$2
 shift 2
@@ -34,7 +32,7 @@ shift
 
 install_cmd="pip install"
 if [ $CONSTRAINTS_FILE != "unconstrained" ]; then
-    install_cmd="$install_cmd -c${PARENTDIR}/constraints.txt -c$CONSTRAINTS_FILE"
+    install_cmd="$install_cmd -c$CONSTRAINTS_FILE"
 fi
 
 # The devstack based functional tests have neutron checked out in
