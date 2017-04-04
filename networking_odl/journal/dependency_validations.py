@@ -79,99 +79,99 @@ def _no_older_operations(session, object_id, row):
     return True
 
 
-def _generate_subnet_deps(row):
-    return row.data['network_id']
+def _generate_subnet_deps(data):
+    return data['network_id']
 
 
-def _generate_port_deps(row):
-    object_ids = [fixed_ip['subnet_id'] for fixed_ip in row.data['fixed_ips']]
-    object_ids.append(row.data['network_id'])
-    qos_policy_id = row.data.get('qos_policy_id')
+def _generate_port_deps(data):
+    object_ids = [fixed_ip['subnet_id'] for fixed_ip in data['fixed_ips']]
+    object_ids.append(data['network_id'])
+    qos_policy_id = data.get('qos_policy_id')
     if qos_policy_id is not None:
         object_ids.append(qos_policy_id)
     return object_ids
 
 
-def _generate_network_deps(row):
-    return row.data.get('qos_policy_id')
+def _generate_network_deps(data):
+    return data.get('qos_policy_id')
 
 
-def _generate_router_deps(row):
-    return row.data['gw_port_id']
+def _generate_router_deps(data):
+    return data['gw_port_id']
 
 
-def _generate_floatingip_deps(row):
+def _generate_floatingip_deps(data):
     object_ids = []
-    network_id = row.data.get('floating_network_id')
+    network_id = data.get('floating_network_id')
     if network_id is not None:
         object_ids.append(network_id)
 
-    port_id = row.data.get('port_id')
+    port_id = data.get('port_id')
     if port_id is not None:
         object_ids.append(port_id)
 
-    router_id = row.data.get('router_id')
+    router_id = data.get('router_id')
     if router_id is not None:
         object_ids.append(router_id)
 
     return object_ids
 
 
-def _generate_trunk_deps(row):
-    portids = [subport['port_id'] for subport in row.data['sub_ports']]
-    portids.append(row.data['port_id'])
+def _generate_trunk_deps(data):
+    portids = [subport['port_id'] for subport in data['sub_ports']]
+    portids.append(data['port_id'])
     return portids
 
 
-def _generate_l2gateway_connection_deps(row):
+def _generate_l2gateway_connection_deps(data):
     object_ids = []
-    network_id = row.data.get('network_id')
+    network_id = data.get('network_id')
     if network_id is not None:
         object_ids.append(network_id)
 
-    gateway_id = row.data.get('gateway_id')
+    gateway_id = data.get('gateway_id')
     if gateway_id is not None:
         object_ids.append(gateway_id)
 
     return object_ids
 
 
-def _generate_sfc_port_pair_deps(row):
+def _generate_sfc_port_pair_deps(data):
     object_ids = []
-    ingress_port = row.data.get('ingress')
+    ingress_port = data.get('ingress')
     if ingress_port is not None:
         object_ids.append(ingress_port)
 
-    egress_port = row.data.get('egress')
+    egress_port = data.get('egress')
     if egress_port is not None:
         object_ids.append(egress_port)
 
     return object_ids
 
 
-def _generate_sfc_port_pair_group_deps(row):
-    port_pairs = [port_pair['id'] for port_pair in row.data['port_pairs']]
+def _generate_sfc_port_pair_group_deps(data):
+    port_pairs = [port_pair['id'] for port_pair in data['port_pairs']]
     return port_pairs
 
 
-def _generate_sfc_port_chain_deps(row):
+def _generate_sfc_port_chain_deps(data):
     object_ids = [port_pair_group['id'] for port_pair_group in
-                  row.data['port_pair_groups']]
+                  data['port_pair_groups']]
     flow_classifiers = [flow_classifier['id'] for flow_classifier in
-                        row.data['flow_classifiers']]
+                        data['flow_classifiers']]
     object_ids.extend(flow_classifiers)
 
     return object_ids
 
 
-def _generate_bgpvpn_deps(row):
+def _generate_bgpvpn_deps(data):
     object_ids = []
 
-    network_ids = row.data.get('networks')
+    network_ids = data.get('networks')
     if network_ids is not None:
         object_ids.extend(network_ids)
 
-    router_ids = row.data.get('routers')
+    router_ids = data.get('routers')
     if router_ids is not None:
         object_ids.extend(router_ids)
 
@@ -231,7 +231,7 @@ def validate(session, row):
     # Validate dependencies if there are any to validate.
     dep_generator = _CREATE_OR_UPDATE_DEP_GENERATOR.get(row.object_type)
     if dep_generator is not None:
-        object_ids = dep_generator(row)
+        object_ids = dep_generator(row.data)
         if object_ids is not None:
             return _no_older_operations(session, object_ids, row)
 
