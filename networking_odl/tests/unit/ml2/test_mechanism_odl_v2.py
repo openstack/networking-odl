@@ -340,6 +340,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.assertEqual(operation, row['operation'])
         self.assertEqual(object_type, row['object_type'])
         self.assertEqual(context.current['id'], row['object_uuid'])
+        self._db_cleanup()
 
     def _test_thread_processing(self, operation, object_type,
                                 expected_calls=1):

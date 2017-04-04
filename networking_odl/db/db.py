@@ -31,25 +31,22 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
-def check_for_pending_or_processing_ops(session, object_uuid, seqnum=None,
-                                        operation=None):
+def get_pending_or_processing_ops(session, object_uuid, operation=None):
     q = session.query(models.OpenDaylightJournal).filter(
         or_(models.OpenDaylightJournal.state == odl_const.PENDING,
             models.OpenDaylightJournal.state == odl_const.PROCESSING),
         models.OpenDaylightJournal.object_uuid == object_uuid)
-
-    if seqnum is not None:
-        q = q.filter(models.OpenDaylightJournal.seqnum < seqnum)
 
     if operation:
         if isinstance(operation, (list, tuple)):
             q = q.filter(models.OpenDaylightJournal.operation.in_(operation))
         else:
             q = q.filter(models.OpenDaylightJournal.operation == operation)
-    return session.query(q.exists()).scalar()
+
+    return q.all()
 
 
-def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
+def get_pending_delete_ops_with_parent(session, object_type, parent_id):
     rows = session.query(models.OpenDaylightJournal).filter(
         or_(models.OpenDaylightJournal.state == odl_const.PENDING,
             models.OpenDaylightJournal.state == odl_const.PROCESSING),
@@ -57,24 +54,7 @@ def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
         models.OpenDaylightJournal.operation == odl_const.ODL_DELETE
     ).all()
 
-    for row in rows:
-        if parent_id in row.data:
-            return True
-
-    return False
-
-
-def check_for_older_ops(session, row):
-    q = session.query(models.OpenDaylightJournal).filter(
-        or_(models.OpenDaylightJournal.state == odl_const.PENDING,
-            models.OpenDaylightJournal.state == odl_const.PROCESSING),
-        models.OpenDaylightJournal.operation == row.operation,
-        models.OpenDaylightJournal.object_uuid == row.object_uuid,
-        models.OpenDaylightJournal.seqnum < row.seqnum)
-    row = q.first()
-    if row is not None:
-        LOG.debug("found older operation %s", row)
-    return bool(row)
+    return (row for row in rows if parent_id in row.data)
 
 
 def get_all_db_rows(session):
@@ -117,7 +97,6 @@ def delete_dependency(session, entry):
     stmt = models.journal_dependencies.delete(
         models.journal_dependencies.c.depends_on == entry.seqnum)
     conn.execute(stmt)
-
     session.expire_all()
 
 

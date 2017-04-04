@@ -43,7 +43,7 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
 
     def run_journal_processing(self):
         """Cause the journal to process the first pending entry"""
-        self.thread.sync_pending_entries(exit_after_run=True)
+        self.thread.sync_pending_entries()
 
 
 class OpenDaylightTestCase(OpenDaylightConfigBase):

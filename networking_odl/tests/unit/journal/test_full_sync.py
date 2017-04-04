@@ -88,13 +88,16 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         expected_journal = {odl_const.ODL_NETWORK: '1',
                             odl_const.ODL_SUBNET: '2',
                             odl_const.ODL_PORT: '3'}
-        self.plugin.get_networks.return_value = [
-            {'id': expected_journal[odl_const.ODL_NETWORK]}]
+        network_id = expected_journal[odl_const.ODL_NETWORK]
+        self.plugin.get_networks.return_value = [{'id': network_id}]
         self.plugin.get_subnets.return_value = [
-            {'id': expected_journal[odl_const.ODL_SUBNET]}]
+            {'id': expected_journal[odl_const.ODL_SUBNET],
+             'network_id': network_id}]
         port = {'id': expected_journal[odl_const.ODL_PORT],
                 odl_const.ODL_SGS: None,
-                'tenant_id': '123'}
+                'tenant_id': '123',
+                'fixed_ips': [],
+                'network_id': network_id}
         self.plugin.get_ports.side_effect = ([port], [])
         return expected_journal
 
@@ -226,7 +229,8 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         expected_journal = {odl_const.ODL_ROUTER: '1',
                             odl_const.ODL_FLOATINGIP: '2'}
         self.l3_plugin.get_routers.return_value = [
-            {'id': expected_journal[odl_const.ODL_ROUTER]}]
+            {'id': expected_journal[odl_const.ODL_ROUTER],
+             'gw_port_id': None}]
         self.l3_plugin.get_floatingips.return_value = [
             {'id': expected_journal[odl_const.ODL_FLOATINGIP]}]
 
