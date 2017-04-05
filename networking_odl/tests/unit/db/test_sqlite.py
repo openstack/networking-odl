@@ -27,6 +27,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     UPDATE_ROW = [odl_const.ODL_NETWORK, 'id', odl_const.ODL_UPDATE,
                   {'test': 'data'}]
+    model = models.OpendaylightJournal
 
     def setUp(self):
         super(DbTestCase, self).setUp()
@@ -39,13 +40,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_equal_created_at(self):
         row = self._create_row()
-        got = self.db_session.query(models.OpendaylightJournal).filter(
-            models.OpendaylightJournal.created_at == row.created_at).all()
+        got = self.db_session.query(self.model).filter_by(
+            created_at=row.created_at).all()
         self.assertEqual(1, len(got))
 
     def test_compare_created_at(self):
         row = self._create_row()
         created_at = row.created_at + datetime.timedelta(minutes=1)
-        got = self.db_session.query(models.OpendaylightJournal).filter(
-            models.OpendaylightJournal.created_at < created_at).all()
+        got = self.db_session.query(self.model).filter(
+            self.model.created_at < created_at).all()
         self.assertEqual(1, len(got))
