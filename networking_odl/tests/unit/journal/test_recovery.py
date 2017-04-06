@@ -149,10 +149,10 @@ class RecoveryTestCase(SqlTestCaseLight):
 
     @mock.patch.object(recovery, '_get_latest_resource')
     def test_recovery_created_resource_missing_and_not_in_odl(self, rmock):
-        rmock.return_value = None
+        rmock.side_effect = nexc.NotFound
         self._test_recovery(odl_const.ODL_CREATE, None, odl_const.COMPLETED)
 
     @mock.patch.object(recovery, '_get_latest_resource')
     def test_recovery_updated_resource_missing_and_not_in_odl(self, rmock):
-        rmock.return_value = None
+        rmock.side_effect = nexc.NotFound
         self._test_recovery(odl_const.ODL_UPDATE, None, odl_const.COMPLETED)
