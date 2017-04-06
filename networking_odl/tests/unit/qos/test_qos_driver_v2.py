@@ -31,7 +31,6 @@ class OpendaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.qos_driver = qos_driver.OpenDaylightQosDriver()
         self.mock_sync_thread = mock.patch.object(
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
-        self.thread = journal.OpendaylightJournalThread()
 
     def _get_mock_context(self):
         current = {'tenant_id': 'tenant_id'}

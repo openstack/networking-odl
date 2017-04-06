@@ -33,6 +33,7 @@ from networking_odl.journal import journal
 from networking_odl.journal import maintenance
 from networking_odl.journal import recovery
 from networking_odl.ml2 import port_binding
+from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
 LOG = logging.getLogger(__name__)
@@ -54,6 +55,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.journal = journal.OpendaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
+        if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
+            qos_driver.OpenDaylightQosDriver.create()
         self._start_maintenance_thread()
 
     def _start_maintenance_thread(self):
