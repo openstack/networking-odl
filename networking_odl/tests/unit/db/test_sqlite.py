@@ -43,6 +43,14 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
             models.OpendaylightJournal.created_at == row.created_at).all()
         self.assertEqual(1, len(got))
 
+    def test_get_by_primary_key_filter(self):
+        row = self._create_row()
+        # NOTE(manjeets) as seqnum is primary key so there would be
+        # exactly one row created.
+        query = self.db_session.query(models.OpendaylightJournal)
+        got = query.filter_by(seqnum=row.seqnum).one()
+        self.assertEqual(row, got)
+
     def test_compare_created_at(self):
         row = self._create_row()
         created_at = row.created_at + datetime.timedelta(minutes=1)
