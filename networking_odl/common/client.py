@@ -67,7 +67,7 @@ class OpenDaylightRestClient(object):
         if response.status_code == requests.codes.not_found:
             return None
 
-        return self._check_rensponse(response).json()
+        return self._check_response(response).json()
 
     def get(self, urlpath='', data=None):
         return self.request('get', urlpath, data)
@@ -92,7 +92,7 @@ class OpenDaylightRestClient(object):
         """Send json to the OpenDaylight controller."""
         data = jsonutils.dumps(obj, indent=2) if obj else None
         try:
-            return self._check_rensponse(
+            return self._check_response(
                 self.request(method, urlpath, data))
         except Exception:
             with excutils.save_and_reraise_exception():
@@ -120,26 +120,26 @@ class OpenDaylightRestClient(object):
         self.sendjson(method, urlpath, {object_type: data})
 
     def try_delete(self, urlpath):
-        rensponse = self.delete(urlpath)
-        if rensponse.status_code == requests.codes.not_found:
+        response = self.delete(urlpath)
+        if response.status_code == requests.codes.not_found:
             # The resource is already removed. ignore 404 gracefully
             LOG.debug("%(urlpath)s doesn't exist", {'urlpath': urlpath})
             return False
         else:
-            self._check_rensponse(rensponse)
+            self._check_response(response)
             return True
 
-    def _check_rensponse(self, rensponse):
+    def _check_response(self, response):
         try:
-            rensponse.raise_for_status()
+            response.raise_for_status()
         except requests.HTTPError as error:
             with excutils.save_and_reraise_exception():
                 LOG.debug("Exception from ODL: %(e)s %(text)s",
-                          {'e': error, 'text': rensponse.text}, exc_info=1)
+                          {'e': error, 'text': response.text}, exc_info=1)
         else:
             LOG.debug("Got response:\n"
-                      "(%(response)s)", {'response': rensponse.text})
-            return rensponse
+                      "(%(response)s)", {'response': response.text})
+            return response
 
 
 class OpenDaylightRestClientGlobal(object):
