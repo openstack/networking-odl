@@ -54,10 +54,10 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         journal.record(context, odl_const.ODL_BGPVPN,
                        bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
 
-    # TODO(yamahata): when bgpvpn driver interface implements precommit
-    # use this method.
+    @log_helpers.log_method_call
     def delete_bgpvpn_precommit(self, context, bgpvpn):
-        pass
+        journal.record(context, odl_const.ODL_BGPVPN,
+                       bgpvpn['id'], odl_const.ODL_DELETE, [])
 
     @log_helpers.log_method_call
     def create_net_assoc_precommit(self, context, net_assoc):
@@ -77,10 +77,11 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         journal.record(context, odl_const.ODL_BGPVPN,
                        our_bgpvpn['id'], odl_const.ODL_UPDATE, our_bgpvpn)
 
-    # TODO(yamahata): when bgpvpn driver interface implements precommit
-    # use this method.
+    @log_helpers.log_method_call
     def delete_net_assoc_precommit(self, context, net_assoc):
-        pass
+        bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
+        journal.record(context, odl_const.ODL_BGPVPN,
+                       bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
 
     @log_helpers.log_method_call
     def create_router_assoc_precommit(self, context, router_assoc):
@@ -94,10 +95,11 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         journal.record(context, odl_const.ODL_BGPVPN,
                        bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
 
-    # TODO(yamahata): when bgpvpn driver interface implements precommit
-    # use this method.
+    @log_helpers.log_method_call
     def delete_router_assoc_precommit(self, context, router_assoc):
-        pass
+        bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
+        journal.record(context, odl_const.ODL_BGPVPN,
+                       bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
 
     def _postcommit(self):
         self.journal.set_sync_event()
@@ -108,12 +110,6 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def delete_bgpvpn_postcommit(self, context, bgpvpn):
-        # TODO(vivekanandan): The journal writing to be moved
-        # to _precommit, after enabling bgpvpn plugin in
-        # networking-bgpvpn to invoke _precommit for
-        # delete_bgpvpn lifecycle
-        journal.record(context, odl_const.ODL_BGPVPN,
-                       bgpvpn['id'], odl_const.ODL_DELETE, [])
         self._postcommit()
 
     @log_helpers.log_method_call
@@ -126,13 +122,6 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def delete_net_assoc_postcommit(self, context, net_assoc):
-        # TODO(vivekanandan): The journal writing to be moved
-        # to _precommit, after enabling bgpvpn plugin in
-        # networking-bgpvpn to invoke _precommit for
-        # delete_net_assoc lifecycle
-        bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
-        journal.record(context, odl_const.ODL_BGPVPN,
-                       bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
         self._postcommit()
 
     @log_helpers.log_method_call
@@ -141,11 +130,4 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def delete_router_assoc_postcommit(self, context, router_assoc):
-        # TODO(vivekanandan): The journal writing to be moved
-        # to _precommit, after enabling bgpvpn plugin in
-        # networking-bgpvpn to invoke _precommit for
-        # delete_router_assoc lifecycle
-        bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
-        journal.record(context, odl_const.ODL_BGPVPN,
-                       bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
         self._postcommit()
