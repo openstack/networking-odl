@@ -20,7 +20,6 @@ import mock
 import requests
 import testscenarios
 
-from neutron.db import api as neutron_db_api
 from neutron.db.models import securitygroup
 from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
@@ -154,12 +153,10 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
-    @staticmethod
-    def _get_mock_network_operation_context():
+    def _get_mock_network_operation_context(self):
         current = {'status': 'ACTIVE',
                    'subnets': [],
                    'name': 'net1',
@@ -172,11 +169,10 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    'id': 'd897e21a-dfd6-4331-a5dd-7524fa421c3e',
                    'provider:segmentation_id': None}
         context = mock.Mock(current=current)
-        context._plugin_context.session = neutron_db_api.get_writer_session()
+        context._plugin_context = self.db_context
         return context
 
-    @staticmethod
-    def _get_mock_subnet_operation_context():
+    def _get_mock_subnet_operation_context(self):
         current = {'ipv6_ra_mode': None,
                    'allocation_pools': [{'start': '10.0.0.2',
                                          'end': '10.0.1.254'}],
@@ -193,11 +189,10 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    'ip_version': 4,
                    'shared': False}
         context = mock.Mock(current=current)
-        context._plugin_context.session = neutron_db_api.get_writer_session()
+        context._plugin_context = self.db_context
         return context
 
-    @staticmethod
-    def _get_mock_port_operation_context():
+    def _get_mock_port_operation_context(self):
         current = {'status': 'DOWN',
                    'binding:host_id': '',
                    'allowed_address_pairs': [],
@@ -216,14 +211,13 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    'binding:vnic_type': 'normal',
                    'binding:vif_type': 'unbound',
                    'mac_address': '12:34:56:78:21:b6'}
-        _network = OpenDaylightMechanismDriverTestCase.\
-            _get_mock_network_operation_context().current
+        _network = self._get_mock_network_operation_context().current
         _plugin = directory.get_plugin()
         _plugin.writer_get_security_group = mock.Mock(
             return_value=SECURITY_GROUP)
         _plugin.get_port = mock.Mock(return_value=current)
         _plugin.get_network = mock.Mock(return_value=_network)
-        _plugin_context_mock = {'session': neutron_db_api.get_writer_session()}
+        _plugin_context_mock = {'session': self.db_session}
         _network_context_mock = {'_network': _network}
         context = {'current': AttributeDict(current),
                    '_plugin': _plugin,
@@ -231,8 +225,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                    '_network_context': AttributeDict(_network_context_mock)}
         return AttributeDict(context)
 
-    @staticmethod
-    def _get_mock_security_group_operation_context():
+    def _get_mock_security_group_operation_context(self):
         context = {odl_const.ODL_SG: {'name': 'test_sg',
                                       'project_id': 'test-tenant',
                                       'tenant_id': 'test-tenant',
@@ -241,8 +234,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                                       'id': SG_FAKE_ID}}
         return context
 
-    @staticmethod
-    def _get_mock_security_group_rule_operation_context():
+    def _get_mock_security_group_rule_operation_context(self):
         context = {odl_const.ODL_SG_RULE: {'security_group_id': SG_FAKE_ID,
                                            'id': SG_RULE_FAKE_ID}}
         _plugin = directory.get_plugin()
@@ -250,9 +242,8 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             return_value=AttributeDict(context[odl_const.ODL_SG_RULE]))
         return context
 
-    @classmethod
-    def _get_mock_operation_context(cls, object_type):
-        getter = getattr(cls, '_get_mock_%s_operation_context' % object_type)
+    def _get_mock_operation_context(self, object_type):
+        getter = getattr(self, '_get_mock_%s_operation_context' % object_type)
         return getter()
 
     _status_code_msgs = {
@@ -291,15 +282,13 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def _call_operation_object(self, operation, object_type):
         context = self._get_mock_operation_context(object_type)
-
         if object_type in [odl_const.ODL_SG, odl_const.ODL_SG_RULE]:
-            plugin_context_mock = mock.Mock()
-            plugin_context_mock.session = neutron_db_api.get_writer_session()
             res_type = [rt for rt in callback._RESOURCE_MAPPING.values()
                         if rt.singular == object_type][0]
             res_id = context[object_type]['id']
             context_ = (copy.deepcopy(context)
                         if operation != odl_const.ODL_DELETE else None)
+            plugin_context = self.db_context
             if (object_type == odl_const.ODL_SG and
                     operation in [odl_const.ODL_CREATE, odl_const.ODL_DELETE]):
                 # TODO(yamahata): remove this work around once
@@ -310,27 +299,31 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                         id=res_id, name=context_[object_type]['name'],
                         tenant_id=context_[object_type]['tenant_id'],
                         description=context_[object_type]['description'])
-                    plugin_context_mock.session.add(sg)
+                    plugin_context.session.add(sg)
                     sg_dict = dict(sg)
                     sg_dict['security_group_rules'] = []
-                    self.mech.sync_from_callback_precommit(
-                        plugin_context_mock, operation, res_type, res_id,
-                        context_, security_group=sg_dict)
+                    with self.db_session.begin(subtransactions=True):
+                        self.mech.sync_from_callback_precommit(
+                            plugin_context, operation, res_type, res_id,
+                            context_, security_group=sg_dict)
                 if operation == odl_const.ODL_DELETE:
-                    self.mech.sync_from_callback_precommit(
-                        plugin_context_mock, operation, res_type, res_id,
-                        context_,
-                        security_group={'security_group_rules':
-                                        {'id': SG_RULE_FAKE_ID}},
-                        security_group_rule_ids=[SG_RULE_FAKE_ID])
+                    with self.db_session.begin(subtransactions=True):
+                        self.mech.sync_from_callback_precommit(
+                            plugin_context, operation, res_type, res_id,
+                            context_,
+                            security_group={'security_group_rules':
+                                            {'id': SG_RULE_FAKE_ID}},
+                            security_group_rule_ids=[SG_RULE_FAKE_ID])
             else:
-                self.mech.sync_from_callback_precommit(
-                    plugin_context_mock, operation, res_type, res_id, context_)
+                with self.db_session.begin(subtransactions=True):
+                    self.mech.sync_from_callback_precommit(
+                        plugin_context, operation, res_type, res_id,
+                        context_)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
-            method(context)
-            self.db_session.flush()
+            with self.db_session.begin(subtransactions=True):
+                method(context)
 
     def _test_operation_object(self, operation, object_type):
         self._call_operation_object(operation, object_type)
@@ -468,9 +461,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         # Test if the cleanup marks this in the desired state
         # based on the last_retried timestamp
-        context = mock.Mock()
-        context.session = self.db_session
-        cleanup.JournalCleanup().cleanup_processing_rows(context)
+        cleanup.JournalCleanup().cleanup_processing_rows(self.db_context)
 
         # Verify that the Db row is in the desired state
         rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
@@ -494,8 +485,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         # Verify that the Db row has a tenant
         rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
         self.assertEqual(1, len(rows))
-        _network = OpenDaylightMechanismDriverTestCase.\
-            _get_mock_network_operation_context().current
+        _network = self._get_mock_network_operation_context().current
         self.assertEqual(_network['tenant_id'], rows[0]['data']['tenant_id'])
 
     def test_network(self):
@@ -602,8 +592,6 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         with mock.patch.object(journal, 'record') as record:
             context = self._get_mock_operation_context(odl_const.ODL_SG)
             res_id = context[odl_const.ODL_SG]['id']
-            plugin_context_mock = mock.Mock()
-            plugin_context_mock.session = neutron_db_api.get_writer_session()
             rule = mock.Mock()
             rule.id = SG_RULE_FAKE_ID
             rule.security_group_id = SG_FAKE_ID
@@ -612,10 +600,11 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             sg.security_group_rules = [rule]
             kwargs = {'security_group': sg,
                       'security_group_rule_ids': [SG_RULE_FAKE_ID]}
-            self.mech.sync_from_callback_precommit(
-                plugin_context_mock, odl_const.ODL_DELETE,
-                callback._RESOURCE_MAPPING[odl_const.ODL_SG],
-                res_id, context, **kwargs)
+            with self.db_session.begin(subtransactions=True):
+                self.mech.sync_from_callback_precommit(
+                    self.db_context, odl_const.ODL_DELETE,
+                    callback._RESOURCE_MAPPING[odl_const.ODL_SG],
+                    res_id, context, **kwargs)
             record.assert_has_calls(
                 [mock.call(mock.ANY, 'security_group_rule',
                            SG_RULE_FAKE_ID, 'delete', [SG_FAKE_ID]),
