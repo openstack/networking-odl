@@ -70,7 +70,8 @@ def register(driver, resources):
     ALL_RESOURCES[driver] = resources
 
 
-def full_sync(session):
+def full_sync(context):
+    session = context.session
     if not _full_sync_needed(session):
         return
 

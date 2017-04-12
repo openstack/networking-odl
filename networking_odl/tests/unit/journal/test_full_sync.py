@@ -81,7 +81,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         full_sync.ALL_RESOURCES = {}
 
     def test_no_full_sync_when_canary_exists(self):
-        full_sync.full_sync(self.db_session)
+        full_sync.full_sync(self.db_context)
         self.assertEqual([], db.get_all_db_rows(self.db_session))
 
     def _mock_l2_resources(self):
@@ -114,7 +114,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_all_db_rows(self.db_session)[0]
         db.update_db_row_state(self.db_session, row, state)
 
-        full_sync.full_sync(self.db_session)
+        full_sync.full_sync(self.db_context)
 
         rows = db.get_all_db_rows(self.db_session)
         self.assertEqual([], self._filter_out_canary(rows))
@@ -135,8 +135,9 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
         full_sync.ALL_RESOURCES = self._get_all_resources()
         _full_sync_needed_mock._full_sync_needed.return_value = True
-        session = mock.MagicMock()
-        full_sync.full_sync(session)
+        context = mock.MagicMock()
+        session = context.session
+        full_sync.full_sync(context)
 
         _sync_resources_mock.assert_has_calls(
             [mock.call(session, mock.ANY, mock.ANY,
@@ -180,7 +181,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                 pass
 
         self._CLIENT.get.side_effect = TestException()
-        self.assertRaises(TestException, full_sync.full_sync, self.db_session)
+        self.assertRaises(TestException, full_sync.full_sync, self.db_context)
 
     def _mock_canary_missing(self):
         get_return = mock.MagicMock()
@@ -196,7 +197,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def _test_full_sync_resources(self, expected_journal):
         self._mock_canary_missing()
 
-        full_sync.full_sync(self.db_session)
+        full_sync.full_sync(self.db_context)
 
         rows = self._assert_canary_created()
         rows = self._filter_out_canary(rows)

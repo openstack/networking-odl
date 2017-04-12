@@ -17,8 +17,6 @@
 import threading
 import time
 
-from neutron.db import api as neutron_db_api
-
 import mock
 
 from networking_odl.common import constants as odl_const
@@ -45,8 +43,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
             operation = mock.MagicMock()
             operation.__name__ = "test"
             self.thread.register_operation(operation)
-            db_session = neutron_db_api.get_reader_session()
-            self.thread._execute_op(operation, db_session)
+            self.thread._execute_op(operation, self.db_context)
             operation.assert_called()
             mock_log.info.assert_called()
             mock_log.exception.assert_not_called()
@@ -55,8 +52,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         with mock.patch.object(periodic_task, 'LOG') as mock_log:
             operation = mock.MagicMock(side_effect=Exception())
             operation.__name__ = "test"
-            db_session = neutron_db_api.get_reader_session()
-            self.thread._execute_op(operation, db_session)
+            self.thread._execute_op(operation, self.db_context)
             mock_log.exception.assert_called()
 
     def test_thread_works(self):

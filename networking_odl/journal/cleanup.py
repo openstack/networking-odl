@@ -31,15 +31,16 @@ class JournalCleanup(object):
         self._rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
         self._processing_timeout = cfg.CONF.ml2_odl.processing_timeout
 
-    def delete_completed_rows(self, session):
+    def delete_completed_rows(self, context):
         if self._rows_retention != -1:
             LOG.debug("Deleting completed rows")
             db.delete_rows_by_state_and_time(
-                session, odl_const.COMPLETED,
+                context.session, odl_const.COMPLETED,
                 timedelta(seconds=self._rows_retention))
 
-    def cleanup_processing_rows(self, session):
-        row_count = db.reset_processing_rows(session, self._processing_timeout)
+    def cleanup_processing_rows(self, context):
+        row_count = db.reset_processing_rows(
+            context.session, self._processing_timeout)
         if row_count:
             LOG.info("Reset %(num)s orphaned rows back to pending",
                      {"num": row_count})

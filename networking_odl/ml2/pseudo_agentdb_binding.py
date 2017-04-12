@@ -138,7 +138,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
 
         return hostconfigs
 
-    def _get_and_update_hostconfigs(self, session=None):
+    def _get_and_update_hostconfigs(self, context=None):
         LOG.info("REST/GET hostconfigs from ODL")
 
         hostconfigs = self._rest_get_hostconfigs()

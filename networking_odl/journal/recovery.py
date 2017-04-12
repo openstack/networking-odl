@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-from neutron_lib import context as neutron_context
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
@@ -35,23 +34,23 @@ class UnsupportedResourceType(Exception):
     pass
 
 
-def journal_recovery(session):
-    for row in db.get_all_db_rows_by_state(session, odl_const.FAILED):
+def journal_recovery(context):
+    for row in db.get_all_db_rows_by_state(context.session, odl_const.FAILED):
         try:
             LOG.debug("Attempting recovery of journal entry %s.", row)
             odl_resource = _CLIENT.get_client().get_resource(row.object_type,
                                                              row.object_uuid)
             if odl_resource is not None:
-                _handle_existing_resource(session, row)
+                _handle_existing_resource(context, row)
             else:
-                _handle_non_existing_resource(session, row)
+                _handle_non_existing_resource(context, row)
         except UnsupportedResourceType:
             LOG.warning('Unsupported resource %s', row.object_type)
         except Exception:
             LOG.exception("Failure while recovering journal entry %s.", row)
 
 
-def _get_latest_resource(row):
+def _get_latest_resource(context, row):
     object_type = row.object_type
 
     for plugin_alias, resources in full_sync.ALL_RESOURCES.items():
@@ -63,38 +62,36 @@ def _get_latest_resource(row):
             _("unsupported resource type: {}").format(object_type))
 
     obj_getter = getattr(plugin, 'get_{}'.format(object_type))
-    return obj_getter(neutron_context.get_admin_context(), row.object_uuid)
+    return obj_getter(context, row.object_uuid)
 
 
-def _sync_resource_to_odl(session, row, operation_type, exists_on_odl):
+def _sync_resource_to_odl(context, row, operation_type, exists_on_odl):
     resource = None
     try:
-        resource = _get_latest_resource(row)
+        resource = _get_latest_resource(context, row)
     except nexc.NotFound:
         if exists_on_odl:
-            journal.record(
-                neutron_context.get_admin_context(), row.object_type,
-                row.object_uuid, odl_const.ODL_DELETE, [])
+            journal.record(context, row.object_type,
+                           row.object_uuid, odl_const.ODL_DELETE, [])
     else:
-        journal.record(
-            neutron_context.get_admin_context(), row.object_type,
-            row.object_uuid, operation_type, resource)
+        journal.record(context, row.object_type, row.object_uuid,
+                       operation_type, resource)
 
-    db.update_db_row_state(session, row, odl_const.COMPLETED)
+    db.update_db_row_state(context.session, row, odl_const.COMPLETED)
 
 
-def _handle_existing_resource(session, row):
+def _handle_existing_resource(context, row):
     if row.operation == odl_const.ODL_CREATE:
-        db.update_db_row_state(session, row, odl_const.COMPLETED)
+        db.update_db_row_state(context.session, row, odl_const.COMPLETED)
     elif row.operation == odl_const.ODL_DELETE:
-        db.update_db_row_state(session, row, odl_const.PENDING)
+        db.update_db_row_state(context.session, row, odl_const.PENDING)
     else:
-        _sync_resource_to_odl(session, row, odl_const.ODL_UPDATE, True)
+        _sync_resource_to_odl(context, row, odl_const.ODL_UPDATE, True)
 
 
-def _handle_non_existing_resource(session, row):
+def _handle_non_existing_resource(context, row):
     if row.operation == odl_const.ODL_DELETE:
-        db.update_db_row_state(session, row, odl_const.COMPLETED)
+        db.update_db_row_state(context.session, row, odl_const.COMPLETED)
     else:
-        _sync_resource_to_odl(session, row, odl_const.ODL_CREATE, False)
+        _sync_resource_to_odl(context, row, odl_const.ODL_CREATE, False)
         # TODO(mkolesni): Handle missing parent resources somehow.

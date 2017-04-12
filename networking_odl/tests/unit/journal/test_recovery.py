@@ -16,34 +16,27 @@
 
 import mock
 
-from neutron.db import api as neutron_db_api
-from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
-from networking_odl.db import models
 from networking_odl.journal import full_sync
 from networking_odl.journal import recovery
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
+from networking_odl.tests.unit import test_base_db
 
 
-class RecoveryTestCase(SqlTestCaseLight):
+class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         self.useFixture(
             base.OpenDaylightRestClientGlobalFixture(recovery._CLIENT))
         super(RecoveryTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self._CLIENT = recovery._CLIENT.get_client()
-        self.addCleanup(self._db_cleanup)
         self.addCleanup(self.clean_registered_resources)
-
-    def _db_cleanup(self):
-        self.db_session.query(models.OpenDaylightJournal).delete()
 
     @staticmethod
     def clean_registered_resources():
@@ -64,7 +57,8 @@ class RecoveryTestCase(SqlTestCaseLight):
         mock_resource = self._mock_resource(plugin, resource_type)
         mock_row = self._mock_row(resource_type)
 
-        resource = recovery._get_latest_resource(mock_row)
+        resource = recovery._get_latest_resource(self.db_context.session,
+                                                 mock_row)
         self.assertEqual(mock_resource, resource)
 
     @mock.patch.object(directory, 'get_plugin')
@@ -84,7 +78,7 @@ class RecoveryTestCase(SqlTestCaseLight):
         mock_row = self._mock_row('aaa')
         self.assertRaises(
             recovery.UnsupportedResourceType, recovery._get_latest_resource,
-            mock_row)
+            self.db_context.session, mock_row)
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_none(self, plugin_mock):
@@ -94,23 +88,26 @@ class RecoveryTestCase(SqlTestCaseLight):
 
         mock_row = self._mock_row(odl_const.ODL_NETWORK)
         self.assertRaises(
-            nexc.NotFound, recovery._get_latest_resource, mock_row)
+            nexc.NotFound, recovery._get_latest_resource,
+            self.db_context.session, mock_row)
 
     def test_journal_recovery_no_rows(self):
-        recovery.journal_recovery(self.db_session)
+        recovery.journal_recovery(self.db_context)
         self.assertFalse(self._CLIENT.get_resource.called)
 
     def _test_recovery(self, operation, odl_resource, expected_state):
-        db.create_pending_row(
-            self.db_session, odl_const.ODL_NETWORK, 'id', operation, {})
-        created_row = db.get_all_db_rows(self.db_session)[0]
-        db.update_db_row_state(self.db_session, created_row, odl_const.FAILED)
+        db.create_pending_row(self.db_context.session, odl_const.ODL_NETWORK,
+                              'id', operation, {})
+        created_row = db.get_all_db_rows(self.db_context.session)[0]
+        db.update_db_row_state(self.db_context.session, created_row,
+                               odl_const.FAILED)
 
         self._CLIENT.get_resource.return_value = odl_resource
 
-        recovery.journal_recovery(self.db_session)
+        recovery.journal_recovery(self.db_context)
 
-        row = db.get_all_db_rows_by_state(self.db_session, expected_state)[0]
+        row = db.get_all_db_rows_by_state(self.db_context.session,
+                                          expected_state)[0]
         self.assertEqual(created_row['seqnum'], row['seqnum'])
         return created_row
 
@@ -140,7 +137,7 @@ class RecoveryTestCase(SqlTestCaseLight):
             operation, odl_resource, odl_const.COMPLETED)
 
         pending_row = db.get_all_db_rows_by_state(
-            self.db_session, odl_const.PENDING)[0]
+            self.db_context.session, odl_const.PENDING)[0]
         self.assertEqual(expected_operation, pending_row['operation'])
         self.assertEqual(original_row['object_type'],
                          pending_row['object_type'])

@@ -15,18 +15,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_odl.db import models
-
-from neutron.db import api as neutron_db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
+from neutron_lib import context
+
+from networking_odl.common import constants
+from networking_odl.db import models
 
 
 class ODLBaseDbTestCase(SqlTestCaseLight):
     def setUp(self):
         super(ODLBaseDbTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
+        self.db_context = context.get_admin_context()
+        self.db_session = self.db_context.session
         self.addCleanup(self._db_cleanup)
 
     def _db_cleanup(self):
         self.db_session.query(models.OpenDaylightJournal).delete()
         self.db_session.query(models.OpenDaylightPeriodicTask).delete()
+        row0 = models.OpenDaylightPeriodicTask(
+            task='maintenance', state=constants.PENDING)
+        row1 = models.OpenDaylightPeriodicTask(
+            task='hostconfig', state=constants.PENDING)
+        self.db_session.merge(row0)
+        self.db_session.merge(row1)
+        self.db_session.flush()

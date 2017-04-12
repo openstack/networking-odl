@@ -14,7 +14,7 @@
 #  under the License.
 #
 
-from neutron.db import api as neutron_db_api
+from neutron_lib import context as neutron_context
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -48,7 +48,7 @@ class PeriodicTask(object):
             # some tests call this cleanup without calling start
             pass
 
-    def _execute_op(self, operation, db_session):
+    def _execute_op(self, operation, context):
         op_details = operation.__name__
         if operation.__doc__:
             op_details += " (%s)" % operation.func_doc
@@ -56,41 +56,41 @@ class PeriodicTask(object):
         try:
             LOG.info("Starting %s phase of periodic task %s.",
                      op_details, self.task)
-            db.update_periodic_task(db_session, task=self.task,
+            db.update_periodic_task(context.session, task=self.task,
                                     operation=operation)
-            operation(session=db_session)
+            operation(context=context)
             LOG.info("Finished %s phase of %s task.", op_details, self.task)
         except Exception:
             LOG.exception("Failed during periodic task operation %s.",
                           op_details)
 
-    def task_already_executed_recently(self):
-        db_session = neutron_db_api.get_reader_session()
-        return db.was_periodic_task_executed_recently(db_session, self.task,
-                                                      self.interval)
+    def task_already_executed_recently(self, context):
+        return db.was_periodic_task_executed_recently(
+            context.session, self.task, self.interval)
 
     def execute_ops(self):
         LOG.info("Starting %s periodic task.", self.task)
+        context = neutron_context.get_admin_context()
+
         # Lock make sure that periodic task is executed only after
         # specified interval. It makes sure that maintenance tasks
         # are not executed back to back.
-        if self.task_already_executed_recently():
+        if self.task_already_executed_recently(context):
             LOG.info("Periodic %s task executed after periodic interval "
                      "Skipping execution.", self.task)
             return
 
-        db_session = neutron_db_api.get_writer_session()
-        if not db.lock_periodic_task(db_session, self.task):
+        if not db.lock_periodic_task(context.session, self.task):
             LOG.info("Periodic %s task already running task", self.task)
             return
 
         try:
             for phase in self.phases:
-                self._execute_op(phase, db_session)
+                self._execute_op(phase, context)
         finally:
-            db.update_periodic_task(db_session, task=self.task,
+            db.update_periodic_task(context.session, task=self.task,
                                     operation=None)
-            db.unlock_periodic_task(db_session, self.task)
+            db.unlock_periodic_task(context.session, self.task)
 
         LOG.info("%s task has been finished", self.task)
 
