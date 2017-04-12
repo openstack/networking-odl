@@ -91,20 +91,6 @@ All related neutron services need to be restarted after configuration change.
         ...
         service_plugins = odl-router
 
-   * If the QoS service is enabled then you also need to enable the ODL QoS
-     notification driver.
-
-     .. code-block:: ini
-
-        [qos]
-        ...
-        notification_drivers = odl-qos
-
-    ..note::
-
-        The default notification driver is message_queue, if ODL backend is
-        used, and qos service_plugins and qos extensions drivers are enabled
-        then odl-qos driver should be used to have working QoS functionality.
 
 #. Configure the ML2 plug-in. Edit the
    ``/etc/neutron/plugins/ml2/ml2_conf.ini`` file:
