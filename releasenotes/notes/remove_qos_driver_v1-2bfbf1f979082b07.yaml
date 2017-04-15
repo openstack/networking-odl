@@ -1,0 +1,8 @@
+---
+prelude: >
+    As the QoS v2 driver adapted new framework from OpenStack neutron's
+    qos driver framework, QoS v1 driver using notification_drivers is no
+    longer needed.
+upgrade:
+    - Removing QoS V1 driver which is using deprecated notification
+      driver framework from OpenStack Neutron's QoS driver base.
