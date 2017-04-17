@@ -18,11 +18,13 @@ from oslo_log import log as logging
 from networking_sfc.services.sfc.drivers import base as sfc_driver
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import postcommit
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
 
 
+@postcommit.add_postcommit('port_pair', 'port_pair_group', 'port_chain')
 class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
     """OpenDaylight SFC Driver (Version 2) for networking-sfc.
 
@@ -81,19 +83,6 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_CHAIN, odl_const.ODL_DELETE,
             data=[])
-
-    def _postcommit(self, context):
-        self.journal.set_sync_event()
-
-    create_port_pair_postcommit = _postcommit
-    create_port_pair_group_postcommit = _postcommit
-    create_port_chain_postcommit = _postcommit
-    update_port_pair_postcommit = _postcommit
-    update_port_pair_group_postcommit = _postcommit
-    update_port_chain_postcommit = _postcommit
-    delete_port_pair_postcommit = _postcommit
-    delete_port_pair_group_postcommit = _postcommit
-    delete_port_chain_postcommit = _postcommit
 
     # Need to implement these methods, else driver loading fails with error
     # complaining about no abstract method implementation present.

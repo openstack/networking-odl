@@ -18,11 +18,13 @@ from oslo_log import log as logging
 from networking_sfc.services.flowclassifier.drivers import base as fc_driver
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import postcommit
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
 
 
+@postcommit.add_postcommit('flow_classifier')
 class OpenDaylightSFCFlowClassifierDriverV2(
         fc_driver.FlowClassifierDriverBase):
 
@@ -57,13 +59,6 @@ class OpenDaylightSFCFlowClassifierDriverV2(
         OpenDaylightSFCFlowClassifierDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_FLOW_CLASSIFIER, odl_const.ODL_DELETE,
             data=[])
-
-    def _postcommit(self, context):
-        self.journal.set_sync_event()
-
-    create_flow_classifier_postcommit = _postcommit
-    update_flow_classifier_postcommit = _postcommit
-    delete_flow_classifier_postcommit = _postcommit
 
     # Need to implement these methods, else driver loading fails with error
     # complaining about no abstract method implementation present.
