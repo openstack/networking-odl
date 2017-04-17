@@ -12,20 +12,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
+from neutron.services.qos.drivers import base
+from neutron.services.qos import qos_consts
+from neutron_lib.api.definitions import portbindings
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
-from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import journal
 from networking_odl.qos import qos_utils
-from neutron.services.qos.notification_drivers import qos_base
 
 LOG = logging.getLogger(__name__)
 
+# TODO(manjeets) fetch these from Neutron NB
+SUPPORTED_RULES = [qos_consts.RULE_TYPE_BANDWIDTH_LIMIT]
+VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
+VNIC_TYPES = [portbindings.VNIC_NORMAL]
 
-class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
+
+class OpenDaylightQosDriver(base.DriverBase):
 
     """OpenDaylight QOS Driver
 
@@ -33,9 +38,19 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
     driver for Openstack Neutron.
     """
 
-    def __init__(self):
+    @staticmethod
+    def create():
+        return OpenDaylightQosDriver()
+
+    def __init__(self, name='OpenDaylightQosDriver',
+                 vif_types=VIF_TYPES,
+                 vnic_types=VNIC_TYPES,
+                 supported_rules=SUPPORTED_RULES,
+                 requires_rpc_notifications=False):
+        super(OpenDaylightQosDriver, self).__init__(
+            name, vif_types, vnic_types, supported_rules,
+            requires_rpc_notifications)
         LOG.debug("Initializing OpenDaylight Qos driver")
-        cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.journal = journal.OpendaylightJournalThread()
 
     def get_description(self):
