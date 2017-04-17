@@ -302,6 +302,9 @@ function bind_opendaylight_controller {
     local ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
     local ODL_MANAGERS=$(echo $ODL_MANAGERS_OLD ${ODL_MANAGERS_PARAM[@]} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
     sudo ovs-vsctl set-manager ${ODL_MANAGERS}
+    if [[ -n "$PUBLIC_BRIDGE" ]]; then
+        sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
+    fi
     if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
         sudo ovs-vsctl set Open_vSwitch $ovstbl \
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS

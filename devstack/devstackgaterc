@@ -53,7 +53,7 @@ if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] ; then
 fi
 
 # For V2 driver some test are failing randomly so run them in a separate job
-if [[ "$ODL_TEST_SUFFIX" == "-nv" && "$ODL_GATE_V2DRIVER" == "v2driver" && -z "$ODL_GATE_SERVICE_PROVIDER" ]]; then
+if [[ "$ODL_TEST_SUFFIX" == "-nv" && "$ODL_GATE_V2DRIVER" == "v2driver" ]]; then
     r="^tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*$"
     r="$r|^tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_network_basic_ops.*$"
     r="$r|^tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_mtu_sized_frames.*$"
@@ -93,7 +93,7 @@ r="$r|(?:tempest\.api\.volume.*)"
 r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
 
 # V2 driver is finicky with these tests, run them in a separate job.
-if [[ "$ODL_GATE_V2DRIVER" == "v2driver" && -z "$ODL_GATE_SERVICE_PROVIDER" ]]; then
+if [[ "$ODL_GATE_V2DRIVER" == "v2driver" ]]; then
     r="$r|(?:tempest\.scenario\.test_network_advanced_server_ops\.TestNetworkAdvancedServerOps.*)"
     r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_network_basic_ops.*)"
     r="$r|(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_mtu_sized_frames.*)"
