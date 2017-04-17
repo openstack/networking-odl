@@ -1,0 +1,7 @@
+---
+prelude: >
+    networking-odl adopts version number aligned
+    with neutron from Pike release.
+    The version number is bumped 11.x.x.
+other:
+  - version is bumped to 11:pike from 4:ocata.
