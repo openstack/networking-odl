@@ -68,6 +68,7 @@ class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
                                                   odl_const.PENDING),
                       key=lambda x: x.seqnum)
         if precommit:
+            self.db_session.flush()
             self.assertEqual(operation, rows[0]['operation'])
             self.assertEqual(object_type, rows[0]['object_type'])
             self.assertEqual(data['id'], rows[0]['object_uuid'])

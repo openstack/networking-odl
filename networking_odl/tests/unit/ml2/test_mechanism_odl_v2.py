@@ -329,6 +329,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
             method(context)
+            self.db_session.flush()
 
     def _test_operation_object(self, operation, object_type):
         self._call_operation_object(operation, object_type)
@@ -484,6 +485,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         method = getattr(self.mech, 'create_port_precommit')
         method(context)
+        self.db_session.flush()
 
         # Verify that the Db row has a tenant
         rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)

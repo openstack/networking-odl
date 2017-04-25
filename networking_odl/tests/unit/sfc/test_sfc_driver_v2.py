@@ -71,9 +71,12 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
                          '%s_%s_%s' % (operation, resource_str, timing))
         method(context)
 
-    def _test_event(self, operation, timing, resource_str, object_type):
+    def _test_event(self, operation, timing, resource_str,
+                    object_type, precommit=True):
         context = self._get_mock_operation_context(object_type)
         self._call_operation_object(operation, timing, resource_str, context)
+        if precommit:
+            self.db_session.flush()
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
 
         if timing == 'precommit':
@@ -89,7 +92,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_create_port_pair_postcommit(self):
         self._test_event("create", "postcommit", "port_pair",
-                         odl_const.ODL_SFC_PORT_PAIR)
+                         odl_const.ODL_SFC_PORT_PAIR, False)
 
     def test_update_port_pair_precommit(self):
         self._test_event("update", "precommit", "port_pair",
@@ -97,7 +100,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_update_port_pair_postcommit(self):
         self._test_event("update", "postcommit", "port_pair",
-                         odl_const.ODL_SFC_PORT_PAIR)
+                         odl_const.ODL_SFC_PORT_PAIR, False)
 
     def test_delete_port_pair_precommit(self):
         self._test_event("delete", "precommit", "port_pair",
@@ -105,7 +108,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_delete_port_pair_postcommit(self):
         self._test_event("delete", "postcommit", "port_pair",
-                         odl_const.ODL_SFC_PORT_PAIR)
+                         odl_const.ODL_SFC_PORT_PAIR, False)
 
     def test_create_port_pair_group_precommit(self):
         self._test_event("create", "precommit", "port_pair_group",
@@ -113,7 +116,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_create_port_pair_group_postcommit(self):
         self._test_event("create", "postcommit", "port_pair_group",
-                         odl_const.ODL_SFC_PORT_PAIR_GROUP)
+                         odl_const.ODL_SFC_PORT_PAIR_GROUP, False)
 
     def test_update_port_pair_group_precommit(self):
         self._test_event("update", "precommit", "port_pair_group",
@@ -121,7 +124,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_update_port_pair_group_postcommit(self):
         self._test_event("update", "postcommit", "port_pair_group",
-                         odl_const.ODL_SFC_PORT_PAIR_GROUP)
+                         odl_const.ODL_SFC_PORT_PAIR_GROUP, False)
 
     def test_delete_port_pair_group_precommit(self):
         self._test_event("delete", "precommit", "port_pair_group",
@@ -129,7 +132,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_delete_port_pair_group_postcommit(self):
         self._test_event("delete", "postcommit", "port_pair_group",
-                         odl_const.ODL_SFC_PORT_PAIR_GROUP)
+                         odl_const.ODL_SFC_PORT_PAIR_GROUP, False)
 
     def test_create_port_chain_precommit(self):
         self._test_event("create", "precommit", "port_chain",
@@ -137,7 +140,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_create_port_chain_postcommit(self):
         self._test_event("create", "postcommit", "port_chain",
-                         odl_const.ODL_SFC_PORT_CHAIN)
+                         odl_const.ODL_SFC_PORT_CHAIN, False)
 
     def test_update_port_chain_precommit(self):
         self._test_event("update", "precommit", "port_chain",
@@ -145,7 +148,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_update_port_chain_postcommit(self):
         self._test_event("update", "postcommit", "port_chain",
-                         odl_const.ODL_SFC_PORT_CHAIN)
+                         odl_const.ODL_SFC_PORT_CHAIN, False)
 
     def test_delete_port_chain_precommit(self):
         self._test_event("delete", "precommit", "port_chain",
@@ -153,4 +156,4 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def test_delete_port_chain_postcommit(self):
         self._test_event("delete", "postcommit", "port_chain",
-                         odl_const.ODL_SFC_PORT_CHAIN)
+                         odl_const.ODL_SFC_PORT_CHAIN, False)

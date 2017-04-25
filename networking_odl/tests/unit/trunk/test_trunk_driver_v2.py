@@ -76,9 +76,12 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         method = getattr(self.handler, 'trunk_%s_%s' % (operation, timing))
         method(mock.ANY, mock.ANY, mock.ANY, fake_payload)
 
-    def _test_event(self, operation, timing):
+    def _test_event(self, operation, timing, precommit=True):
         fake_payload = self._fake_trunk_payload()
         self._call_operation_object(operation, timing, fake_payload)
+        if precommit:
+            self.db_session.flush()
+
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
 
         if timing == 'precommit':
@@ -92,19 +95,19 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         self._test_event("create", "precommit")
 
     def test_trunk_create_postcommit(self):
-        self._test_event("create", "postcommit")
+        self._test_event("create", "postcommit", False)
 
     def test_trunk_update_precommit(self):
         self._test_event("update", "precommit")
 
     def test_trunk_update_postcommit(self):
-        self._test_event("update", "postcommit")
+        self._test_event("update", "postcommit", False)
 
     def test_trunk_delete_precommit(self):
         self._test_event("delete", "precommit")
 
     def test_trunk_delete_postcommit(self):
-        self._test_event("delete", "postcommit")
+        self._test_event("delete", "postcommit", False)
 
 
 class TestTrunkDriver(base_v2.OpenDaylightConfigBase):
