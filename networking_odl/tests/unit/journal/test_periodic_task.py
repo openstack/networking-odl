@@ -19,33 +19,34 @@ import threading
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
-from networking_odl.journal import maintenance
+from networking_odl.journal import periodic_task
 from networking_odl.tests.unit import test_base_db
 
 
-class MaintenanceThreadTestCase(test_base_db.ODLBaseDbTestCase):
+class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
-        super(MaintenanceThreadTestCase, self).setUp()
+        super(PeriodicTaskThreadTestCase, self).setUp()
 
-        row = models.OpendaylightMaintenance(state=odl_const.PENDING)
+        row = models.OpendaylightPeriodicTask(state=odl_const.PENDING)
         self.db_session.add(row)
         self.db_session.flush()
 
-        self.thread = maintenance.MaintenanceThread()
+        self.thread = periodic_task.PeriodicTask(1, 'maintenance')
         self.thread.maintenance_interval = 0.01
         self.addCleanup(self.thread.cleanup)
 
     def test__execute_op_no_exception(self):
-        with mock.patch.object(maintenance, 'LOG') as mock_log:
+        with mock.patch.object(periodic_task, 'LOG') as mock_log:
             operation = mock.MagicMock()
             operation.__name__ = "test"
+            self.thread.register_operation(operation)
             self.thread._execute_op(operation, self.db_session)
             self.assertTrue(operation.called)
             self.assertTrue(mock_log.info.called)
             self.assertFalse(mock_log.exception.called)
 
     def test__execute_op_with_exception(self):
-        with mock.patch.object(maintenance, 'LOG') as mock_log:
+        with mock.patch.object(periodic_task, 'LOG') as mock_log:
             operation = mock.MagicMock(side_effect=Exception())
             operation.__name__ = "test"
             self.thread._execute_op(operation, self.db_session)

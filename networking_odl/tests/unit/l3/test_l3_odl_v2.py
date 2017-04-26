@@ -33,7 +33,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.db import db
 from networking_odl.journal import journal
-from networking_odl.journal import maintenance
+from networking_odl.journal import periodic_task
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
@@ -111,7 +111,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         mock.patch.object(journal.OpendaylightJournalThread,
                           'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
+            periodic_task.PeriodicTask, 'start').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           '_record_in_journal').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,

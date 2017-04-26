@@ -24,6 +24,7 @@ from networking_odl.db import models
 from neutron.db import api as db_api
 
 from oslo_db import api as oslo_db_api
+from oslo_db import exception
 from oslo_log import log as logging
 
 
@@ -153,11 +154,27 @@ def delete_pending_rows(session, operations_to_delete):
         session.expire_all()
 
 
+@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
+def create_task_if_not_registered(session, task):
+    row = models.OpendaylightPeriodicTask(state=odl_const.PENDING,
+                                          processing_operation=None,
+                                          task=task,
+                                          lock_updated=func.now())
+
+    session.add(row)
+    try:
+        session.flush()
+    except exception.DBDuplicateEntry:
+        pass
+
+
 @db_api.retry_db_errors
-def _update_maintenance_state(session, expected_state, state):
+def _update_periodic_task_state(session, expected_state, state, task):
     with session.begin():
-        row = session.query(models.OpendaylightMaintenance).filter_by(
-            state=expected_state).with_for_update().one_or_none()
+        row = session.query(models.OpendaylightPeriodicTask).filter_by(
+            state=expected_state,
+            task=task).with_for_update().one_or_none()
+
         if row is None:
             return False
 
@@ -165,18 +182,18 @@ def _update_maintenance_state(session, expected_state, state):
         return True
 
 
-def lock_maintenance(session):
-    return _update_maintenance_state(session, odl_const.PENDING,
-                                     odl_const.PROCESSING)
+def lock_periodic_task(session, task):
+    return _update_periodic_task_state(session, odl_const.PENDING,
+                                       odl_const.PROCESSING, task)
 
 
-def unlock_maintenance(session):
-    return _update_maintenance_state(session, odl_const.PROCESSING,
-                                     odl_const.PENDING)
+def unlock_periodic_task(session, task):
+    return _update_periodic_task_state(session, odl_const.PROCESSING,
+                                       odl_const.PENDING, task)
 
 
-def update_maintenance_operation(session, operation=None):
-    """Update the current maintenance operation details.
+def update_periodic_task(session, task, operation=None):
+    """Update the current periodic task details.
 
     The function assumes the lock is held, so it mustn't be run outside of a
     locked context.
@@ -186,7 +203,8 @@ def update_maintenance_operation(session, operation=None):
         op_text = operation.__name__
 
     with session.begin():
-        row = session.query(models.OpendaylightMaintenance).one_or_none()
+        row = session.query(models.OpendaylightPeriodicTask).filter_by(
+            task=task).one_or_none()
         row.processing_operation = op_text
 
 
