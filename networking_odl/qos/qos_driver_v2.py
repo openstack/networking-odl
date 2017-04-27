@@ -32,7 +32,9 @@ SUPPORTED_RULES = {
         qos_consts.MAX_KBPS: {
             'type:range': [0, n_consts.DB_INTEGER_MAX_VALUE]},
         qos_consts.MAX_BURST: {
-            'type:range': [0, n_consts.DB_INTEGER_MAX_VALUE]}
+            'type:range': [0, n_consts.DB_INTEGER_MAX_VALUE]},
+        qos_consts.DIRECTION: {
+            'type:values': [n_consts.EGRESS_DIRECTION]}
     },
 }
 VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
