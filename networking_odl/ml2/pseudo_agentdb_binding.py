@@ -28,7 +28,6 @@ from requests import exceptions
 import six.moves.urllib.parse as urlparse
 from string import Template
 
-from networking_odl._i18n import _LE, _LI, _LW
 from networking_odl.common import client as odl_client
 from networking_odl.journal import maintenance as mt
 from networking_odl.ml2 import port_binding
@@ -104,7 +103,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             response.raise_for_status()
             hostconfigs = response.json()['hostconfigs']['hostconfig']
         except exceptions.ConnectionError:
-            LOG.error(_LE("Cannot connect to the Opendaylight Controller"),
+            LOG.error("Cannot connect to the Opendaylight Controller",
                       exc_info=True)
             return None
         except exceptions.HTTPError as e:
@@ -114,15 +113,14 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                           " treated as an empty list")
                 return []
             else:
-                LOG.warning(_LW("REST/GET odl hostconfig failed, "),
+                LOG.warning("REST/GET odl hostconfig failed, ",
                             exc_info=True)
                 return None
         except KeyError:
-            LOG.error(_LE("got invalid hostconfigs"),
-                      exc_info=True)
+            LOG.error("got invalid hostconfigs", exc_info=True)
             return None
         except Exception:
-            LOG.warning(_LW("REST/GET odl hostconfig failed, "),
+            LOG.warning("REST/GET odl hostconfig failed, ",
                         exc_info=True)
             return None
         else:
@@ -134,13 +132,13 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         return hostconfigs
 
     def _get_and_update_hostconfigs(self, session=None):
-        LOG.info(_LI("REST/GET hostconfigs from ODL"))
+        LOG.info("REST/GET hostconfigs from ODL")
 
         hostconfigs = self._rest_get_hostconfigs()
 
         if not hostconfigs:
-            LOG.warning(_LW("ODL hostconfigs REST/GET failed, "
-                            "will retry on next poll"))
+            LOG.warning("ODL hostconfigs REST/GET failed, "
+                        "will retry on next poll")
             return  # retry on next poll
 
         self._update_agents_db(hostconfigs=hostconfigs)
@@ -156,8 +154,8 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         agents_db = self._get_neutron_db_plugin()
 
         if not agents_db:  # if ML2 is still initializing
-            LOG.warning(_LW("ML2 still initializing, Will retry agentdb"
-                            " update on next poll"))
+            LOG.warning("ML2 still initializing, Will retry agentdb"
+                        " update on next poll")
             return  # Retry on next poll
 
         old_agents = self._known_agents
@@ -177,7 +175,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                     context.get_admin_context(), agentdb_row)
                 self._known_agents.add((host_id, agent_type))
             except Exception:
-                LOG.exception(_LE("Unable to update agentdb."))
+                LOG.exception("Unable to update agentdb.")
                 continue  # try next hostcofig
 
     def _substitute_hconfig_tmpl(self, port_context, hconfig):
@@ -211,7 +209,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         agentdb = port_context.host_agents(self.L2_TYPE)
 
         if not agentdb:
-            LOG.warning(_LW("No valid hostconfigs in agentsdb for host %s"),
+            LOG.warning("No valid hostconfigs in agentsdb for host %s",
                         port_context.host)
             return
 
@@ -225,13 +223,14 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             if self._hconfig_bind_port(port_context, hconfig):
                 break  # Port binding suceeded!
             else:  # Port binding failed!
-                LOG.warning(_LW("Failed to bind Port %(pid)s for host "
-                                "%(host)s on network %(network)s."), {
-                    'pid': port_context.current['id'],
-                    'host': port_context.host,
-                    'network': port_context.network.current['id']})
+                LOG.warning(
+                    "Failed to bind Port %(pid)s for host %(host)s on network "
+                    "%(network)s.", {
+                        'pid': port_context.current['id'],
+                        'host': port_context.host,
+                        'network': port_context.network.current['id']})
         else:  # No hostconfig found for host in agentdb.
-            LOG.warning(_LW("No ODL hostconfigs for host %s found in agentdb"),
+            LOG.warning("No ODL hostconfigs for host %s found in agentdb",
                         port_context.host)
 
     def _hconfig_bind_port(self, port_context, hconfig):
@@ -254,7 +253,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         vnic_type = port_context.current.get(portbindings.VNIC_TYPE)
 
         if vnic_type != portbindings.VNIC_NORMAL:
-            LOG.error(_LE("Binding failed: unsupported VNIC %s"), vnic_type)
+            LOG.error("Binding failed: unsupported VNIC %s", vnic_type)
             return False
 
         for conf in confs:
@@ -264,13 +263,13 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                 break
         else:
             vif_type = portbindings.VIF_TYPE_OVS  # default: OVS
-            LOG.warning(_LW("No supported vif type found for host %s!, "
-                            "defaulting to OVS"), port_context.host)
+            LOG.warning("No supported vif type found for host %s!, "
+                        "defaulting to OVS", port_context.host)
 
         vif_details = conf.get('vif_details', {})
 
         if not vif_details:  # empty vif_details could be trouble, warn.
-            LOG.warning(_LW("hostconfig:vif_details was empty!"))
+            LOG.warning("hostconfig:vif_details was empty!")
 
         LOG.debug("Bind port %(port)s on network %(network)s with valid "
                   "segment %(segment)s and VIF type %(vif_type)r "

@@ -24,10 +24,10 @@ from neutron_lib.api.definitions import portbindings
 from oslo_log import log
 from oslo_serialization import jsonutils
 
+from networking_odl._i18n import _
 from networking_odl.common import cache
 from networking_odl.common import client
 from networking_odl.common import utils
-from networking_odl._i18n import _, _LI, _LW, _LE
 from networking_odl.ml2 import port_binding
 
 
@@ -60,8 +60,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
         # Parsers used for processing network topology
         self._parsers = list(self._create_parsers())
         LOG.warning(
-            _LW("networking-topology port binding controller is deprecated "
-                "and will be removed. switch to pseudo-agentdb-binding."))
+            "networking-topology port binding controller is deprecated "
+            "and will be removed. switch to pseudo-agentdb-binding.")
 
     def bind_port(self, port_context):
         """Set binding for a valid segment
@@ -75,7 +75,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
             elements.extend(self._fetch_elements_by_host(host_name))
         except Exception:
             LOG.exception(
-                _LE('Error fetching elements for host %(host_name)r.'),
+                'Error fetching elements for host %(host_name)r.',
                 {'host_name': host_name}, exc_info=1)
 
         if not elements:
@@ -83,8 +83,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
             # for given host then it uses the legacy OVS one keeping the old
             # behaviour
             LOG.warning(
-                _LW('Using legacy OVS network topology element for port '
-                    'binding for host: %(host_name)r.'),
+                'Using legacy OVS network topology element for port '
+                'binding for host: %(host_name)r.',
                 {'host_name': host_name})
 
             # Imported here to avoid cyclic module dependencies
@@ -121,15 +121,14 @@ class NetworkTopologyManager(port_binding.PortBindingController):
 
                     except Exception:
                         LOG.exception(
-                            _LE('Network topology element has failed binding '
-                                'port:\n%(element)s'),
+                            'Network topology element has failed binding '
+                            'port:\n%(element)s',
                             {'element': element.to_json()})
 
         LOG.error(
-            _LE('Unable to bind port element for given host and valid VIF '
-                'types:\n'
-                '\thostname: %(host_name)s\n'
-                '\tvalid VIF types: %(valid_vif_types)s'),
+            'Unable to bind port element for given host and valid VIF types:\n'
+            '\thostname: %(host_name)s\n'
+            '\tvalid VIF types: %(valid_vif_types)s',
             {'host_name': host_name,
              'valid_vif_types': ', '.join(self.valid_vif_types)})
         # TDOO(Federico Ressi): should I raise an exception here?
@@ -141,7 +140,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
 
             except Exception:
                 LOG.exception(
-                    _LE('Error initializing topology parser: %(parser_name)r'),
+                    'Error initializing topology parser: %(parser_name)r',
                     {'parser_name': parser_name})
 
     def _fetch_elements_by_host(self, host_name, cache_timeout=60.0):
@@ -157,7 +156,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
         except Exception:
             ip_addresses = []
             LOG.exception(
-                _LE('Unable to resolve IP addresses for host %(host_name)r'),
+                'Unable to resolve IP addresses for host %(host_name)r',
                 {'host_name': host_name})
         else:
             host_addresses.extend(ip_addresses)
@@ -182,8 +181,8 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                     ', '.join(error.missing_keys))
             else:
                 LOG.exception(
-                    _LE('No such network topology elements for given host '
-                        '%(host_name)r and given IPs: %(ip_addresses)s.'),
+                    'No such network topology elements for given host '
+                    '%(host_name)r and given IPs: %(ip_addresses)s.',
                     {'host_name': host_name,
                      'ip_addresses': ", ".join(ip_addresses)})
                 error.reraise_cause()
@@ -193,7 +192,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
         # of the addresses is not in the cache or it has expired.
 
         # pylint: disable=unused-argument
-        LOG.info(_LI('Fetch network topology from ODL.'))
+        LOG.info('Fetch network topology from ODL.')
         response = self._client.get()
         response.raise_for_status()
 
@@ -219,7 +218,7 @@ class NetworkTopologyManager(port_binding.PortBindingController):
                         yield host_address, element
             except Exception:
                 LOG.exception(
-                    _LE("Parser %(parser)r failed to parse network topology."),
+                    "Parser %(parser)r failed to parse network topology.",
                     {'parser': parser})
 
         if not at_least_one_element_for_asked_addresses:

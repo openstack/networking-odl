@@ -19,8 +19,6 @@ import time
 
 from oslo_log import log
 
-from networking_odl._i18n import _LW
-
 
 LOG = log.getLogger(__name__)
 
@@ -134,7 +132,7 @@ class Cache(object):
                     # now before raising any error
                     cause_exc_info = sys.exc_info()
                     LOG.warning(
-                        _LW('Error fetching values for keys: %r'),
+                        'Error fetching values for keys: %r',
                         ', '.join(repr(k) for k in new_entry_keys),
                         exc_info=cause_exc_info)
 

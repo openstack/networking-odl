@@ -20,7 +20,6 @@ from oslo_log import log as logging
 
 from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
-from networking_odl._i18n import _LI, _LW
 from networking_odl.common import client as odl_client
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -43,27 +42,27 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         self.service_plugin = service_plugin
         self.client = odl_client.OpenDaylightRestClient.create_client()
         LOG.warning(
-            _LW("ODL: OpenDaylight L2gateway driver has been deprecated"
-                "and will be removed. Switch to driver_v2."))
+            "ODL: OpenDaylight L2gateway driver has been deprecated "
+            "and will be removed. Switch to driver_v2.")
 
     @property
     def service_type(self):
         return constants.L2GW
 
     def create_l2_gateway_postcommit(self, context, l2_gateway):
-        LOG.info(_LI("ODL: Create L2Gateway %(l2gateway)s"),
+        LOG.info("ODL: Create L2Gateway %(l2gateway)s",
                  {'l2gateway': l2_gateway})
         request = {'l2_gateway': l2_gateway}
         self.client.sendjson('post', L2GATEWAYS, request)
 
     def delete_l2_gateway_postcommit(self, context, l2_gateway_id):
-        LOG.info(_LI("ODL: Delete L2Gateway %(l2gatewayid)s"),
+        LOG.info("ODL: Delete L2Gateway %(l2gatewayid)s",
                  {'l2gatewayid': l2_gateway_id})
         url = L2GATEWAYS + '/' + l2_gateway_id
         self.client.try_delete(url)
 
     def update_l2_gateway_postcommit(self, context, l2_gateway):
-        LOG.info(_LI("ODL: Update L2Gateway %(l2gateway)s"),
+        LOG.info("ODL: Update L2Gateway %(l2gateway)s",
                  {'l2gateway': l2_gateway})
         request = {'l2_gateway': l2_gateway}
         url = L2GATEWAYS + '/' + l2_gateway['id']
@@ -71,7 +70,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
 
     def create_l2_gateway_connection_postcommit(self, context,
                                                 l2_gateway_connection):
-        LOG.info(_LI("ODL: Create L2Gateway connection %(l2gwconn)s"),
+        LOG.info("ODL: Create L2Gateway connection %(l2gwconn)s",
                  {'l2gwconn': l2_gateway_connection})
         odl_l2_gateway_connection = copy.deepcopy(l2_gateway_connection)
         odl_l2_gateway_connection['gateway_id'] = (
@@ -82,7 +81,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
 
     def delete_l2_gateway_connection_postcommit(self, context,
                                                 l2_gateway_connection_id):
-        LOG.info(_LI("ODL: Delete L2Gateway connection %(l2gwconnid)s"),
+        LOG.info("ODL: Delete L2Gateway connection %(l2gwconnid)s",
                  {'l2gwconnid': l2_gateway_connection_id})
         url = L2GATEWAY_CONNECTIONS + '/' + l2_gateway_connection_id
         self.client.try_delete(url)

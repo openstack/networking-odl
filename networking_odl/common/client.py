@@ -20,7 +20,6 @@ from oslo_utils import excutils
 import requests
 import threading
 
-from networking_odl._i18n import _LE
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
 
@@ -96,9 +95,9 @@ class OpenDaylightRestClient(object):
                 self.request(method, urlpath, data))
         except Exception:
             with excutils.save_and_reraise_exception():
-                LOG.error(_LE("REST request ( %(method)s ) to "
-                              "url ( %(urlpath)s ) is failed."
-                              "Request body : [%(body)s] service"),
+                LOG.error("REST request ( %(method)s ) to "
+                          "url ( %(urlpath)s ) is failed. "
+                          "Request body : [%(body)s] service",
                           {'method': method,
                            'urlpath': urlpath,
                            'body': obj})

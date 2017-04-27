@@ -22,7 +22,6 @@ from neutron.callbacks import registry
 from neutron.services.trunk import constants as t_consts
 from neutron.services.trunk.drivers import base as trunk_base
 
-from networking_odl._i18n import _LI
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import journal
@@ -36,7 +35,7 @@ class OpenDaylightTrunkHandlerV2(object):
     def __init__(self):
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.journal = journal.OpendaylightJournalThread()
-        LOG.info(_LI('initialized trunk driver for OpendayLight'))
+        LOG.info('initialized trunk driver for OpendayLight')
 
     @staticmethod
     def _record_in_journal(context, trunk_id, operation, data):

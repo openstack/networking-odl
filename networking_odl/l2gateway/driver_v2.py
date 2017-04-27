@@ -21,7 +21,6 @@ from oslo_log import log as logging
 
 from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
-from networking_odl._i18n import _LI
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import journal
 
@@ -42,7 +41,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         super(OpenDaylightL2gwDriver, self).__init__(service_plugin, validator)
         self.service_plugin = service_plugin
         self.journal = journal.OpendaylightJournalThread()
-        LOG.info(_LI("ODL: Started OpenDaylight L2Gateway V2 driver"))
+        LOG.info("ODL: Started OpenDaylight L2Gateway V2 driver")
 
     @property
     def service_type(self):

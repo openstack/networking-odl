@@ -18,7 +18,6 @@ from oslo_log import log as logging
 
 from networking_sfc.services.flowclassifier.drivers import base as fc_driver
 
-from networking_odl._i18n import _LI
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 
@@ -63,4 +62,4 @@ class OpenDaylightSFCFlowClassifierDriverV1(
 
     @log_helpers.log_method_call
     def create_flow_classifier_precommit(self, context):
-        LOG.info(_LI("Skipping precommit check."))
+        LOG.info("Skipping precommit check.")
