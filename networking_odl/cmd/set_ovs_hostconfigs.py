@@ -65,9 +65,6 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 
 from networking_odl._i18n import _
-from networking_odl._i18n import _LE
-from networking_odl._i18n import _LI
-from networking_odl._i18n import _LW
 
 
 LOG = log.getLogger(__name__)
@@ -305,9 +302,9 @@ def _vif_type_from_conf(conf, userspace_datapath_types):
         # take it from  datapath_type
         if conf.datapath_type in USERSPACE_DATAPATH_TYPES:
             if conf.datapath_type not in userspace_datapath_types:
-                LOG.warning(_LW(
+                LOG.warning(
                     "Using user space data path type '%s' even if no "
-                    "support was detected."), conf.datapath_type)
+                    "support was detected.", conf.datapath_type)
             return 'vhostuser'
         else:
             return 'ovs'
@@ -317,7 +314,7 @@ def _vif_type_from_conf(conf, userspace_datapath_types):
         if userspace_datapath_types:
             return 'vhostuser'
 
-        raise ValueError(_LE(
+        raise ValueError(_(
             "--ovs_dpdk option was specified but the 'netdev' datapath_type "
             "was not enabled. "
             "To override use option --datapath_type=netdev"))
@@ -448,7 +445,7 @@ class OvsVsctl(object):
     def _execute(self, *args):
         command_line = (self.COMMAND,) + args
         LOG.info(
-            _LI("SET-HOSTCONFIGS: Executing cmd: %s"), ' '.join(command_line))
+            "SET-HOSTCONFIGS: Executing cmd: %s", ' '.join(command_line))
         return subprocess.check_output(command_line).strip()
 
 
@@ -458,14 +455,14 @@ def main(args=None):
     conf = setup_conf(args)
 
     if os.geteuid() != 0:
-        LOG.error(_LE('Root permissions are required to configure ovsdb.'))
+        LOG.error('Root permissions are required to configure ovsdb.')
         return 1
 
     try:
         set_ovs_extid_hostconfigs(conf=conf, ovs_vsctl=OvsVsctl())
 
     except Exception as ex:  # pylint: disable=broad-except
-        LOG.error(_LE("Fatal error: %s"), ex, exc_info=conf.debug)
+        LOG.error("Fatal error: %s", ex, exc_info=conf.debug)
         return 1
 
     else:

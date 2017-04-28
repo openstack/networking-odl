@@ -20,7 +20,7 @@ from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
 
-from networking_odl._i18n import _, _LE, _LW
+from networking_odl._i18n import _
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -46,10 +46,9 @@ def journal_recovery(session):
             else:
                 _handle_non_existing_resource(session, row)
         except UnsupportedResourceType:
-            LOG.warning(_LW('Unsupported resource %s'), row.object_type)
+            LOG.warning('Unsupported resource %s', row.object_type)
         except Exception:
-            LOG.exception(
-                _LE("Failure while recovering journal entry %s."), row)
+            LOG.exception("Failure while recovering journal entry %s.", row)
 
 
 def _get_latest_resource(row):

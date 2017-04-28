@@ -23,7 +23,7 @@ from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
 from neutron_lib.plugins import directory
 
-from networking_odl._i18n import _, _LE
+from networking_odl._i18n import _
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
@@ -238,7 +238,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 object_uuid = rules[0].id
                 resource_dict['id'] = object_uuid
             else:
-                LOG.error(_LE("bulk creation of sgrule isn't supported"))
+                LOG.error("bulk creation of sgrule isn't supported")
                 raise NotImplementedError(
                     _("unsupporetd bulk creation of security group rule"))
         journal.record(context, object_type, object_uuid,

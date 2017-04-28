@@ -21,8 +21,6 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import excutils
 
-from networking_odl._i18n import _LI, _LE
-
 
 LOG = log.getLogger(__name__)
 
@@ -109,13 +107,13 @@ class PortBindingManager(PortBindingController):
         except Exception:
             with excutils.save_and_reraise_exception():
                 LOG.exception(
-                    _LE("Controller '%(name)s (%(controller)r)' had an error "
-                        "when binding port."), controller_details)
+                    "Controller '%(name)s (%(controller)r)' had an error "
+                    "when binding port.", controller_details)
         else:
             if port_context._new_bound_segment:
                 LOG.info(
-                    _LI("Controller '%(name)s (%(controller)r)' has bound "
-                        "port."), controller_details)
+                    "Controller '%(name)s (%(controller)r)' has bound port.",
+                    controller_details)
             else:
                 LOG.debug(
                     "Controller %(name)s (%(controller)r) hasn't bound "

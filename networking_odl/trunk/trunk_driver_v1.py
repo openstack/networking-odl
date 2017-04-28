@@ -23,7 +23,6 @@ from oslo_utils import excutils
 from neutron.services.trunk import constants as t_consts
 from neutron.services.trunk.drivers import base as trunk_base
 
-from networking_odl._i18n import _LI
 from networking_odl.common import client as odl_client
 from networking_odl.common import constants as odl_const
 from networking_odl.trunk import constants as odltrunk_const
@@ -41,7 +40,7 @@ LOG = logging.getLogger(__name__)
 class OpenDaylightTrunkHandlerV1(object):
     def __init__(self):
         self.client = odl_client.OpenDaylightRestClient.create_client()
-        LOG.info(_LI('initialized trunk driver for OpendayLight'))
+        LOG.info('initialized trunk driver for OpendayLight')
 
     def trunk_create_postcommit(self, trunk):
         trunk.update(status=t_consts.ACTIVE_STATUS)

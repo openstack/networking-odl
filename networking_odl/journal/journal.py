@@ -26,7 +26,6 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.common import utils
-from networking_odl._i18n import _LI, _LE
 from networking_odl.db import db
 from networking_odl.journal import dependency_validations
 
@@ -156,7 +155,7 @@ class OpendaylightJournalThread(object):
                     break
             except Exception:
                 # Catch exceptions to protect the thread while running
-                LOG.exception(_LE("Error on run_sync_thread"))
+                LOG.exception("Error on run_sync_thread")
 
     def _sync_pending_entries(self, session, exit_after_run):
         LOG.debug("Start processing journal entries")
@@ -172,14 +171,14 @@ class OpendaylightJournalThread(object):
             valid = dependency_validations.validate(session, entry)
             if not valid:
                 db.update_db_row_state(session, entry, odl_const.PENDING)
-                LOG.info(_LI("Skipping %(op)s %(type)s %(id)s due to"
-                             "unprocessed dependencies."), log_dict)
+                LOG.info("Skipping %(op)s %(type)s %(id)s due to "
+                         "unprocessed dependencies.", log_dict)
 
                 if exit_after_run:
                     break
                 continue
 
-            LOG.info(_LI("Processing - %(op)s %(type)s %(id)s"), log_dict)
+            LOG.info("Processing - %(op)s %(type)s %(id)s", log_dict)
             method, urlpath, to_send = self._json_data(entry)
 
             try:
@@ -188,13 +187,13 @@ class OpendaylightJournalThread(object):
             except exceptions.ConnectionError as e:
                 # Don't raise the retry count, just log an error & break
                 db.update_db_row_state(session, entry, odl_const.PENDING)
-                LOG.error(_LE("Cannot connect to the OpenDaylight Controller,"
-                              " will not process additional entries"))
+                LOG.error("Cannot connect to the OpenDaylight Controller,"
+                          " will not process additional entries")
                 break
             except Exception as e:
                 log_dict['error'] = e.message
-                LOG.error(_LE("Error while processing %(op)s %(type)s %(id)s;"
-                              " Error: %(error)s"), log_dict)
+                LOG.error("Error while processing %(op)s %(type)s %(id)s;"
+                          " Error: %(error)s", log_dict)
                 db.update_pending_db_row_retry(
                     session, entry, self._max_retry_count)
 

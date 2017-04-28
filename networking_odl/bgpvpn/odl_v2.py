@@ -20,7 +20,6 @@ from oslo_log import log as logging
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
-from networking_odl._i18n import _LI
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import journal
 
@@ -40,7 +39,7 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
     @log_helpers.log_method_call
     def __init__(self, service_plugin):
-        LOG.info(_LI("Initializing OpenDaylight BGPVPN v2 driver"))
+        LOG.info("Initializing OpenDaylight BGPVPN v2 driver")
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
         self.journal = journal.OpendaylightJournalThread()
 

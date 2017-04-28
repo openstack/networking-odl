@@ -19,7 +19,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
-from networking_odl._i18n import _LI, _LE
 from networking_odl.db import db
 
 
@@ -51,19 +50,19 @@ class MaintenanceThread(object):
             op_details += " (%s)" % operation.func_doc
 
         try:
-            LOG.info(_LI("Starting maintenance operation %s."), op_details)
+            LOG.info("Starting maintenance operation %s.", op_details)
             db.update_maintenance_operation(session, operation=operation)
             operation(session=session)
-            LOG.info(_LI("Finished maintenance operation %s."), op_details)
+            LOG.info("Finished maintenance operation %s.", op_details)
         except Exception:
-            LOG.exception(_LE("Failed during maintenance operation %s."),
+            LOG.exception("Failed during maintenance operation %s.",
                           op_details)
 
     def execute_ops(self):
-        LOG.info(_LI("Starting journal maintenance run."))
+        LOG.info("Starting journal maintenance run.")
         session = neutron_db_api.get_writer_session()
         if not db.lock_maintenance(session):
-            LOG.info(_LI("Maintenance already running, aborting."))
+            LOG.info("Maintenance already running, aborting.")
             return
 
         try:
@@ -72,7 +71,7 @@ class MaintenanceThread(object):
         finally:
             db.update_maintenance_operation(session, operation=None)
             db.unlock_maintenance(session)
-            LOG.info(_LI("Finished journal maintenance run."))
+            LOG.info("Finished journal maintenance run.")
 
     def register_operation(self, f):
         """Register a function to be run by the maintenance thread.

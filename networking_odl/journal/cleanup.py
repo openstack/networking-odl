@@ -19,7 +19,6 @@ from datetime import timedelta
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from networking_odl._i18n import _LI
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 
@@ -42,5 +41,5 @@ class JournalCleanup(object):
     def cleanup_processing_rows(self, session):
         row_count = db.reset_processing_rows(session, self._processing_timeout)
         if row_count:
-            LOG.info(_LI("Reset %(num)s orphaned rows back to pending"),
+            LOG.info("Reset %(num)s orphaned rows back to pending",
                      {"num": row_count})
