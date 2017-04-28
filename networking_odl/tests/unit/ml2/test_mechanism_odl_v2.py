@@ -22,11 +22,11 @@ import testscenarios
 from neutron.db import api as neutron_db_api
 from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import provider_net as providernet
+from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_serialization import jsonutils
@@ -654,11 +654,11 @@ class TestOpenDaylightDriverVlanTransparencyNetwork(
         self.assertTrue(self.mech.check_vlan_transparency(context))
 
     def test_vlan_transparency(self):
-        for network_type in [p_const.TYPE_VXLAN]:
+        for network_type in [n_constants.TYPE_VXLAN]:
             self._test_network_type(True, network_type)
-        for network_type in [p_const.TYPE_FLAT, p_const.TYPE_GENEVE,
-                             p_const.TYPE_GRE, p_const.TYPE_LOCAL,
-                             p_const.TYPE_VLAN]:
+        for network_type in [n_constants.TYPE_FLAT, n_constants.TYPE_GENEVE,
+                             n_constants.TYPE_GRE, n_constants.TYPE_LOCAL,
+                             n_constants.TYPE_VLAN]:
             self._test_network_type(False, network_type)
 
 
@@ -667,19 +667,19 @@ class TestOpenDaylightDriverVlanTransparency(
     scenarios = [
         ("vxlan_vxlan",
          {'expected': True,
-          'network_types': [p_const.TYPE_VXLAN, p_const.TYPE_VXLAN]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_VXLAN]}),
         ("gre_vxlan",
          {'expected': False,
-          'network_types': [p_const.TYPE_GRE, p_const.TYPE_VXLAN]}),
+          'network_types': [n_constants.TYPE_GRE, n_constants.TYPE_VXLAN]}),
         ("vxlan_vlan",
          {'expected': False,
-          'network_types': [p_const.TYPE_VXLAN, p_const.TYPE_VLAN]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_VLAN]}),
         ("vxlan_flat",
          {'expected': False,
-          'network_types': [p_const.TYPE_VXLAN, p_const.TYPE_FLAT]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_FLAT]}),
         ("vlan_vlan",
          {'expected': False,
-          'network_types': [p_const.TYPE_VLAN, p_const.TYPE_VLAN]}),
+          'network_types': [n_constants.TYPE_VLAN, n_constants.TYPE_VLAN]}),
     ]
 
     def test_network_segments(self):

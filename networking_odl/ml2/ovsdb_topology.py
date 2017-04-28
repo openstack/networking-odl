@@ -20,7 +20,6 @@ import os
 from oslo_log import log
 from six.moves.urllib import parse
 
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
@@ -193,9 +192,9 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
         """
 
         network_type = segment[driver_api.NETWORK_TYPE]
-        return network_type in [constants.TYPE_FLAT, constants.TYPE_LOCAL,
-                                constants.TYPE_GRE, constants.TYPE_VXLAN,
-                                constants.TYPE_VLAN]
+        return network_type in [n_const.TYPE_FLAT, n_const.TYPE_LOCAL,
+                                n_const.TYPE_GRE, n_const.TYPE_VXLAN,
+                                n_const.TYPE_VLAN]
 
     def _get_vif_details(self, vif_details, port_context_id, vif_type):
         vif_details = dict(vif_details)

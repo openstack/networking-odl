@@ -15,7 +15,6 @@
 
 import mock
 
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib.api.definitions import portbindings
@@ -29,22 +28,22 @@ class TestLegacyPortBindingManager(base.DietTestCase):
     # valid  and invalid segments
     valid_segment = {
         api.ID: 'API_ID',
-        api.NETWORK_TYPE: constants.TYPE_LOCAL,
+        api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
         api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     invalid_segment = {
         api.ID: 'API_ID',
-        api.NETWORK_TYPE: constants.TYPE_NONE,
+        api.NETWORK_TYPE: n_constants.TYPE_NONE,
         api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     def test_check_segment(self):
         """Validate the _check_segment method."""
 
-        all_network_types = [constants.TYPE_FLAT, constants.TYPE_GRE,
-                             constants.TYPE_LOCAL, constants.TYPE_VXLAN,
-                             constants.TYPE_VLAN, constants.TYPE_NONE]
+        all_network_types = [n_constants.TYPE_FLAT, n_constants.TYPE_GRE,
+                             n_constants.TYPE_LOCAL, n_constants.TYPE_VXLAN,
+                             n_constants.TYPE_VLAN, n_constants.TYPE_NONE]
 
         mgr = legacy_port_binding.LegacyPortBindingManager()
 
@@ -54,9 +53,9 @@ class TestLegacyPortBindingManager(base.DietTestCase):
             if mgr._check_segment({api.NETWORK_TYPE: network_type})}
 
         self.assertEqual({
-            constants.TYPE_FLAT, constants.TYPE_LOCAL,
-            constants.TYPE_GRE, constants.TYPE_VXLAN,
-            constants.TYPE_VLAN}, valid_types)
+            n_constants.TYPE_FLAT, n_constants.TYPE_LOCAL,
+            n_constants.TYPE_GRE, n_constants.TYPE_VXLAN,
+            n_constants.TYPE_VLAN}, valid_types)
 
     def test_bind_port(self):
 

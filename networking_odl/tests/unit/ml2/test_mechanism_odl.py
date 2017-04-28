@@ -26,7 +26,6 @@ import webob.exc
 
 from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
@@ -565,13 +564,13 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
     # given valid  and invalid segments
     valid_segment = {
         api.ID: 'API_ID',
-        api.NETWORK_TYPE: constants.TYPE_LOCAL,
+        api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
         api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     invalid_segment = {
         api.ID: 'API_ID',
-        api.NETWORK_TYPE: constants.TYPE_NONE,
+        api.NETWORK_TYPE: n_constants.TYPE_NONE,
         api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
@@ -629,11 +628,11 @@ class TestOpenDaylightDriverVlanTransparencyNetwork(
         self.assertEqual(True,
                          self.mech.check_vlan_transparency(context))
 
-        for network_type in [constants.TYPE_VXLAN]:
+        for network_type in [n_constants.TYPE_VXLAN]:
             self._test_network_type(True, network_type)
-        for network_type in [constants.TYPE_FLAT, constants.TYPE_GENEVE,
-                             constants.TYPE_GRE, constants.TYPE_LOCAL,
-                             constants.TYPE_VLAN]:
+        for network_type in [n_constants.TYPE_FLAT, n_constants.TYPE_GENEVE,
+                             n_constants.TYPE_GRE, n_constants.TYPE_LOCAL,
+                             n_constants.TYPE_VLAN]:
             self._test_network_type(False, network_type)
 
 
@@ -642,19 +641,19 @@ class TestOpenDaylightDriverVlanTransparency(
     scenarios = [
         ('vxlan_vxlan',
          {'expected': True,
-          'network_types': [constants.TYPE_VXLAN, constants.TYPE_VXLAN]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_VXLAN]}),
         ('gre_vxlan',
          {'expected': False,
-          'network_types': [constants.TYPE_GRE, constants.TYPE_VXLAN]}),
+          'network_types': [n_constants.TYPE_GRE, n_constants.TYPE_VXLAN]}),
         ('vxlan_vlan',
          {'expected': False,
-          'network_types': [constants.TYPE_VXLAN, constants.TYPE_VLAN]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_VLAN]}),
         ('vxlan_flat',
          {'expected': False,
-          'network_types': [constants.TYPE_VXLAN, constants.TYPE_FLAT]}),
+          'network_types': [n_constants.TYPE_VXLAN, n_constants.TYPE_FLAT]}),
         ('vlan_vlan',
          {'expected': False,
-          'network_types': [constants.TYPE_VLAN, constants.TYPE_VLAN]}),
+          'network_types': [n_constants.TYPE_VLAN, n_constants.TYPE_VLAN]}),
     ]
 
     def test_network_segments(self):

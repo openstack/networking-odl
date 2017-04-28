@@ -19,7 +19,6 @@ import mock
 from oslo_log import log
 from oslo_serialization import jsonutils
 
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import portbindings
@@ -85,13 +84,13 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
     # given valid  and invalid segments
     VALID_SEGMENT = {
         driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: constants.TYPE_LOCAL,
+        driver_api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
         driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     INVALID_SEGMENT = {
         driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: constants.TYPE_NONE,
+        driver_api.NETWORK_TYPE: n_constants.TYPE_NONE,
         driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
@@ -171,9 +170,9 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
         given_element = self.given_element(
             has_datapath_type_netdev=True, support_vhost_user=True,
             remote_ip='192.168.99.66')
-        all_network_types = [constants.TYPE_FLAT, constants.TYPE_GRE,
-                             constants.TYPE_LOCAL, constants.TYPE_VXLAN,
-                             constants.TYPE_VLAN, constants.TYPE_NONE]
+        all_network_types = [n_constants.TYPE_FLAT, n_constants.TYPE_GRE,
+                             n_constants.TYPE_LOCAL, n_constants.TYPE_VXLAN,
+                             n_constants.TYPE_VLAN, n_constants.TYPE_NONE]
 
         # when checking segments network type
         valid_types = {
@@ -184,8 +183,9 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
 
         # then true is returned only for valid network types
         self.assertEqual({
-            constants.TYPE_FLAT, constants.TYPE_LOCAL, constants.TYPE_GRE,
-            constants.TYPE_VXLAN, constants.TYPE_VLAN}, valid_types)
+            n_constants.TYPE_FLAT, n_constants.TYPE_LOCAL,
+            n_constants.TYPE_GRE, n_constants.TYPE_VXLAN,
+            n_constants.TYPE_VLAN}, valid_types)
 
     def test_bind_port_with_vif_type_ovs(self):
         given_port_context = self.given_port_context(

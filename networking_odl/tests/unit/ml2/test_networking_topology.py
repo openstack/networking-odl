@@ -22,7 +22,6 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 import requests
 
-from neutron.plugins.common import constants
 from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import portbindings
@@ -45,13 +44,13 @@ class TestNetworkTopologyManager(base.DietTestCase):
     # given valid  and invalid segments
     valid_segment = {
         driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: constants.TYPE_LOCAL,
+        driver_api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
         driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     invalid_segment = {
         driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: constants.TYPE_NONE,
+        driver_api.NETWORK_TYPE: n_constants.TYPE_NONE,
         driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
         driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
