@@ -62,6 +62,7 @@ class OpenDaylightL3RouterPlugin(
                                    "extraroute"]
 
     def __init__(self):
+        super(OpenDaylightL3RouterPlugin, self).__init__()
         self.setup_rpc()
         self.client = odl_client.OpenDaylightRestClient.create_client()
 
