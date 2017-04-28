@@ -72,14 +72,13 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         payload.original_trunk.to_dict = mock.Mock(return_value=FAKE_TRUNK)
         return payload
 
-    def _call_operation_object(self, operation, timing):
-        fake_payload = self._fake_trunk_payload()
+    def _call_operation_object(self, operation, timing, fake_payload):
         method = getattr(self.handler, 'trunk_%s_%s' % (operation, timing))
         method(mock.ANY, mock.ANY, mock.ANY, fake_payload)
 
     def _test_event(self, operation, timing):
-        self._call_operation_object(operation, timing)
         fake_payload = self._fake_trunk_payload()
+        self._call_operation_object(operation, timing, fake_payload)
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
 
         if timing == 'precommit':
