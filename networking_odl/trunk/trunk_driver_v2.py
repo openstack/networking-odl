@@ -17,6 +17,7 @@
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from oslo_config import cfg
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from neutron.services.trunk import constants as t_consts
@@ -43,18 +44,21 @@ class OpenDaylightTrunkHandlerV2(object):
 
     # TODO(vthapar) Revisit status updates once websockets are fully
     # implemented - https://review.openstack.org/#/c/421127/
+    @log_helpers.log_method_call
     def trunk_create_precommit(self, resource, event, trunk_plugin, payload):
         data = payload.current_trunk.to_dict()
         data['status'] = t_consts.ACTIVE_STATUS
         self._record_in_journal(payload.context, payload.trunk_id,
                                 odl_const.ODL_CREATE, data)
 
+    @log_helpers.log_method_call
     def trunk_update_precommit(self, resource, event, trunk_plugin, payload):
         payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
         data = payload.current_trunk.to_dict()
         self._record_in_journal(payload.context, payload.trunk_id,
                                 odl_const.ODL_UPDATE, data)
 
+    @log_helpers.log_method_call
     def trunk_delete_precommit(self, resource, event, trunk_plugin, payload):
         # fill in data with parent ids, will be used in parent validations
         trunk_dict = payload.original_trunk.to_dict()
@@ -63,14 +67,17 @@ class OpenDaylightTrunkHandlerV2(object):
         self._record_in_journal(payload.context, payload.trunk_id,
                                 odl_const.ODL_DELETE, data)
 
+    @log_helpers.log_method_call
     def trunk_create_postcommit(self, resource, event, trunk_plugin, payload):
         payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
         self.journal.set_sync_event()
 
+    @log_helpers.log_method_call
     def trunk_update_postcommit(self, resource, event, trunk_plugin, payload):
         payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
         self.journal.set_sync_event()
 
+    @log_helpers.log_method_call
     def trunk_delete_postcommit(self, resource, event, trunk_plugin, payload):
         self.journal.set_sync_event()
 
