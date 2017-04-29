@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.common import constants as n_consts
 from neutron.services.qos.drivers import base
 from neutron.services.qos import qos_consts
 from neutron_lib.api.definitions import portbindings
@@ -25,7 +26,15 @@ from networking_odl.qos import qos_utils
 LOG = logging.getLogger(__name__)
 
 # TODO(manjeets) fetch these from Neutron NB
-SUPPORTED_RULES = [qos_consts.RULE_TYPE_BANDWIDTH_LIMIT]
+# Only bandwidth limit is supported so far.
+SUPPORTED_RULES = {
+    qos_consts.RULE_TYPE_BANDWIDTH_LIMIT: {
+        qos_consts.MAX_KBPS: {
+            'type:range': [0, n_consts.DB_INTEGER_MAX_VALUE]},
+        qos_consts.MAX_BURST: {
+            'type:range': [0, n_consts.DB_INTEGER_MAX_VALUE]}
+    },
+}
 VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
 VNIC_TYPES = [portbindings.VNIC_NORMAL]
 
@@ -52,10 +61,6 @@ class OpenDaylightQosDriver(base.DriverBase):
             requires_rpc_notifications)
         LOG.debug("Initializing OpenDaylight Qos driver")
         self.journal = journal.OpendaylightJournalThread()
-
-    def get_description(self):
-        """Returns string description of driver"""
-        return "QoS ODL driver"
 
     def _record_in_journal(self, context, op_const, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())
