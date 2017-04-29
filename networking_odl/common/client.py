@@ -18,6 +18,7 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
 import requests
+from requests import sessions
 import threading
 
 from networking_odl.common import constants as odl_const
@@ -56,9 +57,11 @@ class OpenDaylightRestClient(object):
             cfg.CONF.ml2_odl.timeout)
 
     def __init__(self, url, username, password, timeout):
+        super(OpenDaylightRestClient, self).__init__()
         self.url = url
         self.timeout = timeout
-        self.auth = (username, password)
+        self.session = sessions.Session()
+        self.session.auth = (username, password)
 
     def get_resource(self, resource_type, resource_id):
         response = self.get(utils.make_url_object(resource_type) + '/' +
@@ -83,9 +86,8 @@ class OpenDaylightRestClient(object):
         LOG.debug(
             "Sending METHOD (%(method)s) URL (%(url)s) JSON (%(data)s)",
             {'method': method, 'url': url, 'data': data})
-        return requests.request(
-            method, url=url, headers=headers, data=data, auth=self.auth,
-            timeout=self.timeout)
+        return self.session.request(
+            method, url=url, headers=headers, data=data, timeout=self.timeout)
 
     def sendjson(self, method, urlpath, obj):
         """Send json to the OpenDaylight controller."""

@@ -408,70 +408,68 @@ class TestNetworkTopologyClient(base.DietTestCase):
             'restconf/operational/network-topology:network-topology',
             rest_client.url)
         self.assertEqual(
-            (self.given_username, self.given_password), rest_client.auth)
+            (self.given_username, self.given_password),
+            rest_client.session.auth)
         self.assertEqual(self.given_timeout, rest_client.timeout)
 
     def test_request_with_port(self):
         # Given rest client and used 'requests' module
         given_client = self.given_client()
-        mocked_requests_module = self.mocked_requests()
+        mocked_request = self.mocked_request()
 
         # When a request is performed
         result = given_client.request(
             'GIVEN_METHOD', 'given/path', 'GIVEN_DATA')
 
         # Then request method is called
-        mocked_requests_module.request.assert_called_once_with(
+        mocked_request.assert_called_once_with(
             'GIVEN_METHOD',
             url='http://given.host:1234/restconf/operational/' +
             'network-topology:network-topology/given/path',
-            auth=(self.given_username, self.given_password),
             data='GIVEN_DATA', headers={'Content-Type': 'application/json'},
             timeout=self.given_timeout)
 
         # Then request method result is returned
-        self.assertIs(mocked_requests_module.request.return_value, result)
+        self.assertIs(mocked_request.return_value, result)
 
     def test_request_without_port(self):
         # Given rest client and used 'requests' module
         given_client = self.given_client(url=self.given_url_without_port)
-        mocked_requests_module = self.mocked_requests()
+        mocked_request = self.mocked_request()
 
         # When a request is performed
         result = given_client.request(
             'GIVEN_METHOD', 'given/path', 'GIVEN_DATA')
 
         # Then request method is called
-        mocked_requests_module.request.assert_called_once_with(
+        mocked_request.assert_called_once_with(
             'GIVEN_METHOD',
             url='http://given.host/restconf/operational/' +
             'network-topology:network-topology/given/path',
-            auth=(self.given_username, self.given_password),
             data='GIVEN_DATA', headers={'Content-Type': 'application/json'},
             timeout=self.given_timeout)
 
         # Then request method result is returned
-        self.assertIs(mocked_requests_module.request.return_value, result)
+        self.assertIs(mocked_request.return_value, result)
 
     def test_get(self):
         # Given rest client and used 'requests' module
         given_client = self.given_client()
-        mocked_requests_module = self.mocked_requests()
+        mocked_request = self.mocked_request()
 
         # When a request is performed
         result = given_client.get('given/path', 'GIVEN_DATA')
 
         # Then request method is called
-        mocked_requests_module.request.assert_called_once_with(
+        mocked_request.assert_called_once_with(
             'get',
             url='http://given.host:1234/restconf/operational/' +
             'network-topology:network-topology/given/path',
-            auth=(self.given_username, self.given_password),
             data='GIVEN_DATA', headers={'Content-Type': 'application/json'},
             timeout=self.given_timeout)
 
         # Then request method result is returned
-        self.assertIs(mocked_requests_module.request.return_value, result)
+        self.assertIs(mocked_request.return_value, result)
 
-    def mocked_requests(self):
-        return self.patch(network_topology.client, 'requests')
+    def mocked_request(self):
+        return self.patch(requests.sessions.Session, 'request')

@@ -36,7 +36,7 @@ class OpenDaylightRestClientFixture(fixtures.Fixture):
     # They are not used in these tests since requests.request is overwritten.
     def _setUp(self):
         super(OpenDaylightRestClientFixture, self)._setUp()
-        mock.patch('requests.request').start()
+        mock.patch('requests.sessions.Session.request').start()
         cfg.CONF.set_override('url',
                               'http://localhost:8080'
                               '/controller/nb/v2/neutron', 'ml2_odl')
