@@ -235,7 +235,9 @@ function start_opendaylight {
     export JAVA_MIN_MEM=$ODL_JAVA_MIN_MEM
     export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
     export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
-    run_process odl-server "$ODL_DIR/$ODL_NAME/bin/start"
+
+    # this is a forking process, just start it in the background
+    $ODL_DIR/$ODL_NAME/bin/start
 
     if [ -n "$ODL_BOOT_WAIT_URL" ]; then
         echo "Waiting for Opendaylight to start via $ODL_BOOT_WAIT_URL ..."
@@ -256,7 +258,6 @@ function start_opendaylight {
 function stop_opendaylight {
     # Stop the karaf container
     $ODL_DIR/$ODL_NAME/bin/stop
-    stop_process odl-server
 }
 
 
