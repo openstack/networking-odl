@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_sfc.services.sfc.drivers import base as sfc_driver
@@ -43,40 +44,49 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
         journal.record(context._plugin_context, object_type,
                        context.current['id'], operation, data)
 
+    @log_helpers.log_method_call
     def create_port_pair_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def create_port_pair_group_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR_GROUP, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def create_port_chain_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_CHAIN, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def update_port_pair_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def update_port_pair_group_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR_GROUP, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def update_port_chain_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_CHAIN, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def delete_port_pair_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR, odl_const.ODL_DELETE,
             data=[])
 
+    @log_helpers.log_method_call
     def delete_port_pair_group_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_PAIR_GROUP, odl_const.ODL_DELETE,
             data=[])
 
+    @log_helpers.log_method_call
     def delete_port_chain_precommit(self, context):
         OpenDaylightSFCDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_PORT_CHAIN, odl_const.ODL_DELETE,
@@ -97,29 +107,38 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
 
     # Need to implement these methods, else driver loading fails with error
     # complaining about no abstract method implementation present.
+    @log_helpers.log_method_call
     def create_port_pair(self, context):
         super(OpenDaylightSFCDriverV2, self).create_port_pair(context)
 
+    @log_helpers.log_method_call
     def create_port_pair_group(self, context):
         super(OpenDaylightSFCDriverV2, self).create_port_pair_group(context)
 
+    @log_helpers.log_method_call
     def create_port_chain(self, context):
         super(OpenDaylightSFCDriverV2, self).create_port_chain(context)
 
+    @log_helpers.log_method_call
     def update_port_pair(self, context):
         super(OpenDaylightSFCDriverV2, self).update_port_pair(context)
 
+    @log_helpers.log_method_call
     def update_port_pair_group(self, context):
         super(OpenDaylightSFCDriverV2, self).update_port_pair_group(context)
 
+    @log_helpers.log_method_call
     def update_port_chain(self, context):
         super(OpenDaylightSFCDriverV2, self).update_port_chain(context)
 
+    @log_helpers.log_method_call
     def delete_port_pair(self, context):
         super(OpenDaylightSFCDriverV2, self).delete_port_pair(context)
 
+    @log_helpers.log_method_call
     def delete_port_pair_group(self, context):
         super(OpenDaylightSFCDriverV2, self).delete_port_pair_group(context)
 
+    @log_helpers.log_method_call
     def delete_port_chain(self, context):
         super(OpenDaylightSFCDriverV2, self).delete_port_chain(context)

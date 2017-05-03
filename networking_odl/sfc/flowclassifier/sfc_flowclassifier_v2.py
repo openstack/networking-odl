@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_sfc.services.flowclassifier.drivers import base as fc_driver
@@ -45,14 +46,17 @@ class OpenDaylightSFCFlowClassifierDriverV2(
         journal.record(context._plugin_context, object_type,
                        context.current['id'], operation, data)
 
+    @log_helpers.log_method_call
     def create_flow_classifier_precommit(self, context):
         OpenDaylightSFCFlowClassifierDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_FLOW_CLASSIFIER, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def update_flow_classifier_precommit(self, context):
         OpenDaylightSFCFlowClassifierDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_FLOW_CLASSIFIER, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def delete_flow_classifier_precommit(self, context):
         OpenDaylightSFCFlowClassifierDriverV2._record_in_journal(
             context, odl_const.ODL_SFC_FLOW_CLASSIFIER, odl_const.ODL_DELETE,
@@ -67,14 +71,17 @@ class OpenDaylightSFCFlowClassifierDriverV2(
 
     # Need to implement these methods, else driver loading fails with error
     # complaining about no abstract method implementation present.
+    @log_helpers.log_method_call
     def create_flow_classifier(self, context):
         super(OpenDaylightSFCFlowClassifierDriverV2,
               self).create_flow_classifier(context)
 
+    @log_helpers.log_method_call
     def update_flow_classifier(self, context):
         super(OpenDaylightSFCFlowClassifierDriverV2,
               self).update_flow_classifier(context)
 
+    @log_helpers.log_method_call
     def delete_flow_classifier(self, context):
         super(OpenDaylightSFCFlowClassifierDriverV2,
               self).delete_flow_classifier(context)
