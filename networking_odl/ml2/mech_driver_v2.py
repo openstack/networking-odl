@@ -14,6 +14,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from neutron.db.models import securitygroup
@@ -83,34 +84,42 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                        context.current['id'], operation, data,
                        ml2_context=context)
 
+    @log_helpers.log_method_call
     def create_network_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_NETWORK, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def create_subnet_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_SUBNET, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def create_port_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_PORT, odl_const.ODL_CREATE)
 
+    @log_helpers.log_method_call
     def update_network_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_NETWORK, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def update_subnet_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_SUBNET, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def update_port_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_PORT, odl_const.ODL_UPDATE)
 
+    @log_helpers.log_method_call
     def delete_network_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_NETWORK, odl_const.ODL_DELETE, data=[])
 
+    @log_helpers.log_method_call
     def delete_subnet_precommit(self, context):
         # Use the journal row's data field to store parent object
         # uuids. This information is required for validation checking
@@ -120,6 +129,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             context, odl_const.ODL_SUBNET, odl_const.ODL_DELETE,
             data=new_context)
 
+    @log_helpers.log_method_call
     def delete_port_precommit(self, context):
         # Use the journal row's data field to store parent object
         # uuids. This information is required for validation checking
@@ -183,6 +193,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 journal.record(context, odl_const.ODL_SG_RULE,
                                rule['id'], odl_const.ODL_CREATE, res_rule)
 
+    @log_helpers.log_method_call
     def sync_from_callback_precommit(self, context, operation, res_type,
                                      res_id, resource_dict, **kwargs):
         object_type = res_type.singular
@@ -270,6 +281,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
     delete_subnet_postcommit = _postcommit
     delete_port_postcommit = _postcommit
 
+    @log_helpers.log_method_call
     def bind_port(self, port_context):
         """Set binding for a valid segments
 
