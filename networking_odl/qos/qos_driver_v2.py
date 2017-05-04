@@ -69,22 +69,26 @@ class OpenDaylightQosDriver(base.DriverBase):
         journal.record(context, odl_const.ODL_QOS_POLICY,
                        data['id'], op_const, data)
 
-        self.journal.set_sync_event()
-
-    # TODO(manjeets) QoS interface does not have precommit
-    # and postcommit mechanism for now, Revisit this driver
-    # once interface is fixed and separate record in journal
-    # and sync event to precommit and postcommit.
-    # https://review.openstack.org/#/c/421818/
-
     @log_helpers.log_method_call
-    def create_policy(self, context, qos_policy):
+    def create_policy_precommit(self, context, qos_policy):
         self._record_in_journal(context, odl_const.ODL_CREATE, qos_policy)
 
     @log_helpers.log_method_call
-    def update_policy(self, context, qos_policy):
+    def update_policy_precommit(self, context, qos_policy):
         self._record_in_journal(context, odl_const.ODL_UPDATE, qos_policy)
 
     @log_helpers.log_method_call
-    def delete_policy(self, context, qos_policy):
+    def delete_policy_precommit(self, context, qos_policy):
         self._record_in_journal(context, odl_const.ODL_DELETE, qos_policy)
+
+    @log_helpers.log_method_call
+    def create_policy(self, context, policy):
+        self.journal.set_sync_event()
+
+    @log_helpers.log_method_call
+    def update_policy(self, context, policy):
+        self.journal.set_sync_event()
+
+    @log_helpers.log_method_call
+    def delete_policy(self, context, policy):
+        self.journal.set_sync_event()
