@@ -23,6 +23,7 @@ from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
+from neutron_lib.plugins.ml2 import api as ml2_api
 
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
@@ -188,16 +189,16 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
 
     # test data valid  and invalid segments
     test_valid_segment = {
-        api.ID: 'API_ID',
-        api.NETWORK_TYPE: n_const.TYPE_LOCAL,
-        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        ml2_api.ID: 'API_ID',
+        ml2_api.NETWORK_TYPE: n_const.TYPE_LOCAL,
+        ml2_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        ml2_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     test_invalid_segment = {
-        api.ID: 'API_ID',
-        api.NETWORK_TYPE: n_const.TYPE_NONE,
-        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        ml2_api.ID: 'API_ID',
+        ml2_api.NETWORK_TYPE: n_const.TYPE_NONE,
+        ml2_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        ml2_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     def setUp(self):
         """Setup test."""
@@ -256,8 +257,9 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         valid_types = {
             network_type
             for network_type in all_network_types
-            if self.mgr._is_valid_segment({api.NETWORK_TYPE: network_type}, {
-                'allowed_network_types': [
+            if self.mgr._is_valid_segment(
+                {ml2_api.NETWORK_TYPE: network_type},
+                {'allowed_network_types': [
                     n_const.TYPE_LOCAL, n_const.TYPE_GRE,
                     n_const.TYPE_VXLAN, n_const.TYPE_VLAN]})}
 
@@ -277,7 +279,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
             port_context, self.sample_hconfig_dbget_ovs)
 
         port_context.set_binding.assert_called_once_with(
-            self.test_valid_segment[api.ID], vif_type,
+            self.test_valid_segment[ml2_api.ID], vif_type,
             vif_details, status=n_const.PORT_STATUS_ACTIVE)
 
     def _set_pass_vif_details(self, port_context, vif_details):
@@ -305,7 +307,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         self._set_pass_vif_details(port_context, pass_vif_details)
 
         port_context.set_binding.assert_called_once_with(
-            self.test_valid_segment[api.ID], pass_vif_type,
+            self.test_valid_segment[ml2_api.ID], pass_vif_type,
             pass_vif_details, status=n_const.PORT_STATUS_ACTIVE)
 
     def test_bind_port_with_vif_type_vhost_user_vpp(self):
@@ -322,7 +324,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         self._set_pass_vif_details(port_context, pass_vif_details)
 
         port_context.set_binding.assert_called_once_with(
-            self.test_valid_segment[api.ID], pass_vif_type,
+            self.test_valid_segment[ml2_api.ID], pass_vif_type,
             pass_vif_details, status=n_const.PORT_STATUS_ACTIVE)
 
     def test_bind_port_without_valid_segment(self):

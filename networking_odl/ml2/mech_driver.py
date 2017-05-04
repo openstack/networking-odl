@@ -19,6 +19,7 @@ import six
 
 import netaddr
 from neutron_lib.callbacks import resources
+from neutron_lib.plugins.ml2 import api
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -28,7 +29,6 @@ from neutron.common import utils
 from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import securitygroup as sg
-from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
@@ -444,7 +444,7 @@ class OpenDaylightDriver(object):
                    for segment in segments)
 
 
-class OpenDaylightMechanismDriver(driver_api.MechanismDriver):
+class OpenDaylightMechanismDriver(api.MechanismDriver):
 
     """Mechanism Driver for OpenDaylight.
 

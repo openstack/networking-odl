@@ -23,6 +23,7 @@ from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_constants
+from neutron_lib.plugins.ml2 import api
 
 from networking_odl.ml2 import ovsdb_topology
 from networking_odl.tests import base
@@ -83,16 +84,16 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
 
     # given valid  and invalid segments
     VALID_SEGMENT = {
-        driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
-        driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     INVALID_SEGMENT = {
-        driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: n_constants.TYPE_NONE,
-        driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_NONE,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     segments_to_bind = [INVALID_SEGMENT, VALID_SEGMENT]
 
@@ -179,7 +180,7 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
             network_type
             for network_type in all_network_types
             if given_element._is_valid_segment(
-                {driver_api.NETWORK_TYPE: network_type})}
+                {api.NETWORK_TYPE: network_type})}
 
         # then true is returned only for valid network types
         self.assertEqual({
@@ -199,7 +200,7 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
             vif_details={'some_details': None})
 
         given_port_context.set_binding.assert_called_once_with(
-            self.VALID_SEGMENT[driver_api.ID], portbindings.VIF_TYPE_OVS,
+            self.VALID_SEGMENT[api.ID], portbindings.VIF_TYPE_OVS,
             {'some_details': None}, status=n_constants.PORT_STATUS_ACTIVE)
 
     def test_bind_port_with_vif_type_vhost_user(self):
@@ -214,7 +215,7 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
             vif_details={'some_details': None})
 
         given_port_context.set_binding.assert_called_once_with(
-            self.VALID_SEGMENT[driver_api.ID],
+            self.VALID_SEGMENT[api.ID],
             portbindings.VIF_TYPE_VHOST_USER,
             {'vhostuser_socket': '/var/run/openvswitch/vhuCURRENT_CON',
              'some_details': None, 'vhostuser_ovs_plug': True,

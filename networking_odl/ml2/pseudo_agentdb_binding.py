@@ -15,11 +15,11 @@
 
 import logging
 
-from neutron.plugins.ml2 import driver_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as nl_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
+from neutron_lib.plugins.ml2 import api
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
@@ -279,12 +279,12 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                    'segment': valid_segment, 'vif_type': vif_type,
                    'vif_details': vif_details})
 
-        port_context.set_binding(valid_segment[driver_api.ID], vif_type,
+        port_context.set_binding(valid_segment[api.ID], vif_type,
                                  vif_details,
                                  status=nl_const.PORT_STATUS_ACTIVE)
         return True
 
     def _is_valid_segment(self, segment, conf):
         """Verify a segment is supported by ODL."""
-        network_type = segment[driver_api.NETWORK_TYPE]
+        network_type = segment[api.NETWORK_TYPE]
         return network_type in conf['allowed_network_types']

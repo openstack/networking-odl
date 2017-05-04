@@ -16,9 +16,9 @@
 
 from oslo_log import log
 
-from neutron.plugins.ml2 import driver_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
+from neutron_lib.plugins.ml2 import api
 
 from networking_odl.ml2 import port_binding
 
@@ -58,7 +58,7 @@ class LegacyPortBindingManager(port_binding.PortBindingController):
                        'segment': valid_segment, 'vif_type': vif_type})
 
             port_context.set_binding(
-                segment[driver_api.ID], vif_type,
+                segment[api.ID], vif_type,
                 self.vif_details,
                 status=n_const.PORT_STATUS_ACTIVE)
 
@@ -69,7 +69,7 @@ class LegacyPortBindingManager(port_binding.PortBindingController):
         False to indicate this to callers.
         """
 
-        network_type = segment[driver_api.NETWORK_TYPE]
+        network_type = segment[api.NETWORK_TYPE]
         return network_type in [n_const.TYPE_FLAT, n_const.TYPE_LOCAL,
                                 n_const.TYPE_GRE, n_const.TYPE_VXLAN,
                                 n_const.TYPE_VLAN]

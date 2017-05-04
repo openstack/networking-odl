@@ -26,6 +26,7 @@ from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_constants
+from neutron_lib.plugins.ml2 import api
 
 from networking_odl.common import cache
 from networking_odl.ml2 import mech_driver
@@ -43,16 +44,16 @@ class TestNetworkTopologyManager(base.DietTestCase):
 
     # given valid  and invalid segments
     valid_segment = {
-        driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
-        driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     invalid_segment = {
-        driver_api.ID: 'API_ID',
-        driver_api.NETWORK_TYPE: n_constants.TYPE_NONE,
-        driver_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        driver_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_NONE,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     segments_to_bind = [valid_segment, invalid_segment]
 
@@ -178,7 +179,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup with returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID], portbindings.VIF_TYPE_OVS,
+            self.valid_segment[api.ID], portbindings.VIF_TYPE_OVS,
             {'some': 'detail'}, status=n_constants.PORT_STATUS_ACTIVE)
 
     def test_bind_port_from_mech_driver_with_vhostuser(self):
@@ -208,7 +209,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup with returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID],
+            self.valid_segment[api.ID],
             portbindings.VIF_TYPE_VHOST_USER,
             expected_vif_details, status=n_constants.PORT_STATUS_ACTIVE)
 
@@ -232,7 +233,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup with returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID], portbindings.VIF_TYPE_OVS,
+            self.valid_segment[api.ID], portbindings.VIF_TYPE_OVS,
             {'some': 'detail'}, status=n_constants.PORT_STATUS_ACTIVE)
 
     def test_bind_port_from_mech_driver_v2_with_vhostuser(self):
@@ -262,7 +263,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup with returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID],
+            self.valid_segment[api.ID],
             portbindings.VIF_TYPE_VHOST_USER,
             expected_vif_details, status=n_constants.PORT_STATUS_ACTIVE)
 
@@ -277,7 +278,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup wit returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID], portbindings.VIF_TYPE_OVS,
+            self.valid_segment[api.ID], portbindings.VIF_TYPE_OVS,
             {'much': 'details'}, status=n_constants.PORT_STATUS_ACTIVE)
 
     def test_bind_port_with_vif_type_vhost_user(self):
@@ -291,7 +292,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
         # then context binding is setup wit returned vif_type and valid
         # segment api ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[driver_api.ID],
+            self.valid_segment[api.ID],
             portbindings.VIF_TYPE_VHOST_USER,
             {'vhostuser_socket': '/var/run/openvswitch/vhuCURRENT_CON',
              'vhostuser_ovs_plug': True, 'vhostuser_mode': 'client',

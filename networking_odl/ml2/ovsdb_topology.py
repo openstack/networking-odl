@@ -20,9 +20,9 @@ import os
 from oslo_log import log
 from six.moves.urllib import parse
 
-from neutron.plugins.ml2 import driver_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
+from neutron_lib.plugins.ml2 import api
 
 from networking_odl._i18n import _
 from networking_odl.ml2 import network_topology
@@ -165,7 +165,7 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
                      'segment': segment, 'vif_type': vif_type,
                      'vif_details': vif_details})
                 port_context.set_binding(
-                    segment[driver_api.ID], vif_type, vif_details,
+                    segment[api.ID], vif_type, vif_details,
                     status=n_const.PORT_STATUS_ACTIVE)
                 return
 
@@ -191,7 +191,7 @@ class OvsdbNetworkTopologyElement(network_topology.NetworkTopologyElement):
         False to indicate this to callers.
         """
 
-        network_type = segment[driver_api.NETWORK_TYPE]
+        network_type = segment[api.NETWORK_TYPE]
         return network_type in [n_const.TYPE_FLAT, n_const.TYPE_LOCAL,
                                 n_const.TYPE_GRE, n_const.TYPE_VXLAN,
                                 n_const.TYPE_VLAN]
