@@ -28,6 +28,7 @@ from networking_odl._i18n import _
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
+from networking_odl.common import postcommit
 from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
@@ -40,6 +41,7 @@ from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 LOG = logging.getLogger(__name__)
 
 
+@postcommit.add_postcommit('network', 'subnet', 'port')
 class OpenDaylightMechanismDriver(api.MechanismDriver):
     """OpenDaylight Python Driver for Neutron.
 
@@ -270,16 +272,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
 
     def _postcommit(self, context):
         self.journal.set_sync_event()
-
-    create_network_postcommit = _postcommit
-    create_subnet_postcommit = _postcommit
-    create_port_postcommit = _postcommit
-    update_network_postcommit = _postcommit
-    update_subnet_postcommit = _postcommit
-    update_port_postcommit = _postcommit
-    delete_network_postcommit = _postcommit
-    delete_subnet_postcommit = _postcommit
-    delete_port_postcommit = _postcommit
 
     @log_helpers.log_method_call
     def bind_port(self, port_context):
