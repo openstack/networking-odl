@@ -79,6 +79,14 @@ class _TestL3Base(test_l3.L3NatTestCaseMixin, base.OdlTestsBase):
                     q_const.FLOATINGIP_STATUS_DOWN,
                     fip['floatingip']['status'])
 
+    def test_floatingip_dissociate_port(self):
+        with self.floatingip_with_assoc() as fip:
+            portid = fip['floatingip']['port_id']
+            self.assertIsNotNone(portid)
+            self._delete(odl_const.ODL_PORTS, portid)
+            updated_fip = self.get_odl_resource(odl_const.ODL_FLOATINGIP, fip)
+            self.assertNotIn('port_id', updated_fip['floatingip'].keys())
+
 
 class TestL3PluginV1(_TestL3Base, test_plugin.Ml2PluginV2TestCase):
     _mechanism_drivers = ['opendaylight']
