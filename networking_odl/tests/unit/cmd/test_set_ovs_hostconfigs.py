@@ -179,7 +179,7 @@ class TestSetOvsHostconfigs(base.DietTestCase):
                 "vhostuser_socket_dir": conf.vhostuser_socket_dir,
                 "vhostuser_socket": os.path.join(
                     conf.vhostuser_socket_dir,
-                    conf.vhostuser_port_prefix + "$PORTID"),
+                    conf.vhostuser_port_prefix + "$PORT_ID"),
             }
 
         _, actual_json = execute.call_args_list[3][0][0][4].split("=", 1)
