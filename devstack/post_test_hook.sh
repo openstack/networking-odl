@@ -34,10 +34,10 @@ function _odl_show_info {
         sudo ovs-ofctl --protocols OpenFlow13 dump-flows $br
     done
 
-    neutron net-list
-    neutron port-list
-    neutron subnet-list
-    neutron router-list
+    openstack network list
+    openstack port list
+    openstack subnet list
+    openstack router list
 
     # ODL_UESRNAME=admin
     # ODL_PASSWORD=admin
