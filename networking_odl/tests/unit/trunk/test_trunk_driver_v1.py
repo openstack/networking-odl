@@ -40,7 +40,6 @@ FAKE_TRUNK = {
     'name': 'trunk0',
     'admin_state_up': 'true',
     'tenant_id': 'fake_tenant_id',
-    'created_at': '2016-11-16T10:17:32Z',
     'updated_at': '2016-11-16T10:17:44Z',
     'revision_number': 2,
     'project_id': 'fake_project_id',
