@@ -23,6 +23,7 @@ from neutron_lib.plugins import directory
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
+from networking_odl.journal import journal
 
 # Define which pending operation types should be deleted
 _CANARY_NETWORK_ID = "bd8db3a8-2b30-4083-a8b3-b3fd46401142"
@@ -52,8 +53,8 @@ def full_sync(session):
         _sync_resources(session, l3plugin, dbcontext, resource_type,
                         collection_name)
 
-    db.create_pending_row(session, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
-                          odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
+    journal.record(dbcontext, None, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
+                   odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
 
 
 def _full_sync_needed(session):
@@ -88,5 +89,5 @@ def _sync_resources(session, plugin, dbcontext, object_type, collection_name):
     resources = obj_getter(dbcontext)
 
     for resource in resources:
-        db.create_pending_row(session, object_type, resource['id'],
-                              odl_const.ODL_CREATE, resource)
+        journal.record(dbcontext, None, object_type, resource['id'],
+                       odl_const.ODL_CREATE, resource)
