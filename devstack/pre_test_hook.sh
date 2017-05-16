@@ -97,8 +97,11 @@ esac
 # add odl-neutron-logger for debugging
 # odl-neutorn-logger has been introduced from boron cycle
 case "$ODL_RELEASE_BASE" in
-    carbon-snapshot|boron-snapshot)
+    boron-snapshot)
         ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
+        ;;
+    carbon-snapshot|nitrogen-snapshot)
+        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger,odl-neutron-hostconfig-ovs
         ;;
     *)
         ;;
