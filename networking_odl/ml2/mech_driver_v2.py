@@ -33,6 +33,7 @@ from networking_odl.journal import journal
 from networking_odl.journal import maintenance
 from networking_odl.journal import recovery
 from networking_odl.ml2 import port_binding
+from networking_odl.ml2 import port_status_update
 from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
@@ -60,6 +61,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             qos_driver.OpenDaylightQosDriver.create()
         self._start_maintenance_thread()
         odl_features.init()
+        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
+            port_status_update.OdlPortStatusUpdate()
 
     def _start_maintenance_thread(self):
         # start the maintenance thread and register all the maintenance

@@ -29,6 +29,7 @@ import six.moves.urllib.parse as urlparse
 from string import Template
 
 from networking_odl.common import client as odl_client
+from networking_odl.common import odl_features
 from networking_odl.common import utils
 from networking_odl.common import websocket_client as odl_ws_client
 from networking_odl.journal import maintenance as mt
@@ -306,9 +307,12 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                    'segment': valid_segment, 'vif_type': vif_type,
                    'vif_details': vif_details})
 
+        port_status = nl_const.PORT_STATUS_ACTIVE
+        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
+            port_status = nl_const.PORT_STATUS_DOWN
         port_context.set_binding(valid_segment[api.ID], vif_type,
-                                 vif_details,
-                                 status=nl_const.PORT_STATUS_ACTIVE)
+                                 vif_details, status=port_status)
+
         return True
 
     def _is_valid_segment(self, segment, conf):
