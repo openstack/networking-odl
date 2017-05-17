@@ -18,6 +18,7 @@ import functools
 
 from neutron.tests.unit.extensions import test_l3
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from neutron_lib import constants as q_const
 
 from networking_odl.common import constants as odl_const
 from networking_odl.tests.functional import base
@@ -62,6 +63,21 @@ class _TestL3Base(test_l3.L3NatTestCaseMixin, base.OdlTestsBase):
         # once the context block exists.
         odl_fip = self.get_odl_resource(odl_const.ODL_FLOATINGIP, fip)
         self.assertIsNone(odl_fip)
+
+    def test_floatingip_status_with_port(self):
+        with self.floatingip_with_assoc() as fip:
+            self.assertEqual(
+                q_const.FLOATINGIP_STATUS_ACTIVE,
+                fip['floatingip']['status'])
+
+    def test_floatingip_status_without_port(self):
+        with self.subnet() as subnet:
+            with self.floatingip_no_assoc(subnet) as fip:
+                # status should be down when floating ip
+                # is not associated to any port
+                self.assertEqual(
+                    q_const.FLOATINGIP_STATUS_DOWN,
+                    fip['floatingip']['status'])
 
 
 class TestL3PluginV1(_TestL3Base, test_plugin.Ml2PluginV2TestCase):
