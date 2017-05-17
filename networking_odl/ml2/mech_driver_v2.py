@@ -25,6 +25,7 @@ from neutron_lib.plugins.ml2 import api
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
+from networking_odl.common import odl_features
 from networking_odl.common import postcommit
 from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
@@ -58,6 +59,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
             qos_driver.OpenDaylightQosDriver.create()
         self._start_maintenance_thread()
+        odl_features.init()
 
     def _start_maintenance_thread(self):
         # start the maintenance thread and register all the maintenance
