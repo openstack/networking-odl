@@ -81,5 +81,8 @@ PROCESSING = 'processing'
 FAILED = 'failed'
 COMPLETED = 'completed'
 
+# Journal Callback events
+BEFORE_COMPLETE = 'before_complete'
+
 # dict to store url mappings
 RESOURCE_URL_MAPPINGS = {ODL_QOS_POLICY: "%s/%s" % (ODL_QOS, ODL_QOS_POLICIES)}

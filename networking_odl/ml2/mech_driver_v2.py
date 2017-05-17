@@ -28,6 +28,7 @@ from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
 from networking_odl.common import odl_features
 from networking_odl.common import postcommit
+from networking_odl.dhcp import odl_dhcp_driver as dhcp_driver
 from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
@@ -68,6 +69,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
         if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
             qos_driver.OpenDaylightQosDriver.create()
+        if cfg.CONF.ml2_odl.enable_dhcp_service:
+            self.dhcp_driver = dhcp_driver.OdlDhcpDriver()
+
         self._start_periodic_task()
         full_sync.register(nlib_const.CORE, L2_RESOURCES)
         odl_features.init()
