@@ -98,6 +98,9 @@ class OpenDaylightL3RouterPlugin(
     @journal.call_thread_on_end
     def create_floatingip(self, context, floatingip,
                           initial_status=q_const.FLOATINGIP_STATUS_ACTIVE):
+        fip = floatingip['floatingip']
+        if fip.get('port_id') is None:
+            initial_status = q_const.FLOATINGIP_STATUS_DOWN
         session = db_api.get_session()
         with session.begin(subtransactions=True):
             fip_dict = super(

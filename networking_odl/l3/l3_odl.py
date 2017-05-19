@@ -111,6 +111,9 @@ class OpenDaylightL3RouterPlugin(
 
     def create_floatingip(self, context, floatingip,
                           initial_status=q_const.FLOATINGIP_STATUS_ACTIVE):
+        fip = floatingip['floatingip']
+        if fip.get('port_id') is None:
+            initial_status = q_const.FLOATINGIP_STATUS_DOWN
         fip_dict = super(OpenDaylightL3RouterPlugin, self).create_floatingip(
             context, floatingip, initial_status)
         url = FLOATINGIPS
