@@ -94,8 +94,7 @@ def get_oldest_pending_db_row_with_lock(session):
     with session.begin():
         row = session.query(models.OpenDaylightJournal).filter_by(
             state=odl_const.PENDING).order_by(
-            asc(models.OpenDaylightJournal.last_retried)).with_for_update(
-        ).first()
+            asc(models.OpenDaylightJournal.last_retried)).first()
         if row:
             update_db_row_state(session, row, odl_const.PROCESSING)
 

@@ -40,6 +40,11 @@ class OpenDaylightJournal(model_base.BASEV2):
         server_default=sa.func.now())
     last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),
                              onupdate=sa.func.now())
+    version_id = sa.Column(sa.Integer, server_default='0', nullable=False)
+
+    __mapper_args__ = {
+        'version_id_col': version_id
+    }
 
 
 class OpenDaylightMaintenance(model_base.BASEV2, model_base.HasId):

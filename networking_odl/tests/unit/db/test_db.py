@@ -19,12 +19,12 @@ import operator
 
 import mock
 
+from sqlalchemy.orm import exc
+
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
 from networking_odl.tests.unit import test_base_db
-
-from oslo_db.exception import DBDeadlock
 
 
 class DbTestCase(test_base_db.ODLBaseDbTestCase):
@@ -144,9 +144,10 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
         self.assertEqual(older_row, row)
 
-    def test_get_oldest_pending_row_when_deadlock(self):
+    def test_get_oldest_pending_row_when_conflict(self):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        update_mock = mock.MagicMock(side_effect=(DBDeadlock, mock.DEFAULT))
+        update_mock = mock.MagicMock(
+            side_effect=(exc.StaleDataError, mock.DEFAULT))
 
         # Mocking is mandatory to achieve a deadlock regardless of the DB
         # backend being used when running the tests
