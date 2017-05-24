@@ -61,8 +61,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             qos_driver.OpenDaylightQosDriver.create()
         self._start_maintenance_thread()
         odl_features.init()
-        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
-            port_status_update.OdlPortStatusUpdate()
+
+    def get_workers(self):
+        return [port_status_update.OdlPortStatusUpdate()]
 
     def _start_maintenance_thread(self):
         # start the maintenance thread and register all the maintenance
