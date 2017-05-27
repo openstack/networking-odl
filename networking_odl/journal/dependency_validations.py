@@ -60,7 +60,7 @@ def _is_valid_delete_operation(session, row):
     return True
 
 
-def _no_older_operations(session, object_id, row):
+def _no_older_operations(session, object_ids, row):
     """Check that no older operation exist.
 
     Determine that there aren't any operations still in the queue for the
@@ -68,10 +68,10 @@ def _no_older_operations(session, object_id, row):
     If such an operation is found, False is returned.
     If no older operations exist, True is returned.
     """
-    if not isinstance(object_id, (list, tuple)):
-        object_id = (object_id,)
+    if not isinstance(object_ids, (list, tuple)):
+        object_ids = (object_ids,)
 
-    for object_id in object_id:
+    for object_id in object_ids:
         if db.check_for_pending_or_processing_ops(
                 session, object_id, seqnum=row.seqnum):
             return False
