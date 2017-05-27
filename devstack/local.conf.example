@@ -13,6 +13,15 @@ ODL_RELEASE=latest-snapshot
 # These are core ODL features
 ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs
 
+# Set DLUX Karaf features needed for the ODL GUI at http://<ODL_IP>:8181/index.html
+ODL_NETVIRT_KARAF_FEATURE+=,odl-dluxapps-nodes,odl-dluxapps-topology,odl-dluxapps-yangui,odl-dluxapps-yangvisualizer
+
+# Set L2 Karaf features needed for the ODL GUI at http://<ODL_IP>:8181/index.html
+ODL_NETVIRT_KARAF_FEATURE+=,odl-l2switch-switch,odl-l2switch-switch-ui,odl-ovsdb-hwvtepsouthbound-ui,odl-ovsdb-southbound-impl-ui,odl-netvirt-ui
+
+# Set OpenFlow Karaf features needed for the ODL GUI at http://<ODL_IP>:8181/index.html
+ODL_NETVIRT_KARAF_FEATURE+=,odl-openflowplugin-flow-services-ui
+
 # odl-netvirt-openstack is used for new netvirt
 ODL_NETVIRT_KARAF_FEATURE+=,odl-netvirt-openstack
 
