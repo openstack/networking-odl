@@ -22,6 +22,7 @@ from oslo_log import log as logging
 from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
 from networking_odl.common import constants as odl_const
+from networking_odl.common import postcommit
 from networking_odl.journal import journal
 
 
@@ -30,6 +31,7 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = logging.getLogger(__name__)
 
 
+@postcommit.add_postcommit('l2_gateway', 'l2_gateway_connection')
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
     """Opendaylight L2Gateway Service Driver
 
@@ -84,28 +86,3 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
                        l2_gateway_connection_id,
                        odl_const.ODL_DELETE,
                        l2_gateway_connection_id)
-
-    def _postcommit(self, context):
-        self.journal.set_sync_event()
-
-    @log_helpers.log_method_call
-    def create_l2_gateway_postcommit(self, context, l2_gateway):
-        self._postcommit(context)
-
-    @log_helpers.log_method_call
-    def delete_l2_gateway_postcommit(self, context, l2_gateway_id):
-        self._postcommit(context)
-
-    @log_helpers.log_method_call
-    def update_l2_gateway_postcommit(self, context, l2_gateway):
-        self._postcommit(context)
-
-    @log_helpers.log_method_call
-    def create_l2_gateway_connection_postcommit(self, context,
-                                                l2_gateway_connection):
-        self._postcommit(context)
-
-    @log_helpers.log_method_call
-    def delete_l2_gateway_connection_postcommit(self, context,
-                                                l2_gateway_connection_id):
-        self._postcommit(context)

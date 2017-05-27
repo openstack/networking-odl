@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 from networking_odl.common import constants as odl_const
+from networking_odl.common import postcommit
 from networking_odl.journal import journal
 
 
@@ -29,6 +30,7 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = logging.getLogger(__name__)
 
 
+@postcommit.add_postcommit('bgpvpn', 'net_assoc', 'router_assoc')
 class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
 
     """OpenDaylight BGPVPN Driver
@@ -99,34 +101,3 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
         journal.record(context, odl_const.ODL_BGPVPN,
                        bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
-
-    def _postcommit(self):
-        self.journal.set_sync_event()
-
-    @log_helpers.log_method_call
-    def create_bgpvpn_postcommit(self, context, bgpvpn):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def delete_bgpvpn_postcommit(self, context, bgpvpn):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def update_bgpvpn_postcommit(self, context, old_bgpvpn, bgpvpn):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def create_net_assoc_postcommit(self, context, net_assoc):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def delete_net_assoc_postcommit(self, context, net_assoc):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def create_router_assoc_postcommit(self, context, router_assoc):
-        self._postcommit()
-
-    @log_helpers.log_method_call
-    def delete_router_assoc_postcommit(self, context, router_assoc):
-        self._postcommit()
