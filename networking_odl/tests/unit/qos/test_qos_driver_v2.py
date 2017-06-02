@@ -58,7 +58,8 @@ class OpendaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
         method(context, qos_data)
 
     def _test_qos_policy(self, operation):
-        self._call_operation_object(operation=operation, object_type='policy')
+        self._call_operation_object(operation=operation,
+                                    object_type='policy_precommit')
         qos_data = self._get_mock_qos_operation_data()
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
         self.assertEqual(operation, row['operation'])
