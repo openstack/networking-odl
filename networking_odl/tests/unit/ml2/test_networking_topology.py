@@ -33,12 +33,14 @@ from networking_odl.ml2 import mech_driver
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.ml2 import network_topology
 from networking_odl.tests import base
+from networking_odl.tests.unit import test_base_db
 
 
 LOG = log.getLogger(__name__)
 
 
-class TestNetworkTopologyManager(base.DietTestCase):
+class TestNetworkTopologyManager(base.DietTestCase,
+                                 test_base_db.ODLBaseDbTestCase):
 
     # pylint: disable=protected-access
 
