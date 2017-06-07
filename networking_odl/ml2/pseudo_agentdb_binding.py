@@ -14,6 +14,7 @@
 #    under the License.
 
 import logging
+from string import Template
 
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as nl_const
@@ -26,7 +27,6 @@ from oslo_serialization import jsonutils
 from requests import codes
 from requests import exceptions
 import six.moves.urllib.parse as urlparse
-from string import Template
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import odl_features
@@ -118,10 +118,10 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                 LOG.debug("Response code not_found (404)"
                           " treated as an empty list")
                 return []
-            else:
-                LOG.warning("REST/GET odl hostconfig failed, ",
-                            exc_info=True)
-                return None
+
+            LOG.warning("REST/GET odl hostconfig failed, ",
+                        exc_info=True)
+            return None
         except KeyError:
             LOG.error("got invalid hostconfigs", exc_info=True)
             return None
@@ -284,17 +284,17 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             LOG.error("Binding failed: unsupported VNIC %s", vnic_type)
             return False
 
+        vif_details = None
         for conf in confs:
             if conf["vnic_type"] == vnic_type:
                 vif_type = conf.get('vif_type', portbindings.VIF_TYPE_OVS)
                 LOG.debug("Binding vnic:'%s' to vif:'%s'", vnic_type, vif_type)
+                vif_details = conf.get('vif_details', {})
                 break
         else:
             vif_type = portbindings.VIF_TYPE_OVS  # default: OVS
             LOG.warning("No supported vif type found for host %s!, "
                         "defaulting to OVS", port_context.host)
-
-        vif_details = conf.get('vif_details', {})
 
         if not vif_details:  # empty vif_details could be trouble, warn.
             LOG.warning("hostconfig:vif_details was empty!")

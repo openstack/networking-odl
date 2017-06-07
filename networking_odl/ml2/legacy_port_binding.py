@@ -58,7 +58,7 @@ class LegacyPortBindingManager(port_binding.PortBindingController):
                        'segment': valid_segment, 'vif_type': vif_type})
 
             port_context.set_binding(
-                segment[api.ID], vif_type,
+                valid_segment[api.ID], vif_type,
                 self.vif_details,
                 status=n_const.PORT_STATUS_ACTIVE)
 

@@ -325,8 +325,8 @@ def _vif_type_from_conf(conf, userspace_datapath_types):
     # take detected dtype -------------------------------------------------
     if userspace_datapath_types:
         return 'vhostuser'
-    else:
-        return 'ovs'
+
+    return 'ovs'
 
 
 def _vif_details_from_conf(conf, uuid, vif_type):

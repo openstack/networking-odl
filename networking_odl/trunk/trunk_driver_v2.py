@@ -109,12 +109,12 @@ class OpenDaylightTrunkDriverV2(trunk_base.DriverBase):
                            t_consts.TRUNK, events.PRECOMMIT_DELETE)
         registry.subscribe(self._handler.trunk_delete_postcommit,
                            t_consts.TRUNK, events.AFTER_DELETE)
-        for event in (events.PRECOMMIT_CREATE, events.PRECOMMIT_DELETE):
+        for event_ in (events.PRECOMMIT_CREATE, events.PRECOMMIT_DELETE):
             registry.subscribe(self._handler.trunk_update_precommit,
-                               t_consts.SUBPORTS, event)
-        for event in (events.AFTER_CREATE, events.AFTER_DELETE):
+                               t_consts.SUBPORTS, event_)
+        for event_ in (events.AFTER_CREATE, events.AFTER_DELETE):
             registry.subscribe(self._handler.trunk_update_postcommit,
-                               t_consts.SUBPORTS, event)
+                               t_consts.SUBPORTS, event_)
 
     @classmethod
     def create(cls):

@@ -149,7 +149,9 @@ class TestWebsocketClient(base.DietTestCase):
             self.assertTrue(mock_log.error.called)
 
         self.mgr.set_exit_flag(False)
-        self.mgr._connect_ws = mock.MagicMock(return_value=mock.MagicMock())
+        ws = mock.MagicMock()
+        ws.recv.return_value = None
+        self.mgr._connect_ws = mock.MagicMock(return_value=ws)
         self.mgr._close_ws = mock.MagicMock(return_value=None)
         with mock.patch.object(wsc, 'LOG') as mock_log:
             self.mgr.run_websocket_thread(True)

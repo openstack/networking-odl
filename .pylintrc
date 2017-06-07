@@ -26,6 +26,7 @@ disable=
  bad-builtin,
  bad-indentation,
  broad-except,
+ cyclic-import,
  dangerous-default-value,
  deprecated-lambda,
  expression-not-assigned,

@@ -13,15 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import re
+import threading
+import time
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
-import re
 from requests import codes
 from requests import exceptions
-import threading
-import time
 import websocket
 
 from networking_odl._i18n import _
@@ -120,7 +121,7 @@ class OpendaylightWebsocketClient(object):
             # read off the websocket
             try:
                 data = ws.recv()
-                if len(data) == 0:
+                if not data:
                     LOG.warning("websocket received 0 bytes")
                     continue
             except websocket.WebSocketTimeoutException:
@@ -162,8 +163,7 @@ class OpendaylightWebsocketClient(object):
     def _subscribe_websocket(self):
         """ODL Websocket change notification subscription"""
         # Check ODL URL for details on this process
-        # https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:Restconf:
-        # Change_event_notification_subscription#rpc_create-data-change-event-subscription
+        # https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:Restconf:Change_event_notification_subscription#rpc_create-data-change-event-subscription # noqa: E501 # pylint: disable=line-too-long
 
         # Invoke rpc create-data-change-event-subscription
         ws_create_dce_subs_url = ("restconf/operations/sal-remote:"
@@ -323,9 +323,9 @@ class EventDataParser(object):
 
     @staticmethod
     def extract_field(text, key):
-        pattern = '\[' + key + '=(.*?)\]'
+        pattern = r'\[' + key + r'=(.*?)\]'
         match = re.search(pattern, text)
         if match:
             return match.group(1)
-        else:
-            return None
+
+        return None

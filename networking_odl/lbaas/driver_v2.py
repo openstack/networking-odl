@@ -105,6 +105,23 @@ class ODLLoadBalancerManager(OpenDaylightManager,
         # TODO(lijingjing): implement this method
         pass
 
+    # NOTE(yamahata): workaround for pylint
+    # pylint raise false positive of abstract-class-instantiated.
+    # method resolution order is as follows and db_delete_method is resolved
+    # by BaseLoadBalancerManager. However pylint complains as this
+    # class is still abstract class
+    # mro:
+    # ODLLoadBalancerManager
+    # OpenDaylightManager
+    # neutron_lbaas.drivers.driver_base.BaseLoadBalancerManager
+    # neutron_lbaas.drivers.driver_mixins.BaseRefreshMixin
+    # neutron_lbaas.drivers.driver_mixins.BaseStatsMixin
+    # neutron_lbaas.drivers.driver_mixins.BaseManagerMixin
+    # __builtin__.object
+    @property
+    def db_delete_method(self):
+        return driver_base.BaseLoadBalancerManager.db_delete_method
+
 
 class ODLListenerManager(OpenDaylightManager,
                          driver_base.BaseListenerManager):

@@ -18,7 +18,11 @@ import copy
 import six
 
 import netaddr
+from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib.callbacks import resources
+from neutron_lib import constants as p_const
+from neutron_lib import context as neutron_context
+from neutron_lib import exceptions as n_exc
 from neutron_lib.plugins.ml2 import api
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -30,10 +34,6 @@ from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_context
-from neutron_lib.api.definitions import provider_net as providernet
-from neutron_lib import constants as p_const
-from neutron_lib import context as neutron_context
-from neutron_lib import exceptions as n_exc
 
 from networking_odl.common import callback as odl_call
 from networking_odl.common import client as odl_client

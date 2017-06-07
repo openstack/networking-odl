@@ -21,6 +21,7 @@ from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.api.rpc.handlers import l3_rpc
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
+from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
@@ -30,14 +31,6 @@ from neutron_lib.plugins import constants as plugin_constants
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import utils as odl_utils
-
-try:
-    from neutron.db.db_base_plugin_v2 import common_db_mixin
-except ImportError as e:
-    # the change set ofece8cc2e9aae1610a325d0c206e38da3da9a0a1a
-    # the Change-Id of I1eac61c258541bca80e14be4b7c75519a014ffae
-    # db_base_plugin_v2.common_db_mixin was removed
-    from neutron.db import common_db_mixin
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')

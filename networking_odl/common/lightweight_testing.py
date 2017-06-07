@@ -165,7 +165,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
 
         resource_list = None
         if obj:
-            """If obj is not None, it can only have one entry"""
+            # If obj is not None, it can only have one entry
             assert len(obj) == 1, "Obj can only have one entry"
 
             key, resource_list = list(obj.items())[0]
