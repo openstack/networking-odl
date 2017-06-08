@@ -39,8 +39,7 @@ source $NETWORKING_ODL_DIR/devstack/entry_points
 # Restore xtrace
 $_XTRACE_NETWORKING_ODL
 
-if [[ "$ODL_USING_EXISTING_JAVA" == "True" ]]
-then
+if [[ "$ODL_USING_EXISTING_JAVA" == "True" ]]; then
     echo 'Using installed java.'
     java -version || exit 1
 fi

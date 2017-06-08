@@ -17,9 +17,9 @@ cd devstack
 cp /vagrant/control.conf local.conf
 shost=`grep -ri 'SERVICE_HOST=' local.conf | cut -f2 -d'='`
 sed -i -e "1i[[local|localrc]]" \
-       -e "s/ERROR_ON_CLONE=.*/ERROR_ON_CLONE=False/" \
-       -e "s/$shost/192.168.0.10/" \
-       local.conf
+    -e "s/ERROR_ON_CLONE=.*/ERROR_ON_CLONE=False/" \
+    -e "s/$shost/192.168.0.10/" \
+    local.conf
 ./stack.sh
 
 tempest init ~/tempest
