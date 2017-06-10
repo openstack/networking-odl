@@ -63,9 +63,15 @@ case "$ODL_BUNDLEVERSION" in
     0.3.?-*|0.4.?-*)
         ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_OVSDB
         ;;
-    *)
-        # 0.5.?-*, 0.6.?-* or later
+    0.5.?-*)
+        # 0.5.?-*
         ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,odl-neutron-logger
+        ;;
+    *)
+        # 0.6.?-* or later
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE
+        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,odl-neutron-hostconfig-ovs
         ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,odl-neutron-logger
         ;;
 esac
