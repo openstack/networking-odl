@@ -29,6 +29,7 @@ import six.moves.urllib.parse as urlparse
 from string import Template
 
 from networking_odl.common import client as odl_client
+from networking_odl.common import utils
 from networking_odl.common import websocket_client as odl_ws_client
 from networking_odl.journal import maintenance as mt
 from networking_odl.ml2 import port_binding
@@ -76,7 +77,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         if cfg.CONF.ml2_odl.enable_websocket_pseudo_agentdb:
             # Update hostconfig once for the configurations already present
             self._get_and_update_hostconfigs()
-            odl_url = self._make_odl_url(cfg.CONF.ml2_odl.url)
+            odl_url = utils.get_odl_url()
             self._start_websocket(odl_url)
         else:
             # Start polling ODL restconf using maintenance thread.
@@ -94,15 +95,6 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         purl = urlparse.urlsplit(odl_url)
         return urlparse.urlunparse((purl.scheme, purl.netloc,
                                     path, '', '', ''))
-
-    def _make_odl_url(self, odl_url):
-        """Extract host/port from ODL_URL to use for websocket."""
-
-        # extract ODL_IP and ODL_PORT from ODL_ENDPOINT
-        # urlsplit and urlunparse don't throw exceptions
-        purl = urlparse.urlsplit(odl_url)
-        return urlparse.urlunparse((purl.scheme, purl.netloc,
-                                    '', '', '', ''))
 
     def _start_maintenance_thread(self, poll_interval):
         self._mainth = mt.MaintenanceThread()

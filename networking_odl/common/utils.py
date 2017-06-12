@@ -16,6 +16,9 @@
 import collections
 import socket
 
+from oslo_config import cfg
+import six.moves.urllib.parse as urlparse
+
 from networking_odl.common import cache
 from networking_odl.common import constants as odl_const
 
@@ -68,3 +71,14 @@ def make_url_object(object_type):
 def neutronify(name):
     """Adjust the resource name for use with Neutron's API"""
     return name.replace('_', '-')
+
+
+def get_odl_url(self):
+    """Extract host/port from ODL_URL to use for websocket."""
+
+    # extract ODL_IP and ODL_PORT from ODL_ENDPOINT
+    # urlsplit and urlunparse don't throw exceptions
+    odl_url = cfg.CONF.ml2_odl.url
+    purl = urlparse.urlsplit(odl_url)
+    return urlparse.urlunparse((purl.scheme, purl.netloc,
+                                '', '', '', ''))
