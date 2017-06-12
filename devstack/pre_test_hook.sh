@@ -19,7 +19,9 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=carbon-snapshot-0.6
         ;;
     boron-snapshot)
-        ODL_RELEASE=boron-snapshot-0.5
+        # NOTE(yamahata): boron release ends by SR4. no more snapshot
+        # https://wiki.opendaylight.org/view/Simultaneous_Release:Boron_Release_Plan
+        ODL_RELEASE=boron-0.5.4-SR4
         ;;
     beryllium-snapshot)
         # NOTE(yamahata): beryllium release is end by SR4. no more snapshot
