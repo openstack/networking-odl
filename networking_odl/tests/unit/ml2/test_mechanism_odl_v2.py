@@ -38,7 +38,7 @@ from networking_odl.common import utils
 from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
-from networking_odl.journal import periodic_task
+from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests.unit import base_v2
 
@@ -59,7 +59,7 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
         self.mock_sync_thread = mock.patch.object(
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
-            periodic_task.PeriodicTask, 'start').start()
+            maintenance.MaintenanceThread, 'start').start()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',

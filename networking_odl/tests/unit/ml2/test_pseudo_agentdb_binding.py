@@ -27,7 +27,6 @@ from neutron_lib.plugins.ml2 import api as ml2_api
 
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
-from networking_odl.tests.unit import test_base_db
 from requests.exceptions import HTTPError
 
 from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
@@ -36,7 +35,7 @@ AGENTDB_BINARY = 'neutron-odlagent-portbinding'
 L2_TYPE = "ODL L2"
 
 
-class TestPseudoAgentDBBindingController(test_base_db.ODLBaseDbTestCase):
+class TestPseudoAgentDBBindingController(base.DietTestCase):
     """Test class for AgentDBPortBinding."""
 
     # test data hostconfig and hostconfig-dbget

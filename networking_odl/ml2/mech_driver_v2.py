@@ -31,7 +31,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
-from networking_odl.journal import periodic_task
+from networking_odl.journal import maintenance
 from networking_odl.journal import recovery
 from networking_odl.ml2 import port_binding
 from networking_odl.qos import qos_driver_v2 as qos_driver
@@ -58,25 +58,23 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
         if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
             qos_driver.OpenDaylightQosDriver.create()
-        self._start_periodic_tasks()
+        self._start_maintenance_thread()
 
-    def _start_periodic_tasks(self):
-        # start the periodic tasks and register all the tasks
+    def _start_maintenance_thread(self):
+        # start the maintenance thread and register all the maintenance
         # operations :
         # (1) JournalCleanup - Delete completed rows from journal
         # (2) CleanupProcessing - Mark orphaned processing rows to pending
         # (3) Full sync - Re-sync when detecting an ODL "cold reboot"
         cleanup_obj = cleanup.JournalCleanup()
-        interval = cfg.CONF.ml2_odl.maintenance_interval
-        self._periodic_task = periodic_task.PeriodicTask(interval,
-                                                         'maintenance')
-        self._periodic_task.register_operation(
+        self._maintenance_thread = maintenance.MaintenanceThread()
+        self._maintenance_thread.register_operation(
             cleanup_obj.delete_completed_rows)
-        self._periodic_task.register_operation(
+        self._maintenance_thread.register_operation(
             cleanup_obj.cleanup_processing_rows)
-        self._periodic_task.register_operation(full_sync.full_sync)
-        self._periodic_task.register_operation(recovery.journal_recovery)
-        self._periodic_task.start()
+        self._maintenance_thread.register_operation(full_sync.full_sync)
+        self._maintenance_thread.register_operation(recovery.journal_recovery)
+        self._maintenance_thread.start()
 
     @staticmethod
     def _record_in_journal(context, object_type, operation, data=None):
