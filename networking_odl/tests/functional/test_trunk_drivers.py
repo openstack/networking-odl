@@ -38,7 +38,7 @@ class _TrunkDriverTest(base.OdlTestsBase):
             self.trunk_plugin.update_trunk(self.context,
                                            trunk['trunk']['id'], trunk)
             response = self.get_odl_resource(odl_const.ODL_TRUNK, trunk)
-            self.assertEqual(response['trunk']['admin_state_up'], False)
+            self.assertFalse(response['trunk']['admin_state_up'])
 
     def test_subport_create(self):
         with self.trunk() as trunk:
