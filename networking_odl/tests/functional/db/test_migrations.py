@@ -117,7 +117,7 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
         rendered_meta_def = diff_elem[0][6]
         if (diff_elem[0][0] == 'modify_default' and
                 diff_elem[0][2] in ('opendaylightjournal',
-                                    'opendaylight_periodic_task') and
+                                    'opendaylight_maintenance') and
                 isinstance(meta_def, schema.DefaultClause) and
                 isinstance(meta_def.arg, sql.elements.TextClause) and
                 meta_def.reflected and

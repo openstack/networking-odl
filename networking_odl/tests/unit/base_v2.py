@@ -20,7 +20,7 @@ from oslo_config import cfg
 
 from networking_odl.common import client
 from networking_odl.journal import journal
-from networking_odl.journal import periodic_task
+from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
@@ -38,7 +38,7 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         self.mock_sync_thread = mock.patch.object(
             journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
-            periodic_task.PeriodicTask, 'start').start()
+            maintenance.MaintenanceThread, 'start').start()
         self.thread = journal.OpendaylightJournalThread()
 
     def run_journal_processing(self):

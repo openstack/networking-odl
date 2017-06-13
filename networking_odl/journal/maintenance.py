@@ -15,6 +15,7 @@
 #
 
 from neutron.db import api as neutron_db_api
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
@@ -24,15 +25,14 @@ from networking_odl.db import db
 LOG = logging.getLogger(__name__)
 
 
-class PeriodicTask(object):
-    def __init__(self, interval, task):
+class MaintenanceThread(object):
+    def __init__(self):
         self.timer = loopingcall.FixedIntervalLoopingCall(self.execute_ops)
-        self.interval = interval
-        self.task = task
-        self.phases = []
+        self.maintenance_interval = cfg.CONF.ml2_odl.maintenance_interval
+        self.maintenance_ops = []
 
     def start(self):
-        self.timer.start(self.interval, stop_on_exception=False)
+        self.timer.start(self.maintenance_interval, stop_on_exception=False)
 
     def cleanup(self):
         # this method is used for unit test to tear down
@@ -50,39 +50,33 @@ class PeriodicTask(object):
             op_details += " (%s)" % operation.func_doc
 
         try:
-            LOG.info("Starting %s phase of periodic task %s.",
-                     op_details, self.task)
-            db.update_periodic_task(session, task=self.task,
-                                    operation=operation)
+            LOG.info("Starting maintenance operation %s.", op_details)
+            db.update_maintenance_operation(session, operation=operation)
             operation(session=session)
-            LOG.info("Finished %s phase of %s task.", op_details, self.task)
+            LOG.info("Finished maintenance operation %s.", op_details)
         except Exception:
-            LOG.exception("Failed during periodic task operation %s.",
+            LOG.exception("Failed during maintenance operation %s.",
                           op_details)
 
     def execute_ops(self):
-        LOG.info("Starting periodic task.")
+        LOG.info("Starting journal maintenance run.")
         session = neutron_db_api.get_writer_session()
-        for phase in self.phases:
-            try:
-                if not db.lock_periodic_task(session, self.task):
+        if not db.lock_maintenance(session):
+            LOG.info("Maintenance already running, aborting.")
+            return
 
-                    LOG.info(("Periodic task already running, moving to "
-                              " next operation."))
-                    continue
-
-                self._execute_op(phase, session)
-            finally:
-                db.unlock_periodic_task(session, self.task)
-                LOG.info(("Finished %s phase of %s periodic task."),
-                         phase.__name__, self.task)
+        try:
+            for operation in self.maintenance_ops:
+                self._execute_op(operation, session)
+        finally:
+            db.update_maintenance_operation(session, operation=None)
+            db.unlock_maintenance(session)
+            LOG.info("Finished journal maintenance run.")
 
     def register_operation(self, f):
-        """Register a function to be run by the periodic task.
+        """Register a function to be run by the maintenance thread.
 
         :param f: Function to call when the thread runs. The function will
         receive a DB session to use for DB operations.
         """
-        self.phases.append(f)
-        session = neutron_db_api.get_writer_session()
-        db.create_task_if_not_registered(session, self.task)
+        self.maintenance_ops.append(f)
