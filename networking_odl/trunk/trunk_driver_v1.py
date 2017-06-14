@@ -95,9 +95,9 @@ class OpenDaylightTrunkDriverV1(trunk_base.DriverBase):
             return False
 
     @registry.receives(t_consts.TRUNK_PLUGIN, [events.AFTER_INIT])
-    def register(self, resource, event, trigger, **kwargs):
+    def register(self, resource, event, trigger, payload=None):
         super(OpenDaylightTrunkDriverV1, self).register(
-            resource, event, trigger, **kwargs)
+            resource, event, trigger, payload=payload)
         self._handler = OpenDaylightTrunkHandlerV1()
 
     @classmethod
