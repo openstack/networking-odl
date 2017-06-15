@@ -39,11 +39,11 @@ from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
 
 EMPTY_DEP = []
-FLOATINGIP_ID = 'floatingip_uuid'
-NETWORK_ID = 'network_uuid'
-ROUTER_ID = 'router_uuid'
-SUBNET_ID = 'subnet_uuid'
-PORT_ID = 'port_uuid'
+FLOATINGIP_ID = '11111111-1111-1111-1111-111111111111'
+NETWORK_ID = '22222222-2222-2222-2222-222222222222'
+ROUTER_ID = '33333333-3333-3333-3333-333333333333'
+SUBNET_ID = '44444444-4444-4444-4444-444444444444'
+PORT_ID = '55555555-5555-5555-5555-555555555555'
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):

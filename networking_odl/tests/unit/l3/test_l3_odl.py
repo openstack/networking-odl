@@ -218,6 +218,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
                              })
 
         instance = self.plugin.return_value
+        instance.get_floatingip = mock.Mock(return_value=floating_ip)
         instance.update_floatingip.return_value = return_value
         port_id, port = self._get_port_test()
         instance.get_port = mock.Mock(return_value=port)
@@ -245,8 +246,7 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         floating_ip_id, floating_ip = self._get_floating_ip_test()
 
         instance = self.plugin.return_value
-        port_id, port = self._get_port_test()
-        instance.get_port = mock.Mock(return_value=port)
+        instance.get_floatingip = mock.Mock(return_value=floating_ip)
         res = self.api.delete(_get_path('floatingips', id=floating_ip_id))
         instance.delete_floatingip.assert_called_once_with(mock.ANY,
                                                            floating_ip_id)

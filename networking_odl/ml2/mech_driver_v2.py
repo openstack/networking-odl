@@ -17,14 +17,12 @@ from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
-from neutron.db.models import securitygroup
 from neutron.extensions import multiprovidernet as mpnet
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api
 
-from networking_odl._i18n import _
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
@@ -148,52 +146,19 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             'id': sg['id'],
             'name': sg['name'],
             'tenant_id': sg['tenant_id'],
-            'description': sg['description']
-        }
-
-    def _make_security_group_rule_dict(self, rule, sg_id=None):
-        if sg_id is None:
-            sg_id = rule['security_group_id']
-        return {
-            'id': rule['id'],
-            'tenant_id': rule['tenant_id'],
-            'security_group_id': sg_id,
-            'ethertype': rule['ethertype'],
-            'direction': rule['direction'],
-            'protocol': rule['protocol'],
-            'port_range_min': rule['port_range_min'],
-            'port_range_max': rule['port_range_max'],
-            'remote_ip_prefix': rule['remote_ip_prefix'],
-            'remote_group_id': rule['remote_group_id']
+            'description': sg['description'],
         }
 
     def _sync_security_group_create_precommit(
-            self, context, operation, object_type, res_id, resource_dict):
-        # TODO(yamahata): remove this work around once
-        # https://review.openstack.org/#/c/281693/
-        # is merged.
-        # For now, SG rules aren't passed down with
-        # precommit event. We resort to get it by query.
-        new_objects = context.session.new
-        sgs = [sg for sg in new_objects
-               if isinstance(sg, securitygroup.SecurityGroup)]
-        if res_id is not None:
-            sgs = [sg for sg in sgs if sg.id == res_id]
-        for sg in sgs:
-            sg_id = sg['id']
-            res = self._make_security_group_dict(sg)
-            journal.record(context, object_type, sg_id, operation, res)
-            # NOTE(yamahata): when security group is created, default rules
-            # are also created.
-            # NOTE(yamahata): at this point, rule.security_group_id isn't
-            # populated. but it has rule.security_group
-            rules = [rule for rule in new_objects
-                     if (isinstance(rule, securitygroup.SecurityGroupRule) and
-                         rule.security_group == sg)]
-            for rule in rules:
-                res_rule = self._make_security_group_rule_dict(rule, sg_id)
-                journal.record(context, odl_const.ODL_SG_RULE,
-                               rule['id'], odl_const.ODL_CREATE, res_rule)
+            self, context, operation, object_type, res_id, sg_dict):
+
+        journal.record(context, object_type, sg_dict['id'], operation, sg_dict)
+
+        # NOTE(yamahata): when security group is created, default rules
+        # are also created.
+        for rule in sg_dict['security_group_rules']:
+            journal.record(context, odl_const.ODL_SG_RULE, rule['id'],
+                           odl_const.ODL_CREATE, rule)
 
     @log_helpers.log_method_call
     def sync_from_callback_precommit(self, context, operation, res_type,
@@ -208,23 +173,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                 context, operation, object_type, res_id, resource_dict)
             return
 
-        # NOTE(yamahata): in security group/security gorup rule case,
-        # orm object is passed. not resource dict. So we have to convert it
-        # into resource_dict
-        if not isinstance(resource_dict, dict) and resource_dict is not None:
-            if object_type == odl_const.ODL_SG:
-                resource_dict = self._make_security_group_dict(resource_dict)
-            elif object_type == odl_const.ODL_SG_RULE:
-                resource_dict = self._make_security_group_rule_dict(
-                    resource_dict)
         # NOTE(yamahata): bug work around
         # callback for update of security grouop doesn't pass complete
         # info. So we have to build it. Once the bug is fixed, remove
         # this bug work around.
         # https://launchpad.net/bugs/1546910
         # https://review.openstack.org/#/c/281693/
-        elif (object_type == odl_const.ODL_SG and
-              operation == odl_const.ODL_UPDATE):
+        if (object_type == odl_const.ODL_SG and
+                operation == odl_const.ODL_UPDATE):
             # NOTE(yamahata): precommit_update is called before updating
             # values. so context.session.{new, dirty} doesn't include sg
             # in question. a dictionary with new values needs to be build.
@@ -236,35 +192,20 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
 
         object_uuid = (resource_dict.get('id')
                        if operation == 'create' else res_id)
-        if object_uuid is None:
-            # NOTE(yamahata): bug work around bug/1546910
-            # TODO(yamahata): once the following patch is merged
-            # remove this bug work around
-            # https://review.openstack.org/#/c/281693/
-            assert object_type == odl_const.ODL_SG_RULE
-            # NOTE(yamahata): bulk creation case
-            # context.session.new accumulates all newly created orm object.
-            # there is no easy way to pick up the lastly added orm object.
-            rules = [rule for rule in context.session.new
-                     if (isinstance(rule, securitygroup.SecurityGroupRule))]
-            if len(rules) == 1:
-                object_uuid = rules[0].id
-                resource_dict['id'] = object_uuid
-            else:
-                LOG.error("bulk creation of sgrule isn't supported")
-                raise NotImplementedError(
-                    _("unsupporetd bulk creation of security group rule"))
-        journal.record(context, object_type, object_uuid,
-                       operation, resource_dict)
+
         # NOTE(yamahata): DB auto deletion
         # Security Group Rule under this Security Group needs to
         # be deleted. At NeutronDB layer rules are auto deleted with
         # cascade='all,delete'.
         if (object_type == odl_const.ODL_SG and
                 operation == odl_const.ODL_DELETE):
-            for rule in kwargs['security_group'].rules:
+            for rule_id in kwargs['security_group_rule_ids']:
                 journal.record(context, odl_const.ODL_SG_RULE,
-                               rule.id, odl_const.ODL_DELETE, [object_uuid])
+                               rule_id, odl_const.ODL_DELETE, [object_uuid])
+
+        assert object_uuid is not None
+        journal.record(context, object_type, object_uuid,
+                       operation, resource_dict)
 
     def sync_from_callback_postcommit(self, context, operation, res_type,
                                       res_id, resource_dict, **kwargs):

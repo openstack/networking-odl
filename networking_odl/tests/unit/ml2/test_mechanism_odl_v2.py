@@ -49,8 +49,8 @@ load_tests = testscenarios.load_tests_apply_scenarios
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 SECURITY_GROUP = '2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'
-SG_FAKE_ID = 'sg_fake_uuid'
-SG_RULE_FAKE_ID = 'sg_rule_fake_uuid'
+SG_FAKE_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+SG_RULE_FAKE_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
@@ -234,7 +234,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                                       'project_id': 'test-tenant',
                                       'tenant_id': 'test-tenant',
                                       'description': 'test-description',
-                                      'rules': [],
+                                      'security_group_rules': [],
                                       'id': SG_FAKE_ID}}
         return context
 
@@ -305,13 +305,18 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                         tenant_id=context_[object_type]['tenant_id'],
                         description=context_[object_type]['description'])
                     plugin_context_mock.session.add(sg)
-                    context_[odl_const.ODL_SG].pop('id', None)
+                    sg_dict = dict(sg)
+                    sg_dict['security_group_rules'] = []
+                    self.mech.sync_from_callback_precommit(
+                        plugin_context_mock, operation, res_type, res_id,
+                        context_, security_group=sg_dict)
                 if operation == odl_const.ODL_DELETE:
-                    sg = mock.Mock()
-                    sg.rules = []
-                self.mech.sync_from_callback_precommit(
-                    plugin_context_mock, operation, res_type, res_id, context_,
-                    security_group=sg)
+                    self.mech.sync_from_callback_precommit(
+                        plugin_context_mock, operation, res_type, res_id,
+                        context_,
+                        security_group={'security_group_rules':
+                                        {'id': SG_RULE_FAKE_ID}},
+                        security_group_rule_ids=[SG_RULE_FAKE_ID])
             else:
                 self.mech.sync_from_callback_precommit(
                     plugin_context_mock, operation, res_type, res_id, context_)
@@ -357,7 +362,6 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         if (object_type == odl_const.ODL_SG and
                 operation == odl_const.ODL_CREATE):
             context = copy.deepcopy(context)
-            context[odl_const.ODL_SG].pop('rules')
         if operation in [odl_const.ODL_CREATE, odl_const.ODL_UPDATE]:
             kwargs = {
                 'url': url,
@@ -368,7 +372,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self._test_operation(status_code, expected_calls, http_request,
                              **kwargs)
 
-    def _test_object_type(self, object_type):
+    def _test_object_type(self, object_type, delete_expected_calls=1):
         # Add and process create request.
         self._test_thread_processing(odl_const.ODL_CREATE, object_type)
         rows = db.get_all_db_rows_by_state(self.db_session,
@@ -382,10 +386,11 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.assertEqual(2, len(rows))
 
         # Add and process update request. Adds to database.
-        self._test_thread_processing(odl_const.ODL_DELETE, object_type)
+        self._test_thread_processing(odl_const.ODL_DELETE, object_type,
+                                     delete_expected_calls)
         rows = db.get_all_db_rows_by_state(self.db_session,
                                            odl_const.COMPLETED)
-        self.assertEqual(3, len(rows))
+        self.assertEqual(2 + delete_expected_calls, len(rows))
 
     def _test_object_type_pending_network(self, object_type):
         # Create a network (creates db row in pending state).
@@ -571,7 +576,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.assertTrue(self.mock_sync_thread.called)
 
     def test_sg(self):
-        self._test_object_type(odl_const.ODL_SG)
+        self._test_object_type(odl_const.ODL_SG, 2)
 
     def test_sg_rule(self):
         self._test_object_type(odl_const.ODL_SG_RULE)
@@ -587,22 +592,26 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             rule.security_group_id = SG_FAKE_ID
             sg = mock.Mock()
             sg.id = SG_FAKE_ID
-            sg.rules = [rule]
-            kwargs = {'security_group': sg}
+            sg.security_group_rules = [rule]
+            kwargs = {'security_group': sg,
+                      'security_group_rule_ids': [SG_RULE_FAKE_ID]}
             self.mech.sync_from_callback_precommit(
                 plugin_context_mock, odl_const.ODL_DELETE,
                 callback._RESOURCE_MAPPING[odl_const.ODL_SG],
                 res_id, context, **kwargs)
             record.assert_has_calls(
-                [mock.call(mock.ANY, 'security_group', 'sg_fake_uuid',
+                [mock.call(mock.ANY, 'security_group_rule',
+                           'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'delete',
+                           ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa']),
+                 mock.call(mock.ANY, 'security_group',
+                           'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
                            'delete',
                            {'description': 'test-description',
                             'project_id': 'test-tenant',
-                            'rules': [],
+                            'security_group_rules': [],
                             'tenant_id': 'test-tenant',
-                            'id': 'sg_fake_uuid', 'name': 'test_sg'}),
-                 mock.call(mock.ANY, 'security_group_rule',
-                           'sg_rule_fake_uuid', 'delete', ['sg_fake_uuid'])])
+                            'id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                            'name': 'test_sg'})])
 
     def test_sync_multiple_updates(self):
         # add 2 updates

@@ -112,3 +112,8 @@ if [[ -z "$NETWORK_API_EXTENSIONS" ]]; then
     NETWORK_API_EXTENSIONS+=,timestamp_core
     NETWORK_API_EXTENSIONS+=,vlan-transparent
 fi
+
+# TODO(yamahata): bug work around
+# https://bugs.launchpad.net/devstack/+bug/1698129
+# once it's fixed. remove this.
+AGENT_BINARY="/bin/false"
