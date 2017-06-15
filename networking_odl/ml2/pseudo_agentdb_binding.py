@@ -183,7 +183,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         if vnics is None:
             return hconfig
         for vnic in vnics:
-            if vnic.get('vif_type') is portbindings.VIF_TYPE_VHOST_USER:
+            if vnic.get('vif_type') == portbindings.VIF_TYPE_VHOST_USER:
                 details = vnic.get('vif_details')
                 if details is None:
                     continue
