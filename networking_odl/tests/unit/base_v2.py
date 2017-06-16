@@ -20,7 +20,6 @@ from oslo_config import cfg
 
 from networking_odl.common import client
 from networking_odl.journal import journal
-from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 from networking_odl.tests.unit import test_base_db
@@ -30,15 +29,15 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
                              test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         self.useFixture(base.OpenDaylightJournalThreadFixture())
-        self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
         self.useFixture(base.OpenDaylightRestClientFixture())
         super(OpenDaylightConfigBase, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('extension_drivers',
                               ['port_security', 'qos'], 'ml2')
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.thread = journal.OpenDaylightJournalThread()
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
 
     def run_journal_processing(self):
         """Cause the journal to process the first pending entry"""

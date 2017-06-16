@@ -224,37 +224,98 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def test_update_row_state_to_completed(self):
         self._test_update_row_state(odl_const.PROCESSING, odl_const.COMPLETED)
 
-    def _test_maintenance_lock_unlock(self, db_func, existing_state,
-                                      expected_state, expected_result):
-        row = models.OpenDaylightMaintenance(id='test',
-                                             state=existing_state)
+    def _test_periodic_task_lock_unlock(self, db_func, existing_state,
+                                        expected_state, expected_result,
+                                        task='test_task'):
+        row = models.OpenDaylightPeriodicTask(state=existing_state,
+                                              task=task)
         self.db_session.add(row)
         self.db_session.flush()
 
-        self.assertEqual(expected_result, db_func(self.db_session))
-        row = self.db_session.query(models.OpenDaylightMaintenance).one()
+        self.assertEqual(expected_result, db_func(self.db_session,
+                                                  task))
+        row = self.db_session.query(models.OpenDaylightPeriodicTask).filter_by(
+            task=task).one()
+
         self.assertEqual(expected_state, row['state'])
 
-    def test_lock_maintenance(self):
-        self._test_maintenance_lock_unlock(db.lock_maintenance,
-                                           odl_const.PENDING,
-                                           odl_const.PROCESSING,
-                                           True)
+    def test_lock_periodic_task(self):
+        self._test_periodic_task_lock_unlock(db.lock_periodic_task,
+                                             odl_const.PENDING,
+                                             odl_const.PROCESSING,
+                                             True)
 
-    def test_lock_maintenance_fails_when_processing(self):
-        self._test_maintenance_lock_unlock(db.lock_maintenance,
-                                           odl_const.PROCESSING,
-                                           odl_const.PROCESSING,
-                                           False)
+    def test_lock_periodic_task_fails_when_processing(self):
+        self._test_periodic_task_lock_unlock(db.lock_periodic_task,
+                                             odl_const.PROCESSING,
+                                             odl_const.PROCESSING,
+                                             False)
 
-    def test_unlock_maintenance(self):
-        self._test_maintenance_lock_unlock(db.unlock_maintenance,
-                                           odl_const.PROCESSING,
-                                           odl_const.PENDING,
-                                           True)
+    def test_unlock_periodic_task(self):
+        self._test_periodic_task_lock_unlock(db.unlock_periodic_task,
+                                             odl_const.PROCESSING,
+                                             odl_const.PENDING,
+                                             True)
 
-    def test_unlock_maintenance_fails_when_pending(self):
-        self._test_maintenance_lock_unlock(db.unlock_maintenance,
-                                           odl_const.PENDING,
-                                           odl_const.PENDING,
-                                           False)
+    def test_unlock_periodic_task_fails_when_pending(self):
+        self._test_periodic_task_lock_unlock(db.unlock_periodic_task,
+                                             odl_const.PENDING,
+                                             odl_const.PENDING,
+                                             False)
+
+    def test_multiple_row_tasks(self):
+        self._test_periodic_task_lock_unlock(db.unlock_periodic_task,
+                                             odl_const.PENDING,
+                                             odl_const.PENDING,
+                                             False)
+
+    def _add_tasks(self, tasks):
+        row = []
+        for count, task in enumerate(tasks):
+            row.append(models.OpenDaylightPeriodicTask(state=odl_const.PENDING,
+                                                       task=task))
+            self.db_session.add(row[count])
+
+        self.db_session.flush()
+
+        rows = self.db_session.query(models.OpenDaylightPeriodicTask).all()
+        self.assertEqual(len(tasks), len(rows))
+
+    def _perform_ops_on_all_rows(self, tasks, to_lock):
+        if to_lock:
+            curr_state = odl_const.PENDING
+            exp_state = odl_const.PROCESSING
+            func = db.lock_periodic_task
+        else:
+            exp_state = odl_const.PENDING
+            curr_state = odl_const.PROCESSING
+            func = db.unlock_periodic_task
+
+        processed = []
+        for task in tasks:
+            row = self.db_session.query(
+                models.OpenDaylightPeriodicTask).filter_by(task=task).one()
+
+            self.assertEqual(row['state'], curr_state)
+            self.assertTrue(func(self.db_session, task))
+            rows = self.db_session.query(
+                models.OpenDaylightPeriodicTask).filter_by().all()
+
+            processed.append(task)
+
+            for row in rows:
+                if row['task'] in processed:
+                    self.assertEqual(exp_state, row['state'])
+                else:
+                    self.assertEqual(curr_state, row['state'])
+
+        self.assertFalse(func(self.db_session, tasks[-1]))
+
+    def test_multiple_row_tasks_lock_unlock(self):
+        task1 = 'test_random_task'
+        task2 = 'random_task_random'
+        task3 = 'task_test_random'
+        tasks = [task1, task2, task3]
+        self._add_tasks(tasks)
+        self._perform_ops_on_all_rows(tasks, to_lock=True)
+        self._perform_ops_on_all_rows(tasks, to_lock=False)

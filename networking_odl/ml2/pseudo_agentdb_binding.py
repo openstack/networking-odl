@@ -34,7 +34,7 @@ from networking_odl.common import client as odl_client
 from networking_odl.common import odl_features
 from networking_odl.common import utils
 from networking_odl.common import websocket_client as odl_ws_client
-from networking_odl.journal import maintenance as mt
+from networking_odl.journal import periodic_task
 from networking_odl.ml2 import port_binding
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
@@ -83,10 +83,9 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             odl_url = utils.get_odl_url()
             self._start_websocket(odl_url)
         else:
-            # Start polling ODL restconf using maintenance thread.
+            # Start polling ODL restconf using periodic task.
             # default: 30s (should be <=  agent keep-alive poll interval)
-            self._start_maintenance_thread(
-                cfg.CONF.ml2_odl.restconf_poll_interval)
+            self._start_periodic_task(cfg.CONF.ml2_odl.restconf_poll_interval)
 
     def _make_hostconf_uri(self, odl_url=None, path=''):
         """Make ODL hostconfigs URI with host/port extraced from ODL_URL."""
@@ -99,11 +98,11 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         return urlparse.urlunparse((purl.scheme, purl.netloc,
                                     path, '', '', ''))
 
-    def _start_maintenance_thread(self, poll_interval):
-        self._mainth = mt.MaintenanceThread()
-        self._mainth.maintenance_interval = poll_interval
-        self._mainth.register_operation(self._get_and_update_hostconfigs)
-        self._mainth.start()
+    def _start_periodic_task(self, poll_interval):
+        self._periodic = periodic_task.PeriodicTask('hostconfig',
+                                                    poll_interval)
+        self._periodic.register_operation(self._get_and_update_hostconfigs)
+        self._periodic.start()
 
     def _rest_get_hostconfigs(self):
         try:
