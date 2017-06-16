@@ -30,6 +30,7 @@ from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils import uuidutils
 
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
@@ -49,8 +50,8 @@ load_tests = testscenarios.load_tests_apply_scenarios
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 SECURITY_GROUP = '2f9244b4-9bee-4e81-bc4a-3f3c2045b3d7'
-SG_FAKE_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
-SG_RULE_FAKE_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+SG_FAKE_ID = uuidutils.generate_uuid()
+SG_RULE_FAKE_ID = uuidutils.generate_uuid()
 
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
@@ -601,17 +602,14 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                 res_id, context, **kwargs)
             record.assert_has_calls(
                 [mock.call(mock.ANY, 'security_group_rule',
-                           'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'delete',
-                           ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa']),
-                 mock.call(mock.ANY, 'security_group',
-                           'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                           SG_RULE_FAKE_ID, 'delete', [SG_FAKE_ID]),
+                 mock.call(mock.ANY, 'security_group', SG_FAKE_ID,
                            'delete',
                            {'description': 'test-description',
                             'project_id': 'test-tenant',
                             'security_group_rules': [],
                             'tenant_id': 'test-tenant',
-                            'id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-                            'name': 'test_sg'})])
+                            'id': SG_FAKE_ID, 'name': 'test_sg'})])
 
     def test_sync_multiple_updates(self):
         # add 2 updates
