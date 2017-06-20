@@ -99,7 +99,7 @@ def _filter_port_create(port):
 def _filter_port_update(port):
     """Filter out port attributes for an update operation."""
     odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id',
-                             'project_id', 'fixed_ips'])
+                             'project_id'])
     _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
 
 
