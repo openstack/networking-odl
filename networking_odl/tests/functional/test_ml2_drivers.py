@@ -15,7 +15,6 @@
 #
 
 import functools
-import testtools
 
 from neutron.tests.unit.extensions import test_securitygroup
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -93,10 +92,6 @@ class _DriverSecGroupsTests(base.OdlTestsBase):
         with self.security_group() as sg:
             self.assert_resource_created(odl_const.ODL_SG, sg)
 
-    # TODO(yamahata):
-    # https://review.openstack.org/#/c/475649/
-    # once the above patch is merged, remove this skip.
-    @testtools.skip("bug/154690")
     def test_security_group_update(self):
         with self.security_group() as sg:
             self.resource_update_test(odl_const.ODL_SG, sg)
