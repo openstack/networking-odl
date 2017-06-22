@@ -18,6 +18,8 @@ import mock
 from os import path as os_path
 from string import Template
 
+from oslo_serialization import jsonutils
+
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib.api.definitions import portbindings
@@ -185,6 +187,28 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
             "allowed_network_types": [
                 "local", "vlan", "vxlan", "gre"],
             "bridge_mappings": {"physnet1": "br-ex"}}
+    }
+
+    # Raw test data for unicode/string comparison
+    sample_odl_hconfigs_length_raw = {
+        "host": "devstack",
+        "agent_type": "ODL L2",
+        "configurations": """{"supported_vnic_types": [
+            {"vnic_type": "normal", "vif_type": "vhostuser",
+             "vif_details": {
+                 "uuid": "TEST_UUID",
+                 "has_datapath_type_netdev": true,
+                 "support_vhost_user": true,
+                 "port_prefix": "prefix_",
+                 "vhostuser_socket_dir": "/tmp",
+                 "vhostuser_ovs_plug": true,
+                 "vhostuser_mode": "server",
+                 "vhostuser_socket":
+                     "/tmp/prefix_$PORT_ID"
+             }}],
+            "allowed_network_types": [
+                "local", "vlan", "vxlan", "gre"],
+            "bridge_mappings": {"physnet1": "br-ex"}}"""
     }
 
     # test data valid  and invalid segments
@@ -381,7 +405,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
 
         test_string = hconf_dict['configurations'][
             'supported_vnic_types'][0][
-                'vif_details'][portbindings.VHOST_USER_SOCKET]
+            'vif_details'][portbindings.VHOST_USER_SOCKET]
 
         expected_str = Template('/tmp/longprefix_$PORT_ID')
         expected_str = expected_str.safe_substitute({
@@ -389,6 +413,31 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
 
         self.assertNotEqual(expected_str, test_string)
         self.assertEqual(len(test_string) - len('/tmp/'), 14)
+
+    def test_template_substitution_in_raw_configuration(self):
+        """Test for identifier substitution in config string."""
+        port_context = self._fake_port_context(
+            fake_segments=[self.test_invalid_segment, self.test_valid_segment])
+
+        # Substitute raw string configuration with json
+        raw_configurations = self.sample_odl_hconfigs_length_raw[
+            'configurations']
+        raw_configurations_json = jsonutils.loads(raw_configurations)
+        self.sample_odl_hconfigs_length_raw['configurations'] = (
+            raw_configurations_json)
+
+        hconf_dict = self.mgr._substitute_hconfig_tmpl(
+            port_context, self.sample_odl_hconfigs_length_raw)
+
+        test_string = hconf_dict['configurations'][
+            'supported_vnic_types'][0][
+                'vif_details'][portbindings.VHOST_USER_SOCKET]
+
+        expected_str = Template('/tmp/prefix_$PORT_ID')
+        expected_str = expected_str.safe_substitute({
+            'PORT_ID': port_context.current['id']})
+
+        self.assertEqual(expected_str, test_string)
 
     def _fake_port_context(self, fake_segments, host_agents=None):
         network = mock.MagicMock(spec=api.NetworkContext)
