@@ -26,8 +26,7 @@ function _odl_show_info {
     sudo ip route
     sudo ovsdb-client dump
     sudo ovs-vsctl show
-    for br in $(sudo ovs-vsctl list-br)
-    do
+    for br in $(sudo ovs-vsctl list-br); do
         echo "--- flows on $br ---"
         sudo ovs-ofctl --protocols OpenFlow13 dump-ports $br
         sudo ovs-ofctl --protocols OpenFlow13 dump-ports-desc $br

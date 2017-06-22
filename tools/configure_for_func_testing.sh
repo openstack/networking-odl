@@ -26,9 +26,9 @@ if [[ "$IS_GATE" != "True" ]] && [[ "$#" -lt 1 ]]; then
     >&2 echo "Usage: $0 /path/to/devstack [-i]
 Configure a host to run Networking ODL's functional test suite.
 
--i   Install Networking ODL's package dependencies.  By default, it is assumed
-     that devstack has already been used to deploy Networking ODL to the
-     target host and that package dependencies need not be installed.
+-i  Install Networking ODL's package dependencies.  By default, it is assumed
+    that devstack has already been used to deploy Networking ODL to the
+    target host and that package dependencies need not be installed.
 
 Warning: This script relies on devstack to perform extensive
 modification to the underlying host.  It is recommended that it be
@@ -60,8 +60,8 @@ INSTALL_BASE_DEPENDENCIES=${INSTALL_BASE_DEPENDENCIES:-$IS_GATE}
 
 
 if [ ! -f "$DEVSTACK_PATH/stack.sh" ]; then
-  >&2 echo "Unable to find devstack at '$DEVSTACK_PATH'.  Please verify that the specified path points to a valid devstack repo."
-  exit 1
+    >&2 echo "Unable to find devstack at '$DEVSTACK_PATH'.  Please verify that the specified path points to a valid devstack repo."
+    exit 1
 fi
 
 

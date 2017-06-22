@@ -27,7 +27,7 @@ function setup_java {
     return 0
 }
 
-function setup_java_env() {
+function setup_java_env {
     local JAVA_COMMAND="${1:-${JAVA:-java}}"
 
     JAVA_LINK="$(which $JAVA_COMMAND)"
@@ -131,7 +131,7 @@ else
     # --- Red Hat -------------------------------------------------------------
 
     function list_java_commands {
-         alternatives --display java 2>&1 | grep -v '^[[:space:]]' | awk '/[[:space:]]- priority[[:space:]]/{print $1}'
+        alternatives --display java 2>&1 | grep -v '^[[:space:]]' | awk '/[[:space:]]- priority[[:space:]]/{print $1}'
     }
 
     function install_openjdk {

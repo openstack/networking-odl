@@ -105,8 +105,8 @@ cd workspace/
 export WORKSPACE=`pwd`
 
 if [[ ! -e /usr/zuul-env ]]; then
-  virtualenv /usr/zuul-env
-  /usr/zuul-env/bin/pip install zuul
+    virtualenv /usr/zuul-env
+    /usr/zuul-env/bin/pip install zuul
 fi
 
 cat > clonemap.yaml << IEOF

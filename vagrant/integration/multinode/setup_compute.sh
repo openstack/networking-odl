@@ -18,10 +18,10 @@ cd devstack
 cp /vagrant/compute.conf local.conf
 shost=`grep -ri 'SERVICE_HOST=' local.conf | cut -f2 -d'='`
 sed -i -e "1i[[local|localrc]]" \
-       -e "s/ERROR_ON_CLONE=.*/ERROR_ON_CLONE=False/" \
-       -e "s/$shost/192.168.0.10/" \
-       -e "s/HOST_IP=.*/HOST_IP=192.168.0.20/" \
-       local.conf
+    -e "s/ERROR_ON_CLONE=.*/ERROR_ON_CLONE=False/" \
+    -e "s/$shost/192.168.0.10/" \
+    -e "s/HOST_IP=.*/HOST_IP=192.168.0.20/" \
+    local.conf
 ./stack.sh
 
 echo "vagrant ssh control -c 'cd tempest; tempest run'"
