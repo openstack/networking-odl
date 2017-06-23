@@ -29,6 +29,7 @@ from neutron.extensions import multiprovidernet as mpnet
 from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
+from neutron.plugins.ml2 import models
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -244,6 +245,7 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
     def test_simple_sync_all_with_HTTPError_not_found(self):
         self.given_back_end.out_of_sync = True
         ml2_plugin = plugin.Ml2Plugin()
+        port_mock = mock.MagicMock(port_binding=models.PortBinding())
 
         response = mock.Mock(status_code=requests.codes.not_found)
         fake_exception = requests.exceptions.HTTPError('Test',
@@ -263,6 +265,8 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
                               return_value=FAKE_NETWORK.copy()), \
             mock.patch.object(plugin.Ml2Plugin, 'get_subnets',
                               return_value=[FAKE_SUBNET.copy()]), \
+            mock.patch.object(plugin.Ml2Plugin, '_get_port',
+                              return_value=port_mock), \
             mock.patch.object(plugin.Ml2Plugin, 'get_ports',
                               return_value=[FAKE_PORT.copy()]), \
             mock.patch.object(plugin.Ml2Plugin, 'get_security_groups',
@@ -522,10 +526,11 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         port = self._get_mock_operation_context(odl_const.ODL_PORT).current
         tenant_id = network['tenant_id']
         port['tenant_id'] = ''
+        binding = models.PortBinding()
 
         with mock.patch.object(segments_db, 'get_network_segments'):
             context = driver_context.PortContext(
-                plugin, plugin_context, port, network, {}, 0, None)
+                plugin, plugin_context, port, network, binding, 0, None)
             self.mech.odl_drv.FILTER_MAP[
                 odl_const.ODL_PORTS].filter_create_attributes(port, context)
             self.assertEqual(tenant_id, port['tenant_id'])
@@ -542,10 +547,11 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                               'ip_address': '10.0.0.10'}]
         port['mac_address'] = port['mac_address'].upper()
         orig_port = copy.deepcopy(port)
+        binding = models.PortBinding()
 
         with mock.patch.object(segments_db, 'get_network_segments'):
             context = driver_context.PortContext(
-                plugin, plugin_context, port, network, {}, 0, None)
+                plugin, plugin_context, port, network, binding, 0, None)
             self.mech.odl_drv.FILTER_MAP[
                 odl_const.ODL_PORTS].filter_update_attributes(port, context)
             for key, value in port.items():

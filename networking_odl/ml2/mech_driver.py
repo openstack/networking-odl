@@ -196,10 +196,9 @@ class PortFilter(ResourceFilterBase):
     @classmethod
     def filter_create_attributes_with_plugin(cls, port, plugin, dbcontext):
         network = plugin.get_network(dbcontext, port['network_id'])
-        # TODO(yamahata): port binding
-        binding = {}
+        port_db = plugin._get_port(dbcontext, port['id'])
         context = driver_context.PortContext(
-            plugin, dbcontext, port, network, binding, None)
+            plugin, dbcontext, port, network, port_db.port_binding, None)
         cls.filter_create_attributes(port, context)
 
 
