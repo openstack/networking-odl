@@ -26,6 +26,9 @@ from neutron.tests.unit.extensions import base as test_extensions_base
 from neutron_lib import constants
 from webob import exc
 
+from networking_odl.tests import base as odl_base
+
+
 _get_path = test_base._get_path
 
 
@@ -34,13 +37,14 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
     fmt = 'json'
 
     def setUp(self):
+        self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(Testodll3, self).setUp()
         # support ext-gw-mode
         for key in l3.RESOURCE_ATTRIBUTE_MAP.keys():
             l3.RESOURCE_ATTRIBUTE_MAP[key].update(
                 l3_ext_gw_mode.EXTENDED_ATTRIBUTES_2_0.get(key, {}))
         self._setUpExtension(
-            'neutron.services.l3_router.l3_router_plugin.L3RouterPlugin',
+            'networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin',
             constants.L3, l3.RESOURCE_ATTRIBUTE_MAP,
             l3.L3, '', allow_pagination=True, allow_sorting=True,
             supported_extension_aliases=['router', 'ext-gw-mode'],
