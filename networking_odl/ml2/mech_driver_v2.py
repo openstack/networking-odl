@@ -20,7 +20,6 @@ from oslo_log import log as logging
 from neutron.extensions import multiprovidernet as mpnet
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
-from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api
 
 from networking_odl.common import callback
@@ -141,14 +140,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             context, odl_const.ODL_PORT, odl_const.ODL_DELETE,
             data=new_context)
 
-    def _make_security_group_dict(self, sg):
-        return {
-            'id': sg['id'],
-            'name': sg['name'],
-            'tenant_id': sg['tenant_id'],
-            'description': sg['description'],
-        }
-
     def _sync_security_group_create_precommit(
             self, context, operation, object_type, res_id, sg_dict):
 
@@ -172,23 +163,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             self._sync_security_group_create_precommit(
                 context, operation, object_type, res_id, resource_dict)
             return
-
-        # NOTE(yamahata): bug work around
-        # callback for update of security grouop doesn't pass complete
-        # info. So we have to build it. Once the bug is fixed, remove
-        # this bug work around.
-        # https://launchpad.net/bugs/1546910
-        # https://review.openstack.org/#/c/281693/
-        if (object_type == odl_const.ODL_SG and
-                operation == odl_const.ODL_UPDATE):
-            # NOTE(yamahata): precommit_update is called before updating
-            # values. so context.session.{new, dirty} doesn't include sg
-            # in question. a dictionary with new values needs to be build.
-            core_plugin = directory.get_plugin()
-            sg = core_plugin._get_security_group(context, res_id)
-            tmp_dict = self._make_security_group_dict(sg)
-            tmp_dict.update(resource_dict)
-            resource_dict = tmp_dict
 
         object_uuid = (resource_dict.get('id')
                        if operation == 'create' else res_id)
