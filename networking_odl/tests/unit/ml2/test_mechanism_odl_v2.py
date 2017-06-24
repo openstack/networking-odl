@@ -21,6 +21,7 @@ import testscenarios
 
 from neutron.db import api as neutron_db_api
 from neutron.db.models import securitygroup
+from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -638,6 +639,25 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.assertEqual(1, len(processing))
         rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
         self.assertEqual(2, len(rows))
+
+    def test_update_port_filter(self):
+        """Validate the filter code on update port operation"""
+        expected_items = ['fixed_ips', 'security_groups', 'device_id',
+                          'security_groups', 'admin_state_up']
+        subnet = self._get_mock_operation_context(odl_const.ODL_SUBNET).current
+        port = self._get_mock_operation_context(odl_const.ODL_PORT).current
+        port['fixed_ips'] = [{'subnet_id': subnet['id'],
+                              'ip_address': '10.0.0.10'}]
+        port['mac_address'] = port['mac_address'].upper()
+
+        orig_port = copy.deepcopy(port)
+
+        with mock.patch.object(segments_db, 'get_network_segments'):
+            filters.filter_for_odl(odl_const.ODL_PORT,
+                                   odl_const.ODL_UPDATE, port)
+            for key, value in orig_port.items():
+                if key in expected_items:
+                    self.assertEqual(port[key], value)
 
 
 class _OpenDaylightDriverVlanTransparencyBase(base_v2.OpenDaylightTestCase):
