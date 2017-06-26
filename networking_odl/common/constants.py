@@ -43,7 +43,7 @@ ODL_HEALTHMONITORS = 'healthmonitors'
 
 ODL_QOS = 'qos'
 ODL_QOS_POLICY = 'policy'
-ODL_QOS_POLICIES = 'qos/policies'
+ODL_QOS_POLICIES = 'policies'
 
 ODL_SFC = 'sfc'
 ODL_SFC_FLOW_CLASSIFIER = 'flowclassifier'
@@ -85,4 +85,4 @@ FAILED = 'failed'
 COMPLETED = 'completed'
 
 # dict to store url mappings
-RESOURCE_URL_MAPPINGS = {ODL_QOS_POLICY: ODL_QOS_POLICIES}
+RESOURCE_URL_MAPPINGS = {ODL_QOS_POLICY: "%s/%s" % (ODL_QOS, ODL_QOS_POLICIES)}
