@@ -19,6 +19,7 @@ import mock
 
 from oslo_config import cfg
 
+from networking_odl.common import odl_features
 from neutron.tests import base
 
 
@@ -54,3 +55,23 @@ class OpenDaylightRestClientGlobalFixture(fixtures.Fixture):
     def _setUp(self):
         super(OpenDaylightRestClientGlobalFixture, self)._setUp()
         mock.patch.object(self._global_client, 'get_client').start()
+
+
+class OpendaylightFeaturesFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(OpendaylightFeaturesFixture, self)._setUp()
+        if cfg.CONF.ml2_odl.url is None:
+            cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
+        if cfg.CONF.ml2_odl.username is None:
+            cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
+        if cfg.CONF.ml2_odl.password is None:
+            cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
+        # make sure init is not called, it'll block the main thread
+        self.mock_odl_features_init = mock.patch.object(odl_features, 'init')
+        self.mock_odl_features_init.side_effect = self.fake_init
+        self.mock_odl_features_init.start()
+        self.addCleanup(odl_features.deinit)
+
+    @staticmethod
+    def fake_init():
+        odl_features.feature_set = set()

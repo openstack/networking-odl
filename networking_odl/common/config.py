@@ -59,7 +59,11 @@ odl_opts = [
                help=_("Poll interval in seconds for getting ODL hostconfig")),
     cfg.BoolOpt('enable_websocket_pseudo_agentdb', default=False,
                 help=_('Enable websocket for pseudo-agent-port-binding.')),
-
+    cfg.IntOpt('odl_features_retry_interval', default=5,
+               help=_("Wait this many seconds before retrying the odl features"
+                      " fetch")),
+    cfg.ListOpt('odl_features', item_type=str,
+                help='A list of features supported by ODL')
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")

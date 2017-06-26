@@ -1,0 +1,21 @@
+---
+prelude: >
+    OpenDaylight feature negotiation allows for networking_odl to adapt its
+    behavior to the features supported by the specific ODL version.
+features:
+  - Networking-odl first attempts to read the ODL features from the
+    odl_features config value. If this config value is not present,
+    networking-odl requests the features from ODL via REST call. Note that this
+    occurs during the plugin initialize and if ODL is unreachable
+    networking-odl will keep trying until successful, essentially blocking
+    networking-odl initialization (and functionality) until successful.
+    As such, it is recommended that in production environments you manually
+    configure the odl_features config value. If you are not sure which features
+    your ODL supports, please consult the ODL documentation or you can retrieve
+    the list like this,
+    $ curl -u <user>:<pass> http://<host>:8080/restconf/operational/neutron:neutron/features | python -mjson.tool
+    Note that the features returned in the json have a namespace which should
+    be omitted from the config value. So, if you got to features, say
+    neutron-extensions:feature1 and neutron-extensions:feature2, the config
+    file should have,
+    odl_features=feature1,feature2

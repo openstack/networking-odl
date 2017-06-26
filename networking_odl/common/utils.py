@@ -14,13 +14,14 @@
 #    under the License.
 
 import collections
-import socket
-
 from oslo_config import cfg
 import six.moves.urllib.parse as urlparse
+import socket
 
 from networking_odl.common import cache
 from networking_odl.common import constants as odl_const
+
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 
 def try_del(d, keys):
@@ -73,12 +74,9 @@ def neutronify(name):
     return name.replace('_', '-')
 
 
-def get_odl_url(self):
-    """Extract host/port from ODL_URL to use for websocket."""
-
-    # extract ODL_IP and ODL_PORT from ODL_ENDPOINT
-    # urlsplit and urlunparse don't throw exceptions
-    odl_url = cfg.CONF.ml2_odl.url
-    purl = urlparse.urlsplit(odl_url)
-    return urlparse.urlunparse((purl.scheme, purl.netloc,
-                                '', '', '', ''))
+def get_odl_url(path=''):
+    '''Make a URL for some ODL resource (path)'''
+    purl = urlparse.urlsplit(cfg.CONF.ml2_odl.url)
+    features_url = urlparse.urlunparse((
+        purl.scheme, purl.netloc, path, '', '', ''))
+    return features_url

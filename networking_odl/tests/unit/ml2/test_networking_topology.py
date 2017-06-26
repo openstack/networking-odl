@@ -59,6 +59,7 @@ class TestNetworkTopologyManager(base.DietTestCase):
 
     def setUp(self):
         super(TestNetworkTopologyManager, self).setUp()
+        self.useFixture(base.OpendaylightFeaturesFixture())
         cfg.CONF.set_override('port_binding_controller',
                               'network-topology', 'ml2_odl')
         self.patch(network_topology.LOG, 'isEnabledFor', lambda level: True)

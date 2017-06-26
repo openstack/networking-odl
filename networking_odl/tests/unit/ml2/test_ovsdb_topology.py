@@ -97,6 +97,10 @@ class TestOvsdbNetworkingTopologyElement(base.DietTestCase):
 
     segments_to_bind = [INVALID_SEGMENT, VALID_SEGMENT]
 
+    def setUp(self):
+        super(TestOvsdbNetworkingTopologyElement, self).setUp()
+        self.useFixture(base.OpendaylightFeaturesFixture())
+
     def given_element(self, uuid='some_uuid', **kwargs):
         return ovsdb_topology.OvsdbNetworkTopologyElement(uuid=uuid, **kwargs)
 
