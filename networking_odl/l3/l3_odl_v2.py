@@ -23,6 +23,7 @@ from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
 from neutron_lib import constants as q_const
+from neutron_lib.plugins import constants as plugin_constants
 
 from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const
@@ -55,7 +56,7 @@ class OpenDaylightL3RouterPlugin(
         self.journal = journal.OpendaylightJournalThread()
 
     def get_plugin_type(self):
-        return q_const.L3
+        return plugin_constants.L3
 
     def get_plugin_description(self):
         """Returns string description of the plugin."""

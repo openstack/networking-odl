@@ -17,7 +17,7 @@
 import mock
 import requests
 
-from neutron_lib import constants
+from neutron_lib.plugins import constants
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const

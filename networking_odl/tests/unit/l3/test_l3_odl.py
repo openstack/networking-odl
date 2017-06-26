@@ -23,7 +23,7 @@ from neutron.extensions import l3
 from neutron.extensions import l3_ext_gw_mode
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
-from neutron_lib import constants
+from neutron_lib.plugins import constants
 from webob import exc
 
 from networking_odl.tests import base as odl_base

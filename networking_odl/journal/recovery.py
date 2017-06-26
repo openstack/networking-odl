@@ -14,9 +14,9 @@
 #  under the License.
 #
 
-from neutron_lib import constants
 from neutron_lib import context as neutron_context
 from neutron_lib import exceptions as nexc
+from neutron_lib.plugins import constants
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
 

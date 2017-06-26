@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron_lib import constants
+from neutron_lib.plugins import constants
 
 ODL_NETWORK = 'network'
 ODL_NETWORKS = 'networks'

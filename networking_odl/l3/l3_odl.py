@@ -26,6 +26,7 @@ from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
 from neutron_lib import constants as q_const
+from neutron_lib.plugins import constants as plugin_constants
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import utils as odl_utils
@@ -77,7 +78,7 @@ class OpenDaylightL3RouterPlugin(
         self.conn.consume_in_threads()
 
     def get_plugin_type(self):
-        return q_const.L3
+        return plugin_constants.L3
 
     def get_plugin_description(self):
         """returns string description of the plugin."""
