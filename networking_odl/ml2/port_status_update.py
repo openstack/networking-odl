@@ -20,20 +20,43 @@ from neutron.db import provisioning_blocks
 from neutron_lib import constants as n_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
+from neutron_lib import worker
 from oslo_log import log
 
 from networking_odl.common import client as odl_client
+from networking_odl.common import odl_features
 from networking_odl.common import utils
 from networking_odl.common import websocket_client as odl_ws_client
 
 LOG = log.getLogger(__name__)
 
 
-class OdlPortStatusUpdate(object):
+class OdlPortStatusUpdate(worker.BaseWorker):
     """Class to register and handle port status update"""
     PORT_PATH = "restconf/operational/neutron:neutron/ports/port"
 
     def __init__(self):
+        super(OdlPortStatusUpdate, self).__init__()
+        self.odl_websocket_client = None
+
+    def start(self):
+        super(OdlPortStatusUpdate, self).start()
+        LOG.debug('OdlPortStatusUpdate worker running')
+        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
+            self.run_websocket()
+
+    def stop(self):
+        if self.odl_websocket_client:
+            self.odl_websocket_client.set_exit_flag()
+
+    def wait(self):
+        """Wait for service to complete."""
+
+    @staticmethod
+    def reset():
+        pass
+
+    def run_websocket(self):
         # Opendaylight path to recieve websocket notifications on
         neutron_ports_path = "/neutron:neutron/neutron:ports"
 
