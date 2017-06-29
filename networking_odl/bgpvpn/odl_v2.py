@@ -14,20 +14,31 @@
 #  under the License.
 #
 
+from networking_bgpvpn.neutron.services.common import constants as bgpvpn_const
+from networking_odl._i18n import _LI
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
-from networking_odl._i18n import _LI
 from networking_odl.common import constants as odl_const
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 LOG = logging.getLogger(__name__)
+
+BGPVPN_RESOURCES = {
+    odl_const.ODL_BGPVPN: odl_const.ODL_BGPVPNS,
+    odl_const.ODL_BGPVPN_NETWORK_ASSOCIATION:
+        odl_const.ODL_BGPVPN_NETWORK_ASSOCIATIONS,
+
+    odl_const.ODL_BGPVPN_ROUTER_ASSOCIATION:
+        odl_const.ODL_BGPVPN_ROUTER_ASSOCIATIONS
+}
 
 
 class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
@@ -43,6 +54,7 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         LOG.info(_LI("Initializing OpenDaylight BGPVPN v2 driver"))
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
         self.journal = journal.OpendaylightJournalThread()
+        full_sync.register(bgpvpn_const.BGPVPN, BGPVPN_RESOURCES)
 
     @log_helpers.log_method_call
     def create_bgpvpn_precommit(self, context, bgpvpn):

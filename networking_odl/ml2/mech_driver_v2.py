@@ -21,6 +21,7 @@ from neutron.extensions import multiprovidernet as mpnet
 from neutron.plugins.common import constants as p_const
 from neutron.plugins.ml2 import driver_api as api
 from neutron_lib.api.definitions import provider_net as providernet
+from neutron_lib import constants as nlib_const
 from neutron_lib.plugins import directory
 
 from networking_odl._i18n import _, _LE
@@ -36,6 +37,14 @@ from networking_odl.ml2 import port_binding
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
 LOG = logging.getLogger(__name__)
+
+L2_RESOURCES = {
+    odl_const.ODL_SG: odl_const.ODL_SGS,
+    odl_const.ODL_SG_RULE: odl_const.ODL_SG_RULES,
+    odl_const.ODL_NETWORK: odl_const.ODL_NETWORKS,
+    odl_const.ODL_SUBNET: odl_const.ODL_SUBNETS,
+    odl_const.ODL_PORT: odl_const.ODL_PORTS
+}
 
 
 class OpenDaylightMechanismDriver(api.MechanismDriver):
@@ -55,6 +64,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.port_binding_controller = port_binding.PortBindingManager.create()
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
         self._start_maintenance_thread()
+        full_sync.register(nlib_const.CORE, L2_RESOURCES)
 
     def _start_maintenance_thread(self):
         # start the maintenance thread and register all the maintenance
