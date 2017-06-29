@@ -20,6 +20,7 @@ from oslo_log import log as logging
 from neutron.extensions import multiprovidernet as mpnet
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
+from neutron_lib.plugins import constants as nlib_const
 from neutron_lib.plugins.ml2 import api
 
 from networking_odl.common import callback
@@ -38,6 +39,14 @@ from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
 LOG = logging.getLogger(__name__)
+
+L2_RESOURCES = {
+    odl_const.ODL_SG: odl_const.ODL_SGS,
+    odl_const.ODL_SG_RULE: odl_const.ODL_SG_RULES,
+    odl_const.ODL_NETWORK: odl_const.ODL_NETWORKS,
+    odl_const.ODL_SUBNET: odl_const.ODL_SUBNETS,
+    odl_const.ODL_PORT: odl_const.ODL_PORTS
+}
 
 
 @postcommit.add_postcommit('network', 'subnet', 'port')
@@ -60,6 +69,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
             qos_driver.OpenDaylightQosDriver.create()
         self._start_maintenance_thread()
+        full_sync.register(nlib_const.CORE, L2_RESOURCES)
         odl_features.init()
 
     def get_workers(self):
