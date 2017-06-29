@@ -44,7 +44,7 @@ esac
 ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
 
 ODL_GATE_SERVICE_PROVIDER=${ODL_GATE_SERVICE_PROVIDER%-}
-if [[ -z "$ODL_GATE_SERVICE_PROVIDER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
+if [[ -z "$ODL_GATE_SERVICE_PROVIDER" ]]; then
     ODL_GATE_SERVICE_PROVIDER=vpnservice
 fi
 
