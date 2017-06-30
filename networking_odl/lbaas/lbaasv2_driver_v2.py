@@ -19,6 +19,7 @@ from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from neutron_lbaas.drivers import driver_base
+from neutron_lbaas.drivers import driver_mixins
 from neutron_lib.plugins import constants as nlib_const
 
 from networking_odl.common import constants as odl_const
@@ -37,7 +38,19 @@ LBAAS_RESOURCES = {
 }
 
 
-class OpenDaylightManager(driver_base.LoadBalancerBaseDriver):
+class OpenDaylightLbaasDriverV2(driver_base.LoadBalancerBaseDriver):
+    @log_helpers.log_method_call
+    def __init__(self, plugin):
+        super(OpenDaylightLbaasDriverV2, self).__init__(plugin)
+        LOG.debug("Initializing OpenDaylight LBaaS driver")
+        self.load_balancer = ODLLoadBalancerManager(self)
+        self.listener = ODLListenerManager(self)
+        self.pool = ODLPoolManager(self)
+        self.member = ODLMemberManager(self)
+        self.health_monitor = ODLHealthMonitorManager(self)
+
+
+class OpenDaylightManager(driver_mixins.BaseManagerMixin):
     """OpenDaylight LBaaS Driver for the V2 API
 
     This code is the backend implementation for the OpenDaylight
@@ -51,6 +64,7 @@ class OpenDaylightManager(driver_base.LoadBalancerBaseDriver):
         self.journal = journal.OpenDaylightJournalThread()
         self.obj_type = obj_type
         full_sync.register(nlib_const.LOADBALANCERV2, LBAAS_RESOURCES)
+        self.driver = driver
 
     def _journal_record(self, context, obj_type, obj_id, operation, obj):
         obj_type = ("lbaas/%s" % obj_type)
