@@ -114,10 +114,12 @@ class ODLMemberManager(OpenDaylightManager,
         super(ODLMemberManager, self).__init__(
             driver, odl_const.ODL_MEMBER)
 
-    def _journal_record(self, context, obj_type, obj_id, operation, obj):
-        obj_type = ("lbaas/pools/%s/member" % obj.pool.id)
-        journal.record(context, obj_type, obj_id, operation, obj)
-        self.journal.set_sync_event()
+        journal.register_url_builder(odl_const.ODL_MEMBER,
+                                     self.lbaas_member_url_builder)
+
+    @staticmethod
+    def lbaas_member_url_builder(row):
+        return ("lbaas/pools/%s/member" % row.data.pool.id)
 
 
 class ODLHealthMonitorManager(OpenDaylightManager,
