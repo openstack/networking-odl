@@ -29,7 +29,7 @@ LOG = log.getLogger(__name__)
 
 OPERATIONAL_PORT_STATUS = 'operational-port-status'
 
-feature_set = None
+feature_set = set()
 
 
 def init():
