@@ -19,11 +19,13 @@ import mock
 from neutron.db import api as neutron_db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import exceptions as nexc
+from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
+from networking_odl.journal import full_sync
 from networking_odl.journal import recovery
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
@@ -40,9 +42,14 @@ class RecoveryTestCase(SqlTestCaseLight):
         self._CLIENT = recovery._CLIENT.get_client()
 
         self.addCleanup(self._db_cleanup)
+        self.addCleanup(self.clean_registered_resources)
 
     def _db_cleanup(self):
         self.db_session.query(models.OpenDaylightJournal).delete()
+
+    @staticmethod
+    def clean_registered_resources():
+        full_sync.ALL_RESOURCES = {}
 
     def _mock_resource(self, plugin, resource_type):
         mock_resource = mock.MagicMock()
@@ -54,6 +61,8 @@ class RecoveryTestCase(SqlTestCaseLight):
         return mock.MagicMock(object_type=resource_type)
 
     def _test__get_latest_resource(self, plugin, resource_type):
+        l2 = mech_driver_v2.L2_RESOURCES
+        full_sync.ALL_RESOURCES[plugin_constants.CORE] = l2
         mock_resource = self._mock_resource(plugin, resource_type)
         mock_row = self._mock_row(resource_type)
 
@@ -68,6 +77,7 @@ class RecoveryTestCase(SqlTestCaseLight):
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l3(self, plugin_mock):
+        full_sync.ALL_RESOURCES[plugin_constants.L3] = l3_odl_v2.L3_RESOURCES
         for resource_type in l3_odl_v2.L3_RESOURCES:
             plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
@@ -81,6 +91,8 @@ class RecoveryTestCase(SqlTestCaseLight):
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_none(self, plugin_mock):
         plugin_mock.return_value.get_network.side_effect = nexc.NotFound()
+        l2 = mech_driver_v2.L2_RESOURCES
+        full_sync.ALL_RESOURCES[plugin_constants.CORE] = l2
 
         mock_row = self._mock_row(odl_const.ODL_NETWORK)
         self.assertRaises(
