@@ -27,7 +27,7 @@ if [[ -z "${RALLY_SCENARIO}" && -z "${GRENADE_PLUGINRC}" ]] ; then
    export DEVSTACK_GATE_TIMEOUT=$(expr $BUILD_TIMEOUT - $DEVSTACK_GATE_TIMEOUT_BUFFER)
 fi
 
-export OVERRIDE_ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit,placement-api
+export OVERRIDE_ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit,placement-api,n-api-meta
 if [ -z "${RALLY_SCENARIO}" ] ; then
     # Only include tempest if this is not a rally job, As running tempest in Rally is likely to cause failure
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
