@@ -32,7 +32,7 @@ class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
         context = mock.Mock(current=current)
         if not session:
             if not cls.session:
-                cls.session = neutron_db_api.get_session()
+                cls.session = neutron_db_api.get_writer_session()
             session = cls.session
 
         context.session = session

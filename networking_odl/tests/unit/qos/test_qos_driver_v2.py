@@ -27,7 +27,7 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
         super(OpenDaylightQosDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_session()
+        self.db_session = neutron_db_api.get_writer_session()
         self.qos_driver = qos_driver.OpenDaylightQosDriver()
         self.mock_sync_thread = mock.patch.object(
             journal.OpenDaylightJournalThread, 'start_odl_sync_thread').start()
