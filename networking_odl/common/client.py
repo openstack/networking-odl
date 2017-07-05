@@ -13,13 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import threading
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
 import requests
 from requests import sessions
-import threading
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
@@ -44,7 +45,7 @@ class OpenDaylightRestClient(object):
             LOG.debug("ODL lightweight testing is enabled, "
                       "returning a OpenDaylightLwtClient instance")
 
-            """Have to import at here, otherwise we create a dependency loop"""
+            # Have to import at here, otherwise we create a dependency loop
             from networking_odl.common import lightweight_testing as lwt
             cls = lwt.OpenDaylightLwtClient
 
@@ -126,9 +127,9 @@ class OpenDaylightRestClient(object):
             # The resource is already removed. ignore 404 gracefully
             LOG.debug("%(urlpath)s doesn't exist", {'urlpath': urlpath})
             return False
-        else:
-            self._check_response(response)
-            return True
+
+        self._check_response(response)
+        return True
 
     def _check_response(self, response):
         try:
