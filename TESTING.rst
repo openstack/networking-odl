@@ -196,10 +196,3 @@ For setting up devstack, please refer to neutron documentation:
   https://wiki.openstack.org/wiki/NeutronDevstack
   http://docs.openstack.org/developer/neutron/index.html
   https://git.openstack.org/cgit/openstack/neutron/tree/TESTING.rst
-
-
-References
-==========
-
-.. [#pudb] PUDB debugger:
-   https://pypi.python.org/pypi/pudb
