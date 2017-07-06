@@ -24,10 +24,10 @@ from networking_odl.l2gateway import driver_v2 as driverv2
 from networking_odl.tests.unit import base_v2
 
 
-class OpendaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
+class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
-        super(OpendaylightL2GWDriverTestCase, self).setUp()
+        super(OpenDaylightL2GWDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_writer_session()
         self.driver = driverv2.OpenDaylightL2gwDriver(service_plugin=None)
         self.context = self._get_mock_context()

@@ -13,7 +13,7 @@
 #    under the License.
 #
 
-"""Opendaylight Neutron mechanism driver refactor
+"""OpenDaylight Neutron mechanism driver refactor
 
 Revision ID: 37e242787ae5
 Revises: 247501328046

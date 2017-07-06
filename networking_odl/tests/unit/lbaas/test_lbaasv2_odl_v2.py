@@ -23,7 +23,7 @@ from networking_odl.lbaas import lbaasv2_driver_v2 as lb_driver
 from networking_odl.tests.unit import base_v2
 
 
-class OpendaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
+class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
     session = None
 
     @classmethod
@@ -65,7 +65,7 @@ class OpendaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
         return hm
 
     @mock.patch.object(
-        networking_odl.journal.journal.OpendaylightJournalThread,
+        networking_odl.journal.journal.OpenDaylightJournalThread,
         'set_sync_event')
     @mock.patch.object(neutron_lbaas.drivers.driver_mixins.BaseManagerMixin,
                        'successful_completion')
@@ -83,7 +83,7 @@ class OpendaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
                              row['object_type'])
 
 
-class OpendaylightLBaaSDriverTestCase(OpendaylightLBaaSBaseTestCase):
+class OpenDaylightLBaaSDriverTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, obj_type, operation, op_const):
         driver = mock.Mock()
         obj_driver = lb_driver.OpenDaylightManager(driver, obj_type)
@@ -91,7 +91,7 @@ class OpendaylightLBaaSDriverTestCase(OpendaylightLBaaSBaseTestCase):
                                  operation, op_const)
 
 
-class ODLLoadBalancerManagerTestCase(OpendaylightLBaaSBaseTestCase):
+class ODLLoadBalancerManagerTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, operation, op_const):
         driver = mock.Mock()
         obj_type = odl_const.ODL_LOADBALANCER
@@ -108,7 +108,7 @@ class ODLLoadBalancerManagerTestCase(OpendaylightLBaaSBaseTestCase):
         self._test_operation('delete', odl_const.ODL_DELETE)
 
 
-class ODLListenerManagerTestCase(OpendaylightLBaaSBaseTestCase):
+class ODLListenerManagerTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, operation, op_const):
         driver = mock.Mock()
         obj_type = odl_const.ODL_LISTENER
@@ -125,7 +125,7 @@ class ODLListenerManagerTestCase(OpendaylightLBaaSBaseTestCase):
         self._test_operation('delete', odl_const.ODL_DELETE)
 
 
-class ODLPoolManagerTestCase(OpendaylightLBaaSBaseTestCase):
+class ODLPoolManagerTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, operation, op_const):
         obj_type = odl_const.ODL_POOL
         obj = mock.MagicMock()
@@ -142,7 +142,7 @@ class ODLPoolManagerTestCase(OpendaylightLBaaSBaseTestCase):
         self._test_operation('delete', odl_const.ODL_DELETE)
 
 
-class ODLMemberManagerTestCase(OpendaylightLBaaSBaseTestCase):
+class ODLMemberManagerTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, operation, op_const):
         driver = mock.Mock()
         obj_type = odl_const.ODL_MEMBER
@@ -159,7 +159,7 @@ class ODLMemberManagerTestCase(OpendaylightLBaaSBaseTestCase):
         self._test_operation('delete', odl_const.ODL_DELETE)
 
 
-class ODLHealthMonitorManagerTestCase(OpendaylightLBaaSBaseTestCase):
+class ODLHealthMonitorManagerTestCase(OpenDaylightLBaaSBaseTestCase):
     def _test_operation(self, operation, op_const):
         driver = mock.Mock()
         obj_type = odl_const.ODL_HEALTHMONITOR

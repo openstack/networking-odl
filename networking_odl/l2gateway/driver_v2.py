@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 @postcommit.add_postcommit('l2_gateway', 'l2_gateway_connection')
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
-    """Opendaylight L2Gateway Service Driver
+    """OpenDaylight L2Gateway Service Driver
 
     This code is the openstack driver for exciting the OpenDaylight L2GW
     facility.
@@ -42,7 +42,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
     def __init__(self, service_plugin, validator=None):
         super(OpenDaylightL2gwDriver, self).__init__(service_plugin, validator)
         self.service_plugin = service_plugin
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
         LOG.info("ODL: Started OpenDaylight L2Gateway V2 driver")
 
     @property

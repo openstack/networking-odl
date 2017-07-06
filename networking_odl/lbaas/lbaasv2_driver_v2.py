@@ -38,7 +38,7 @@ class OpenDaylightManager(driver_base.LoadBalancerBaseDriver):
     def __init__(self, driver, obj_type):
         LOG.debug("Initializing OpenDaylight LBaaS driver")
         super(OpenDaylightManager, self).__init__(driver)
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
         self.obj_type = obj_type
 
     def _journal_record(self, context, obj_type, obj_id, operation, obj):

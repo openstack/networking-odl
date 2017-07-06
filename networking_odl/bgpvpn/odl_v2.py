@@ -43,7 +43,7 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     def __init__(self, service_plugin):
         LOG.info("Initializing OpenDaylight BGPVPN v2 driver")
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
 
     @log_helpers.log_method_call
     def create_bgpvpn_precommit(self, context, bgpvpn):

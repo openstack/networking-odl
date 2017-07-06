@@ -33,7 +33,7 @@ class TestOdlFeatures(base.DietTestCase):
 
     def setUp(self):
         super(TestOdlFeatures, self).setUp()
-        self.features_fixture = base.OpendaylightFeaturesFixture()
+        self.features_fixture = base.OpenDaylightFeaturesFixture()
         self.useFixture(self.features_fixture)
         self.features_fixture.mock_odl_features_init.stop()
 

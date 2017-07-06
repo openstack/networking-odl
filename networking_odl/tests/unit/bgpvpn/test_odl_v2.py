@@ -24,10 +24,10 @@ from networking_odl.db import db
 from networking_odl.tests.unit import base_v2
 
 
-class OpendaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
+class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
-        super(OpendaylightBgpvpnDriverTestCase, self).setUp()
+        super(OpenDaylightBgpvpnDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_reader_session()
         self.driver = driverv2.OpenDaylightBgpvpnDriver(service_plugin=None)
         self.context = self._get_mock_context()

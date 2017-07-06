@@ -27,7 +27,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     UPDATE_ROW = [odl_const.ODL_NETWORK, 'id', odl_const.ODL_UPDATE,
                   {'test': 'data'}]
-    model = models.OpendaylightJournal
+    model = models.OpenDaylightJournal
 
     def setUp(self):
         super(DbTestCase, self).setUp()
@@ -48,7 +48,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = self._create_row()
         # NOTE(manjeets) as seqnum is primary key so there would be
         # exactly one row created.
-        query = self.db_session.query(models.OpendaylightJournal)
+        query = self.db_session.query(models.OpenDaylightJournal)
         got = query.filter_by(seqnum=row.seqnum).one()
         self.assertEqual(row, got)
 

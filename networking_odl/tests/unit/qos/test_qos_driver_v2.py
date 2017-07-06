@@ -23,14 +23,14 @@ from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.tests.unit import base_v2
 
 
-class OpendaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
+class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
-        super(OpendaylightQosDriverTestCase, self).setUp()
+        super(OpenDaylightQosDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_session()
         self.qos_driver = qos_driver.OpenDaylightQosDriver()
         self.mock_sync_thread = mock.patch.object(
-            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
+            journal.OpenDaylightJournalThread, 'start_odl_sync_thread').start()
 
     def _get_mock_context(self):
         current = {'tenant_id': 'tenant_id'}

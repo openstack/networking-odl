@@ -27,7 +27,7 @@ class MaintenanceThreadTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(MaintenanceThreadTestCase, self).setUp()
 
-        row = models.OpendaylightMaintenance(state=odl_const.PENDING)
+        row = models.OpenDaylightMaintenance(state=odl_const.PENDING)
         self.db_session.add(row)
         self.db_session.flush()
 

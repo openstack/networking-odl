@@ -60,14 +60,14 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
         super(OpenDayLightMechanismConfigTests, self).setUp()
         self.mock_sync_thread = mock.patch.object(
-            journal.OpendaylightJournalThread, 'start_odl_sync_thread').start()
+            journal.OpenDaylightJournalThread, 'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
             maintenance.MaintenanceThread, 'start').start()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
                               'legacy-port-binding', 'ml2_odl')
-        self.useFixture(odl_base.OpendaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightFeaturesFixture())
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
@@ -155,7 +155,7 @@ class AttributeDict(dict):
 class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
-        self.useFixture(odl_base.OpendaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()

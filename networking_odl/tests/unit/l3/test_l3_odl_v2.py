@@ -51,7 +51,7 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
         super(OpenDayLightMechanismConfigTests, self).setUp()
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
-        self.useFixture(odl_base.OpendaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
@@ -111,7 +111,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         cfg.CONF.set_override("service_plugins", ['odl-router_v2'])
         core_plugin = cfg.CONF.core_plugin
         service_plugins = {'l3_plugin_name': 'odl-router_v2'}
-        mock.patch.object(journal.OpendaylightJournalThread,
+        mock.patch.object(journal.OpenDaylightJournalThread,
                           'start_odl_sync_thread').start()
         self.mock_mt_thread = mock.patch.object(
             maintenance.MaintenanceThread, 'start').start()
@@ -121,14 +121,14 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                           'sync_from_callback_precommit').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           'sync_from_callback_postcommit').start()
-        self.useFixture(odl_base.OpendaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
         self.db_session = neutron_db_api.get_writer_session()
         self.plugin = directory.get_plugin()
         self.plugin._network_is_external = mock.Mock(return_value=True)
         self.driver = directory.get_plugin(constants.L3)
-        self.thread = journal.OpendaylightJournalThread()
+        self.thread = journal.OpenDaylightJournalThread()
         self.driver.get_floatingip = mock.Mock(
             return_value={'router_id': ROUTER_ID,
                           'floating_network_id': NETWORK_ID})

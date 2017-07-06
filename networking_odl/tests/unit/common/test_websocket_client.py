@@ -50,10 +50,10 @@ class TestWebsocketClient(base.DietTestCase):
         """Setup test."""
         super(TestWebsocketClient, self).setUp()
         self.useFixture(base.OpenDaylightRestClientFixture())
-        mock.patch.object(wsc.OpendaylightWebsocketClient,
+        mock.patch.object(wsc.OpenDaylightWebsocketClient,
                           'start_odl_websocket_thread').start()
 
-        self.mgr = wsc.OpendaylightWebsocketClient.odl_create_websocket(
+        self.mgr = wsc.OpenDaylightWebsocketClient.odl_create_websocket(
             "http://localhost:8080/",
             "restconf/operational/neutron:neutron/hostconfigs",
             wsc.ODL_OPERATIONAL_DATASTORE, wsc.ODL_NOTIFICATION_SCOPE_SUBTREE,

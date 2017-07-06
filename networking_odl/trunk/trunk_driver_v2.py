@@ -35,7 +35,7 @@ LOG = logging.getLogger(__name__)
 class OpenDaylightTrunkHandlerV2(object):
     def __init__(self):
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
         LOG.info('initialized trunk driver for OpendayLight')
 
     @staticmethod

@@ -109,7 +109,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             response.raise_for_status()
             hostconfigs = response.json()['hostconfigs']['hostconfig']
         except exceptions.ConnectionError:
-            LOG.error("Cannot connect to the Opendaylight Controller",
+            LOG.error("Cannot connect to the OpenDaylight Controller",
                       exc_info=True)
             return None
         except exceptions.HTTPError as e:
@@ -321,11 +321,11 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         return network_type in conf['allowed_network_types']
 
     def _start_websocket(self, odl_url):
-        # Opendaylight path to recieve websocket notifications on
+        # OpenDaylight path to recieve websocket notifications on
         neutron_hostconfigs_path = """/neutron:neutron/neutron:hostconfigs"""
 
         self.odl_websocket_client = (
-            odl_ws_client.OpendaylightWebsocketClient.odl_create_websocket(
+            odl_ws_client.OpenDaylightWebsocketClient.odl_create_websocket(
                 odl_url, neutron_hostconfigs_path,
                 odl_ws_client.ODL_OPERATIONAL_DATASTORE,
                 odl_ws_client.ODL_NOTIFICATION_SCOPE_SUBTREE,

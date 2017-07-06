@@ -53,7 +53,7 @@ class OpenDaylightL3RouterPlugin(
 
         # TODO(rcurran): Continue investigation into how many journal threads
         # to run per neutron controller deployment.
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
 
     def get_plugin_type(self):
         return plugin_constants.L3

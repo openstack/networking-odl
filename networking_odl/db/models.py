@@ -21,7 +21,7 @@ from neutron_lib.db import model_base
 from networking_odl.common import constants as odl_const
 
 
-class OpendaylightJournal(model_base.BASEV2):
+class OpenDaylightJournal(model_base.BASEV2):
     __tablename__ = 'opendaylightjournal'
 
     seqnum = sa.Column(sa.BigInteger().with_variant(sa.Integer(), 'sqlite'),
@@ -42,7 +42,7 @@ class OpendaylightJournal(model_base.BASEV2):
                              onupdate=sa.func.now())
 
 
-class OpendaylightMaintenance(model_base.BASEV2, model_base.HasId):
+class OpenDaylightMaintenance(model_base.BASEV2, model_base.HasId):
     __tablename__ = 'opendaylight_maintenance'
 
     state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING),

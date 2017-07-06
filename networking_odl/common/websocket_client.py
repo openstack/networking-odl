@@ -43,8 +43,8 @@ ODL_WEBSOCKET_CONNECTING = "ODL_WEBSOCKET_CONNECTING"
 ODL_WEBSOCKET_CONNECTED = "ODL_WEBSOCKET_CONNECTED"
 
 
-class OpendaylightWebsocketClient(object):
-    """Thread for the Opendaylight Websocket """
+class OpenDaylightWebsocketClient(object):
+    """Thread for the OpenDaylight Websocket """
 
     def __init__(self, odl_rest_client, path, datastore, scope, leaf_node_only,
                  packet_handler, timeout, status_cb=None):

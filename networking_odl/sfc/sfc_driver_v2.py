@@ -37,7 +37,7 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
 
     def initialize(self):
         LOG.debug("Initializing OpenDaylight Networking SFC driver(Version 2)")
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
 
     @staticmethod
     def _record_in_journal(context, object_type, operation, data=None):

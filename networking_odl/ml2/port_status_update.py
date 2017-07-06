@@ -57,13 +57,13 @@ class OdlPortStatusUpdate(worker.BaseWorker):
         pass
 
     def run_websocket(self):
-        # Opendaylight path to recieve websocket notifications on
+        # OpenDaylight path to recieve websocket notifications on
         neutron_ports_path = "/neutron:neutron/neutron:ports"
 
         self.path_uri = utils.get_odl_url()
 
         self.odl_websocket_client = (
-            odl_ws_client.OpendaylightWebsocketClient.odl_create_websocket(
+            odl_ws_client.OpenDaylightWebsocketClient.odl_create_websocket(
                 self.path_uri, neutron_ports_path,
                 odl_ws_client.ODL_OPERATIONAL_DATASTORE,
                 odl_ws_client.ODL_NOTIFICATION_SCOPE_SUBTREE,

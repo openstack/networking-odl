@@ -88,8 +88,8 @@ def record(plugin_context, object_type, object_uuid, operation, data,
                           operation, data)
 
 
-class OpendaylightJournalThread(object):
-    """Thread worker for the Opendaylight Journal Database."""
+class OpenDaylightJournalThread(object):
+    """Thread worker for the OpenDaylight Journal Database."""
     def __init__(self):
         self.client = client.OpenDaylightRestClient.create_client()
         self._odl_sync_timeout = cfg.CONF.ml2_odl.sync_timeout

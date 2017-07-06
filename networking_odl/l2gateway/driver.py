@@ -31,7 +31,7 @@ L2GATEWAY_CONNECTIONS = 'l2gateway-connections'
 
 
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
-    """Opendaylight L2Gateway Service Driver
+    """OpenDaylight L2Gateway Service Driver
 
     This code is the openstack driver for exciting the OpenDaylight L2GW
     facility.

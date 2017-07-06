@@ -54,7 +54,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.sg_handler = callback.OdlSecurityGroupsHandler(
             self.sync_from_callback_precommit,
             self.sync_from_callback_postcommit)
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
         if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:

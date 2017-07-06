@@ -32,28 +32,28 @@ LOG = logging.getLogger(__name__)
 
 def check_for_pending_or_processing_ops(session, object_uuid, seqnum=None,
                                         operation=None):
-    q = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == odl_const.PENDING,
-            models.OpendaylightJournal.state == odl_const.PROCESSING),
-        models.OpendaylightJournal.object_uuid == object_uuid)
+    q = session.query(models.OpenDaylightJournal).filter(
+        or_(models.OpenDaylightJournal.state == odl_const.PENDING,
+            models.OpenDaylightJournal.state == odl_const.PROCESSING),
+        models.OpenDaylightJournal.object_uuid == object_uuid)
 
     if seqnum is not None:
-        q = q.filter(models.OpendaylightJournal.seqnum < seqnum)
+        q = q.filter(models.OpenDaylightJournal.seqnum < seqnum)
 
     if operation:
         if isinstance(operation, (list, tuple)):
-            q = q.filter(models.OpendaylightJournal.operation.in_(operation))
+            q = q.filter(models.OpenDaylightJournal.operation.in_(operation))
         else:
-            q = q.filter(models.OpendaylightJournal.operation == operation)
+            q = q.filter(models.OpenDaylightJournal.operation == operation)
     return session.query(q.exists()).scalar()
 
 
 def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
-    rows = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == odl_const.PENDING,
-            models.OpendaylightJournal.state == odl_const.PROCESSING),
-        models.OpendaylightJournal.object_type == object_type,
-        models.OpendaylightJournal.operation == odl_const.ODL_DELETE
+    rows = session.query(models.OpenDaylightJournal).filter(
+        or_(models.OpenDaylightJournal.state == odl_const.PENDING,
+            models.OpenDaylightJournal.state == odl_const.PROCESSING),
+        models.OpenDaylightJournal.object_type == object_type,
+        models.OpenDaylightJournal.operation == odl_const.ODL_DELETE
     ).all()
 
     for row in rows:
@@ -64,12 +64,12 @@ def check_for_pending_delete_ops_with_parent(session, object_type, parent_id):
 
 
 def check_for_older_ops(session, row):
-    q = session.query(models.OpendaylightJournal).filter(
-        or_(models.OpendaylightJournal.state == odl_const.PENDING,
-            models.OpendaylightJournal.state == odl_const.PROCESSING),
-        models.OpendaylightJournal.operation == row.operation,
-        models.OpendaylightJournal.object_uuid == row.object_uuid,
-        models.OpendaylightJournal.seqnum < row.seqnum)
+    q = session.query(models.OpenDaylightJournal).filter(
+        or_(models.OpenDaylightJournal.state == odl_const.PENDING,
+            models.OpenDaylightJournal.state == odl_const.PROCESSING),
+        models.OpenDaylightJournal.operation == row.operation,
+        models.OpenDaylightJournal.object_uuid == row.object_uuid,
+        models.OpenDaylightJournal.seqnum < row.seqnum)
     row = q.first()
     if row is not None:
         LOG.debug("found older operation %s", row)
@@ -77,11 +77,11 @@ def check_for_older_ops(session, row):
 
 
 def get_all_db_rows(session):
-    return session.query(models.OpendaylightJournal).all()
+    return session.query(models.OpenDaylightJournal).all()
 
 
 def get_all_db_rows_by_state(session, state):
-    return session.query(models.OpendaylightJournal).filter_by(
+    return session.query(models.OpenDaylightJournal).filter_by(
         state=state).all()
 
 
@@ -92,9 +92,9 @@ def get_all_db_rows_by_state(session, state):
 @db_api.retry_db_errors
 def get_oldest_pending_db_row_with_lock(session):
     with session.begin():
-        row = session.query(models.OpendaylightJournal).filter_by(
+        row = session.query(models.OpenDaylightJournal).filter_by(
             state=odl_const.PENDING).order_by(
-            asc(models.OpendaylightJournal.last_retried)).with_for_update(
+            asc(models.OpenDaylightJournal.last_retried)).with_for_update(
         ).first()
         if row:
             update_db_row_state(session, row, odl_const.PROCESSING)
@@ -122,7 +122,7 @@ def update_pending_db_row_retry(session, row, retry_count):
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def delete_row(session, row=None, row_id=None):
     if row_id:
-        row = session.query(models.OpendaylightJournal).filter_by(
+        row = session.query(models.OpenDaylightJournal).filter_by(
             id=row_id).one()
     if row:
         session.delete(row)
@@ -132,7 +132,7 @@ def delete_row(session, row=None, row_id=None):
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def create_pending_row(session, object_type, object_uuid,
                        operation, data):
-    row = models.OpendaylightJournal(object_type=object_type,
+    row = models.OpenDaylightJournal(object_type=object_type,
                                      object_uuid=object_uuid,
                                      operation=operation, data=data,
                                      created_at=func.now(),
@@ -146,9 +146,9 @@ def create_pending_row(session, object_type, object_uuid,
 @db_api.retry_db_errors
 def delete_pending_rows(session, operations_to_delete):
     with session.begin():
-        session.query(models.OpendaylightJournal).filter(
-            models.OpendaylightJournal.operation.in_(operations_to_delete),
-            models.OpendaylightJournal.state == odl_const.PENDING).delete(
+        session.query(models.OpenDaylightJournal).filter(
+            models.OpenDaylightJournal.operation.in_(operations_to_delete),
+            models.OpenDaylightJournal.state == odl_const.PENDING).delete(
             synchronize_session=False)
         session.expire_all()
 
@@ -156,7 +156,7 @@ def delete_pending_rows(session, operations_to_delete):
 @db_api.retry_db_errors
 def _update_maintenance_state(session, expected_state, state):
     with session.begin():
-        row = session.query(models.OpendaylightMaintenance).filter_by(
+        row = session.query(models.OpenDaylightMaintenance).filter_by(
             state=expected_state).with_for_update().one_or_none()
         if row is None:
             return False
@@ -186,16 +186,16 @@ def update_maintenance_operation(session, operation=None):
         op_text = operation.__name__
 
     with session.begin():
-        row = session.query(models.OpendaylightMaintenance).one_or_none()
+        row = session.query(models.OpenDaylightMaintenance).one_or_none()
         row.processing_operation = op_text
 
 
 def delete_rows_by_state_and_time(session, state, time_delta):
     with session.begin():
         now = session.execute(func.now()).scalar()
-        session.query(models.OpendaylightJournal).filter(
-            models.OpendaylightJournal.state == state,
-            models.OpendaylightJournal.last_retried < now - time_delta).delete(
+        session.query(models.OpenDaylightJournal).filter(
+            models.OpenDaylightJournal.state == state,
+            models.OpenDaylightJournal.last_retried < now - time_delta).delete(
             synchronize_session=False)
         session.expire_all()
 
@@ -204,9 +204,9 @@ def reset_processing_rows(session, max_timedelta):
     with session.begin():
         now = session.execute(func.now()).scalar()
         max_timedelta = datetime.timedelta(seconds=max_timedelta)
-        rows = session.query(models.OpendaylightJournal).filter(
-            models.OpendaylightJournal.last_retried < now - max_timedelta,
-            models.OpendaylightJournal.state == odl_const.PROCESSING,
+        rows = session.query(models.OpenDaylightJournal).filter(
+            models.OpenDaylightJournal.last_retried < now - max_timedelta,
+            models.OpenDaylightJournal.state == odl_const.PROCESSING,
         ).update({'state': odl_const.PENDING})
 
     return rows

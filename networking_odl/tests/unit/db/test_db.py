@@ -203,13 +203,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def _test_maintenance_lock_unlock(self, db_func, existing_state,
                                       expected_state, expected_result):
-        row = models.OpendaylightMaintenance(id='test',
+        row = models.OpenDaylightMaintenance(id='test',
                                              state=existing_state)
         self.db_session.add(row)
         self.db_session.flush()
 
         self.assertEqual(expected_result, db_func(self.db_session))
-        row = self.db_session.query(models.OpendaylightMaintenance).one()
+        row = self.db_session.query(models.OpenDaylightMaintenance).one()
         self.assertEqual(expected_state, row['state'])
 
     def test_lock_maintenance(self):

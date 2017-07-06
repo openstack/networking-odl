@@ -1,15 +1,15 @@
 # Devstack settings
 
 # Each service you enable has the following meaning:
-# odl-neutron - Add this config flag if Opendaylight controller and OpenStack
+# odl-neutron - Add this config flag if OpenDaylight controller and OpenStack
 #               Controller are on different nodes.
-# odl-server  - Add this config flag if Opendaylight controller and OpenStack
+# odl-server  - Add this config flag if OpenDaylight controller and OpenStack
 #               Controller are on the same node.
 # odl-compute - Add this config flag for OpenStack Compute.
 #
 # odl-lightweight-testing - Add this config flag for testing neutron ODL ML2
 #                           driver and networking-odl without a real running
-#                           Opendaylight instance
+#                           OpenDaylight instance
 #
 # NOTE: odl-server includes odl-neutron.
 #
@@ -39,7 +39,7 @@ ODL_MODE=${ODL_MODE:-allinone}
 #
 # ODL_MODE=lightweight-testing
 # Use this for testing neutron ML2 driver plus networking-odl without
-# a running Opendaylight instance.
+# a running OpenDaylight instance.
 #
 # ODL_MODE=manual
 # You're on your own here, and are enabling services outside the scope of

@@ -57,9 +57,9 @@ class OpenDaylightRestClientGlobalFixture(fixtures.Fixture):
         mock.patch.object(self._global_client, 'get_client').start()
 
 
-class OpendaylightFeaturesFixture(fixtures.Fixture):
+class OpenDaylightFeaturesFixture(fixtures.Fixture):
     def _setUp(self):
-        super(OpendaylightFeaturesFixture, self)._setUp()
+        super(OpenDaylightFeaturesFixture, self)._setUp()
         if cfg.CONF.ml2_odl.url is None:
             cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
         if cfg.CONF.ml2_odl.username is None:

@@ -104,7 +104,7 @@ recommended to enable the create_opendaylight_dhcp_port flag for the networking
 
 Alternative 1
 --------------
-The creation of Neutron Opendaylight DHCP port will be invoked within the
+The creation of Neutron OpenDaylight DHCP port will be invoked within the
 OpenDaylight mechanism Driver subnet-postcommit execution.
 
 Any failures during the neutron dhcp port creation or allocation for the subnet

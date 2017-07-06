@@ -45,7 +45,7 @@ class OpenDaylightQosDriver(base.DriverBase):
 
     """OpenDaylight QOS Driver
 
-    This code is backend implementation for Opendaylight Qos
+    This code is backend implementation for OpenDaylight Qos
     driver for Openstack Neutron.
     """
 
@@ -62,7 +62,7 @@ class OpenDaylightQosDriver(base.DriverBase):
             name, vif_types, vnic_types, supported_rules,
             requires_rpc_notifications)
         LOG.debug("Initializing OpenDaylight Qos driver")
-        self.journal = journal.OpendaylightJournalThread()
+        self.journal = journal.OpenDaylightJournalThread()
 
     def _record_in_journal(self, context, op_const, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())

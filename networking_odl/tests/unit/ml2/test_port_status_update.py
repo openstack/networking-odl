@@ -20,7 +20,7 @@ import mock
 
 from networking_odl.common.client import OpenDaylightRestClient
 from networking_odl.common import websocket_client as odl_ws_client
-from networking_odl.common.websocket_client import OpendaylightWebsocketClient
+from networking_odl.common.websocket_client import OpenDaylightWebsocketClient
 from networking_odl.ml2.port_status_update import OdlPortStatusUpdate
 from networking_odl.tests import base
 from neutron.db import provisioning_blocks
@@ -57,9 +57,9 @@ class TestOdlPortStatusUpdate(base.DietTestCase):
 
     def setUp(self):
         super(TestOdlPortStatusUpdate, self).setUp()
-        self.useFixture(base.OpendaylightFeaturesFixture())
+        self.useFixture(base.OpenDaylightFeaturesFixture())
         self.mock_ws_client = mock.patch.object(
-            OpendaylightWebsocketClient, 'odl_create_websocket')
+            OpenDaylightWebsocketClient, 'odl_create_websocket')
 
     def test_object_create(self):
         OdlPortStatusUpdate()
