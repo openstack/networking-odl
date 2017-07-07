@@ -72,7 +72,7 @@ def _load_features(json):
     if 'feature' not in features:
         return
 
-    LOG.info('Retrieved ODL features %s' % features)
+    LOG.info('Retrieved ODL features %s', features)
     response = set()
     for feature in features['feature']:
         response.add(feature['service-provider-feature'].split(':')[1])
