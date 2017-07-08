@@ -69,5 +69,8 @@ elif [ -x "$ZUUL_CLONER" ]; then
     popd
 else
     echo "PIP HARDCODE" > /tmp/tox_install-${PROJ}.txt
-    $install_cmd -U -egit+https://git.openstack.org/openstack/${PROJ}@${BRANCH_NAME}#egg=${PROJ}
+    GIT_REPO="https://git.openstack.org/openstack/${PROJ}"
+    SRC_DIR="$VIRTUAL_ENV/src/${PROJ}"
+    git clone --depth 1 --branch $BRANCH_NAME $GIT_REPO $SRC_DIR
+    $install_cmd -U -e $SRC_DIR
 fi
