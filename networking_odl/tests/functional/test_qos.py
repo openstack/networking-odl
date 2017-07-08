@@ -14,6 +14,7 @@
 #
 
 import contextlib
+
 from oslo_utils import uuidutils
 
 from neutron.api.v2 import attributes

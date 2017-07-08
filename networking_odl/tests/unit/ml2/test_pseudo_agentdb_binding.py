@@ -14,10 +14,10 @@
 #    under the License.
 
 from copy import deepcopy
-import mock
 from os import path as os_path
 from string import Template
 
+import mock
 from oslo_serialization import jsonutils
 
 from neutron.plugins.ml2 import driver_api as api
