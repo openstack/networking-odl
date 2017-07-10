@@ -132,15 +132,43 @@
 - Now stack up Devstack and after stacking completes, we are all set to use
   l2gateway-as-a-service with OpenDaylight.
 
-15. Note: To enable networking-sfc driver to use with OpenDaylight
-    controller, please add following configuration::
+15. Note: To enable Service Function Chaining support driven by networking-sfc,
+    the following steps have to be taken:
 
-      > in /etc/neutron/neutron.conf
-      [sfc]
-      drivers = odl_v2
+    - local.conf should contain the following lines::
 
-      [flowclassifier]
-      drivers = odl_v2
+        # enable our plugin:
+        enable_plugin networking-odl https://github.com/openstack/networking-odl.git
+
+        # enable the networking-sfc plugin:
+        enable_plugin networking-sfc https://github.com/openstack/networking-sfc.git
+
+        # enable the odl-netvirt-sfc Karaf feature in OpenDaylight
+        ODL_NETVIRT_KARAF_FEATURE+=,odl-netvirt-sfc
+
+        # enable the networking-sfc OpenDaylight driver pair
+        [[post-config|$NEUTRON_CONF]]
+        [sfc]
+        drivers = odl_v2
+        [flowclassifier]
+        drivers = odl_v2
+
+    - A special commit of Open vSwitch should be compiled and installed
+      (containing compatible NSH OpenFlow support). This isn't
+      done automatically by networking-odl or DevStack, so the user has to
+      manually install. Please follow the instructions in:
+      https://wiki.opendaylight.org/view/Service_Function_Chaining:Main#Building_Open_vSwitch_with_VxLAN-GPE_and_NSH_support
+
+    - Carbon is the recommended and latest version of OpenDaylight to use,
+      you can specify it by adding the following to local.conf::
+
+        ODL_RELEASE=carbon-snapshot-0.6
+
+    - To clarify, OpenDaylight doesn't have to be running/installed before
+      stacking with networking-odl (and it shouldn't). The networking-odl
+      DevStack plugin will download and start OpenDaylight automatically.
+      However, it will not fetch the correct Open vSwitch version, so the
+      instructions above and the usage of ``SKIP_OVS_INSTALL`` are important.
 
 16. To enable BGPVPN driver to use with OpenDaylight controller
 
