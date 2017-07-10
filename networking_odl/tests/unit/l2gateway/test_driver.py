@@ -15,6 +15,7 @@
 #
 
 import copy
+
 import mock
 
 from networking_odl.l2gateway import driver

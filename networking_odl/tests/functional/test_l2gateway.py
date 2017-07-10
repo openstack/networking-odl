@@ -16,6 +16,7 @@
 
 import contextlib
 import copy
+
 import mock
 import webob.exc
 

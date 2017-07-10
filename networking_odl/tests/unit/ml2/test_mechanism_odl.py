@@ -15,6 +15,7 @@
 
 
 import copy
+
 import mock
 import testscenarios
 

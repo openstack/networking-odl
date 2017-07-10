@@ -17,6 +17,7 @@ test_l3_odl
 Tests for the L3 service plugin for networking-odl.
 """
 import copy
+
 import mock
 
 from neutron.extensions import l3

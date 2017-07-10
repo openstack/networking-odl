@@ -14,8 +14,9 @@
 #    under the License.
 import copy
 import datetime
-import mock
 import operator
+
+import mock
 import requests
 import testscenarios
 

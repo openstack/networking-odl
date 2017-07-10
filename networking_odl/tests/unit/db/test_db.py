@@ -14,10 +14,10 @@
 #  under the License.
 #
 
-import mock
-
 from datetime import timedelta
 import operator
+
+import mock
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db

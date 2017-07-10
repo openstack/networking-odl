@@ -15,8 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from hacking.checks import docstrings
 import tokenize
+
+from hacking.checks import docstrings
 
 # TODO(yamahata): enable neutron checking
 # from neutron.hacking import checks
