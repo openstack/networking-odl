@@ -160,36 +160,40 @@ class OpenDaylightJournalThread(object):
             return
 
         while entry is not None:
-            log_dict = {'op': entry.operation, 'type': entry.object_type,
-                        'id': entry.object_uuid}
-
-            valid = dependency_validations.validate(session, entry)
-            if not valid:
-                db.update_db_row_state(session, entry, odl_const.PENDING)
-                LOG.info("Skipping %(op)s %(type)s %(id)s due to "
-                         "unprocessed dependencies.", log_dict)
-
-                if exit_after_run:
-                    break
-                continue
-
-            LOG.info("Processing - %(op)s %(type)s %(id)s", log_dict)
-            method, urlpath, to_send = self._json_data(entry)
-
-            try:
-                self.client.sendjson(method, urlpath, to_send)
-                db.update_db_row_state(session, entry, odl_const.COMPLETED)
-            except exceptions.ConnectionError:
-                # Don't raise the retry count, just log an error & break
-                db.update_db_row_state(session, entry, odl_const.PENDING)
-                LOG.error("Cannot connect to the OpenDaylight Controller,"
-                          " will not process additional entries")
+            stop_processing = self._sync_entry(session, entry, exit_after_run)
+            if stop_processing:
                 break
-            except Exception:
-                LOG.error("Error while processing %(op)s %(type)s %(id)s",
-                          log_dict, exc_info=True)
-                db.update_pending_db_row_retry(
-                    session, entry, self._max_retry_count)
 
             entry = db.get_oldest_pending_db_row_with_lock(session)
         LOG.debug("Finished processing journal entries")
+
+    def _sync_entry(self, session, entry, exit_after_run):
+        log_dict = {'op': entry.operation, 'type': entry.object_type,
+                    'id': entry.object_uuid}
+
+        valid = dependency_validations.validate(session, entry)
+        if not valid:
+            db.update_db_row_state(session, entry, odl_const.PENDING)
+            LOG.info("Skipping %(op)s %(type)s %(id)s due to "
+                     "unprocessed dependencies.", log_dict)
+            return exit_after_run
+
+        LOG.info("Processing - %(op)s %(type)s %(id)s", log_dict)
+        method, urlpath, to_send = self._json_data(entry)
+
+        try:
+            self.client.sendjson(method, urlpath, to_send)
+            db.update_db_row_state(session, entry, odl_const.COMPLETED)
+        except exceptions.ConnectionError:
+            # Don't raise the retry count, just log an error & break
+            db.update_db_row_state(session, entry, odl_const.PENDING)
+            LOG.error("Cannot connect to the OpenDaylight Controller,"
+                      " will not process additional entries")
+            return True
+        except Exception:
+            LOG.error("Error while processing %(op)s %(type)s %(id)s",
+                      log_dict, exc_info=True)
+            db.update_pending_db_row_retry(
+                session, entry, self._max_retry_count)
+
+        return False
