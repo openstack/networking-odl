@@ -21,10 +21,6 @@ case "$ODL_RELEASE_BASE" in
     boron-snapshot)
         ODL_RELEASE=boron-snapshot-0.5
         ;;
-    beryllium-snapshot)
-        # NOTE(yamahata): beryllium release is end by SR4. no more snapshot
-        ODL_RELEASE=beryllium-0.4.4-SR4
-        ;;
     *)
         echo "Unknown ODL release base: $ODL_RELEASE_BASE"
         exit 1
@@ -43,43 +39,13 @@ case "$ODL_GATE_V2DRIVER" in
         ;;
 esac
 
-if [[ -z "$ODL_GATE_PORT_BINDING" ]]; then
-    case "$ODL_RELEASE_BASE" in
-        beryllium-snapshot)
-            # pseudo-agentdb-binding is supported from boron
-            ODL_GATE_PORT_BINDING=legacy-port-binding
-            ;;
-        *)
-            ODL_GATE_PORT_BINDING=pseudo-agentdb-binding
-            ;;
-    esac
-fi
-
-case "$ODL_GATE_PORT_BINDING" in
-    pseudo-agentdb-binding)
-        ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
-        ;;
-    legacy-port-binding)
-        ODL_PORT_BINDING_CONTROLLER=legacy-port-binding
-        ;;
-    *)
-        echo "Unknown port binding controller: $ODL_GATE_PORT_BINDING"
-        exit 1
-        ;;
-esac
+ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
 
 ODL_GATE_SERVICE_PROVIDER=${ODL_GATE_SERVICE_PROVIDER%-}
 if [[ -z "$ODL_GATE_SERVICE_PROVIDER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
-    case "$ODL_RELEASE_BASE" in
-        beryllium-snapshot)
-            # new netvirt was introduced from boron
-            ODL_GATE_SERVICE_PROVIDER=netvirt
-            ;;
-        *)
-            ODL_GATE_SERVICE_PROVIDER=vpnservice
-            ;;
-    esac
+    ODL_GATE_SERVICE_PROVIDER=vpnservice
 fi
+
 case "$ODL_GATE_SERVICE_PROVIDER" in
     vpnservice)
         ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack
@@ -92,16 +58,11 @@ case "$ODL_GATE_SERVICE_PROVIDER" in
         ODL_MAPPING_KEY=br-ex
         ;;
 esac
-# add odl-neutron-logger for debugging
-# odl-neutorn-logger has been introduced from boron cycle
+
+ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
 case "$ODL_RELEASE_BASE" in
-    boron-snapshot)
-        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
-        ;;
     carbon-snapshot|nitrogen-snapshot)
-        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger,odl-neutron-hostconfig-ovs
-        ;;
-    *)
+        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-hostconfig-ovs
         ;;
 esac
 

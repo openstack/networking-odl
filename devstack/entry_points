@@ -37,21 +37,11 @@ function configure_opendaylight {
                $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
-    if [[ "$ODL_RELEASE" =~ "helium" ]]; then
-        # Move Tomcat to $ODL_PORT
-        local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml | \
-                         grep $ODL_PORT)
-        if [ "$_ODLPORT" == "" ]; then
-            sed -i "/\<Connector port/ s/808./$ODL_PORT/" \
-                   $ODL_DIR/$ODL_NAME/configuration/tomcat-server.xml
-        fi
-    else
-        # Move Jetty to $ODL_PORT
-        local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/etc/jetty.xml | grep $ODL_PORT)
-        if [ "$_ODLPORT" == "" ]; then
-            sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" \
-                   $ODL_DIR/$ODL_NAME/etc/jetty.xml
-        fi
+    # Move Jetty to $ODL_PORT
+    local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/etc/jetty.xml | grep $ODL_PORT)
+    if [ "$_ODLPORT" == "" ]; then
+        sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" \
+               $ODL_DIR/$ODL_NAME/etc/jetty.xml
     fi
 
     # Configure conntrack for legacy netvirt
@@ -114,18 +104,10 @@ function configure_opendaylight {
             echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.providers.openflow13.services.arp.GatewayMacResolverService = DEBUG, out' >> $ODL_LOGGING_CONFIG
             echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        if [[ "$ODL_RELEASE" =~ "helium" ]]; then
-            local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
-                        grep ^log4j.logger.org.opendaylight.controller.networkconfig.neutron)
-            if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-                echo 'log4j.logger.org.opendaylight.controller.networkconfig.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
-            fi
-        else
-            local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
-                        grep ^log4j.logger.org.opendaylight.neutron)
-            if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-                echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
-            fi
+        local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
+                    grep ^log4j.logger.org.opendaylight.neutron)
+        if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
+            echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
         fi
     fi
 }
@@ -365,22 +347,8 @@ function _configure_veth {
 function _configure_opendaylight_l3_legacy_netvirt {
     wait_for_active_bridge $PUBLIC_BRIDGE $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
 
-    # Note: as of Lithium-SR3 and Beryllium releases, ODL will add the OVS port(s)
-    #       to the external bridge via the ODL_PROVIDER_MAPPINGS method. Being so,
-    #       the usage of PUBLIC_INTERFACE is no longer necessary in ODL devstack.
-
     if [[ "$Q_USE_PUBLIC_VETH" == "True" ]]; then
         _configure_veth
-    else
-        # DEPRECATED: Add public interface to public bridge, if needed
-        if [[ -n "$PUBLIC_INTERFACE" && "$PUBLIC_INTERFACE" != "br100" ]]; then
-            deprecated "Adding $PUBLIC_INTERFACE to $PUBLIC_BRIDGE."
-            deprecated "Use ODL_PROVIDER_MAPPINGS instead of PUBLIC_INTERFACE."
-            sudo ovs-vsctl --no-wait -- --may-exist add-port $PUBLIC_BRIDGE $PUBLIC_INTERFACE
-            sudo ip link set $PUBLIC_INTERFACE up
-        fi
-
-        move_interface_addresses "into_bridge"
     fi
 }
 

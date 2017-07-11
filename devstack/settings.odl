@@ -17,16 +17,6 @@
 #   boron-0.5.2-SR2
 #   boron-0.5.1-SR1
 #   boron-0.5.0
-#   beryllium-0.4.4-SR4
-#   beryllium-0.4.3-SR3
-#   beryllium-0.4.2-SR2
-#   beryllium-0.4.1-SR1
-#   beryllium-0.4.0
-#   lithium-0.3.4-SR4      (SR4)
-#   lithium-0.3.3-SR3      (SR3)
-#   lithium-0.3.2-SR2      (SR2)
-#   lithium-0.3.1-SR1      (SR1)
-#   helium-0.2.3-SR3
 
 ODL_RELEASE=${ODL_RELEASE:-latest-snapshot}
 
@@ -46,10 +36,9 @@ ODL_MGR_HOST=${ODL_MGR_HOST:-$SERVICE_HOST}
 # Example of expected format: ODL_OVS_MANAGERS=1.1.1.1,2.2.2.2,3.3.3.3
 ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_HOST}
 
-# The default ODL port for Tomcat to use
+# The default ODL port for Jetty to use
 # NOTE: We make this configurable because by default, ODL uses port 8080 for
-# Tomcat (Helium releases) or Jetty (Lithium and later releases), and this
-# conflicts with swift which also uses port 8080.
+# Jetty, and this conflicts with swift which also uses port 8080.
 ODL_PORT=${ODL_PORT:-8087}
 
 # The ODL endpoint URL
@@ -130,9 +119,8 @@ SKIP_OVS_INSTALL=$(trueorfalse False SKIP_OVS_INSTALL)
 ODL_HOSTCONF_URI=${ODL_HOSTCONF_URI:-}
 
 # Port binding controller
-# pseudo-agentdb-binding, legacy-port-binding or network-topology
+# pseudo-agentdb-binding, legacy-port-binding
 # pseudo-agentdb-binding is supported by Boron or later
-# network-topology is deprecated
 ODL_PORT_BINDING_CONTROLLER=${ODL_PORT_BINDING_CONTROLLER:-pseudo-agentdb-binding}
 
 # Snapshot version - allows using a specific version e.g. 0.5.0-20160719.101233-3643
