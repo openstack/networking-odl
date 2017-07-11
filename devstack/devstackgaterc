@@ -17,15 +17,10 @@
 # http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/jobs/networking-odl.yaml
 #
 
-# TODO(yamahata): tempest test is run serially at the moment and
-# we're occasionally hitting timeout of 120 mins. For now as work around,
-# lengthen timeout a bit.
-# In near future(Ocata cycle) after migrating to new ODL netvirt(conserves),
-# parallel execution should be enabled and remove this work around.
-if [[ -z "${RALLY_SCENARIO}" && -z "${GRENADE_PLUGINRC}" ]] ; then
-   export BUILD_TIMEOUT=180
-   export DEVSTACK_GATE_TIMEOUT=$(expr $BUILD_TIMEOUT - $DEVSTACK_GATE_TIMEOUT_BUFFER)
-fi
+# TODO(mkolesni): Remove in case we need more timeout.
+# Currently timeout is too big causing the gate job to timeout entirely and
+# not collect almost any logs, making it hard to debug.
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"BUILD_TIMEOUT=60"
 
 export OVERRIDE_ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-dhcp,q-meta,q-svc,quantum,rabbit,placement-api,n-api-meta
 if [ -z "${RALLY_SCENARIO}" ] ; then
