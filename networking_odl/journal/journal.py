@@ -32,6 +32,8 @@ from networking_odl.journal import dependency_validations
 
 LOG = logging.getLogger(__name__)
 
+MAKE_URL = {}
+
 
 def call_thread_on_end(func):
     def new_func(obj, *args, **kwargs):
@@ -88,6 +90,25 @@ def record(plugin_context, object_type, object_uuid, operation, data,
                           operation, data)
 
 
+def _make_url(row):
+    url_object = utils.make_url_object(row.object_type)
+    urlpath = ''
+    if row.operation == odl_const.ODL_CREATE:
+        urlpath = url_object
+    else:
+        urlpath = url_object + '/' + row.object_uuid
+
+    return urlpath
+
+
+def register_url_builder(object_type, method):
+    MAKE_URL[object_type] = method
+
+
+def _build_url(row):
+    return MAKE_URL.get(row.object_type, _make_url)(row)
+
+
 class OpenDaylightJournalThread(object):
     """Thread worker for the OpenDaylight Journal Database."""
     def __init__(self):
@@ -120,25 +141,22 @@ class OpenDaylightJournalThread(object):
                                       self.set_sync_event)
         self._timer.start()
 
-    def _json_data(self, row):
+    @staticmethod
+    def _json_data(row):
         data = copy.deepcopy(row.data)
         filters.filter_for_odl(row.object_type, row.operation, data)
-        url_object = utils.make_url_object(row.object_type)
 
         if row.operation == odl_const.ODL_CREATE:
             method = 'post'
-            urlpath = url_object
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_UPDATE:
             method = 'put'
-            urlpath = url_object + '/' + row.object_uuid
             to_send = {row.object_type: data}
         elif row.operation == odl_const.ODL_DELETE:
             method = 'delete'
-            urlpath = url_object + '/' + row.object_uuid
             to_send = None
 
-        return method, urlpath, to_send
+        return method, _build_url(row), to_send
 
     def run_sync_thread(self):
         while True:
