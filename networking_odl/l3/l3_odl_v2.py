@@ -65,7 +65,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def create_router(self, context, router):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             router_dict = super(
                 OpenDaylightL3RouterPlugin, self).create_router(context,
@@ -76,7 +76,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def update_router(self, context, router_id, router):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             router_dict = super(
                 OpenDaylightL3RouterPlugin, self).update_router(
@@ -87,7 +87,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def delete_router(self, context, router_id):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         router_dict = self.get_router(context, router_id)
         dependency_list = [router_dict['gw_port_id']]
         with session.begin(subtransactions=True):
@@ -102,7 +102,7 @@ class OpenDaylightL3RouterPlugin(
         fip = floatingip['floatingip']
         if fip.get('port_id') is None:
             initial_status = q_const.FLOATINGIP_STATUS_DOWN
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             fip_dict = super(
                 OpenDaylightL3RouterPlugin, self).create_floatingip(
@@ -113,7 +113,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def update_floatingip(self, context, floatingip_id, floatingip):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             fip_dict = super(
                 OpenDaylightL3RouterPlugin, self).update_floatingip(
@@ -133,7 +133,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def delete_floatingip(self, context, floatingip_id):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         floatingip_dict = self.get_floatingip(context, floatingip_id)
         dependency_list = [floatingip_dict['router_id']]
         dependency_list.append(floatingip_dict['floating_network_id'])
@@ -145,7 +145,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def add_router_interface(self, context, router_id, interface_info):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             new_router = super(
                 OpenDaylightL3RouterPlugin, self).add_router_interface(
@@ -154,7 +154,7 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def remove_router_interface(self, context, router_id, interface_info):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             new_router = super(
                 OpenDaylightL3RouterPlugin, self).remove_router_interface(
