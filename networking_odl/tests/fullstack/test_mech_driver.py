@@ -36,13 +36,13 @@ class TestMechDriver(base.TestODLFullStackBase):
                                   run_as_root=True)
         return re.findall('".*"', system_id)[0]
 
-    def _check_flow_existance(self, mac):
+    def _check_device_existence(self, tap):
         def _callback():
-            flows = utils.execute(
-                ['ovs-appctl', 'bridge/dump-flows', 'br-int'],
+            ports = utils.execute(
+                ['ovs-vsctl', 'list-ports', 'br-int'],
                 run_as_root=True)
 
-            return bool(re.search(mac, flows))
+            return bool(re.search(tap, ports))
         return test_utils.call_until_true(_callback, 30, 2)
 
     def _create_ovs_vif_port(self, bridge, dev, iface_id, mac, instance_id):
@@ -72,11 +72,13 @@ class TestMechDriver(base.TestODLFullStackBase):
         resp = self.deserialize(self.fmt, req.get_response(self.api))
         vif_type = resp['port']['binding:vif_type']
         self.assertEqual('ovs', vif_type)
-        self.assertFalse(self._check_flow_existance(mac))
+        self.assertFalse(self._check_device_existence(tap))
 
         # Step3: plug vif
         self._create_ovs_vif_port('br-int', tap, port_id, mac,
                                   uuidutils.generate_uuid())
 
-        # Step4: verify flow table
-        self.assertTrue(self._check_flow_existance(mac))
+        # TODO(manjeets) Add a test case to verify mac
+        # in flows
+        # Step4: verify device
+        self.assertTrue(self._check_device_existence(tap))
