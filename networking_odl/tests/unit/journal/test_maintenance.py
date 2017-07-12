@@ -67,7 +67,7 @@ class MaintenanceThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.thread.start()
 
         # Make sure the callback event was called and not timed out
-        self.assertTrue(callback_event.wait(timeout=5))
+        self.assertTrue(callback_event.wait(timeout=16))
 
     def test_thread_continues_after_exception(self):
         exception_event = threading.Event()

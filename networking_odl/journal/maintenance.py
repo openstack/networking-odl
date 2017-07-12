@@ -13,6 +13,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 #
+import random
+import tenacity
 
 from neutron.db import api as neutron_db_api
 from oslo_config import cfg
@@ -25,6 +27,8 @@ from networking_odl.db import db
 
 LOG = logging.getLogger(__name__)
 
+PRIMES = [1, -1, 2, -2, 3, -3, 5, -5]
+
 
 class MaintenanceThread(object):
     def __init__(self):
@@ -33,7 +37,9 @@ class MaintenanceThread(object):
         self.maintenance_ops = []
 
     def start(self):
-        self.timer.start(self.maintenance_interval, stop_on_exception=False)
+        rand_val = random.choice(PRIMES)
+        self.timer.start(self.maintenance_interval + rand_val,
+                         stop_on_exception=False)
 
     def cleanup(self):
         # this method is used for unit test to tear down
@@ -62,7 +68,15 @@ class MaintenanceThread(object):
     def execute_ops(self):
         LOG.info(_LI("Starting journal maintenance run."))
         session = neutron_db_api.get_session()
-        if not db.lock_maintenance(session):
+        r_obj = tenacity.Retrying(
+            wait=tenacity.wait_random(5),
+            retry=tenacity.retry_if_result(lambda x: (not x)),
+            stop=tenacity.stop_after_attempt(3)
+        )
+
+        try:
+            r_obj.call(db.lock_maintenance, session)
+        except tenacity.RetryError:
             LOG.info(_LI("Maintenance already running, aborting."))
             return
 
