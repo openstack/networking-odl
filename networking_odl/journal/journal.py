@@ -15,6 +15,7 @@
 
 import copy
 import threading
+import time
 
 from neutron.db import api as neutron_db_api
 from neutron_lib.plugins import directory
@@ -111,10 +112,16 @@ def _build_url(row):
 
 class OpenDaylightJournalThread(object):
     """Thread worker for the OpenDaylight Journal Database."""
+
+    # make those parameter configurable?
+    _RETRY_SLEEP_MIN = 0.1
+    _RETRY_SLEEP_MAX = 60
+
     def __init__(self):
         self.client = client.OpenDaylightRestClient.create_client()
         self._odl_sync_timeout = cfg.CONF.ml2_odl.sync_timeout
         self._max_retry_count = cfg.CONF.ml2_odl.retry_count
+        self._sleep_time = self._RETRY_SLEEP_MIN
         self.event = threading.Event()
         self.lock = threading.Lock()
         self._odl_sync_thread = self.start_odl_sync_thread()
@@ -185,6 +192,16 @@ class OpenDaylightJournalThread(object):
             entry = db.get_oldest_pending_db_row_with_lock(session)
         LOG.debug("Finished processing journal entries")
 
+    def _retry_sleep(self):
+        # When something happened in the connection to ODL, don't busy loop
+        # because it's likely to hit same issue.
+        # Wait for a while for recovery
+        time.sleep(self._sleep_time)
+        self._sleep_time = min(self._sleep_time * 2, self._RETRY_SLEEP_MAX)
+
+    def _retry_reset(self):
+        self._sleep_time = self._RETRY_SLEEP_MIN
+
     def _sync_entry(self, session, entry, exit_after_run):
         log_dict = {'op': entry.operation, 'type': entry.object_type,
                     'id': entry.object_uuid}
@@ -202,16 +219,19 @@ class OpenDaylightJournalThread(object):
         try:
             self.client.sendjson(method, urlpath, to_send)
             db.update_db_row_state(session, entry, odl_const.COMPLETED)
+            self._retry_reset()
         except exceptions.ConnectionError:
             # Don't raise the retry count, just log an error & break
             db.update_db_row_state(session, entry, odl_const.PENDING)
             LOG.error("Cannot connect to the OpenDaylight Controller,"
                       " will not process additional entries")
+            self._retry_sleep()
             return True
         except Exception:
             LOG.error("Error while processing %(op)s %(type)s %(id)s",
                       log_dict, exc_info=True)
             db.update_pending_db_row_retry(
                 session, entry, self._max_retry_count)
+            self._retry_sleep()
 
         return False
