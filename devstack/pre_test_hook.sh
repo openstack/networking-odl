@@ -6,7 +6,6 @@ set -xe
 GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
 # for localrc_set
-ODL_NETVIRT_COMMON=odl-neutron-service,odl-restconf-all,odl-aaa-authn
 source $DEVSTACK_PATH/inc/ini-config
 
 case "$ODL_RELEASE_BASE" in
@@ -100,9 +99,7 @@ case "$ODL_RELEASE_BASE" in
         ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
         ;;
     carbon-snapshot|nitrogen-snapshot)
-        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_COMMON,odl-netvirt-openstack,odl-neutron-logger,odl-neutron-hostconfig-ovs
-        ODL_GATE_SERVICE_PROVIDER="netvirt"
-        ODL_MAPPING_KEY="public"
+        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger,odl-neutron-hostconfig-ovs
         ;;
     *)
         ;;

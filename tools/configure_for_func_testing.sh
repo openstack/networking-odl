@@ -190,8 +190,7 @@ function _install_opendaylight {
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
     if [[ "$VENV" =~ "fullstack" ]]; then
         # TODO: in future switch to new netvirt
-        ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
-        ODL_PROVIDER_MAPPINGS=public:${Q_PUBLIC_VETH_INT}
+        ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-ovsdb-openstack,odl-neutron-logger
     fi
     ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
     source $NETWORKING_ODL_DIR/devstack/settings.odl
