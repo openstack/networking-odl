@@ -29,10 +29,10 @@ Create a machine (such as a VM or Vagrant box) running a distribution supported
 by DevStack and install DevStack there. For example, there is a Vagrant script
 for DevStack at https://github.com/bcwaldon/vagrant_devstack.
 
- .. note::
+.. note::
 
-    If you prefer not to use DevStack, you can still check out source code on your local
-    machine and develop from there.
+   If you prefer not to use DevStack, you can still check out source code on your local
+   machine and develop from there.
 
 
 Running unit tests
@@ -94,8 +94,7 @@ Running tests for syntax and style check for written code::
 For more information on the standard Tox-based test infrastructure used by
 OpenStack and how to do some common test/debugging procedures with Testr,
 see this wiki page:
-
-  https://wiki.openstack.org/wiki/Testr
+https://wiki.openstack.org/wiki/Testr
 
 .. _Testr: https://wiki.openstack.org/wiki/Testr
 .. _tox: http://tox.readthedocs.org/en/latest/
@@ -111,8 +110,7 @@ Set break points in your test code and run::
 
 The package oslotest was used to enable debugging in the tests. For more
 information see the link:
-
-  https://docs.openstack.org/oslotest/latest/user/features.html
+https://docs.openstack.org/oslotest/latest/user/features.html
 
 
 Running individual tests
@@ -127,7 +125,7 @@ class separating it from the module path with a colon.
 For example, the following would run only the Testodll3 tests from
 networking_odl/tests/unit/l3/test_odl_l3.py ::
 
-      $ tox -e py27 networking_odl.tests.unit.l3.test_l3_odl.Testodll3
+    $ tox -e py27 networking_odl.tests.unit.l3.test_l3_odl.Testodll3
 
 Adding more tests
 ~~~~~~~~~~~~~~~~~
@@ -172,8 +170,7 @@ Neutron defines different classes of test cases. One of them is functional
 test. It requires pre-configured environment. But it's lighter than
 running devstack or openstack deployment.
 For definitions of functional tests, please refer to:
-
-  https://docs.openstack.org/neutron/latest/contributor/index.html
+https://docs.openstack.org/neutron/latest/contributor/index.html
 
 The script is provided to setup the environment.
 At first make sure the latest version of pip command::
@@ -193,6 +190,6 @@ And then run functional test as follows::
 
 For setting up devstack, please refer to neutron documentation:
 
-  https://wiki.openstack.org/wiki/NeutronDevstack
-  https://docs.openstack.org/neutron/latest/contributor/index.html
-  https://git.openstack.org/cgit/openstack/neutron/tree/TESTING.rst
+* https://wiki.openstack.org/wiki/NeutronDevstack
+* https://docs.openstack.org/neutron/latest/contributor/index.html
+* https://docs.openstack.org/neutron/latest/contributor/testing/testing.html

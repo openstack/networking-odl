@@ -56,8 +56,8 @@ Networking-odl source code should be pulled directly from git::
     cd networking-odl
 
 
-For installation of networking-odl refer to `[#first]`_ guide. For testing
-refer to `[#second]`_ guide
+For installation of networking-odl refer to :doc:`/install/index`.
+For testing refer to :doc:`Testing <testing>` guide.
 
 Verifying Successful Installation
 ==================================
@@ -103,15 +103,15 @@ Launching Instance and floating IP
        <security group(default) --key-name <keyname(mykey)> \
        <server name(test-instance)>
 
-   For details on creating instances refer to `[#third]`_ and
-   `[#fourth]`_.
+   For details on creating instances refer to [#third]_ and
+   [#fourth]_.
 
 #. Attaching floating IPs to created server can be done by following command::
 
      openstack server add floating ip <INSTANCE_NAME_OR_ID(test-instance) \
      <FLOATING_IP_ADDRESS(203.20.2.12)>
 
-   For details on attaching floating IPs refer to `[#fifth]`_.
+   For details on attaching floating IPs refer to [#fifth]_.
 
 
 Useful Commands
@@ -209,14 +209,11 @@ Useful Commands
          Karaf:
            http://localhost:8181/apidoc/explorer/index.html
 
-   Detailed information can be found `[#sixth]`_.
+   Detailed information can be found [#sixth]_.
 
-References
-==========
+.. rubric:: References
 
-.. _[#first]: https://docs.openstack.org/developer/networking-odl/devref/testing.html
-.. _[#second]: https://docs.openstack.org/developer/networking-odl/devref/testing.html
-.. _[#third]: https://docs.openstack.org/mitaka/install-guide-rdo/launch-instance-selfservice.html
-.. _[#fourth]: https://docs.openstack.org/draft/install-guide-rdo/launch-instance.html
-.. _[#fifth]: https://docs.openstack.org/user-guide/cli-manage-ip-addresses.html
-.. _[#sixth]: https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:Restconf_API_Explorer
+.. [#third] https://docs.openstack.org/mitaka/install-guide-rdo/launch-instance-selfservice.html
+.. [#fourth] https://docs.openstack.org/draft/install-guide-rdo/launch-instance.html
+.. [#fifth] https://docs.openstack.org/user-guide/cli-manage-ip-addresses.html
+.. [#sixth] https://wiki.opendaylight.org/view/OpenDaylight_Controller:MD-SAL:Restconf_API_Explorer

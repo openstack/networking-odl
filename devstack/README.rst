@@ -17,12 +17,15 @@
      enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
 
 4. Optionally, to enable support for OpenDaylight L3 router functionality,
-   add the below.
-   Note: This is only relevant when using old netvirt (ovsdb based, default)::
+   add the below::
 
      > cat local.conf
      [[local|localrc]]
      ODL_L3=True
+
+   .. note::
+
+      This is only relevant when using old netvirt (ovsdb based, default).
 
 5. If you need to route the traffic out of the box (e.g. br-ex), set
    ODL_PROVIDER_MAPPINGS to map the physical provider network to device
@@ -124,10 +127,11 @@
 
 - The package networking-l2gw must be installed as a pre-requisite.
 
-  So include in your localrc (or local.conf) the following:
-  enable_plugin networking-l2gw http://git.openstack.org/openstack/networking-l2gw
-  enable_service l2gw_plugin
-  NETWORKING_L2GW_SERVICE_DRIVER=L2GW:OpenDaylight:networking_odl.l2gateway.driver_v2.OpenDaylightL2gwDriver:default
+  So include in your localrc (or local.conf) the following::
+
+    enable_plugin networking-l2gw http://git.openstack.org/openstack/networking-l2gw
+    enable_service l2gw_plugin
+    NETWORKING_L2GW_SERVICE_DRIVER=L2GW:OpenDaylight:networking_odl.l2gateway.driver_v2.OpenDaylightL2gwDriver:default
 
 - Now stack up Devstack and after stacking completes, we are all set to use
   l2gateway-as-a-service with OpenDaylight.
@@ -171,13 +175,12 @@
       instructions above and the usage of ``SKIP_OVS_INSTALL`` are important.
 
 16. To enable BGPVPN driver to use with OpenDaylight controller
+    Include the following lines in your localrc (or local.conf)::
 
-Include the following lines in your localrc (or local.conf)
+      enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
 
-enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
+      [[post-config|$NETWORKING_BGPVPN_CONF]]
+      [service_providers]
+      service_provider=BGPVPN:OpenDaylight.networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
 
-[[post-config|$NETWORKING_BGPVPN_CONF]]
-[service_providers]
-service_provider=BGPVPN:OpenDaylight.networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
-
-and then stack up your devstack.
+    and then stack up your devstack.

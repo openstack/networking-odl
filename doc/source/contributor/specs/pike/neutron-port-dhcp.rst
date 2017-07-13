@@ -93,8 +93,8 @@ virtual end points belonging to that subnet.
 These special DHCP Ports (one per subnet), will carry unique device-id and
 device-owner values.
 
- * device-owner(network:dhcp)
- * device-id(OpenDaylight-<subnet-id>)
+* device-owner(network:dhcp)
+* device-id(OpenDaylight-<subnet-id>)
 
 OpenDaylight DHCP service will also introduce a new config parameter controller
 -dhcp-mode to indicate if the above DHCP port should be used for servicing DHCP
@@ -167,23 +167,23 @@ Recommended Alternative
 
 All of the following cases will need to be addressed by the design.
 
- * Neutron server can crash after submitting information to DB but before
-   invoking post-commit during a subnet create/update/delete operation. The
-   dhcp-proxy-service should handle the DHCP port creation/deletion during
-   such failures when the service is enabled.
- * A subnet update operation to disable-dhcp can be immediately followed by
-   a subnet update operation to enable-dhcp, and such a situation should end up
-   in creating the neutron-dhcp-port for consumption by OpenDaylight.
- * A subnet update operation to enable-dhcp can be immediately followed by a
-   subnet update operation to disable-dhcp, and such a situation should end up
-   in deleting the neutron-dhcp-port that was created for use by OpenDaylight.
- * A subnet update operation to enable-dhcp can be immediately followed by a
-   subnet delete operation,and such a situation should end up deleting the
-   neutron-dhcp-port that was about to be provided for use by OpenDaylight.
- * A subnet create operation (with dhcp enabled) can be immediately followed
-   by a subnet update operation to disable-dhcp, and such a situation should
-   end up in deleting the neutron-dhcp-port that was created for use by
-   OpenDaylight.
+* Neutron server can crash after submitting information to DB but before
+  invoking post-commit during a subnet create/update/delete operation. The
+  dhcp-proxy-service should handle the DHCP port creation/deletion during
+  such failures when the service is enabled.
+* A subnet update operation to disable-dhcp can be immediately followed by
+  a subnet update operation to enable-dhcp, and such a situation should end up
+  in creating the neutron-dhcp-port for consumption by OpenDaylight.
+* A subnet update operation to enable-dhcp can be immediately followed by a
+  subnet update operation to disable-dhcp, and such a situation should end up
+  in deleting the neutron-dhcp-port that was created for use by OpenDaylight.
+* A subnet update operation to enable-dhcp can be immediately followed by a
+  subnet delete operation,and such a situation should end up deleting the
+  neutron-dhcp-port that was about to be provided for use by OpenDaylight.
+* A subnet create operation (with dhcp enabled) can be immediately followed
+  by a subnet update operation to disable-dhcp, and such a situation should
+  end up in deleting the neutron-dhcp-port that was created for use by
+  OpenDaylight.
 
 Design as per Alternative 2 meets the above cases better and is what we propose
 to take as the approach that we will pursue for this spec.
@@ -206,5 +206,5 @@ Assignee(s)
 References
 ==========
 
- * [1] OpenDaylight spec to cover this feature
-   https://git.opendaylight.org/gerrit/#/c/52298/
+* [1] OpenDaylight spec to cover this feature
+  https://git.opendaylight.org/gerrit/#/c/52298/
