@@ -1,4 +1,0 @@
-export ODL_BUNDLEVERSION='0.3.3-Lithium-SR3'
-
-# Java major version required to run OpenDaylight: 7, 8, ...
-ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-7}

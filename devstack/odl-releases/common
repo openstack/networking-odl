@@ -55,14 +55,6 @@ ODL_NETVIRT_KARAF_FEATURE_DEFAULT=odl-neutron-service,odl-restconf-all,odl-aaa-a
 # new netvirt has been introduced into netvirt from Boron release
 # odl-neutron-logger has been introduced from Boron release
 case "$ODL_BUNDLEVERSION" in
-    # in Helium case, ODL_NETVIRT_KARAF_FEATURE is defined
-    # so ODL_NETVIRT_KARAF_FEATURE_DEFAULT doesn't matter
-    # Nothing to do
-    0.2.?-*)
-        ;;
-    0.3.?-*|0.4.?-*)
-        ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_OVSDB
-        ;;
     0.5.?-*)
         # 0.5.?-*
         ODL_NETVIRT_KARAF_FEATURE_DEFAULT+=,$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE

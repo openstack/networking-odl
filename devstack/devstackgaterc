@@ -82,12 +82,6 @@ r="$r|(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)"
 # fixed as appropriate.
 # (none)
 
-if [[ "${ODL_RELEASE_BASE}" == "beryllium-snapshot" ]]; then
-   # Beryllium release has bug on security group and there is no plan
-   # for new release. Its last release is Beryllium-SR4.
-   r="$r|(?:tempest\.scenario\.test_security_groups_basic_ops.*)"
-fi
-
 # TODO(yamahata): fix bugs and remove those tests from here
 # BUG: https://bugs.launchpad.net/networking-odl/+bug/1642158
 # legacy netvirt ignores admin-state-up state for network/port
