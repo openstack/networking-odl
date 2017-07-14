@@ -24,7 +24,7 @@ Any new code submission or proposal must follow the development
 guidelines detailed in HACKING.rst and for further details this
 link can be checked:
 
-   http://docs.openstack.org/developer/networking-odl/
+   https://docs.openstack.org/networking-odl/latest/
 
 
 External Resources

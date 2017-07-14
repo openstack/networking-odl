@@ -118,7 +118,7 @@ be happy to have more contributor on board.
 References
 ==========
 
-[1] http://docs.openstack.org/developer/networking-sfc/
+[1] https://docs.openstack.org/networking-sfc/latest/
 
 [2] https://github.com/openstack/networking-sfc/blob/master/doc/source/api.rst
 
