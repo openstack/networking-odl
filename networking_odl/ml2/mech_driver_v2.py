@@ -73,7 +73,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         odl_features.init()
 
     def get_workers(self):
-        return [port_status_update.OdlPortStatusUpdate()]
+        workers = [port_status_update.OdlPortStatusUpdate()]
+        workers += self.port_binding_controller.get_workers()
+        return workers
 
     def _start_periodic_task(self):
         # start the periodic task and register all the phases

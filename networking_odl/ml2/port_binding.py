@@ -29,6 +29,9 @@ LOG = log.getLogger(__name__)
 @six.add_metaclass(abc.ABCMeta)
 class PortBindingController(object):
 
+    def get_workers(self):
+        return []
+
     @abc.abstractmethod
     def bind_port(self, port_context):
         """Attempt to bind a port.
@@ -100,6 +103,9 @@ class PortBindingManager(PortBindingController):
                 ("Port binding controller '%(name)s (%(controller)r)' "
                  "doesn't implement PortBindingController interface."),
                 {'name': extension.name, 'controller': extension.obj})
+
+    def get_workers(self):
+        return self.controller.get_workers()
 
     def bind_port(self, port_context):
         controller_details = {'name': self.name, 'controller': self.controller}
