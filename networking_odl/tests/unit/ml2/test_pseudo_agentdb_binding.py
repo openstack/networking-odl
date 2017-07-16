@@ -20,6 +20,7 @@ from string import Template
 import mock
 from oslo_serialization import jsonutils
 
+from neutron.db import provisioning_blocks
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib.api.definitions import portbindings
@@ -27,6 +28,7 @@ from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api as ml2_api
 
+from networking_odl.common import odl_features
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
 from requests.exceptions import HTTPError
@@ -228,6 +230,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         """Setup test."""
         super(TestPseudoAgentDBBindingController, self).setUp()
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightFeaturesFixture())
 
         fake_agents_db = mock.MagicMock()
         fake_agents_db.create_or_update_agent = mock.MagicMock()
@@ -446,7 +449,29 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
             current={'id': 'PORTID',
                      portbindings.VNIC_TYPE: portbindings.VNIC_NORMAL},
             segments_to_bind=fake_segments, network=network,
-            host_agents=lambda agent_type: host_agents)
+            host_agents=lambda agent_type: host_agents,
+            _plugin_context=mock.MagicMock()
+        )
+
+    @mock.patch.object(provisioning_blocks, 'add_provisioning_component')
+    def test_prepare_inital_port_status_no_websocket(
+            self, mocked_add_provisioning_component):
+        odl_features.feature_set = set()
+        port_ctx = self._fake_port_context(
+            fake_segments=[self.test_valid_segment])
+        initial_port_status = self.mgr._prepare_initial_port_status(port_ctx)
+        self.assertEqual(initial_port_status, n_const.PORT_STATUS_ACTIVE)
+        mocked_add_provisioning_component.assert_not_called()
+
+    @mock.patch.object(provisioning_blocks, 'add_provisioning_component')
+    def test_prepare_inital_port_status_with_websocket(
+            self, mocked_add_provisioning_component):
+        odl_features.feature_set.add(odl_features.OPERATIONAL_PORT_STATUS)
+        port_ctx = self._fake_port_context(
+            fake_segments=[self.test_valid_segment])
+        initial_port_status = self.mgr._prepare_initial_port_status(port_ctx)
+        self.assertEqual(initial_port_status, n_const.PORT_STATUS_DOWN)
+        mocked_add_provisioning_component.assert_called()
 
 
 class TestPseudoAgentDBBindingControllerBug1608659(

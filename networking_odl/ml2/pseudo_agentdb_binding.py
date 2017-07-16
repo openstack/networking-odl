@@ -16,6 +16,8 @@
 import logging
 from string import Template
 
+from neutron.callbacks import resources
+from neutron.db import provisioning_blocks
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as nl_const
 from neutron_lib import context
@@ -307,13 +309,20 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                    'segment': valid_segment, 'vif_type': vif_type,
                    'vif_details': vif_details})
 
-        port_status = nl_const.PORT_STATUS_ACTIVE
-        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
-            port_status = nl_const.PORT_STATUS_DOWN
+        port_status = self._prepare_initial_port_status(port_context)
         port_context.set_binding(valid_segment[api.ID], vif_type,
                                  vif_details, status=port_status)
 
         return True
+
+    def _prepare_initial_port_status(self, port_context):
+        port_status = nl_const.PORT_STATUS_ACTIVE
+        if odl_features.has(odl_features.OPERATIONAL_PORT_STATUS):
+            port_status = nl_const.PORT_STATUS_DOWN
+            provisioning_blocks.add_provisioning_component(
+                port_context._plugin_context, port_context.current['id'],
+                resources.PORT, provisioning_blocks.L2_AGENT_ENTITY)
+        return port_status
 
     def _is_valid_segment(self, segment, conf):
         """Verify a segment is supported by ODL."""
