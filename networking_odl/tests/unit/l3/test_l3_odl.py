@@ -38,7 +38,9 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
     fmt = 'json'
 
     def setUp(self):
+        self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(Testodll3, self).setUp()
         # support ext-gw-mode
         for key in l3.RESOURCE_ATTRIBUTE_MAP.keys():

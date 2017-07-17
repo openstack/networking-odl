@@ -30,7 +30,11 @@ from neutron.plugins.ml2 import plugin as ml2_plugin
 from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
+from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
+from neutron_lib import fixture
 from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api as ml2_api
@@ -44,6 +48,17 @@ from networking_odl.tests import base
 
 AGENTDB_BINARY = 'neutron-odlagent-portbinding'
 L2_TYPE = "ODL L2"
+# test data hostconfig and hostconfig-dbget
+SAMPLE_ODL_HCONFIGS = {"hostconfigs": {"hostconfig": [
+    {"host-id": "devstack",
+     "host-type": "ODL L2",
+     "config": """{"supported_vnic_types": [
+                {"vnic_type": "normal", "vif_type": "ovs",
+                 "vif_details": {}}],
+                "allowed_network_types": [
+                "local", "vlan", "vxlan", "gre"],
+                "bridge_mappings": {"physnet1": "br-ex"}}"""}
+]}}
 
 
 class OpenDaylightAgentDBFixture(fixtures.Fixture):
@@ -60,6 +75,7 @@ class TestPseudoAgentDBBindingTaskBase(base.DietTestCase):
     def setUp(self):
         """Setup test."""
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingTaskBase, self).setUp()
 
@@ -91,24 +107,104 @@ class TestPseudoAgentDBBindingTaskBase(base.DietTestCase):
                 self.assertEqual(self.task._rest_get_hostconfigs(), [])
 
 
+class TestPseudoAgentDBBindingPrePopulate(base.DietTestCase):
+    KNOWN_HOST = 'known_host'
+    AGENT_TYPE = pseudo_agentdb_binding.PseudoAgentDBBindingWorker.L2_TYPE
+
+    def setUp(self):
+        self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(OpenDaylightAgentDBFixture())
+        super(TestPseudoAgentDBBindingPrePopulate, self).setUp()
+        self.useFixture(fixture.CallbackRegistryFixture())
+
+        self.ml2_plugin = mock.Mock()
+        self.ml2_plugin.get_agents = mock.Mock(return_value=[])
+        self.worker = mock.Mock()
+        self.worker.known_agent = mock.Mock(return_value=False)
+        self.worker.add_known_agent = mock.Mock()
+        self.worker.update_agetns_db_row = mock.Mock()
+        self.prepopulate = (pseudo_agentdb_binding.
+                            PseudoAgentDBBindingPrePopulate(self.worker))
+
+    def _call_before_port_binding(self, host):
+        kwargs = {
+            'context': mock.Mock(),
+            'port': {
+                portbindings.HOST_ID: host
+            }
+        }
+        registry.notify(resources.PORT, events.BEFORE_CREATE, self.ml2_plugin,
+                        **kwargs)
+
+    def test_unspecified(self):
+        self._call_before_port_binding(n_const.ATTR_NOT_SPECIFIED)
+        self.worker.known_agent.assert_not_called()
+
+    def test_empty_host(self):
+        self._call_before_port_binding('')
+        self.worker.known_agent.assert_not_called()
+
+    def test_known_agent(self):
+        self.worker.known_agent = mock.Mock(return_value=True)
+        self._call_before_port_binding(self.KNOWN_HOST)
+        self.worker.known_agent.assert_called()
+        self.ml2_plugin.get_agents.assert_not_called()
+
+    def test_agentdb_alive(self):
+        self.ml2_plugin.get_agents = mock.Mock(return_value=[
+            {'host': self.KNOWN_HOST,
+             'agent_type': self.AGENT_TYPE,
+             'alive': True}])
+        self._call_before_port_binding(self.KNOWN_HOST)
+        self.worker.known_agent.assert_called()
+        self.ml2_plugin.get_agents.assert_called()
+        self.worker.add_known_agents.assert_called_with([
+            {'host': self.KNOWN_HOST,
+             'agent_type': self.AGENT_TYPE,
+             'alive': True}])
+        self.worker.update_agents_db_row.assert_not_called()
+
+    def test_agentdb_dead(self):
+        self.ml2_plugin.get_agents = mock.Mock(return_value=[
+            {'host': self.KNOWN_HOST,
+             'agent_type': self.AGENT_TYPE,
+             'alive': False}])
+        self._call_before_port_binding(self.KNOWN_HOST)
+        self.worker.known_agent.assert_called()
+        self.ml2_plugin.get_agents.assert_called()
+        self.worker.add_known_agents.assert_not_called()
+
+    def test_unkown_hostconfig(self):
+        with mock.patch.object(self.prepopulate,
+                               'odl_rest_client') as mock_rest_client:
+            mock_response = mock.Mock()
+            mock_response.json = mock.Mock(
+                return_value=SAMPLE_ODL_HCONFIGS['hostconfigs'])
+            mock_rest_client.get = mock.Mock(return_value=mock_response)
+            self._call_before_port_binding(self.KNOWN_HOST)
+            self.worker.known_agent.assert_called()
+            self.ml2_plugin.get_agents.assert_called()
+            self.worker.add_known_agent.assert_not_called()
+            self.worker.update_agents_db_row.assert_called_once()
+
+    def test_http_error(self):
+        with mock.patch.object(self.prepopulate,
+                               'odl_rest_client') as mock_rest_client:
+            mock_rest_client.get = mock.Mock(side_effect=Exception('error'))
+            self._call_before_port_binding(self.KNOWN_HOST)
+            self.worker.known_agent.assert_called()
+            self.ml2_plugin.get_agents.assert_called()
+            self.worker.add_known_agent.assert_not_called()
+            self.worker.update_agents_db_row.assert_not_called()
+
+
 class TestPseudoAgentDBBindingWorker(base.DietTestCase):
     """Test class for AgentDBPortBinding."""
-
-    # test data hostconfig and hostconfig-dbget
-    sample_odl_hconfigs = {"hostconfigs": {"hostconfig": [
-        {"host-id": "devstack",
-         "host-type": "ODL L2",
-         "config": """{"supported_vnic_types": [
-                    {"vnic_type": "normal", "vif_type": "ovs",
-                     "vif_details": {}}],
-                    "allowed_network_types": [
-                    "local", "vlan", "vxlan", "gre"],
-                    "bridge_mappings": {"physnet1": "br-ex"}}"""}
-    ]}}
 
     def setUp(self):
         """Setup test."""
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingWorker, self).setUp()
 
@@ -117,7 +213,7 @@ class TestPseudoAgentDBBindingWorker(base.DietTestCase):
     def test_update_agents_db(self):
         """test agent update."""
         self.worker.update_agents_db(
-            hostconfigs=self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
+            hostconfigs=SAMPLE_ODL_HCONFIGS['hostconfigs']['hostconfig'])
         self.worker.agents_db.create_or_update_agent.assert_called_once()
 
 
@@ -302,8 +398,10 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         """Setup test."""
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFeaturesFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingController, self).setUp()
+        self.useFixture(fixture.CallbackRegistryFixture())
 
         self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController()
 
@@ -545,6 +643,7 @@ class TestPseudoAgentDBBindingControllerBug1608659(
 
     def setUp(self):
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingControllerBug1608659, self).setUp(
             plugin='ml2')
@@ -563,6 +662,7 @@ class TestPseudoAgentNeutronWorker(testlib_api.SqlTestCase):
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.useFixture(base.OpenDaylightFeaturesFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         self.mock_periodic_thread = mock.patch.object(
             periodic_task.PeriodicTask, 'start').start()
         super(TestPseudoAgentNeutronWorker, self).setUp()

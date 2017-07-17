@@ -124,6 +124,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         mock.patch.object(
             client.OpenDaylightRestClient,
             'sendjson',
@@ -139,6 +140,7 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDayLightMechanismConfigTests, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'],
@@ -305,6 +307,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'], 'ml2')
@@ -552,6 +555,7 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(TestOpenDaylightMechanismDriver, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'], 'ml2')

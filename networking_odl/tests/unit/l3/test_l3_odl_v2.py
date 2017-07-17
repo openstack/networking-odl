@@ -117,6 +117,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                           'sync_from_callback_postcommit').start()
         self.useFixture(odl_base.OpenDaylightPeriodicTaskFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
         self.plugin = directory.get_plugin()
