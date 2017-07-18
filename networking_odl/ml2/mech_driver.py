@@ -43,6 +43,7 @@ from networking_odl.common import filters
 from networking_odl.common import odl_features
 from networking_odl.common import utils as odl_utils
 from networking_odl.ml2 import port_binding
+from networking_odl.ml2 import port_status_update
 from networking_odl.trunk import trunk_driver_v1 as trunk_driver
 
 
@@ -462,6 +463,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         self.odl_drv = OpenDaylightDriver()
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV1.create()
         odl_features.init()
+
+    def get_workers(self):
+        return [port_status_update.OdlPortStatusUpdate()]
 
     # Postcommit hooks are used to trigger synchronization.
 
