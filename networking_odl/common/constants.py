@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from neutron_lib.plugins import constants
-
 ODL_NETWORK = 'network'
 ODL_NETWORKS = 'networks'
 ODL_SUBNET = 'subnet'
@@ -76,18 +74,6 @@ ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
-
-L2_RESOURCES = {ODL_SG: ODL_SGS,
-                ODL_SG_RULE: ODL_SG_RULES,
-                ODL_NETWORK: ODL_NETWORKS,
-                ODL_SUBNET: ODL_SUBNETS,
-                ODL_PORT: ODL_PORTS}
-L3_RESOURCES = {ODL_ROUTER: ODL_ROUTERS,
-                ODL_FLOATINGIP: ODL_FLOATINGIPS}
-# TODO(yamahata): add more resources
-#                 as networking-odl supports more services like qos, ...
-ALL_RESOURCES = {constants.CORE: L2_RESOURCES,
-                 constants.L3: L3_RESOURCES}
 
 # Constants for journal operation states
 PENDING = 'pending'
