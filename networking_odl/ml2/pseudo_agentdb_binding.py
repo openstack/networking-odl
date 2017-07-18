@@ -254,9 +254,12 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                 break  # Port binding suceeded!
             else:  # Port binding failed!
                 LOG.warning(
-                    "Failed to bind Port %(pid)s for host %(host)s on network "
-                    "%(network)s.", {
+                    "Failed to bind Port %(pid)s devid %(device_id)s "
+                    "owner %(owner)s for host %(host)s "
+                    "on network %(network)s.", {
                         'pid': port_context.current['id'],
+                        'devce_id': port_context.current['device_id'],
+                        'owner': port_context.current['device_owner'],
                         'host': port_context.host,
                         'network': port_context.network.current['id']})
         else:  # No hostconfig found for host in agentdb.
