@@ -16,10 +16,12 @@ from neutron.common import constants as n_consts
 from neutron.services.qos.drivers import base
 from neutron.services.qos import qos_consts
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.plugins import constants as nlib_const
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_odl.common import constants as odl_const
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.qos import qos_utils
 
@@ -39,6 +41,10 @@ SUPPORTED_RULES = {
 }
 VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
 VNIC_TYPES = [portbindings.VNIC_NORMAL]
+
+QOS_RESOURCES = {
+    odl_const.ODL_QOS_POLICY: odl_const.ODL_QOS_POLICIES
+}
 
 
 class OpenDaylightQosDriver(base.DriverBase):
@@ -63,6 +69,7 @@ class OpenDaylightQosDriver(base.DriverBase):
             requires_rpc_notifications)
         LOG.debug("Initializing OpenDaylight Qos driver")
         self.journal = journal.OpenDaylightJournalThread()
+        full_sync.register(nlib_const.QOS, QOS_RESOURCES)
 
     def _record_in_journal(self, context, op_const, qos_policy):
         data = qos_utils.convert_rules_format(qos_policy.to_dict())

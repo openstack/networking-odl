@@ -16,13 +16,21 @@
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
+from networking_sfc.extensions import sfc as sfc_const
 from networking_sfc.services.sfc.drivers import base as sfc_driver
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import postcommit
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
+
+SFC_RESOURCES = {
+    odl_const.ODL_SFC_PORT_PAIR: odl_const.ODL_SFC_PORT_PAIRS,
+    odl_const.ODL_SFC_PORT_PAIR_GROUP: odl_const.ODL_SFC_PORT_PAIR_GROUPS,
+    odl_const.ODL_SFC_PORT_CHAIN: odl_const.ODL_SFC_PORT_CHAINS
+}
 
 
 @postcommit.add_postcommit('port_pair', 'port_pair_group', 'port_chain')
@@ -38,6 +46,7 @@ class OpenDaylightSFCDriverV2(sfc_driver.SfcDriverBase):
     def initialize(self):
         LOG.debug("Initializing OpenDaylight Networking SFC driver(Version 2)")
         self.journal = journal.OpenDaylightJournalThread()
+        full_sync.register(sfc_const.SFC_EXT, SFC_RESOURCES)
 
     @staticmethod
     def _record_in_journal(context, object_type, operation, data=None):

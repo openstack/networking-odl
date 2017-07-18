@@ -16,13 +16,19 @@
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
+from networking_sfc.extensions import flowclassifier as fc_const
 from networking_sfc.services.flowclassifier.drivers import base as fc_driver
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import postcommit
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
+
+SFC_FC_RESOURCES = {
+    odl_const.ODL_SFC_FLOW_CLASSIFIER: odl_const.ODL_SFC_FLOW_CLASSIFIERS,
+}
 
 
 @postcommit.add_postcommit('flow_classifier')
@@ -40,6 +46,7 @@ class OpenDaylightSFCFlowClassifierDriverV2(
         LOG.debug("Initializing OpenDaylight Networking "
                   "SFC Flow Classifier driver Version 2")
         self.journal = journal.OpenDaylightJournalThread()
+        full_sync.register(fc_const.FLOW_CLASSIFIER_EXT, SFC_FC_RESOURCES)
 
     @staticmethod
     def _record_in_journal(context, object_type, operation, data=None):
