@@ -157,6 +157,38 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
         self.assertEqual(2, update_mock.call_count)
 
+    def _test_get_oldest_pending_row_with_dep(self, dep_state):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        parent_row = db.get_all_db_rows(self.db_session)[0]
+        db.update_db_row_state(self.db_session, parent_row, dep_state)
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW,
+                              depending_on=[parent_row])
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        if row is not None:
+            self.assertNotEqual(parent_row.seqnum, row.seqnum)
+
+        return row
+
+    def test_get_oldest_pending_row_when_dep_completed(self):
+        row = self._test_get_oldest_pending_row_with_dep(odl_const.COMPLETED)
+        self.assertEqual(odl_const.PROCESSING, row.state)
+
+    def test_get_oldest_pending_row_when_dep_failed(self):
+        row = self._test_get_oldest_pending_row_with_dep(odl_const.FAILED)
+        self.assertEqual(odl_const.PROCESSING, row.state)
+
+    def test_get_oldest_pending_row_returns_parent_when_dep_pending(self):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        parent_row = db.get_all_db_rows(self.db_session)[0]
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW,
+                              depending_on=[parent_row])
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertEqual(parent_row, row)
+
+    def test_get_oldest_pending_row_none_when_dep_processing(self):
+        row = self._test_get_oldest_pending_row_with_dep(odl_const.PROCESSING)
+        self.assertIsNone(row)
+
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
