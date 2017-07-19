@@ -228,9 +228,9 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
 
     def setUp(self):
         """Setup test."""
-        super(TestPseudoAgentDBBindingController, self).setUp()
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFeaturesFixture())
+        super(TestPseudoAgentDBBindingController, self).setUp()
 
         fake_agents_db = mock.MagicMock()
         fake_agents_db.create_or_update_agent = mock.MagicMock()
@@ -496,9 +496,9 @@ class TestPseudoAgentDBBindingControllerBug1608659(
     ]}}
 
     def setUp(self):
+        self.useFixture(base.OpenDaylightRestClientFixture())
         super(TestPseudoAgentDBBindingControllerBug1608659, self).setUp(
             plugin='ml2')
-        self.useFixture(base.OpenDaylightRestClientFixture())
         self.core_plugin = directory.get_plugin()
         self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController(
             self.core_plugin)

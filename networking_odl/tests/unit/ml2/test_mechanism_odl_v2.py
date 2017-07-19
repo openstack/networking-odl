@@ -59,15 +59,15 @@ SG_RULE_FAKE_ID = uuidutils.generate_uuid()
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
-        super(OpenDayLightMechanismConfigTests, self).setUp()
+        self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.mock_mt_thread = mock.patch.object(
             maintenance.MaintenanceThread, 'start').start()
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
                               'legacy-port-binding', 'ml2_odl')
-        self.useFixture(base.OpenDaylightFeaturesFixture())
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
@@ -154,10 +154,9 @@ class AttributeDict(dict):
 
 class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
-        super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.useFixture(base.OpenDaylightFeaturesFixture())
-        self.mock_sync_thread = mock.patch.object(
-            journal.OpenDaylightJournalThread, 'start_odl_sync_thread').start()
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
+        super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
@@ -577,13 +576,19 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def test_thread_call(self):
         """Verify that the sync thread method is called."""
 
-        # Create any object that would spin up the sync thread via the
-        # decorator call_thread_on_end() used by all the event handlers.
-        self._call_operation_object(odl_const.ODL_CREATE,
-                                    odl_const.ODL_NETWORK)
+        with mock.patch.object(
+                journal.OpenDaylightJournalThread,
+                'start_odl_sync_thread') as mock_sync_thread:
+            self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
+            self.mech.initialize()
 
-        # Verify that the thread call was made.
-        self.assertTrue(self.mock_sync_thread.called)
+            # Create any object that would spin up the sync thread via the
+            # decorator call_thread_on_end() used by all the event handlers.
+            self._call_operation_object(odl_const.ODL_CREATE,
+                                        odl_const.ODL_NETWORK)
+
+            # Verify that the thread call was made.
+            mock_sync_thread.assert_called()
 
     def test_sg(self):
         self._test_object_type(odl_const.ODL_SG, 2)

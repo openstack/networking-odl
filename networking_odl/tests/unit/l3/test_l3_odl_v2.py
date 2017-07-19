@@ -49,9 +49,9 @@ PORT_ID = uuidutils.generate_uuid()
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
-        super(OpenDayLightMechanismConfigTests, self).setUp()
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',

@@ -27,7 +27,6 @@ class TestOpenDaylightSFCDriverV1(base.DietTestCase):
 
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
-        super(TestOpenDaylightSFCDriverV1, self).setUp()
         self.mocked_pp_context = patch(
             'networking_sfc.services.sfc.common.context.PortPairContext'
         ).start().return_value
@@ -39,6 +38,7 @@ class TestOpenDaylightSFCDriverV1(base.DietTestCase):
         self.mocked_pc_context = patch(
             'networking_sfc.services.sfc.common.context.PortChainContext'
         ).start().return_value
+        super(TestOpenDaylightSFCDriverV1, self).setUp()
 
         self.driver = sfc_driver_v1.OpenDaylightSFCDriverV1()
         self.driver.initialize()

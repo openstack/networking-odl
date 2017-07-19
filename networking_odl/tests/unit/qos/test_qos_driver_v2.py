@@ -26,10 +26,10 @@ from networking_odl.tests.unit import base_v2
 class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
         super(OpenDaylightQosDriverTestCase, self).setUp()
         self.db_session = neutron_db_api.get_writer_session()
         self.qos_driver = qos_driver.OpenDaylightQosDriver()
-        self.useFixture(base.OpenDaylightJournalThreadFixture())
 
     def _get_mock_context(self):
         current = {'tenant_id': 'tenant_id'}

@@ -48,10 +48,10 @@ class TestWebsocketClient(base.DietTestCase):
 
     def setUp(self):
         """Setup test."""
-        super(TestWebsocketClient, self).setUp()
         self.useFixture(base.OpenDaylightRestClientFixture())
         mock.patch.object(wsc.OpenDaylightWebsocketClient,
                           'start_odl_websocket_thread').start()
+        super(TestWebsocketClient, self).setUp()
 
         self.mgr = wsc.OpenDaylightWebsocketClient.odl_create_websocket(
             "http://localhost:8080/",

@@ -44,10 +44,10 @@ from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
 class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
-        super(FullSyncTestCase, self).setUp()
-
         self.useFixture(
             base.OpenDaylightRestClientGlobalFixture(full_sync._CLIENT))
+        super(FullSyncTestCase, self).setUp()
+
         self._CLIENT = full_sync._CLIENT.get_client()
 
         for plugin_name in self._get_all_resources():

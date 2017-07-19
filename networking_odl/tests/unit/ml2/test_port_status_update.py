@@ -56,10 +56,10 @@ class TestOdlPortStatusUpdate(base.DietTestCase):
         }""")
 
     def setUp(self):
-        super(TestOdlPortStatusUpdate, self).setUp()
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.mock_ws_client = mock.patch.object(
             OpenDaylightWebsocketClient, 'odl_create_websocket')
+        super(TestOdlPortStatusUpdate, self).setUp()
 
     def test_object_create(self):
         OdlPortStatusUpdate()
