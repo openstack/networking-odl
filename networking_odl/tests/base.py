@@ -22,6 +22,8 @@ from oslo_config import cfg
 from networking_odl.common import odl_features
 from neutron.tests import base
 
+from networking_odl.journal import journal
+
 
 class DietTestCase(base.DietTestCase):
 
@@ -75,3 +77,10 @@ class OpenDaylightFeaturesFixture(fixtures.Fixture):
     @staticmethod
     def fake_init():
         odl_features.feature_set = set()
+
+
+class OpenDaylightJournalThreadFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(OpenDaylightJournalThreadFixture, self)._setUp()
+        mock.patch.object(journal.OpenDaylightJournalThread,
+                          'start_odl_sync_thread').start()

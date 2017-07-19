@@ -111,8 +111,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         cfg.CONF.set_override("service_plugins", ['odl-router_v2'])
         core_plugin = cfg.CONF.core_plugin
         service_plugins = {'l3_plugin_name': 'odl-router_v2'}
-        mock.patch.object(journal.OpenDaylightJournalThread,
-                          'start_odl_sync_thread').start()
+        self.useFixture(odl_base.OpenDaylightJournalThreadFixture())
         self.mock_mt_thread = mock.patch.object(
             maintenance.MaintenanceThread, 'start').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
