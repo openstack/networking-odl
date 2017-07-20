@@ -19,6 +19,7 @@ from neutron_lbaas.services.loadbalancer import data_models
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
+from networking_odl.journal import journal
 from networking_odl.lbaas import lbaasv2_driver_v2 as lb_driver
 from networking_odl.tests.unit import base_v2
 
@@ -79,8 +80,8 @@ class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
         if obj_type != odl_const.ODL_MEMBER:
             self.assertEqual(("lbaas/%s" % obj_type), row['object_type'])
         else:
-            self.assertEqual(("lbaas/pools/%s/member" % obj.pool.id),
-                             row['object_type'])
+            self.assertEqual(journal.MAKE_URL[obj_type](row),
+                             ("lbaas/pools/%s/member" % obj.pool.id))
 
 
 class OpenDaylightLBaaSDriverTestCase(OpenDaylightLBaaSBaseTestCase):
