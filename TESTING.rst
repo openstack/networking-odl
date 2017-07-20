@@ -112,7 +112,7 @@ Set break points in your test code and run::
 The package oslotest was used to enable debugging in the tests. For more
 information see the link:
 
-  http://docs.openstack.org/developer/oslotest/features.html
+  https://docs.openstack.org/oslotest/latest/user/features.html
 
 
 Running individual tests
@@ -173,7 +173,7 @@ test. It requires pre-configured environment. But it's lighter than
 running devstack or openstack deployment.
 For definitions of functional tests, please refer to:
 
-  http://docs.openstack.org/developer/neutron/devref/development.environment.html#functional-tests
+  https://docs.openstack.org/neutron/latest/contributor/index.html
 
 The script is provided to setup the environment.
 At first make sure the latest version of pip command::
@@ -194,5 +194,5 @@ And then run functional test as follows::
 For setting up devstack, please refer to neutron documentation:
 
   https://wiki.openstack.org/wiki/NeutronDevstack
-  http://docs.openstack.org/developer/neutron/index.html
+  https://docs.openstack.org/neutron/latest/contributor/index.html
   https://git.openstack.org/cgit/openstack/neutron/tree/TESTING.rst

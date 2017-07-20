@@ -100,5 +100,5 @@ will be happy to have more contributor on board.
 References
 ==========
 
-[1] http://docs.openstack.org/developer/neutron/devref/quality_of_service.html
+[1] https://docs.openstack.org/neutron/latest/contributor/internals/quality_of_service.html
 [2] https://wiki.opendaylight.org/view/NeutronNorthbound:Main
