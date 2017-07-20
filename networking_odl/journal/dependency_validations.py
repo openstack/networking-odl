@@ -18,65 +18,42 @@ from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 
 
-def _is_valid_update_operation(session, row):
-    """Validate that an update operation has no older operations.
+def _get_delete_dependencies(session, object_type, object_uuid):
+    """Get dependent operations for a delete operation.
 
-    An update is valid iff there aren't any older update or create operations
-    on the same object (determined by type and ID).
+    Return any operations that pertain to the delete: Either create
+    or update operations on the same object, or delete operations on other
+    objects that depend on the deleted object.
     """
-    # Check if there are older updates in the queue
-    if db.check_for_older_ops(session, row):
-        return False
+    # Get any pending or processing create or update ops on the row itself
+    deps = db.get_pending_or_processing_ops(
+        session, object_uuid, operation=(odl_const.ODL_UPDATE,
+                                         odl_const.ODL_CREATE))
 
-    # Check for a pending or processing create operation on this uuid
-    if db.check_for_pending_or_processing_ops(
-            session, row.object_uuid, operation=odl_const.ODL_CREATE):
-        return False
-    return True
-
-
-def _is_valid_delete_operation(session, row):
-    """Validate that a delete operation has no dependent operations.
-
-    A delete is valid if it has no older update or create operations.
-    Additionally the row might contain other resource IDs which the delete
-    should depend on, in which case the delete is valid if none of the
-    dependent objects has delete operations.
-    """
-    # Check for any pending or processing create or update
-    # ops on the row itself
-    if db.check_for_pending_or_processing_ops(
-        session, row.object_uuid, operation=[odl_const.ODL_UPDATE,
-                                             odl_const.ODL_CREATE]):
-        return False
-
-    # Check for dependent operations
-    dependent_resource_types = _DELETE_DEPENDENCIES.get(row.object_type)
+    # Get dependent operations of other dependent types
+    dependent_resource_types = _DELETE_DEPENDENCIES.get(object_type)
     if dependent_resource_types is not None:
         for resource_type in dependent_resource_types:
-            if db.check_for_pending_delete_ops_with_parent(
-                    session, resource_type, row.object_uuid):
-                return False
-    return True
+            deps.extend(db.get_pending_delete_ops_with_parent(
+                session, resource_type, object_uuid))
+
+    return deps
 
 
-def _no_older_operations(session, object_ids, row):
-    """Check that no older operation exist.
+def _get_older_operations(session, object_ids):
+    """Get any older operations.
 
-    Determine that there aren't any operations still in the queue for the
-    given ID(s) that are older than the one in the given row.
-    If such an operation is found, False is returned.
-    If no older operations exist, True is returned.
+    Return any operations still in the queue for the given ID(s).
     """
     if not isinstance(object_ids, (list, tuple)):
         object_ids = (object_ids,)
 
+    deps = []
     for object_id in object_ids:
-        if db.check_for_pending_or_processing_ops(
-                session, object_id, seqnum=row.seqnum):
-            return False
+        deps.extend(
+            db.get_pending_or_processing_ops(session, object_id))
 
-    return True
+    return deps
 
 
 def _generate_subnet_deps(data):
@@ -210,29 +187,30 @@ _DELETE_DEPENDENCIES = {
 }
 
 
-def validate(session, row):
-    """Validate resource dependency in journaled operations.
+def calculate(session, operation, object_type, object_uuid, data):
+    """Calculate resource deps in journaled operations.
 
     As a rule of thumb validation takes into consideration only operations in
     pending or processing state, other states are irrelevant.
     :param session: db session
     :param row: entry in journal entry to be validated
     """
-    if row.operation == odl_const.ODL_DELETE:
-        return _is_valid_delete_operation(session, row)
-    elif row.operation == odl_const.ODL_UPDATE:
-        # If the update itself isn't valid fail before checking possible
-        # dependent operations.
-        if not _is_valid_update_operation(session, row):
-            return False
-    elif row.operation != odl_const.ODL_CREATE:
-        raise ValueError(_("unsupported operation {}").format(row.operation))
+    deps = []
+    if operation == odl_const.ODL_DELETE:
+        return _get_delete_dependencies(session, object_type, object_uuid)
+    elif operation == odl_const.ODL_UPDATE:
+        deps.extend(
+            db.get_pending_or_processing_ops(
+                session, object_uuid,
+                operation=(odl_const.ODL_CREATE, odl_const.ODL_UPDATE)))
+    elif operation != odl_const.ODL_CREATE:
+        raise ValueError(_("unsupported operation {}").format(operation))
 
-    # Validate dependencies if there are any to validate.
-    dep_generator = _CREATE_OR_UPDATE_DEP_GENERATOR.get(row.object_type)
+    # Validate deps if there are any to validate.
+    dep_generator = _CREATE_OR_UPDATE_DEP_GENERATOR.get(object_type)
     if dep_generator is not None:
-        object_ids = dep_generator(row.data)
+        object_ids = dep_generator(data)
         if object_ids is not None:
-            return _no_older_operations(session, object_ids, row)
+            deps.extend(_get_older_operations(session, object_ids))
 
-    return True
+    return deps

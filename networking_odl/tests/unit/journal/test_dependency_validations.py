@@ -88,7 +88,7 @@ def get_data(res_type, operation):
 
 
 def subnet_fail_network_dep(net_op, subnet_op):
-    return {'expected': (None, False),
+    return {'expected': True,
             'first_type': const.ODL_NETWORK,
             'first_operation': net_op,
             'first_id': _NET_ID,
@@ -98,7 +98,7 @@ def subnet_fail_network_dep(net_op, subnet_op):
 
 
 def subnet_succeed_network_dep(net_op, subnet_op):
-    return {'expected': (True, None),
+    return {'expected': False,
             'first_type': const.ODL_SUBNET,
             'first_operation': subnet_op,
             'first_id': _SUBNET_ID,
@@ -114,17 +114,10 @@ class BaseDependencyValidationsTestCase(object):
             self.db_session, self.first_type, self.first_id,
             self.first_operation,
             get_data(self.first_type, self.first_operation))
-        db.create_pending_row(
-            self.db_session, self.second_type, self.second_id,
-            self.second_operation,
-            get_data(self.second_type, self.second_operation))
-
-        for idx, row in enumerate(sorted(db.get_all_db_rows(self.db_session),
-                                         key=lambda x: x.seqnum)):
-            if self.expected[idx] is not None:
-                self.assertEqual(
-                    self.expected[idx],
-                    dependency_validations.validate(self.db_session, row))
+        deps = dependency_validations.calculate(
+            self.db_session, self.second_operation, self.second_type,
+            self.second_id, get_data(self.second_type, self.second_operation))
+        self.assertEqual(self.expected, len(deps) != 0)
 
 
 class SubnetDependencyValidationsTestCase(
@@ -158,19 +151,15 @@ class SubnetDependencyValidationsTestCase(
          subnet_succeed_network_dep(const.ODL_CREATE, const.ODL_DELETE)),
         ("subnet_delete_doesnt_depend_on_older_network_update",
          subnet_succeed_network_dep(const.ODL_UPDATE, const.ODL_DELETE)),
-        ("subnet_delete_doesnt_depend_on_older_network_delete",
-         subnet_succeed_network_dep(const.ODL_DELETE, const.ODL_DELETE)),
         ("subnet_delete_doesnt_depend_on_newer_network_create",
          subnet_succeed_network_dep(const.ODL_CREATE, const.ODL_DELETE)),
         ("subnet_delete_doesnt_depend_on_newer_network_update",
          subnet_succeed_network_dep(const.ODL_UPDATE, const.ODL_DELETE)),
-        ("subnet_delete_doesnt_depend_on_newer_network_delete",
-         subnet_succeed_network_dep(const.ODL_DELETE, const.ODL_DELETE)),
     )
 
 
 def port_fail_network_dep(net_op, port_op):
-    return {'expected': (None, False),
+    return {'expected': True,
             'first_type': const.ODL_NETWORK,
             'first_operation': net_op,
             'first_id': _NET_ID,
@@ -180,7 +169,7 @@ def port_fail_network_dep(net_op, port_op):
 
 
 def port_succeed_network_dep(net_op, port_op):
-    return {'expected': (True, None),
+    return {'expected': False,
             'first_type': const.ODL_PORT,
             'first_operation': port_op,
             'first_id': _PORT_ID,
@@ -190,7 +179,7 @@ def port_succeed_network_dep(net_op, port_op):
 
 
 def port_fail_subnet_dep(subnet_op, port_op):
-    return {'expected': (None, False),
+    return {'expected': True,
             'first_type': const.ODL_SUBNET,
             'first_operation': subnet_op,
             'first_id': _SUBNET_ID,
@@ -200,7 +189,7 @@ def port_fail_subnet_dep(subnet_op, port_op):
 
 
 def port_succeed_subnet_dep(subnet_op, port_op):
-    return {'expected': (True, None),
+    return {'expected': False,
             'first_type': const.ODL_PORT,
             'first_operation': port_op,
             'first_id': _PORT_ID,
@@ -265,10 +254,7 @@ class PortDependencyValidationsTestCase(
 
 def trunk_dep(first_type, second_type, first_op, second_op, result,
               sub_port=False):
-    if first_type == second_type:
-        expected = {'fail': (True, False), 'pass': (True, True)}
-    else:
-        expected = {'fail': (None, False), 'pass': (True, None)}
+    expected = {'fail': True, 'pass': False}
     port_id = _SUBPORT_ID if sub_port else _PORT_ID
     type_id = {const.ODL_PORT: port_id,
                const.ODL_TRUNK: _TRUNK_ID}
@@ -323,14 +309,11 @@ class TrunkDependencyValidationsTestCase(
         ("trunk_delete_doesnt_depend_on_older_port_create",
          trunk_dep(const.ODL_PORT, const.ODL_TRUNK,
                    const.ODL_CREATE, const.ODL_DELETE, 'pass')),
-        ("trunk_delete_doesnt_depend_on_newer_port_delete",
-         trunk_dep(const.ODL_TRUNK, const.ODL_PORT,
-                   const.ODL_DELETE, const.ODL_DELETE, 'pass')),
     )
 
 
 def l2gw_dep(first_type, second_type, first_op, second_op, result):
-    expected = {'fail': (None, False), 'pass': (True, None)}
+    expected = {'fail': True, 'pass': False}
     type_id = {const.ODL_NETWORK: _NET_ID,
                const.ODL_L2GATEWAY: _L2GW_ID,
                const.ODL_L2GATEWAY_CONNECTION: _L2GWCONN_ID}
@@ -363,10 +346,7 @@ class L2GWDependencyValidationsTestCase(
 
 # TODO(vthapar): Refactor *_dep into a common method
 def bgpvpn_dep(first_type, second_type, first_op, second_op, result):
-    if first_type == second_type:
-        expected = {'fail': (True, False), 'pass': (True, True)}
-    else:
-        expected = {'fail': (None, False), 'pass': (True, None)}
+    expected = {'fail': True, 'pass': False}
     type_id = {const.ODL_NETWORK: _NET_ID,
                const.ODL_ROUTER: _ROUTER_ID,
                const.ODL_BGPVPN: _BGPVPN_ID}

@@ -39,7 +39,7 @@ from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
 
-EMPTY_DEP = []
+EMPTY_DEP = {'gw_port_id': None}
 FLOATINGIP_ID = uuidutils.generate_uuid()
 NETWORK_ID = uuidutils.generate_uuid()
 ROUTER_ID = uuidutils.generate_uuid()
@@ -175,7 +175,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         request_response = self._get_mock_request_response(status_code)
         with mock.patch('requests.sessions.Session.request',
                         return_value=request_response) as mock_method:
-            self.thread.sync_pending_entries(exit_after_run=True)
+            self.thread.sync_pending_entries()
 
         if expected_calls:
             mock_method.assert_called_with(
@@ -307,8 +307,8 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                                       object_type)
 
     def _test_dependency_processing(
-            self, test_operation, test_object, test_id, test_context,
-            dep_operation, dep_object, dep_id, dep_context):
+            self, test_operation, test_object, test_id, test_data,
+            dep_operation, dep_object, dep_id, dep_data):
 
         # Mock sendjson to verify that it never gets called.
         mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
@@ -316,17 +316,17 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         # Create dependency db row and mark as 'processing' so it won't
         # be processed by the journal thread.
-        db.create_pending_row(self.db_session, dep_object,
-                              dep_id, dep_operation, dep_context)
+        ctxt = mock.MagicMock()
+        ctxt.session = self.db_session
+        journal.record(ctxt, dep_object, dep_id, dep_operation, dep_data)
         row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
         db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
 
         # Create test row with dependent ID.
-        db.create_pending_row(self.db_session, test_object,
-                              test_id, test_operation, test_context)
+        journal.record(ctxt, test_object, test_id, test_operation, test_data)
 
         # Call journal thread.
-        self.thread.sync_pending_entries(exit_after_run=True)
+        self.thread.sync_pending_entries()
 
         # Verify that dependency row is still set at 'processing'.
         rows = db.get_all_db_rows_by_state(self.db_session,
@@ -365,7 +365,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self._test_dependency_processing(
             odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID,
             router_context,
-            odl_const.ODL_CREATE, odl_const.ODL_PORT, PORT_ID, None)
+            odl_const.ODL_CREATE, odl_const.ODL_PORT, PORT_ID,
+            {'fixed_ips': [], 'network_id': None, odl_const.ODL_SGS: None,
+             'tenant_id': 'tenant'})
 
     def test_delete_router_validate_ext_delete_floatingip_dep(self):
         floatingip_context = [ROUTER_ID]
@@ -377,26 +379,24 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def test_delete_router_validate_self_create_dep(self):
         self._test_dependency_processing(
             odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP,
-            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP)
 
     def test_delete_router_validate_self_update_dep(self):
         self._test_dependency_processing(
             odl_const.ODL_DELETE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP,
-            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP)
 
     def test_update_router_validate_self_create_dep(self):
-        router_context = {'gw_port_id': None}
         self._test_dependency_processing(
-            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID,
-            router_context,
-            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, None)
+            odl_const.ODL_UPDATE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP,
+            odl_const.ODL_CREATE, odl_const.ODL_ROUTER, ROUTER_ID, EMPTY_DEP)
 
     def test_create_floatingip_validate_ext_create_network_dep(self):
         floatingip_context = {'floating_network_id': NETWORK_ID}
         self._test_dependency_processing(
             odl_const.ODL_CREATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             floatingip_context,
-            odl_const.ODL_CREATE, odl_const.ODL_NETWORK, NETWORK_ID, None)
+            odl_const.ODL_CREATE, odl_const.ODL_NETWORK, NETWORK_ID, {})
 
     def test_update_floatingip_validate_self_create_dep(self):
         floatingip_context = {'floating_network_id': NETWORK_ID}
@@ -411,11 +411,11 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             EMPTY_DEP,
             odl_const.ODL_CREATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
-            None)
+            {})
 
     def test_delete_floatingip_validate_self_update_dep(self):
         self._test_dependency_processing(
             odl_const.ODL_DELETE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             EMPTY_DEP,
             odl_const.ODL_UPDATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
-            None)
+            {})

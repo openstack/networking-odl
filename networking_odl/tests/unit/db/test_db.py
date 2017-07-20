@@ -15,7 +15,6 @@
 #
 
 from datetime import timedelta
-import operator
 
 import mock
 
@@ -39,22 +38,17 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.db_session.merge(row)
         self.db_session.flush()
 
-    def _test_validate_updates(self, rows, expected_validations, states=None):
-        states = states or []
-        for row in rows:
-            db.create_pending_row(self.db_session, *row)
-
-        # update row created_at
-        rows = db.get_all_db_rows(self.db_session)
-        rows.sort(key=operator.attrgetter("seqnum"))
-        for row, state in zip(rows, states):
+    def _test_validate_updates(self, first_entry, second_entry, expected_deps,
+                               state=None):
+        db.create_pending_row(self.db_session, *first_entry)
+        if state:
+            row = db.get_all_db_rows(self.db_session)[0]
             row.state = state
             self._update_row(row)
 
-        # validate if there are older rows
-        for row, expected_valid in zip(rows, expected_validations):
-            valid = not db.check_for_older_ops(self.db_session, row)
-            self.assertEqual(expected_valid, valid)
+        deps = db.get_pending_or_processing_ops(
+            self.db_session, second_entry[1], second_entry[2])
+        self.assertEqual(expected_deps, len(deps) != 0)
 
     def _test_retry_count(self, retry_num, max_retry,
                           expected_retry_count, expected_state):
@@ -84,27 +78,23 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
             row = db.get_all_db_rows(self.db_session)[0]
             self.assertEqual(state, row.state)
 
-    def test_validate_updates_same_object_uuid(self):
-        self._test_validate_updates(
-            [self.UPDATE_ROW, self.UPDATE_ROW], [True, False])
+    def test_updates_same_object_uuid(self):
+        self._test_validate_updates(self.UPDATE_ROW, self.UPDATE_ROW, True)
 
     def test_validate_updates_different_object_uuid(self):
         other_row = list(self.UPDATE_ROW)
         other_row[1] += 'a'
-        self._test_validate_updates(
-            [self.UPDATE_ROW, other_row], [True, True])
+        self._test_validate_updates(self.UPDATE_ROW, other_row, False)
 
     def test_validate_updates_different_object_type(self):
         other_row = list(self.UPDATE_ROW)
         other_row[0] = odl_const.ODL_PORT
         other_row[1] += 'a'
-        self._test_validate_updates(
-            [self.UPDATE_ROW, other_row], [True, True])
+        self._test_validate_updates(self.UPDATE_ROW, other_row, False)
 
     def test_check_for_older_ops_processing(self):
-        self._test_validate_updates(
-            [self.UPDATE_ROW, self.UPDATE_ROW], [True, False],
-            [odl_const.PROCESSING, odl_const.PENDING])
+        self._test_validate_updates(self.UPDATE_ROW, self.UPDATE_ROW, True,
+                                    state=odl_const.PROCESSING)
 
     def test_get_oldest_pending_row_none_when_no_rows(self):
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
