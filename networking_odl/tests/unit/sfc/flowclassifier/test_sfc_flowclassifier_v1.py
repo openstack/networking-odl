@@ -25,10 +25,10 @@ class TestOpenDaylightSFCFlowClassifierDriverV1(base.DietTestCase):
 
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
-        super(TestOpenDaylightSFCFlowClassifierDriverV1, self).setUp()
         self.mocked_fc_context = patch(
             'networking_sfc.services.flowclassifier.common.context'
             '.FlowClassifierContext').start().return_value
+        super(TestOpenDaylightSFCFlowClassifierDriverV1, self).setUp()
 
         self.driver = sfc_fc.OpenDaylightSFCFlowClassifierDriverV1()
         self.driver.initialize()

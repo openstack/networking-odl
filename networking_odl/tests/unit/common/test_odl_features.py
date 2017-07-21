@@ -32,9 +32,9 @@ class TestOdlFeatures(base.DietTestCase):
                             "neutron-extensions:operational-port-status"}]}}"""
 
     def setUp(self):
-        super(TestOdlFeatures, self).setUp()
         self.features_fixture = base.OpenDaylightFeaturesFixture()
         self.useFixture(self.features_fixture)
+        super(TestOdlFeatures, self).setUp()
         self.features_fixture.mock_odl_features_init.stop()
 
     @mock.patch.object(OpenDaylightRestClient, 'request')

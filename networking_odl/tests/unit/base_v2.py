@@ -29,15 +29,15 @@ from networking_odl.tests.unit import test_base_db
 class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
                              test_base_db.ODLBaseDbTestCase):
     def setUp(self):
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
+        self.mock_mt_thread = mock.patch.object(
+            maintenance.MaintenanceThread, 'start').start()
         self.useFixture(base.OpenDaylightRestClientFixture())
         super(OpenDaylightConfigBase, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('extension_drivers',
                               ['port_security', 'qos'], 'ml2')
-        self.useFixture(base.OpenDaylightJournalThreadFixture())
-        self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
         self.thread = journal.OpenDaylightJournalThread()
 
     def run_journal_processing(self):
@@ -47,11 +47,11 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
 
 class OpenDaylightTestCase(OpenDaylightConfigBase):
     def setUp(self):
+        self.mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
+                                               'sendjson').start()
         super(OpenDaylightTestCase, self).setUp()
         self.port_create_status = 'DOWN'
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
-        self.mock_sendjson = mock.patch.object(client.OpenDaylightRestClient,
-                                               'sendjson').start()
         self.mock_sendjson.side_effect = self.check_sendjson
 
     def check_sendjson(self, method, urlpath, obj):

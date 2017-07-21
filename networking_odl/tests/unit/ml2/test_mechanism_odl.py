@@ -124,13 +124,13 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
-        super(OpenDaylightTestCase, self).setUp()
-        self.port_create_status = 'DOWN'
-        self.mech = mech_driver.OpenDaylightMechanismDriver()
         mock.patch.object(
             client.OpenDaylightRestClient,
             'sendjson',
             new=self.check_sendjson).start()
+        super(OpenDaylightTestCase, self).setUp()
+        self.port_create_status = 'DOWN'
+        self.mech = mech_driver.OpenDaylightMechanismDriver()
 
     def check_sendjson(self, method, urlpath, obj):
         self.assertFalse(urlpath.startswith("http://"))
@@ -138,8 +138,8 @@ class OpenDaylightTestCase(test_plugin.Ml2PluginV2TestCase):
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
-        super(OpenDayLightMechanismConfigTests, self).setUp()
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'],
                                      'ml2')
@@ -303,9 +303,9 @@ class OpenDaylightSyncTestCase(OpenDaylightTestCase):
 class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
 
     def setUp(self):
-        super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
+        super(OpenDaylightMechanismDriverTestCase, self).setUp()
         config.cfg.CONF.set_override('mechanism_drivers',
                                      ['logger', 'opendaylight'], 'ml2')
         self.mech = mech_driver.OpenDaylightMechanismDriver()
