@@ -248,6 +248,9 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def _get_mock_security_group_rule_operation_context():
         context = {odl_const.ODL_SG_RULE: {'security_group_id': SG_FAKE_ID,
                                            'id': SG_RULE_FAKE_ID}}
+        _plugin = directory.get_plugin()
+        _plugin._get_security_group_rule = mock.Mock(
+            return_value=AttributeDict(context[odl_const.ODL_SG_RULE]))
         return context
 
     @classmethod

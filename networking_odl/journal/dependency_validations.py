@@ -73,6 +73,10 @@ def _generate_network_deps(data):
     return data.get('qos_policy_id')
 
 
+def _generate_sg_rule_deps(data):
+    return data['security_group_id']
+
+
 def _generate_router_deps(data):
     return data['gw_port_id']
 
@@ -159,6 +163,8 @@ _CREATE_OR_UPDATE_DEP_GENERATOR = {
     odl_const.ODL_NETWORK: _generate_network_deps,
     odl_const.ODL_SUBNET: _generate_subnet_deps,
     odl_const.ODL_PORT: _generate_port_deps,
+    # TODO(yamahata): dependency between SG and PORT
+    odl_const.ODL_SG_RULE: _generate_sg_rule_deps,
     odl_const.ODL_ROUTER: _generate_router_deps,
     odl_const.ODL_FLOATINGIP: _generate_floatingip_deps,
     odl_const.ODL_TRUNK: _generate_trunk_deps,
@@ -179,6 +185,8 @@ _DELETE_DEPENDENCIES = {
     odl_const.ODL_ROUTER: (odl_const.ODL_PORT, odl_const.ODL_FLOATINGIP,
                            odl_const.ODL_BGPVPN),
     odl_const.ODL_PORT: (odl_const.ODL_TRUNK,),
+    # TODO(yamahata): dependency between SG and PORT
+    odl_const.ODL_SG: (odl_const.ODL_SG_RULE,),
     odl_const.ODL_L2GATEWAY: (odl_const.ODL_L2GATEWAY_CONNECTION,),
     odl_const.ODL_SFC_FLOW_CLASSIFIER: (odl_const.ODL_SFC_PORT_CHAIN,),
     odl_const.ODL_SFC_PORT_PAIR: (odl_const.ODL_SFC_PORT_PAIR_GROUP,),
