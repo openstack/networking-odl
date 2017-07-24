@@ -13,12 +13,26 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
+
+from neutron.common import utils
+from oslo_config import cfg
 from oslo_utils import uuidutils
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
 from networking_odl.journal import journal
 from networking_odl.tests.unit import base_v2
+
+
+class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
+    @mock.patch.object(journal.OpenDaylightJournalThread, 'set_sync_event')
+    def test_processing(self, mock_journal):
+        cfg.CONF.ml2_odl.sync_timeout = 0.1
+        periodic_processor = journal.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+        utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
 
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
