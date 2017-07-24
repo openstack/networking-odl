@@ -18,6 +18,8 @@ for w in base target; do
     devstack_localrc $w disable_service q-l3
     devstack_localrc $w enable_service q-dhcp
     devstack_localrc $w enable_service q-meta
+    devstack_localrc $w enable_service placement-api
+    devstack_localrc $w enable_service placement-client
     devstack_localrc $w Q_PLUGIN=ml2
     devstack_localrc $w ODL_CONFIG_BRIDGES=True
     devstack_localrc $w ODL_L3=True
