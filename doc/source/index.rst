@@ -1,28 +1,34 @@
-Welcome to networking-odl's documentation!
-==========================================
+.. cover title comes from README.rst
 
 .. include:: ../../README.rst
 
-General Documentation
+Installation
+------------
+.. toctree::
+   :maxdepth: 2
+
+   install/index
+
+Configuration options
 ---------------------
-
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   installation
-   reference_architecture
-   usage
-   contributing
+   configuration/index
 
-Developer Docs
---------------
-
+Administration Guide
+--------------------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   devref/index
-   specs
+   admin/index
 
+Contributor Guide
+-----------------
+.. toctree::
+   :maxdepth: 2
+
+   contributor/index
 
 Indices and tables
 ------------------

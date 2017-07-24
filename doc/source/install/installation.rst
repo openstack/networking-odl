@@ -57,13 +57,13 @@ Choose and review one of the following installation scenarios:
 Networking-odl Installation
 ---------------------------
 
-  .. code-block:: console
+.. code-block:: console
 
-    # sudo pip install networking-odl
+   # sudo pip install networking-odl
 
-  .. note::
+.. note::
 
-     pip need to be installed before running above command.
+   pip need to be installed before running above command.
 
 
 Networking-odl Configuration
@@ -107,7 +107,7 @@ All related neutron services need to be restarted after configuration change.
         tenant_network_types = vxlan
         extension_drivers = port_security, qos
 
-   ..note::
+     .. note::
 
         The enabling of extension_driver qos is optional, it should be
         enabled if service_plugins for qos is also enabled.
@@ -194,11 +194,11 @@ opendaylight-with-openstack/openstack-with-ovsdb.html>`_ can be referred to.
 
 #. Configure OVS to use ODL as a manager.
 
-     .. code-block:: console
+   .. code-block:: console
 
-        # ovs-vsctl set-manager tcp:${ODL_IP_ADDRESS}:6640
+      # ovs-vsctl set-manager tcp:${ODL_IP_ADDRESS}:6640
 
-     Replace ``ODL_IP_ADDRESS`` with the IP address of ODL controller node
+   Replace ``ODL_IP_ADDRESS`` with the IP address of ODL controller node
 
 #. Set host OVS configurations if port_binding_controller is pseudo-agent
 
@@ -212,9 +212,9 @@ opendaylight-with-openstack/openstack-with-ovsdb.html>`_ can be referred to.
 
       # ovs-vsctl show
 
-  ..note::
+.. note::
 
-    After setting config files, you have to restart the neutron server
-    if you are using screen then it can be directly started from q-svc
-    window or you can use service neutron-server restart, latter may or
-    may not work depending on OS you are using.
+   After setting config files, you have to restart the neutron server
+   if you are using screen then it can be directly started from q-svc
+   window or you can use service neutron-server restart, latter may or
+   may not work depending on OS you are using.

@@ -26,41 +26,40 @@ https://git.opendaylight.org/gerrit/#/c/40143/
 Host Configuration fields
 -------------------------
 
-- host-id
+- **host-id**
 
-This represents host identification string. This string will be stored in
-external_ids field with the key as odl_os_hostconfig_hostid.
-Refer to Neutron config definition for host field for details on this field.
+  This represents host identification string. This string will be stored in
+  external_ids field with the key as odl_os_hostconfig_hostid.
+  Refer to Neutron config definition for host field for details on this field.
 
-http://docs.openstack.org/kilo/config-reference/content/section_neutron.conf.html
+  http://docs.openstack.org/kilo/config-reference/content/section_neutron.conf.html
 
-- host-type
+- **host-type**
 
-The field is for type of the node. This value corresponds to agent_type in
-agent_db. Example value are “ODL L2” and “ODL L3” for Compute and Network node
-respectively. Same host can be configured to have multiple configurations and
-can therefore can have both L2, L3 and other configurations at the same time.
-This string will be populated by ODL based on the configurations available
-on the host. See example in section below.
+  The field is for type of the node. This value corresponds to agent_type in
+  agent_db. Example value are “ODL L2” and “ODL L3” for Compute and Network
+  node respectively. Same host can be configured to have multiple
+  configurations and can therefore can have both L2, L3 and other
+  configurations at the same time. This string will be populated by ODL based
+  on the configurations available on the host. See example in section below.
 
-- config
+- **config**
 
-This is the configuration data for the host type. Since same node can be
-configured to store multiple configurations different external_ids key value
-pair are used to store these configuration. The external_ids with keys as
-odl_os_hostconfig_config_odl_XXXXXXXX store different configurations.
-8 characters after the suffix odl_os_hostconfig_config_odl are host type.
-ODL extracts these characters and store that as the host-type fields. For
-example odl_os_hostconfig_config_odl_l2, odl_os_hostconfig_config_odl_l3 keys
-are used to provide L2 and L3 configurations respectively. ODL will extract
-"ODL L2" and "ODL L3" as host-type field from these keys and populate
-host-type field.
+  This is the configuration data for the host type. Since same node can be
+  configured to store multiple configurations different external_ids key value
+  pair are used to store these configuration. The external_ids with keys as
+  odl_os_hostconfig_config_odl_XXXXXXXX store different configurations.
+  8 characters after the suffix odl_os_hostconfig_config_odl are host type.
+  ODL extracts these characters and store that as the host-type fields. For
+  example odl_os_hostconfig_config_odl_l2, odl_os_hostconfig_config_odl_l3 keys
+  are used to provide L2 and L3 configurations respectively. ODL will extract
+  "ODL L2" and "ODL L3" as host-type field from these keys and populate
+  host-type field.
 
 Config is a Json string. Some examples of config:
 
-::
+OVS configuration example::
 
-   OVS configuration example:
    {“supported_vnic_types”: [{
             “vnic_type”: “normal”,
             “vif_type”: “ovs”,
@@ -70,9 +69,8 @@ Config is a Json string. Some examples of config:
         “bridge_mappings”: {“physnet1":"br-ex”}
    }"
 
-::
+OVS_DPDK configuration example::
 
-   OVS_DPDK configuration example:
    {“supported_vnic_types”: [{
             “vnic_type”: “normal”,
             “vif_type”: “vhostuser”,
@@ -91,9 +89,8 @@ Config is a Json string. Some examples of config:
         “bridge_mappings”: {“physnet1":"br-ex”}
    }"
 
-::
+VPP configuration example::
 
-   VPP configuration example:
    { {"supported_vnic_types": [
         {"vnic_type": "normal",
          "vif_type": “vhostuser”,
