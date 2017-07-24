@@ -17,7 +17,7 @@ import copy
 import threading
 import time
 
-from neutron.db import api as neutron_db_api
+from neutron_lib import context as nl_context
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -181,18 +181,18 @@ class OpenDaylightJournalThread(object):
 
     def sync_pending_entries(self):
         LOG.debug("Start processing journal entries")
-        session = neutron_db_api.get_writer_session()
-        entry = db.get_oldest_pending_db_row_with_lock(session)
+        context = nl_context.get_admin_context()
+        entry = db.get_oldest_pending_db_row_with_lock(context.session)
         if entry is None:
             LOG.debug("No journal entries to process")
             return
 
         while entry is not None:
-            stop_processing = self._sync_entry(session, entry)
+            stop_processing = self._sync_entry(context, entry)
             if stop_processing:
                 break
 
-            entry = db.get_oldest_pending_db_row_with_lock(session)
+            entry = db.get_oldest_pending_db_row_with_lock(context.session)
         LOG.debug("Finished processing journal entries")
 
     def _retry_sleep(self):
@@ -205,12 +205,13 @@ class OpenDaylightJournalThread(object):
     def _retry_reset(self):
         self._sleep_time = self._RETRY_SLEEP_MIN
 
-    def _sync_entry(self, session, entry):
+    def _sync_entry(self, context, entry):
         log_dict = {'op': entry.operation, 'type': entry.object_type,
                     'id': entry.object_uuid}
         LOG.info("Processing - %(op)s %(type)s %(id)s", log_dict)
         method, urlpath, to_send = self._json_data(entry)
 
+        session = context.session
         try:
             self.client.sendjson(method, urlpath, to_send)
             with session.begin():
