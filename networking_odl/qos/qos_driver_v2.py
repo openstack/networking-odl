@@ -13,10 +13,10 @@
 #    under the License.
 
 from neutron.common import constants as n_consts
-from neutron.services.qos.drivers import base
-from neutron.services.qos import qos_consts
 from neutron_lib.api.definitions import portbindings
 from neutron_lib.plugins import constants as nlib_const
+from neutron_lib.services.qos import base
+from neutron_lib.services.qos import constants as qos_consts
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
