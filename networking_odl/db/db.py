@@ -155,10 +155,12 @@ def delete_pending_rows(session, operations_to_delete):
 
 
 @db_api.retry_db_errors
-def _update_maintenance_state(session, expected_state, state):
+def _update_periodic_task_state(session, expected_state, state, task):
     with session.begin():
-        row = session.query(models.OpenDaylightMaintenance).filter_by(
-            state=expected_state).with_for_update().one_or_none()
+        row = session.query(models.OpenDaylightPeriodicTask).filter_by(
+            state=expected_state,
+            task=task).with_for_update().one_or_none()
+
         if row is None:
             return False
 
@@ -166,18 +168,29 @@ def _update_maintenance_state(session, expected_state, state):
         return True
 
 
-def lock_maintenance(session):
-    return _update_maintenance_state(session, odl_const.PENDING,
-                                     odl_const.PROCESSING)
+def was_periodic_task_executed_recently(session, task, interval):
+    now = session.execute(func.now()).scalar()
+    delta = datetime.timedelta(seconds=interval)
+    row = session.query(models.OpenDaylightPeriodicTask).filter(
+        models.OpenDaylightPeriodicTask.task == task,
+        (now - delta >= (models.OpenDaylightPeriodicTask.lock_updated))
+    ).one_or_none()
+
+    return bool(row is None)
 
 
-def unlock_maintenance(session):
-    return _update_maintenance_state(session, odl_const.PROCESSING,
-                                     odl_const.PENDING)
+def lock_periodic_task(session, task):
+    return _update_periodic_task_state(session, odl_const.PENDING,
+                                       odl_const.PROCESSING, task)
 
 
-def update_maintenance_operation(session, operation=None):
-    """Update the current maintenance operation details.
+def unlock_periodic_task(session, task):
+    return _update_periodic_task_state(session, odl_const.PROCESSING,
+                                       odl_const.PENDING, task)
+
+
+def update_periodic_task(session, task, operation=None):
+    """Update the current periodic task details.
 
     The function assumes the lock is held, so it mustn't be run outside of a
     locked context.
@@ -187,7 +200,8 @@ def update_maintenance_operation(session, operation=None):
         op_text = operation.__name__
 
     with session.begin():
-        row = session.query(models.OpenDaylightMaintenance).one_or_none()
+        row = session.query(models.OpenDaylightPeriodicTask).filter_by(
+            task=task).one()
         row.processing_operation = op_text
 
 

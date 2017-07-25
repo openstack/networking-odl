@@ -20,6 +20,7 @@ import mock
 from oslo_config import cfg
 
 from networking_odl.common import odl_features
+from networking_odl.journal import periodic_task
 from neutron.tests import base
 
 from networking_odl.journal import journal
@@ -84,3 +85,9 @@ class OpenDaylightJournalThreadFixture(fixtures.Fixture):
         super(OpenDaylightJournalThreadFixture, self)._setUp()
         mock.patch.object(journal.OpenDaylightJournalThread,
                           'start_odl_sync_thread').start()
+
+
+class OpenDaylightPeriodicTaskFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(OpenDaylightPeriodicTaskFixture, self)._setUp()
+        mock.patch.object(periodic_task.PeriodicTask, 'start').start()

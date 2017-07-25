@@ -29,4 +29,4 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
 
     def _db_cleanup(self):
         self.db_session.query(models.OpenDaylightJournal).delete()
-        self.db_session.query(models.OpenDaylightMaintenance).delete()
+        self.db_session.query(models.OpenDaylightPeriodicTask).delete()

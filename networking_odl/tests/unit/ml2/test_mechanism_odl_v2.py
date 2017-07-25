@@ -41,7 +41,6 @@ from networking_odl.common import utils
 from networking_odl.db import db
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
-from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 from networking_odl.tests.unit import base_v2
@@ -59,11 +58,9 @@ SG_RULE_FAKE_ID = uuidutils.generate_uuid()
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
-        self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
-        super(OpenDayLightMechanismConfigTests, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',

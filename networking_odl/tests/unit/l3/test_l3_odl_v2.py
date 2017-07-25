@@ -34,7 +34,6 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.db import db
 from networking_odl.journal import journal
-from networking_odl.journal import maintenance
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
@@ -112,14 +111,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         core_plugin = cfg.CONF.core_plugin
         service_plugins = {'l3_plugin_name': 'odl-router_v2'}
         self.useFixture(odl_base.OpenDaylightJournalThreadFixture())
-        self.mock_mt_thread = mock.patch.object(
-            maintenance.MaintenanceThread, 'start').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           '_record_in_journal').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           'sync_from_callback_precommit').start()
         mock.patch.object(mech_driver_v2.OpenDaylightMechanismDriver,
                           'sync_from_callback_postcommit').start()
+        self.useFixture(odl_base.OpenDaylightPeriodicTaskFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)

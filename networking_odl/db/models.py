@@ -64,12 +64,13 @@ class OpenDaylightJournal(model_base.BASEV2):
     }
 
 
-class OpenDaylightMaintenance(model_base.BASEV2, model_base.HasId):
-    __tablename__ = 'opendaylight_maintenance'
+class OpenDaylightPeriodicTask(model_base.BASEV2):
+    __tablename__ = 'opendaylight_periodic_task'
 
     state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING),
                       nullable=False)
     processing_operation = sa.Column(sa.String(70))
+    task = sa.Column(sa.String(70), primary_key=True)
     lock_updated = sa.Column(sa.TIMESTAMP, nullable=False,
                              server_default=sa.func.now(),
                              onupdate=sa.func.now())
