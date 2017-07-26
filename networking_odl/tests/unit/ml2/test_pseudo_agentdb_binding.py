@@ -17,30 +17,89 @@ from copy import deepcopy
 from os import path as os_path
 from string import Template
 
+import fixtures
 import mock
+from oslo_config import cfg
 from oslo_serialization import jsonutils
+from requests.exceptions import HTTPError
 
 from neutron.db import provisioning_blocks
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as ctx
+from neutron.plugins.ml2 import plugin as ml2_plugin
+from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
+from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
+from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api as ml2_api
 
 from networking_odl.common import odl_features
+from networking_odl.common import websocket_client
+from networking_odl.journal import periodic_task
 from networking_odl.ml2 import pseudo_agentdb_binding
 from networking_odl.tests import base
-from networking_odl.tests.unit import test_base_db
-from requests.exceptions import HTTPError
 
-from neutron.tests.unit.db import test_db_base_plugin_v2 as test_plugin
 
 AGENTDB_BINARY = 'neutron-odlagent-portbinding'
 L2_TYPE = "ODL L2"
 
 
-class TestPseudoAgentDBBindingController(test_base_db.ODLBaseDbTestCase):
+class OpenDaylightAgentDBFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(OpenDaylightAgentDBFixture, self)._setUp()
+        fake_agents_db = mock.MagicMock()
+        fake_agents_db.create_or_update_agent = mock.MagicMock()
+        directory.add_plugin(plugin_constants.CORE, fake_agents_db)
+
+
+class TestPseudoAgentDBBindingTaskBase(base.DietTestCase):
+    """Test class for AgentDBPortBindingTaskBase."""
+
+    def setUp(self):
+        """Setup test."""
+        self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(OpenDaylightAgentDBFixture())
+        super(TestPseudoAgentDBBindingTaskBase, self).setUp()
+
+        self.worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
+        self.task = pseudo_agentdb_binding.PseudoAgentDBBindingTaskBase(
+            self.worker)
+
+    def test_make_hostconf_uri(self):
+        """test make uri."""
+        test_path = '/restconf/neutron:neutron/hostconfigs'
+        expected = "http://localhost:8080/restconf/neutron:neutron/hostconfigs"
+        test_uri = self.task._make_hostconf_uri(path=test_path)
+
+        self.assertEqual(expected, test_uri)
+
+    def _get_raised_response(self, json_data, status_code):
+
+        class MockHTTPError(HTTPError):
+            def __init__(self, json_data, status_code):
+                self.json_data = json_data
+                self.status_code = status_code
+                self.response = self
+
+        class MockResponse(object):
+            def __init__(self, json_data, status_code):
+                self.raise_obj = MockHTTPError(json_data, status_code)
+
+            def raise_for_status(self):
+                raise self.raise_obj
+
+        return MockResponse(json_data, status_code)
+
+    def test_hostconfig_response_404(self):
+        with mock.patch.object(self.task.odl_rest_client,
+                               'get', return_value=self.
+                               _get_raised_response({}, 404)):
+                self.assertEqual(self.task._rest_get_hostconfigs(), [])
+
+
+class TestPseudoAgentDBBindingWorker(base.DietTestCase):
     """Test class for AgentDBPortBinding."""
 
     # test data hostconfig and hostconfig-dbget
@@ -54,6 +113,24 @@ class TestPseudoAgentDBBindingController(test_base_db.ODLBaseDbTestCase):
                     "local", "vlan", "vxlan", "gre"],
                     "bridge_mappings": {"physnet1": "br-ex"}}"""}
     ]}}
+
+    def setUp(self):
+        """Setup test."""
+        self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(OpenDaylightAgentDBFixture())
+        super(TestPseudoAgentDBBindingWorker, self).setUp()
+
+        self.worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
+
+    def test_update_agents_db(self):
+        """test agent update."""
+        self.worker.update_agents_db(
+            hostconfigs=self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
+        self.worker.agents_db.create_or_update_agent.assert_called_once()
+
+
+class TestPseudoAgentDBBindingController(base.DietTestCase):
+    """Test class for AgentDBPortBinding."""
 
     # Test data for string interpolation of substitutable identifers
     #   e.g. $PORT_ID identifier in the configurations JSON string  below shall
@@ -231,50 +308,10 @@ class TestPseudoAgentDBBindingController(test_base_db.ODLBaseDbTestCase):
         """Setup test."""
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFeaturesFixture())
+        self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingController, self).setUp()
 
-        fake_agents_db = mock.MagicMock()
-        fake_agents_db.create_or_update_agent = mock.MagicMock()
-
-        self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController(
-            db_plugin=fake_agents_db)
-
-    def test_make_hostconf_uri(self):
-        """test make uri."""
-        test_path = '/restconf/neutron:neutron/hostconfigs'
-        expected = "http://localhost:8080/restconf/neutron:neutron/hostconfigs"
-        test_uri = self.mgr._make_hostconf_uri(path=test_path)
-
-        self.assertEqual(expected, test_uri)
-
-    def test_update_agents_db(self):
-        """test agent update."""
-        self.mgr._update_agents_db(
-            hostconfigs=self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
-        self.mgr.agents_db.create_or_update_agent.assert_called_once()
-
-    def _get_raised_response(self, json_data, status_code):
-
-        class MockHTTPError(HTTPError):
-            def __init__(self, json_data, status_code):
-                self.json_data = json_data
-                self.status_code = status_code
-                self.response = self
-
-        class MockResponse(object):
-            def __init__(self, json_data, status_code):
-                self.raise_obj = MockHTTPError(json_data, status_code)
-
-            def raise_for_status(self):
-                raise self.raise_obj
-
-        return MockResponse(json_data, status_code)
-
-    def test_hostconfig_response_404(self):
-        with mock.patch.object(self.mgr.odl_rest_client,
-                               'get', return_value=self.
-                               _get_raised_response({}, 404)):
-                self.assertEqual(self.mgr._rest_get_hostconfigs(), [])
+        self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController()
 
     def test_is_valid_segment(self):
         """Validate the _check_segment method."""
@@ -498,15 +535,59 @@ class TestPseudoAgentDBBindingControllerBug1608659(
 
     def setUp(self):
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingControllerBug1608659, self).setUp(
             plugin='ml2')
-        self.core_plugin = directory.get_plugin()
-        self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController(
-            self.core_plugin)
+        self.worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
 
     def test_execute_no_exception(self):
         with mock.patch.object(pseudo_agentdb_binding, 'LOG') as mock_log:
-            self.mgr._update_agents_db(
+            self.worker.update_agents_db(
                 self.sample_odl_hconfigs['hostconfigs']['hostconfig'])
             # Assert no exception happened
             self.assertFalse(mock_log.exception.called)
+
+
+class TestPseudoAgentNeutronWorker(testlib_api.SqlTestCase):
+    def setUp(self):
+        self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightJournalThreadFixture())
+        self.useFixture(base.OpenDaylightFeaturesFixture())
+        self.mock_periodic_thread = mock.patch.object(
+            periodic_task.PeriodicTask, 'start').start()
+        super(TestPseudoAgentNeutronWorker, self).setUp()
+        cfg.CONF.set_override('mechanism_drivers', ['opendaylight_v2'], 'ml2')
+        cfg.CONF.set_override('port_binding_controller',
+                              'pseudo-agentdb-binding', 'ml2_odl')
+
+    def test_get_worker(self):
+        workers = ml2_plugin.Ml2Plugin().get_workers()
+        self.assertTrue(any(
+            isinstance(worker,
+                       pseudo_agentdb_binding.PseudoAgentDBBindingWorker)
+            for worker in workers))
+
+    def test_worker(self):
+        worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
+        worker.wait()
+        worker.stop()
+        worker.reset()
+
+    def test_worker_start_websocket(self):
+        cfg.CONF.set_override('enable_websocket_pseudo_agentdb',
+                              True, 'ml2_odl')
+        worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
+        with mock.patch.object(
+                websocket_client.OpenDaylightWebsocketClient,
+                'odl_create_websocket') as mock_odl_create_websocket:
+            worker.start()
+            mock_odl_create_websocket.assert_called_once()
+
+    def test_worker_start_periodic(self):
+        cfg.CONF.set_override('enable_websocket_pseudo_agentdb',
+                              False, 'ml2_odl')
+        worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
+        with mock.patch.object(
+                periodic_task.PeriodicTask, 'start') as mock_start:
+            worker.start()
+            mock_start.assert_called_once()

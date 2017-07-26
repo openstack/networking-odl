@@ -23,6 +23,7 @@ from neutron_lib import constants as nl_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api
+from neutron_lib import worker
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
@@ -41,51 +42,19 @@ cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 LOG = log.getLogger(__name__)
 
 
-class PseudoAgentDBBindingController(port_binding.PortBindingController):
-    """Switch agnostic Port binding controller for OpenDayLight."""
+class PseudoAgentDBBindingTaskBase(object):
+    def __init__(self, worker):
+        super(PseudoAgentDBBindingTaskBase, self).__init__()
+        self._worker = worker
 
-    AGENTDB_BINARY = 'neutron-odlagent-portbinding'
-    L2_TYPE = "ODL L2"
-
-    # TODO(mzmalick): binary, topic and resource_versions to be provided
-    # by ODL, Pending ODL NB patches.
-    _AGENTDB_ROW = {
-        'binary': AGENTDB_BINARY,
-        'host': '',
-        'topic': nl_const.L2_AGENT_TOPIC,
-        'configurations': {},
-        'resource_versions': '',
-        'agent_type': L2_TYPE,
-        'start_flag': True}
-
-    def __init__(self, hostconf_uri=None, db_plugin=None):
-        """Initialization."""
-        LOG.debug("Initializing ODL Port Binding Controller")
-
-        if not hostconf_uri:
-            # extract host/port from ODL URL and append hostconf_uri path
-            hostconf_uri = self._make_hostconf_uri(
-                cfg.CONF.ml2_odl.url, cfg.CONF.ml2_odl.odl_hostconf_uri)
-
+        # extract host/port from ODL URL and append hostconf_uri path
+        hostconf_uri = self._make_hostconf_uri(
+            cfg.CONF.ml2_odl.url, cfg.CONF.ml2_odl.odl_hostconf_uri)
         LOG.debug("ODLPORTBINDING hostconfigs URI: %s", hostconf_uri)
 
         # TODO(mzmalick): disable port-binding for ODL lightweight testing
         self.odl_rest_client = odl_client.OpenDaylightRestClient.create_client(
             url=hostconf_uri)
-
-        # Neutron DB plugin instance
-        self.agents_db = db_plugin
-        self._known_agents = set()
-
-        if cfg.CONF.ml2_odl.enable_websocket_pseudo_agentdb:
-            # Update hostconfig once for the configurations already present
-            self._get_and_update_hostconfigs()
-            odl_url = utils.get_odl_url()
-            self._start_websocket(odl_url)
-        else:
-            # Start polling ODL restconf using periodic task.
-            # default: 30s (should be <=  agent keep-alive poll interval)
-            self._start_periodic_task(cfg.CONF.ml2_odl.restconf_poll_interval)
 
     def _make_hostconf_uri(self, odl_url=None, path=''):
         """Make ODL hostconfigs URI with host/port extraced from ODL_URL."""
@@ -97,12 +66,6 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         purl = urlparse.urlsplit(odl_url)
         return urlparse.urlunparse((purl.scheme, purl.netloc,
                                     path, '', '', ''))
-
-    def _start_periodic_task(self, poll_interval):
-        self._periodic = periodic_task.PeriodicTask('hostconfig',
-                                                    poll_interval)
-        self._periodic.register_operation(self._get_and_update_hostconfigs)
-        self._periodic.start()
 
     def _rest_get_hostconfigs(self):
         try:
@@ -148,14 +111,122 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                         "will retry on next poll")
             return  # retry on next poll
 
-        self._update_agents_db(hostconfigs=hostconfigs)
+        self._worker.update_agents_db(hostconfigs=hostconfigs)
 
-    def _get_neutron_db_plugin(self):
-        if not self.agents_db:
-            self.agents_db = directory.get_plugin()
-        return self.agents_db
 
-    def _update_agents_db(self, hostconfigs):
+class PseudoAgentDBBindingPeriodicTask(PseudoAgentDBBindingTaskBase):
+    def __init__(self, worker):
+        super(PseudoAgentDBBindingPeriodicTask, self).__init__(worker)
+
+        # Start polling ODL restconf using maintenance thread.
+        # default: 30s (should be <= agent keep-alive poll interval)
+        self._periodic = periodic_task.PeriodicTask(
+            'hostconfig', cfg.CONF.ml2_odl.restconf_poll_interval)
+        self._periodic.register_operation(self._get_and_update_hostconfigs)
+        self._periodic.start()
+
+
+class PseudoAgentDBBindingWebSocket(PseudoAgentDBBindingTaskBase):
+    def __init__(self, worker):
+        super(PseudoAgentDBBindingWebSocket, self).__init__(worker)
+
+        # Update hostconfig once for the configurations already present
+        self._get_and_update_hostconfigs()
+        odl_url = utils.get_odl_url()
+        self._start_websocket(odl_url)
+
+    def _start_websocket(self, odl_url):
+        # OpenDaylight path to recieve websocket notifications on
+        neutron_hostconfigs_path = """/neutron:neutron/neutron:hostconfigs"""
+
+        self.odl_websocket_client = (
+            odl_ws_client.OpenDaylightWebsocketClient.odl_create_websocket(
+                odl_url, neutron_hostconfigs_path,
+                odl_ws_client.ODL_OPERATIONAL_DATASTORE,
+                odl_ws_client.ODL_NOTIFICATION_SCOPE_SUBTREE,
+                self._process_websocket_recv,
+                self._process_websocket_reconnect
+            ))
+        if self.odl_websocket_client is None:
+            LOG.error("Error starting websocket thread")
+
+    def _process_websocket_recv(self, payload, reconnect):
+        # Callback for websocket notification
+        LOG.debug("Websocket notification for hostconfig update")
+        for event in odl_ws_client.EventDataParser.get_item(payload):
+            try:
+                operation, path, data = event.get_fields()
+                if operation == event.OPERATION_DELETE:
+                    host_id = event.extract_field(path, "neutron:host-id")
+                    host_type = event.extract_field(path, "neutron:host-type")
+                    if not host_id or not host_type:
+                        LOG.warning("Invalid delete notification")
+                        continue
+                    self._worker.delete_agents_db_row(
+                        host_id.strip("'"), host_type.strip("'"))
+                elif operation == event.OPERATION_CREATE:
+                    if 'hostconfig' in data:
+                        hostconfig = data['hostconfig']
+                        self.update_agents_db_row(hostconfig)
+            except KeyError:
+                LOG.warning("Invalid JSON for websocket notification",
+                            exc_info=True)
+                continue
+
+    # TODO(rsood): Mixing restconf and websocket can cause race conditions
+    def _process_websocket_reconnect(self, status):
+        if status == odl_ws_client.ODL_WEBSOCKET_CONNECTED:
+            # Get hostconfig data using restconf
+            LOG.debug("Websocket notification on reconnection")
+            self._get_and_update_hostconfigs()
+
+
+class PseudoAgentDBBindingWorker(worker.BaseWorker):
+    """Neutron Worker to update agentdb based on ODL hostconfig."""
+
+    AGENTDB_BINARY = 'neutron-odlagent-portbinding'
+    L2_TYPE = "ODL L2"
+
+    # TODO(mzmalick): binary, topic and resource_versions to be provided
+    # by ODL, Pending ODL NB patches.
+    _AGENTDB_ROW = {
+        'binary': AGENTDB_BINARY,
+        'host': '',
+        'topic': nl_const.L2_AGENT_TOPIC,
+        'configurations': {},
+        'resource_versions': '',
+        'agent_type': L2_TYPE,
+        'start_flag': True}
+
+    def __init__(self):
+        LOG.info("PseudoAgentDBBindingWorker init")
+        self._known_agents = set()
+        self.agents_db = None
+        super(PseudoAgentDBBindingWorker, self).__init__()
+
+    def start(self):
+        LOG.info("PseudoAgentDBBindingWorker starting")
+        super(PseudoAgentDBBindingWorker, self).start()
+        self._start()
+
+    def stop(self):
+        pass
+
+    def wait(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def _start(self):
+        """Initialization."""
+        LOG.debug("Initializing ODL Port Binding Worker")
+        if cfg.CONF.ml2_odl.enable_websocket_pseudo_agentdb:
+            self._websocket = PseudoAgentDBBindingWebSocket(self)
+        else:
+            self._periodic_task = (PseudoAgentDBBindingPeriodicTask(self))
+
+    def update_agents_db(self, hostconfigs):
         LOG.debug("ODLPORTBINDING Updating agents DB with ODL hostconfigs")
 
         self._old_agents = self._known_agents
@@ -163,13 +234,15 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         for host_config in hostconfigs:
             self._update_agents_db_row(host_config)
 
+    def update_agents_db_row(self, host_config):
+        self._old_agents = self._known_agents
+        self._update_agents_db_row(host_config)
+
     def _update_agents_db_row(self, host_config):
+        if self.agents_db is None:
+            self.agents_db = directory.get_plugin()
+
         # Update one row in agent db
-        agents_db = self._get_neutron_db_plugin()
-        if not agents_db:  # if ML2 is still initializing
-            LOG.error("ML2 still initializing, Missed an update")
-            # TODO(rsood): Neutron worker can be used
-            return
         host_id = host_config['host-id']
         host_type = host_config['host-type']
         config = host_config['config']
@@ -180,32 +253,41 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             agentdb_row['configurations'] = jsonutils.loads(config)
             if (host_id, host_type) in self._old_agents:
                 agentdb_row.pop('start_flag', None)
-            agents_db.create_or_update_agent(
+            self.agents_db.create_or_update_agent(
                 context.get_admin_context(), agentdb_row)
             self._known_agents.add((host_id, host_type))
         except Exception:
             LOG.exception("Unable to update agentdb.")
 
-    def _delete_agents_db_row(self, host_id, host_type):
+    def delete_agents_db_row(self, host_id, host_type):
         """Delete agent row."""
-        agents_db = self._get_neutron_db_plugin()
-        if not agents_db:  # if ML2 is still initializing
-            LOG.error("ML2 still initializing, Missed an update")
-            return None
         try:
             filters = {'agent_type': [host_type],
                        'host': [host_id]}
             # TODO(rsood): get_agent can be used here
-            agent = agents_db.get_agents_db(
+            agent = self.agents_db.get_agents_db(
                 context.get_admin_context(), filters=filters)
             if not agent:
                 return
 
             LOG.debug("Deleting Agent with Agent id: %s", agent[0]['id'])
-            agents_db.delete_agent(context.get_admin_context(), agent[0]['id'])
+            self.agents_db.delete_agent(
+                context.get_admin_context(), agent[0]['id'])
             self._known_agents.remove((host_id, host_type))
         except Exception:
             LOG.exception("Unable to delete from agentdb.")
+
+
+class PseudoAgentDBBindingController(port_binding.PortBindingController):
+    """Switch agnostic Port binding controller for OpenDayLight."""
+
+    def __init__(self):
+        """Initialization."""
+        LOG.debug("Initializing ODL Port Binding Controller")
+        super(PseudoAgentDBBindingController, self).__init__()
+
+    def get_workers(self):
+        return [PseudoAgentDBBindingWorker()]
 
     def _substitute_hconfig_tmpl(self, port_context, hconfig):
         # TODO(mzmalick): Explore options for inlines string splicing of
@@ -235,7 +317,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
     def bind_port(self, port_context):
         """bind port using ODL host configuration."""
         # Get all ODL hostconfigs for this host and type
-        agentdb = port_context.host_agents(self.L2_TYPE)
+        agentdb = port_context.host_agents(PseudoAgentDBBindingWorker.L2_TYPE)
 
         if not agentdb:
             LOG.warning("No valid hostconfigs in agentsdb for host %s",
@@ -330,49 +412,3 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         """Verify a segment is supported by ODL."""
         network_type = segment[api.NETWORK_TYPE]
         return network_type in conf['allowed_network_types']
-
-    def _start_websocket(self, odl_url):
-        # OpenDaylight path to recieve websocket notifications on
-        neutron_hostconfigs_path = """/neutron:neutron/neutron:hostconfigs"""
-
-        self.odl_websocket_client = (
-            odl_ws_client.OpenDaylightWebsocketClient.odl_create_websocket(
-                odl_url, neutron_hostconfigs_path,
-                odl_ws_client.ODL_OPERATIONAL_DATASTORE,
-                odl_ws_client.ODL_NOTIFICATION_SCOPE_SUBTREE,
-                self._process_websocket_recv,
-                self._process_websocket_reconnect
-            ))
-        if self.odl_websocket_client is None:
-            LOG.error("Error starting websocket thread")
-
-    def _process_websocket_recv(self, payload, reconnect):
-        # Callback for websocket notification
-        LOG.debug("Websocket notification for hostconfig update")
-        for event in odl_ws_client.EventDataParser.get_item(payload):
-            try:
-                operation, path, data = event.get_fields()
-                if operation == event.OPERATION_DELETE:
-                    host_id = event.extract_field(path, "neutron:host-id")
-                    host_type = event.extract_field(path, "neutron:host-type")
-                    if not host_id or not host_type:
-                        LOG.warning("Invalid delete notification")
-                        continue
-                    self._delete_agents_db_row(host_id.strip("'"),
-                                               host_type.strip("'"))
-                elif operation == event.OPERATION_CREATE:
-                    if 'hostconfig' in data:
-                        hostconfig = data['hostconfig']
-                        self._old_agents = self._known_agents
-                        self._update_agents_db_row(hostconfig)
-            except KeyError:
-                LOG.warning("Invalid JSON for websocket notification",
-                            exc_info=True)
-                continue
-
-    # TODO(rsood): Mixing restconf and websocket can cause race conditions
-    def _process_websocket_reconnect(self, status):
-        if status == odl_ws_client.ODL_WEBSOCKET_CONNECTED:
-            # Get hostconfig data using restconf
-            LOG.debug("Websocket notification on reconnection")
-            self._get_and_update_hostconfigs()

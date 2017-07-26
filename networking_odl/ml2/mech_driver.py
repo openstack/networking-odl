@@ -465,7 +465,9 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         odl_features.init()
 
     def get_workers(self):
-        return [port_status_update.OdlPortStatusUpdate()]
+        workers = [port_status_update.OdlPortStatusUpdate()]
+        workers += self.odl_drv.port_binding_controller.get_workers()
+        return workers
 
     # Postcommit hooks are used to trigger synchronization.
 
