@@ -16,8 +16,6 @@
 
 import mock
 
-from neutron.db import api as neutron_db_api
-
 from networking_odl.bgpvpn import odl_v2 as driverv2
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -28,14 +26,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
         super(OpenDaylightBgpvpnDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_reader_session()
         self.driver = driverv2.OpenDaylightBgpvpnDriver(service_plugin=None)
-        self.context = self._get_mock_context()
-
-    def _get_mock_context(self):
-        context = mock.Mock()
-        context.session = self.db_session
-        return context
 
     def _get_fake_bgpvpn(self, net=False, router=False):
         net_id = []
@@ -77,7 +68,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_create_bgpvpn(self):
         fake_data = self._get_fake_bgpvpn()
-        self.driver.create_bgpvpn_precommit(self.context, fake_data)
+        self.driver.create_bgpvpn_precommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_BGPVPN,
                         fake_data)
         self.run_journal_processing()
@@ -86,7 +77,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_update_bgpvpn(self):
         fake_data = self._get_fake_bgpvpn()
-        self.driver.update_bgpvpn_precommit(self.context, fake_data)
+        self.driver.update_bgpvpn_precommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_UPDATE, odl_const.ODL_BGPVPN,
                         fake_data)
         self.run_journal_processing()
@@ -95,7 +86,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_delete_bgpvpn(self):
         fake_data = self._get_fake_bgpvpn()
-        self.driver.delete_bgpvpn_precommit(self.context, fake_data)
+        self.driver.delete_bgpvpn_precommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_BGPVPN,
                         fake_data)
         self.run_journal_processing()
@@ -109,7 +100,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
                                return_value=[]), \
             mock.patch.object(self.driver, 'get_bgpvpn',
                               return_value=fake_rtr_upd_bgpvpn_data):
-            self.driver.create_router_assoc_precommit(self.context,
+            self.driver.create_router_assoc_precommit(self.db_context,
                                                       fake_rtr_assoc_data)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
@@ -124,7 +115,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         fake_bgpvpn_data = self._get_fake_bgpvpn(router=False)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
-            self.driver.delete_router_assoc_precommit(self.context,
+            self.driver.delete_router_assoc_precommit(self.db_context,
                                                       fake_rtr_assoc_data)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
@@ -140,7 +131,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         # todo(vivekanandan) add check for case when assoc already exists
         with mock.patch.object(self.driver, 'get_bgpvpns',
                                return_value=[fake_net_upd_bgpvpn_data]):
-            self.driver.create_net_assoc_precommit(self.context,
+            self.driver.create_net_assoc_precommit(self.db_context,
                                                    fake_net_assoc_data)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
@@ -155,7 +146,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         fake_bgpvpn_data = self._get_fake_bgpvpn(net=False)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
-            self.driver.delete_net_assoc_precommit(self.context,
+            self.driver.delete_net_assoc_precommit(self.db_context,
                                                    fake_net_assoc_data)
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,

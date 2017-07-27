@@ -13,10 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from mock import patch
+
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
-from neutron.db import api as neutron_db_api
-
 from networking_odl.sfc.flowclassifier import sfc_flowclassifier_v2 as sfc_fc
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import base_v2
@@ -29,7 +28,6 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(TestOpenDaylightSFCFlowClassifierDriverV2, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self.handler = sfc_fc.OpenDaylightSFCFlowClassifierDriverV2()
         self.handler.initialize()
 
