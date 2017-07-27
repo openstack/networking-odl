@@ -1,0 +1,13 @@
+---
+prelude: >
+    update the default value of supported network
+    type for ovs-set-hostconfig. enable 'flat' by default
+    'flat' type wasn't enabled because legacy netvirt
+    doesn't support it. Now new netvirt is introduced
+    to deprecate legacy netvirt and New netvirt supports
+    flat. So update default value for network type
+    to reflect it.
+upgrade:
+  - If you're still using legacy netvirt, you need to
+    disable flat network type explicitly when issuing
+    set-ovs-hostconfig command.
