@@ -63,7 +63,11 @@ odl_opts = [
                help=_("Wait this many seconds before retrying the odl features"
                       " fetch")),
     cfg.ListOpt('odl_features', item_type=str,
-                help='A list of features supported by ODL')
+                help='A list of features supported by ODL'),
+    cfg.BoolOpt('enable_dhcp_service', default=False,
+                help=_('Enables the networking-odl driver to supply special'
+                       ' neutron ports of "dhcp" type to OpenDaylight'
+                       ' Controller for its use in providing DHCP Service.')),
 ]
 
 cfg.CONF.register_opts(odl_opts, "ml2_odl")

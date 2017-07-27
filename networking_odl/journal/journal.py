@@ -17,6 +17,7 @@ import copy
 import threading
 import time
 
+from neutron_lib.callbacks import registry
 from neutron_lib import context as nl_context
 from neutron_lib.plugins import directory
 from oslo_config import cfg
@@ -214,6 +215,9 @@ class OpenDaylightJournalThread(object):
         session = context.session
         try:
             self.client.sendjson(method, urlpath, to_send)
+            registry.notify(entry.object_type, odl_const.BEFORE_COMPLETE,
+                            self, context=context, operation=entry.operation,
+                            row=entry)
             with session.begin():
                 db.update_db_row_state(session, entry, odl_const.COMPLETED)
                 db.delete_dependency(session, entry)

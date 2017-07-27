@@ -1,0 +1,13 @@
+---
+prelude: >
+    Allocate a neutron port for each subnet to service DHCP requests within
+    OpenDaylight controller DHCP service.
+features:
+  - |
+    The feature is to be enabled only for ml2 mechanism V2 Driver, when config
+    parameter enable_dhcp_service is set to True in ml2_conf.ini. Creates a new
+    DHCP Neutron port to be serviced by OpenDaylight Netvirt when a Subnet is
+    created or updated with enable-dhcp parameter. The allocated port is to be
+    removed when the Subnet is deleted or updated with disbale-dhcp parameter.
+    The port is identifed with device-id as OpenDaylight-<subnet-id> and
+    device-owner as network:dhcp.

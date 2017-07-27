@@ -167,6 +167,23 @@ All related neutron services need to be restarted after configuration change.
         url = http://<ODL_IP_ADDRESS>:<ODL_PORT>/controller/nb/v2/neutron
         port_binding_controller = pseudo-agentdb-binding
 
+   * Optionally, If we need OpenDaylight Controller to provide DHCP Service to
+     tenants in an OpenDaylight-enabled cloud, we need to set
+     ``enable_dhcp_service=True`` under the ``[ml2_odl]`` section of
+     ``/etc/neutron/plugins/ml2/ml2_conf.ini``. By doing so, the ODL Driver
+     would create ``dhcp`` type Neutron Ports for use by the OpenDaylight
+     Controller's DHCP Service module (which is within the NetVirt project of
+     OpenDaylight controller). In addition to doing so, we need to set
+     ``controller-dhcp-enabled = True`` within the OpenDaylight Controller's
+     dhcp service configuration file i.e., ``netvirt-dhcpservice-config.xml``.
+     `OpenDaylight Spec Documentation Link: <http://docs.opendaylight.org/en/latest/submodules/netvirt/docs/specs/neutron-port-for-dhcp-service.html>`_.
+
+     .. code-block:: ini
+
+        [ml2_odl]
+
+        ...
+        enable_dhcp_service = True
 
 Compute/network nodes
 ---------------------
