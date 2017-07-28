@@ -16,7 +16,6 @@
 
 import requests
 
-from neutron_lib import context as neutron_context
 from neutron_lib.plugins import directory
 
 from networking_odl.common import client
@@ -71,29 +70,27 @@ def register(driver, resources):
 
 
 def full_sync(context):
-    session = context.session
-    if not _full_sync_needed(session):
+    if not _full_sync_needed(context):
         return
 
-    db.delete_pending_rows(session, _OPS_TO_DELETE_ON_SYNC)
+    db.delete_pending_rows(context.session, _OPS_TO_DELETE_ON_SYNC)
 
-    dbcontext = neutron_context.get_admin_context()
     for resource_type in _ORDERED_ODL_RESOURCES:
         for plugin_alias, resource in ALL_RESOURCES.items():
             collection_name = resource.get(resource_type)
             if collection_name is not None:
                 plugin = directory.get_plugin(plugin_alias)
-                _sync_resources(session, plugin, dbcontext, resource_type,
+                _sync_resources(plugin, context, resource_type,
                                 collection_name)
                 break
 
-    journal.record(dbcontext, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
+    journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
                    odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
 
 
-def _full_sync_needed(session):
+def _full_sync_needed(context):
     return (_canary_network_missing_on_odl() and
-            _canary_network_not_in_journal(session))
+            _canary_network_not_in_journal(context))
 
 
 def _canary_network_missing_on_odl():
@@ -113,15 +110,15 @@ def _canary_network_missing_on_odl():
     return False
 
 
-def _canary_network_not_in_journal(session):
+def _canary_network_not_in_journal(context):
     return not db.get_pending_or_processing_ops(
-        session, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
+        context.session, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
 
 
-def _sync_resources(session, plugin, dbcontext, object_type, collection_name):
+def _sync_resources(plugin, context, object_type, collection_name):
     obj_getter = getattr(plugin, 'get_%s' % collection_name)
-    resources = obj_getter(dbcontext)
+    resources = obj_getter(context)
 
     for resource in resources:
-        journal.record(dbcontext, object_type, resource['id'],
+        journal.record(context, object_type, resource['id'],
                        odl_const.ODL_CREATE, resource)

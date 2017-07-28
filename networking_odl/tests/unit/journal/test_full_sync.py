@@ -136,12 +136,10 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         full_sync.ALL_RESOURCES = self._get_all_resources()
         _full_sync_needed_mock._full_sync_needed.return_value = True
         context = mock.MagicMock()
-        session = context.session
         full_sync.full_sync(context)
 
         _sync_resources_mock.assert_has_calls(
-            [mock.call(session, mock.ANY, mock.ANY,
-                       object_type, collection_name)
+            [mock.call(mock.ANY, mock.ANY, object_type, collection_name)
                 for (object_type, collection_name) in [
                     (odl_const.ODL_SG, odl_const.ODL_SGS),
                     (odl_const.ODL_SG_RULE, odl_const.ODL_SG_RULES),
