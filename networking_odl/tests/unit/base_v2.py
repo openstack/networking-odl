@@ -35,9 +35,7 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('extension_drivers',
                               ['port_security', 'qos'], 'ml2')
-        self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.thread = journal.OpenDaylightJournalThread()
-        self.useFixture(base.OpenDaylightJournalThreadFixture())
 
     def run_journal_processing(self):
         """Cause the journal to process the first pending entry"""
