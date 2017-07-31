@@ -77,7 +77,8 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         odl_features.init()
 
     def get_workers(self):
-        workers = [port_status_update.OdlPortStatusUpdate()]
+        workers = [port_status_update.OdlPortStatusUpdate(),
+                   journal.JournalPeriodicProcessor()]
         workers += self.port_binding_controller.get_workers()
         return workers
 

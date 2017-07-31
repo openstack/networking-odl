@@ -580,7 +580,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         with mock.patch.object(
                 journal.OpenDaylightJournalThread,
-                'start_odl_sync_thread') as mock_sync_thread:
+                'start') as mock_sync_thread:
             self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
             self.mech.initialize()
 
