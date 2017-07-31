@@ -184,3 +184,9 @@
       service_provider=BGPVPN:OpenDaylight.networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
 
     and then stack up your devstack.
+
+17. To enable DHCP Service in OpenDaylight deployments with Openstack,
+    please use::
+
+      [[local|localrc]]
+      ODL_DHCP_SERVICE=True

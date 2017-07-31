@@ -59,6 +59,9 @@ ODL_TIMEOUT=${ODL_TIMEOUT:-""}
 # this requires post mitaka
 ODL_V2DRIVER=${ODL_V2DRIVER:-True}
 
+# use opendaylight dhcp server
+ODL_DHCP_SERVICE=${ODL_DHCP_SERVICE:-False}
+
 # The OpenDaylight URL PREFIX
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
