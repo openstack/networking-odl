@@ -26,9 +26,15 @@ from neutron_lib import constants as q_const
 
 from networking_odl.common import config  # noqa
 from networking_odl.common import constants as odl_const
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 LOG = logging.getLogger(__name__)
+
+L3_RESOURCES = {
+    odl_const.ODL_ROUTER: odl_const.ODL_ROUTERS,
+    odl_const.ODL_FLOATINGIP: odl_const.ODL_FLOATINGIPS
+}
 
 
 class OpenDaylightL3RouterPlugin(
@@ -53,6 +59,7 @@ class OpenDaylightL3RouterPlugin(
         # TODO(rcurran): Continue investigation into how many journal threads
         # to run per neutron controller deployment.
         self.journal = journal.OpendaylightJournalThread()
+        full_sync.register(q_const.L3, L3_RESOURCES)
 
     def get_plugin_type(self):
         return q_const.L3

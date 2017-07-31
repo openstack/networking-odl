@@ -46,17 +46,28 @@ ODL_QOS_POLICIES = 'qos/policies'
 
 ODL_SFC = 'sfc'
 ODL_SFC_FLOW_CLASSIFIER = 'flowclassifier'
+ODL_SFC_FLOW_CLASSIFIERS = 'flowclassifiers'
 ODL_SFC_PORT_PAIR = 'portpair'
+ODL_SFC_PORT_PAIRS = 'portpairs'
 ODL_SFC_PORT_PAIR_GROUP = 'portpairgroup'
+ODL_SFC_PORT_PAIR_GROUPS = 'portpairgroups'
 ODL_SFC_PORT_CHAIN = 'portchain'
+ODL_SFC_PORT_CHAINS = 'portchains'
 
 ODL_TRUNK = 'trunk'
 ODL_TRUNKS = 'trunks'
 
 ODL_L2GATEWAY = 'l2_gateway'
+ODL_L2GATEWAYS = 'l2_gateways'
 ODL_L2GATEWAY_CONNECTION = 'l2gateway_connection'
+ODL_L2GATEWAY_CONNECTIONS = 'l2_gateway_connections'
 
 ODL_BGPVPN = 'bgpvpn'
+ODL_BGPVPNS = 'bgpvpns'
+ODL_BGPVPN_NETWORK_ASSOCIATION = 'bgpvpn_network_association'
+ODL_BGPVPN_NETWORK_ASSOCIATIONS = 'bgpvpn_network_associations'
+ODL_BGPVPN_ROUTER_ASSOCIATION = 'bgpvpn_network_association'
+ODL_BGPVPN_ROUTER_ASSOCIATIONS = 'bgpvpn_network_associations'
 
 ODL_ML2_MECH_DRIVER_V1 = "opendaylight"
 ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"

@@ -23,12 +23,18 @@ from networking_l2gw.services.l2gateway.common import constants
 from networking_l2gw.services.l2gateway import service_drivers
 from networking_odl._i18n import _LI
 from networking_odl.common import constants as odl_const
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 LOG = logging.getLogger(__name__)
+
+L2GW_RESOURCES = {
+    odl_const.ODL_L2GATEWAY: odl_const.ODL_L2GATEWAYS,
+    odl_const.ODL_L2GATEWAY_CONNECTION: odl_const.ODL_L2GATEWAY_CONNECTIONS
+}
 
 
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
@@ -42,6 +48,7 @@ class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
         super(OpenDaylightL2gwDriver, self).__init__(service_plugin, validator)
         self.service_plugin = service_plugin
         self.journal = journal.OpendaylightJournalThread()
+        full_sync.register(constants.L2GW, L2GW_RESOURCES)
         LOG.info(_LI("ODL: Started OpenDaylight L2Gateway V2 driver"))
 
     @property

@@ -12,21 +12,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.plugins.common import constants as neutron_const
+from neutron.services.qos.drivers import base
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.qos import qos_utils
-from neutron.services.qos.notification_drivers import qos_base
 
 LOG = logging.getLogger(__name__)
 
 
-class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
+QOS_RESOURCES = {
+    odl_const.ODL_QOS_POLICY: odl_const.ODL_QOS_POLICIES
+}
 
+
+class OpenDaylightQosDriver(base.DriverBase):
     """OpenDaylight QOS Driver
 
     This code is backend implementation for Opendaylight Qos
@@ -37,6 +43,7 @@ class OpenDaylightQosDriver(qos_base.QosServiceNotificationDriverBase):
         LOG.debug("Initializing OpenDaylight Qos driver")
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.journal = journal.OpendaylightJournalThread()
+        full_sync.register(neutron_const.QOS, QOS_RESOURCES)
 
     def get_description(self):
         """Returns string description of driver"""

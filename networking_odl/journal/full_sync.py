@@ -45,7 +45,30 @@ _ORDERED_ODL_RESOURCES = (
     odl_const.ODL_SUBNET,
     odl_const.ODL_ROUTER,
     odl_const.ODL_PORT,
-    odl_const.ODL_FLOATINGIP)
+    odl_const.ODL_FLOATINGIP,
+    odl_const.ODL_LOADBALANCER,
+    odl_const.ODL_LISTENER,
+    odl_const.ODL_POOL,
+    odl_const.ODL_MEMBER,
+    odl_const.ODL_HEALTHMONITOR,
+    odl_const.ODL_QOS_POLICY,
+    odl_const.ODL_TRUNK,
+    odl_const.ODL_BGPVPN,
+    odl_const.ODL_BGPVPN_NETWORK_ASSOCIATION,
+    odl_const.ODL_BGPVPN_ROUTER_ASSOCIATION,
+    odl_const.ODL_SFC_FLOW_CLASSIFIER,
+    odl_const.ODL_SFC_PORT_PAIR,
+    odl_const.ODL_SFC_PORT_PAIR_GROUP,
+    odl_const.ODL_SFC_PORT_CHAIN,
+    odl_const.ODL_L2GATEWAY,
+    odl_const.ODL_L2GATEWAY_CONNECTION,
+)
+
+ALL_RESOURCES = {}
+
+
+def register(driver, resources):
+    ALL_RESOURCES[driver] = resources
 
 
 def full_sync(session):
@@ -56,7 +79,7 @@ def full_sync(session):
 
     dbcontext = neutron_context.get_admin_context()
     for resource_type in _ORDERED_ODL_RESOURCES:
-        for plugin_alias, resource in odl_const.ALL_RESOURCES.items():
+        for plugin_alias, resource in ALL_RESOURCES.items():
             collection_name = resource.get(resource_type)
             if collection_name is not None:
                 plugin = directory.get_plugin(plugin_alias)

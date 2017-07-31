@@ -25,6 +25,8 @@ from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
 from networking_odl.journal import recovery
+from networking_odl.l3 import l3_odl_v2
+from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
 
 
@@ -60,13 +62,13 @@ class RecoveryTestCase(SqlTestCaseLight):
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l2(self, plugin_mock):
-        for resource_type in odl_const.L2_RESOURCES:
+        for resource_type in mech_driver_v2.L2_RESOURCES:
             plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l3(self, plugin_mock):
-        for resource_type in odl_const.L3_RESOURCES:
+        for resource_type in l3_odl_v2.L3_RESOURCES:
             plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
 
