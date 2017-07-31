@@ -15,7 +15,6 @@
 #
 
 from neutron import context as neutron_context
-from neutron_lib import constants
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
@@ -24,6 +23,7 @@ from networking_odl._i18n import _, _LE, _LW
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
 _CLIENT = client.OpenDaylightRestClientGlobal()
@@ -55,10 +55,10 @@ def journal_recovery(session):
 def _get_latest_resource(row):
     object_type = row.object_type
 
-    if object_type in odl_const.L2_RESOURCES:
-        plugin = directory.get_plugin()
-    elif object_type in odl_const.L3_RESOURCES:
-        plugin = directory.get_plugin(constants.L3)
+    for plugin_alias, resources in full_sync.ALL_RESOURCES.items():
+        if object_type in resources:
+            plugin = directory.get_plugin(plugin_alias)
+            break
     else:
         raise UnsupportedResourceType(
             _("unsupported resource type: {}").format(object_type))
