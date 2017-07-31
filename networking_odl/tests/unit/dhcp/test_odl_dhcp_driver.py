@@ -14,9 +14,6 @@
 #    under the License.
 import testscenarios
 
-
-from neutron.db import api as neutron_db_api
-
 from networking_odl.common import constants as odl_const
 from networking_odl.dhcp import odl_dhcp_driver
 from networking_odl.ml2 import mech_driver_v2
@@ -34,7 +31,6 @@ class OdlDhcpDriverTestCase(test_odl_dhcp_driver_base.OdlDhcpDriverTestBase):
     def setUp(self):
         super(OdlDhcpDriverTestCase, self).setUp()
         cfg.CONF.set_override('enable_dhcp_service', True, 'ml2_odl')
-        self.db_session = neutron_db_api.get_writer_session()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
@@ -42,8 +38,8 @@ class OdlDhcpDriverTestCase(test_odl_dhcp_driver_base.OdlDhcpDriverTestBase):
         self.assertTrue(cfg.CONF.ml2_odl.enable_dhcp_service)
 
     def test_dhcp_driver_load(self):
-        dhcp_driver = getattr(self.mech, 'dhcp_driver')
-        self.assertTrue(isinstance(dhcp_driver, odl_dhcp_driver.OdlDhcpDriver))
+        self.assertTrue(isinstance(self.mech.dhcp_driver,
+                                   odl_dhcp_driver.OdlDhcpDriver))
 
     def test_dhcp_port_create_on_subnet_event(self):
 
