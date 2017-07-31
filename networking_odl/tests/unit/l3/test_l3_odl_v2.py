@@ -16,13 +16,11 @@
 import mock
 import requests
 
-from neutron.db import api as neutron_db_api
 from neutron.extensions import external_net as external_net
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit import testlib_api
-from neutron_lib import context
 from neutron_lib.plugins import constants
 from neutron_lib.plugins import directory
 from oslo_config import cfg
@@ -121,7 +119,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         super(OpenDaylightL3TestCase, self).setUp(
             plugin=core_plugin, service_plugins=service_plugins)
-        self.db_session = neutron_db_api.get_writer_session()
         self.plugin = directory.get_plugin()
         self.plugin._network_is_external = mock.Mock(return_value=True)
         self.driver = directory.get_plugin(constants.L3)
@@ -132,29 +129,26 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
     @staticmethod
     def _get_mock_router_operation_info(network, subnet):
-        router_context = context.get_admin_context()
         router = {odl_const.ODL_ROUTER:
                   {'name': 'router1',
                    'admin_state_up': True,
                    'tenant_id': network['network']['tenant_id'],
                    'external_gateway_info': {'network_id':
                                              network['network']['id']}}}
-        return router_context, router
+        return router
 
     @staticmethod
     def _get_mock_floatingip_operation_info(network, subnet):
-        floatingip_context = context.get_admin_context()
         floatingip = {odl_const.ODL_FLOATINGIP:
                       {'floating_network_id': network['network']['id'],
                        'tenant_id': network['network']['tenant_id']}}
-        return floatingip_context, floatingip
+        return floatingip
 
     @staticmethod
     def _get_mock_router_interface_operation_info(network, subnet):
-        router_intf_context = context.get_admin_context()
         router_intf_dict = {'subnet_id': subnet['subnet']['id'],
                             'id': network['network']['id']}
-        return router_intf_context, router_intf_dict
+        return router_intf_dict
 
     @classmethod
     def _get_mock_operation_info(cls, object_type, *args):
@@ -183,18 +177,18 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
     def _call_operation_object(self, operation, object_type, object_id,
                                network, subnet):
-        object_context, object_dict = self._get_mock_operation_info(
+        object_dict = self._get_mock_operation_info(
             object_type, network, subnet)
         method = getattr(self.driver, operation + '_' + object_type)
 
         if operation == odl_const.ODL_CREATE:
-            new_object_dict = method(object_context, object_dict)
+            new_object_dict = method(self.db_context, object_dict)
         elif operation == odl_const.ODL_UPDATE:
-            new_object_dict = method(object_context, object_id, object_dict)
+            new_object_dict = method(self.db_context, object_id, object_dict)
         else:
-            new_object_dict = method(object_context, object_id)
+            new_object_dict = method(self.db_context, object_id)
 
-        return object_context, new_object_dict
+        return new_object_dict
 
     def _test_operation_thread_processing(self, object_type, operation,
                                           network, subnet, object_id,
@@ -210,7 +204,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         status_code = status_codes[operation]
 
         # Create database entry.
-        object_context, new_object_dict = self._call_operation_object(
+        new_object_dict = self._call_operation_object(
             operation, object_type, object_id, network, subnet)
 
         # Setup expected results.
@@ -279,13 +273,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                   external_net.EXTERNAL: True}
         with self.network(**kwargs) as network:
             with self.subnet(network=network):
-                object_context, object_dict = self._get_mock_operation_info(
+                object_dict = self._get_mock_operation_info(
                     object_type, network, None)
 
                 # Add and test 'create' database entry.
                 method = getattr(self.driver,
                                  odl_const.ODL_CREATE + '_' + object_type)
-                new_object_dict = method(object_context, object_dict)
+                new_object_dict = method(self.db_context, object_dict)
                 object_id = new_object_dict['id']
                 self._test_db_results(object_id, odl_const.ODL_CREATE,
                                       object_type)
@@ -293,14 +287,14 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 # Add and test 'update' database entry.
                 method = getattr(self.driver,
                                  odl_const.ODL_UPDATE + '_' + object_type)
-                method(object_context, object_id, object_dict)
+                method(self.db_context, object_id, object_dict)
                 self._test_db_results(object_id, odl_const.ODL_UPDATE,
                                       object_type)
 
                 # Add and test 'delete' database entry.
                 method = getattr(self.driver,
                                  odl_const.ODL_DELETE + '_' + object_type)
-                method(object_context, object_id)
+                method(self.db_context, object_id)
                 self._test_db_results(object_id, odl_const.ODL_DELETE,
                                       object_type)
 
@@ -314,8 +308,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         # Create dependency db row and mark as 'processing' so it won't
         # be processed by the journal thread.
-        ctxt = mock.MagicMock()
-        ctxt.session = self.db_session
+        ctxt = self.db_context
         journal.record(ctxt, dep_object, dep_id, dep_operation, dep_data)
         row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
         db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
