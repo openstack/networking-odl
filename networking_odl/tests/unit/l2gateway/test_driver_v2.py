@@ -14,10 +14,6 @@
 #  under the License.
 #
 
-import mock
-
-from neutron.db import api as neutron_db_api
-
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.l2gateway import driver_v2 as driverv2
@@ -28,14 +24,7 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def setUp(self):
         super(OpenDaylightL2GWDriverTestCase, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self.driver = driverv2.OpenDaylightL2gwDriver(service_plugin=None)
-        self.context = self._get_mock_context()
-
-    def _get_mock_context(self):
-        context = mock.Mock()
-        context.session = self.db_session
-        return context
 
     def _get_fake_l2_gateway(self):
         fake_l2_gateway = {
@@ -86,7 +75,7 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
     def _assert_op(self, operation, object_type, data, precommit=True):
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
         if precommit:
-            self.context.flush()
+            self.db_session.flush()
             self.assertEqual(operation, row['operation'])
             self.assertEqual(object_type, row['object_type'])
             self.assertEqual(data['id'], row['object_uuid'])
@@ -95,39 +84,41 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_create_l2_gateway(self):
         fake_data = self._get_fake_l2_gateway()
-        self.driver.create_l2_gateway_precommit(self.context, fake_data)
+        self.driver.create_l2_gateway_precommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_L2GATEWAY,
                         fake_data)
-        self.driver.create_l2_gateway_postcommit(self.context, fake_data)
+        self.driver.create_l2_gateway_postcommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_L2GATEWAY,
                         fake_data, False)
 
     def test_delete_l2_gateway(self):
         fake_data = self._get_fake_l2_gateway()
-        self.driver.delete_l2_gateway_precommit(self.context, fake_data['id'])
+        self.driver.delete_l2_gateway_precommit(self.db_context,
+                                                fake_data['id'])
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_L2GATEWAY,
                         fake_data)
-        self.driver.delete_l2_gateway_postcommit(self.context, fake_data['id'])
+        self.driver.delete_l2_gateway_postcommit(self.db_context,
+                                                 fake_data['id'])
         self._assert_op(odl_const.ODL_DELETE, odl_const.ODL_L2GATEWAY,
                         fake_data, False)
 
     def test_update_l2_gateway(self):
         fake_data = self._get_fake_l2_gateway()
-        self.driver.update_l2_gateway_precommit(self.context, fake_data)
+        self.driver.update_l2_gateway_precommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_UPDATE, odl_const.ODL_L2GATEWAY,
                         fake_data)
-        self.driver.update_l2_gateway_postcommit(self.context, fake_data)
+        self.driver.update_l2_gateway_postcommit(self.db_context, fake_data)
         self._assert_op(odl_const.ODL_UPDATE, odl_const.ODL_L2GATEWAY,
                         fake_data, False)
 
     def test_create_l2_gateway_connection(self):
         fake_data = self._get_fake_l2_gateway_connection()
-        self.driver.create_l2_gateway_connection_precommit(self.context,
+        self.driver.create_l2_gateway_connection_precommit(self.db_context,
                                                            fake_data)
         self._assert_op(odl_const.ODL_CREATE,
                         odl_const.ODL_L2GATEWAY_CONNECTION,
                         fake_data)
-        self.driver.create_l2_gateway_connection_postcommit(self.context,
+        self.driver.create_l2_gateway_connection_postcommit(self.db_context,
                                                             fake_data)
         self._assert_op(odl_const.ODL_CREATE,
                         odl_const.ODL_L2GATEWAY_CONNECTION,
@@ -135,12 +126,12 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_delete_l2_gateway_connection(self):
         fake_data = self._get_fake_l2_gateway_connection()
-        self.driver.delete_l2_gateway_connection_precommit(self.context,
+        self.driver.delete_l2_gateway_connection_precommit(self.db_context,
                                                            fake_data['id'])
         self._assert_op(odl_const.ODL_DELETE,
                         odl_const.ODL_L2GATEWAY_CONNECTION,
                         fake_data)
-        self.driver.delete_l2_gateway_connection_postcommit(self.context,
+        self.driver.delete_l2_gateway_connection_postcommit(self.db_context,
                                                             fake_data['id'])
         self._assert_op(odl_const.ODL_DELETE,
                         odl_const.ODL_L2GATEWAY_CONNECTION,

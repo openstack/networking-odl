@@ -14,8 +14,6 @@
 #    under the License.
 from mock import patch
 
-from neutron.db import api as neutron_db_api
-
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.sfc import sfc_driver_v2 as sfc
@@ -28,7 +26,6 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         super(TestOpenDaylightSFCDriverV2, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self.handler = sfc.OpenDaylightSFCDriverV2()
         self.handler.initialize()
 

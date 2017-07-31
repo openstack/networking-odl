@@ -14,19 +14,16 @@
 #    under the License.
 
 import mock
+from oslo_config import cfg
 
-
-from neutron.db import api as neutron_db_api
+from neutron.services.trunk import callbacks
+from neutron.services.trunk import constants as trunk_consts
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.tests.unit import base_v2
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
-from neutron.services.trunk import callbacks
-from neutron.services.trunk import constants as trunk_consts
-
-from oslo_config import cfg
 
 FAKE_TRUNK = {
     'status': 'ACTIVE',
@@ -51,18 +48,12 @@ FAKE_TRUNK = {
 class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         super(TestTrunkHandler, self).setUp()
-        self.db_session = neutron_db_api.get_writer_session()
         self.handler = (trunk_driver.
                         OpenDaylightTrunkHandlerV2())
 
-    def _get_mock_context(self):
-        context = mock.Mock()
-        context.session = self.db_session
-        return context
-
     def _fake_trunk_payload(self):
         payload = callbacks.TrunkPayload(
-            self._get_mock_context(), 'fake_id',
+            self.db_context, 'fake_id',
             mock.Mock(return_value=FAKE_TRUNK),
             mock.Mock(return_value=FAKE_TRUNK),
             mock.Mock(return_value=FAKE_TRUNK['sub_ports']))

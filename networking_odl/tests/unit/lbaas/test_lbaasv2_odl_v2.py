@@ -12,11 +12,10 @@
 
 import mock
 
-import networking_odl
-from neutron.db import api as neutron_db_api
 import neutron_lbaas
 from neutron_lbaas.services.loadbalancer import data_models
 
+import networking_odl
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.journal import journal
@@ -25,20 +24,6 @@ from networking_odl.tests.unit import base_v2
 
 
 class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
-    session = None
-
-    @classmethod
-    def _get_mock_context(cls, session=None):
-        current = {'tenant_id': 'tenant_id'}
-        context = mock.Mock(current=current)
-        if not session:
-            if not cls.session:
-                cls.session = neutron_db_api.get_writer_session()
-            session = cls.session
-
-        context.session = session
-        return context
-
     @staticmethod
     def _get_faked_model(obj):
         lb = data_models.LoadBalancer(id='test_lb')
@@ -72,10 +57,9 @@ class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
                        'successful_completion')
     def base_test_operation(self, obj_driver, obj_type, operation, op_const,
                             mock_set_sync_event, mock_successful_completion):
-        context = self._get_mock_context()
         obj = self._get_faked_model(obj_type)
-        getattr(obj_driver, operation)(context, obj)
-        row = db.get_oldest_pending_db_row_with_lock(context.session)
+        getattr(obj_driver, operation)(self.db_context, obj)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context.session)
         self.assertEqual(operation, row['operation'])
         if obj_type != odl_const.ODL_MEMBER:
             self.assertEqual(("lbaas/%s" % obj_type), row['object_type'])
