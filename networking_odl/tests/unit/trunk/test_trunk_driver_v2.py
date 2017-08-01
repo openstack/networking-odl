@@ -16,8 +16,14 @@
 import mock
 from oslo_config import cfg
 
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import resources
+from neutron_lib import constants as n_const
+from neutron_lib.plugins import directory
+
 from neutron.services.trunk import callbacks
 from neutron.services.trunk import constants as trunk_consts
+from neutron.services.trunk import models
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -43,6 +49,13 @@ FAKE_TRUNK = {
     'port_id': 'fake_port_id',
     'id': 'fake_id',
     'description': 'fake trunk port'}
+
+FAKE_PARENT = {
+    'id': 'fake_parent_id',
+    'tenant_id': 'fake_tenant_id',
+    'name': 'parent_port',
+    'admin_state_up': 'true',
+    'status': 'ACTIVE'}
 
 
 class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
@@ -99,6 +112,114 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
 
     def test_trunk_delete_postcommit(self):
         self._test_event("delete", "postcommit")
+
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_set_subport_status')
+    def test_trunk_subports_set_status_create_parent_active(
+            self, mock_set_subport_status):
+        resource = trunk_consts.SUBPORTS
+        event_type = events.AFTER_CREATE
+        fake_payload = self._fake_trunk_payload()
+        core_plugin = directory.get_plugin()
+
+        fake_payload.subports = [models.SubPort(port_id='fake_port_id',
+                                                segmentation_id=101,
+                                                segmentation_type='vlan',
+                                                trunk_id='fake_id')]
+        parent_port = FAKE_PARENT
+
+        with mock.patch.object(core_plugin, '_get_port') as gp:
+            gp.return_value = parent_port
+            self.handler.trunk_subports_set_status(resource, event_type,
+                                                   mock.ANY, fake_payload)
+            mock_set_subport_status.assert_called_once_with(
+                core_plugin, mock.ANY, 'fake_port_id',
+                n_const.PORT_STATUS_ACTIVE)
+
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_set_subport_status')
+    def test_trunk_subports_set_status_create_parent_down(
+            self, mock_set_subport_status):
+        resource = trunk_consts.SUBPORTS
+        event_type = events.AFTER_CREATE
+        fake_payload = self._fake_trunk_payload()
+        core_plugin = directory.get_plugin()
+
+        fake_payload.subports = [models.SubPort(port_id='fake_port_id',
+                                                segmentation_id=101,
+                                                segmentation_type='vlan',
+                                                trunk_id='fake_id')]
+        parent_port = FAKE_PARENT.copy()
+        parent_port['status'] = n_const.PORT_STATUS_DOWN
+
+        with mock.patch.object(core_plugin, '_get_port') as gp:
+            gp.return_value = parent_port
+            self.handler.trunk_subports_set_status(resource, event_type,
+                                                   mock.ANY, fake_payload)
+            mock_set_subport_status.assert_called_once_with(
+                core_plugin, mock.ANY, 'fake_port_id',
+                n_const.PORT_STATUS_DOWN)
+
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_set_subport_status')
+    def test_trunk_subports_set_status_delete(self, mock_set_subport_status):
+        resource = trunk_consts.SUBPORTS
+        event_type = events.AFTER_DELETE
+        fake_payload = self._fake_trunk_payload()
+
+        fake_payload.subports = [models.SubPort(port_id='fake_port_id',
+                                                segmentation_id=101,
+                                                segmentation_type='vlan',
+                                                trunk_id='fake_id')]
+
+        self.handler.trunk_subports_set_status(resource, event_type, mock.ANY,
+                                               fake_payload)
+        mock_set_subport_status.assert_called_once_with(
+            mock.ANY, mock.ANY, 'fake_port_id', n_const.PORT_STATUS_DOWN)
+
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_get_subports_ids')
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_set_subport_status')
+    def test_trunk_subports_update_status_parent_down_to_active(
+            self, mock_set_subport_status, mock_get_subports_ids):
+        resource = resources.PORT
+        event_type = events.AFTER_UPDATE
+        core_plugin = directory.get_plugin()
+        port = FAKE_PARENT.copy()
+        original_port = FAKE_PARENT.copy()
+        original_port['status'] = n_const.PORT_STATUS_DOWN
+        port_kwargs = {'port': port, 'original_port': original_port}
+
+        mock_get_subports_ids.return_value = ['fake_port_id']
+
+        self.handler.trunk_subports_update_status(resource, event_type,
+                                                  mock.ANY, **port_kwargs)
+
+        mock_set_subport_status.assert_called_once_with(
+            core_plugin, mock.ANY, 'fake_port_id', n_const.PORT_STATUS_ACTIVE)
+
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_get_subports_ids')
+    @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
+                       '_set_subport_status')
+    def test_trunk_subports_update_status_parent_active_to_down(
+            self, mock_set_subport_status, mock_get_subports_ids):
+        resource = resources.PORT
+        event_type = events.AFTER_UPDATE
+        core_plugin = directory.get_plugin()
+        port = FAKE_PARENT.copy()
+        original_port = FAKE_PARENT.copy()
+        port['status'] = n_const.PORT_STATUS_DOWN
+        port_kwargs = {'port': port, 'original_port': original_port}
+
+        mock_get_subports_ids.return_value = ['fake_port_id']
+
+        self.handler.trunk_subports_update_status(resource, event_type,
+                                                  mock.ANY, **port_kwargs)
+
+        mock_set_subport_status.assert_called_once_with(
+            core_plugin, mock.ANY, 'fake_port_id', n_const.PORT_STATUS_DOWN)
 
 
 class TestTrunkDriver(base_v2.OpenDaylightConfigBase):
