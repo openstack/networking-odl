@@ -75,7 +75,7 @@ COMMAND_LINE_OPTIONS = [
 
     cfg.ListOpt(
         'allowed_network_types',
-        default=['local', 'vlan', 'vxlan', 'gre'],
+        default=['local', 'flat', 'vlan', 'vxlan', 'gre'],
         help=_("""
             Specifies allowed network types given as a Comma-separated list of
             types.
