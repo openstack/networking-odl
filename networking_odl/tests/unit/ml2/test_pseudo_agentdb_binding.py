@@ -67,14 +67,6 @@ class TestPseudoAgentDBBindingTaskBase(base.DietTestCase):
         self.task = pseudo_agentdb_binding.PseudoAgentDBBindingTaskBase(
             self.worker)
 
-    def test_make_hostconf_uri(self):
-        """test make uri."""
-        test_path = '/restconf/neutron:neutron/hostconfigs'
-        expected = "http://localhost:8080/restconf/neutron:neutron/hostconfigs"
-        test_uri = self.task._make_hostconf_uri(path=test_path)
-
-        self.assertEqual(expected, test_uri)
-
     def _get_raised_response(self, json_data, status_code):
 
         class MockHTTPError(HTTPError):

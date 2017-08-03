@@ -29,7 +29,6 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 from requests import codes
 from requests import exceptions
-import six.moves.urllib.parse as urlparse
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import odl_features
@@ -48,24 +47,12 @@ class PseudoAgentDBBindingTaskBase(object):
         self._worker = worker
 
         # extract host/port from ODL URL and append hostconf_uri path
-        hostconf_uri = self._make_hostconf_uri(
-            cfg.CONF.ml2_odl.url, cfg.CONF.ml2_odl.odl_hostconf_uri)
+        hostconf_uri = utils.get_odl_url(cfg.CONF.ml2_odl.odl_hostconf_uri)
         LOG.debug("ODLPORTBINDING hostconfigs URI: %s", hostconf_uri)
 
         # TODO(mzmalick): disable port-binding for ODL lightweight testing
         self.odl_rest_client = odl_client.OpenDaylightRestClient.create_client(
             url=hostconf_uri)
-
-    def _make_hostconf_uri(self, odl_url=None, path=''):
-        """Make ODL hostconfigs URI with host/port extraced from ODL_URL."""
-        # NOTE(yamahata): for unit test.
-        odl_url = odl_url or 'http://localhost:8080/'
-
-        # extract ODL_IP and ODL_PORT from ODL_ENDPOINT and append path
-        # urlsplit and urlunparse don't throw exceptions
-        purl = urlparse.urlsplit(odl_url)
-        return urlparse.urlunparse((purl.scheme, purl.netloc,
-                                    path, '', '', ''))
 
     def _rest_get_hostconfigs(self):
         try:
