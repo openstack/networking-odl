@@ -14,6 +14,8 @@
 
 import mock
 
+from neutron.db import api as db_api
+
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.qos import qos_driver_v2 as qos_driver
@@ -51,7 +53,10 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
         context = self._get_mock_context()
         method = getattr(self.qos_driver, '%s_%s' % (operation,
                                                      object_type))
-        method(context, qos_data)
+
+        assert object_type.endswith("precommit")
+        with db_api.context_manager.writer.using(context):
+            method(context, qos_data)
 
     def _test_qos_policy(self, operation):
         self._call_operation_object(operation=operation,
