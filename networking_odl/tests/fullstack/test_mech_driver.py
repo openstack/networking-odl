@@ -21,6 +21,7 @@ from neutron.agent.common import utils
 from neutron.tests.common import net_helpers
 
 from networking_odl.tests.fullstack import base
+from networking_odl.tests.fullstack import machine
 
 
 class TestMechDriver(base.TestODLFullStackBase):
@@ -54,6 +55,14 @@ class TestMechDriver(base.TestODLFullStackBase):
                               'external-ids:vm-uuid=%s' % instance_id,
                               'type=tap'], run_as_root=True)
 
+    def _new_update_request(self, host_id, port_id):
+        data = {'port': {'binding:host_id': host_id}}
+        req = self.new_update_request('ports', data, port_id)
+        resp = self.deserialize(self.fmt, req.get_response(self.api))
+        vif_type = resp['port']['binding:vif_type']
+
+        return vif_type
+
     def test_port_plugging(self):
         # Step1: create test network
         resp = self._create_network(self.fmt, "test_fullstack_net", True)
@@ -67,10 +76,7 @@ class TestMechDriver(base.TestODLFullStackBase):
         port_id = resp['port']['id']
         mac = resp['port']['mac_address']
         tap = 'tap' + port_id[:net_helpers.OVSPortFixture.NIC_NAME_LEN - 3]
-        data = {'port': {'binding:host_id': host_id}}
-        req = self.new_update_request('ports', data, port_id)
-        resp = self.deserialize(self.fmt, req.get_response(self.api))
-        vif_type = resp['port']['binding:vif_type']
+        vif_type = self._new_update_request(host_id, port_id)
         self.assertEqual('ovs', vif_type)
         self.assertFalse(self._check_device_existence(tap))
 
@@ -82,3 +88,41 @@ class TestMechDriver(base.TestODLFullStackBase):
         # in flows
         # Step4: verify device
         self.assertTrue(self._check_device_existence(tap))
+
+    def test_VM_connectivity(self):
+        # Step1: create test network
+        resp = self._create_network(self.fmt, "test_fullstack_vm_net", True)
+        resp = self.deserialize(self.fmt, resp)
+        net_id = resp['network']['id']
+        host_id = self._get_ovs_system_id()
+
+        # Step2: create VMs and insert taps
+        subnet = self._create_subnet(self.fmt, net_id, cidr='192.168.1.0/24')
+        subnet = self.deserialize(self.fmt, subnet)
+
+        fixed_ips1 = [{'ip_address': '192.168.1.1'}]
+        port1 = self._create_port(self.fmt,
+                                  net_id,
+                                  fixed_ips=fixed_ips1)
+        port1 = self.deserialize(self.fmt, port1)
+        vm1 = self.useFixture(machine.FakeMachine(
+            'br-int', port1))
+        vif_type = self._new_update_request(host_id, port1['port']['id'])
+        self.assertEqual('ovs', vif_type)
+        vm1._create_ovs_vif_port(uuidutils.generate_uuid())
+        vm1.set_address()
+
+        fixed_ips2 = [{'ip_address': '192.168.1.2'}]
+        port2 = self._create_port(self.fmt,
+                                  net_id,
+                                  fixed_ips=fixed_ips2)
+        port2 = self.deserialize(self.fmt, port2)
+        vm2 = self.useFixture(machine.FakeMachine(
+            'br-int', port2))
+        vif_type = self._new_update_request(host_id, port2['port']['id'])
+        self.assertEqual('ovs', vif_type)
+        vm2._create_ovs_vif_port(uuidutils.generate_uuid())
+        vm2.set_address()
+
+        # Step3: test ping
+        self.assertTrue(vm1.assert_ping('192.168.1.2'))
