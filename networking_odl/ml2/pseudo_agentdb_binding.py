@@ -16,9 +16,9 @@
 import logging
 from string import Template
 
-from neutron.callbacks import resources
 from neutron.db import provisioning_blocks
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.callbacks import resources
 from neutron_lib import constants as nl_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
