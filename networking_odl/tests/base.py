@@ -88,8 +88,9 @@ class OpenDaylightFeaturesFixture(fixtures.Fixture):
 class OpenDaylightJournalThreadFixture(fixtures.Fixture):
     def _setUp(self):
         super(OpenDaylightJournalThreadFixture, self)._setUp()
-        mock.patch.object(journal.OpenDaylightJournalThread,
-                          'start').start()
+        self.journal_thread_mock = mock.patch.object(
+            journal.OpenDaylightJournalThread, 'start')
+        self.journal_thread_mock.start()
 
 
 class OpenDaylightPeriodicTaskFixture(fixtures.Fixture):

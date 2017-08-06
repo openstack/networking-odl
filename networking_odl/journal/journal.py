@@ -201,6 +201,7 @@ class JournalPeriodicProcessor(worker.BaseWorker):
 
     def stop(self):
         LOG.debug('JournalPeriodicProcessor stopping')
+        self._journal.stop()
         self._timer.stop()
 
     def wait(self):
@@ -228,13 +229,30 @@ class OpenDaylightJournalThread(object):
         self._odl_sync_thread = threading.Thread(
             name='sync',
             target=self.run_sync_thread)
+        self._odl_sync_thread_stop = threading.Event()
         if start_thread:
             self.start()
 
     def start(self):
         # Start the sync thread
         LOG.debug("Starting a new sync thread")
+        self._odl_sync_thread_stop.clear()
         self._odl_sync_thread.start()
+
+    def stop(self, timeout=None):
+        """Allows to stop the sync thread.
+
+        Args:
+            timeout (float): Time in seconds to wait for joining or None for
+                             no timeout.
+        """
+        # Stop the sync thread
+        LOG.debug("Stopping the sync thread")
+        if self._odl_sync_thread.is_alive():
+            self._odl_sync_thread_stop.set()
+            # Process the journal one last time before stopping.
+            self.set_sync_event()
+            self._odl_sync_thread.join(timeout)
 
     def set_sync_event(self):
         self.event.set()
@@ -257,7 +275,7 @@ class OpenDaylightJournalThread(object):
         return method, _build_url(row), to_send
 
     def run_sync_thread(self):
-        while True:
+        while not self._odl_sync_thread_stop.is_set():
             try:
                 self.event.wait()
                 self.event.clear()

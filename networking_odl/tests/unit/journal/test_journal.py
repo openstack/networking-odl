@@ -40,6 +40,13 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
         periodic_processor.start()
         utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
 
+    @mock.patch.object(journal.OpenDaylightJournalThread, 'stop')
+    def test_stops_journal_sync_thread(self, mock_journal_stop):
+        self.cfg.config(sync_timeout=0.1, group='ml2_odl')
+        periodic_processor = journal.JournalPeriodicProcessor()
+        periodic_processor.stop()
+        mock_journal_stop.assert_called_once()
+
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
     def setUp(self):
@@ -109,6 +116,18 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
                        mock.Mock(side_effect=Exception))
     def test__sync_entry_logs_failed(self):
         self._test__sync_entry_logs(journal.LOG_ERROR_PROCESSING)
+
+    @mock.patch.object(journal.OpenDaylightJournalThread,
+                       'sync_pending_entries')
+    def test_terminate_journal_thread_correctly(self, mock_journal):
+        self.journal_thread_fixture.journal_thread_mock.stop()
+        self.addCleanup(self.journal_thread_fixture.journal_thread_mock.start)
+
+        journal_thread = journal.OpenDaylightJournalThread(start_thread=True)
+
+        journal_thread.stop(5)
+        self.assertTrue(not journal_thread._odl_sync_thread.is_alive())
+        mock_journal.assert_called_once()
 
 
 def _raise_DBReferenceError(*args, **kwargs):

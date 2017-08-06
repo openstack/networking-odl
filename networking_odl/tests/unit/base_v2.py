@@ -27,7 +27,8 @@ from networking_odl.tests.unit import test_base_db
 class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
                              test_base_db.ODLBaseDbTestCase):
     def setUp(self):
-        self.useFixture(base.OpenDaylightJournalThreadFixture())
+        self.journal_thread_fixture = self.useFixture(
+            base.OpenDaylightJournalThreadFixture())
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFullSyncFixture())
         super(OpenDaylightConfigBase, self).setUp()
