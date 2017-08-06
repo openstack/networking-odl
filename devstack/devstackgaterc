@@ -69,6 +69,12 @@ r="$r|(?:tempest\.api\.network\.test_vpnaas_extensions.*)"
 r="$r|(?:tempest\.api\.network\.test_metering_extensions.*)"
 r="$r|(?:tempest\.thirdparty\.boto\.test_s3.*)"
 
+# Exclude stuff less related to networking, to reduce gate load
+r="$r|(?:tempest\.api\.object.*)"
+r="$r|(?:tempest\.api\.compute\.admin.*)"
+r="$r|(?:tempest\.api\.compute\.images.*)"
+r="$r|(?:tempest\.api\.compute\.volumes.*)"
+
 # exclude stuff we're less likely to break because i'm impatient
 r="$r|(?:tempest\.api\.identity.*)"
 r="$r|(?:tempest\.api\.image.*)"
