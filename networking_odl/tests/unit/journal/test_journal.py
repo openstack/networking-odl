@@ -13,12 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
+import os
+import signal
+
 import fixtures
 import mock
 
 from neutron.common import utils
 from oslo_db import exception
 from oslo_log import log as logging
+from oslo_service.tests import test_service
 from oslo_utils import uuidutils
 
 from networking_odl.common import client
@@ -27,15 +32,73 @@ from networking_odl.db import db
 from networking_odl.db import models
 from networking_odl.journal import dependency_validations
 from networking_odl.journal import journal
+from networking_odl.journal import worker
 from networking_odl.tests.unit import base_v2
 from networking_odl.tests.unit.db import test_db
 
 
-class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
+class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
+                                   test_service.ServiceTestBase):
+    def _get_pid_status(self, pid):
+        """Allows to query a system process based on the PID
+
+        It will use `ps` to query the pid, it's state and the command.
+
+        :param pid: An integer with the Process ID number
+        :returns: A tuple of strings with the command and the running status
+                  in a single char as defined in the manpage PS(1) under
+                  PROCESS STATE CODES.
+        """
+        with os.popen('ps ax -o pid,state,cmd') as f:
+            # Skip ps header
+            f.readline()
+
+            processes = (l.strip().split()[:3] for l in f)
+
+            return next(((c, s) for p, s, c in processes if int(p) == pid),
+                        (None, None))
+
+    def create_ipc_for_mock(self, patcher, pre_hook=None):
+        # NOTE(mpeterson): The following pipe is being used because this is
+        # testing something inter processeses and we need to have a value on
+        # the side of the test processes to know it succeeded with the
+        # operation. A pipe provide a way for two processes to communicate.
+        # The was_called method will be called by the worker process while
+        # the test process will read the result on c2p_read.
+        c2p_read, c2p_write = os.pipe()
+
+        mock_ = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        def was_called(*args, **kwargs):
+            try:
+                if pre_hook:
+                    pre_hook(*args, **kwargs)
+                with io.open(c2p_write, 'wb', 0) as f:
+                    f.write(b'1')
+            except Exception:
+                # This is done so any read on the pipe is unblocked.
+                with io.open(c2p_write, 'wb', 0) as f:
+                    f.write(b'0')
+
+        mock_.side_effect = was_called
+
+        return c2p_read
+
+    def assert_ipc_mock_called(self, c2p_read):
+        with io.open(c2p_read, 'rb', 0) as f:
+            # If it timeouts on the read then it means the function was
+            # not called.
+            called = int(f.read(1))
+
+        self.assertEqual(called, 1,
+                         'The IPC mock was called but during the '
+                         'execution an exception was raised')
+
     @mock.patch.object(journal.OpenDaylightJournalThread, 'set_sync_event')
     def test_processing(self, mock_journal):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
-        periodic_processor = journal.JournalPeriodicProcessor()
+        periodic_processor = worker.JournalPeriodicProcessor()
         self.addCleanup(periodic_processor.stop)
         periodic_processor.start()
         utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
@@ -43,9 +106,61 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
     @mock.patch.object(journal.OpenDaylightJournalThread, 'stop')
     def test_stops_journal_sync_thread(self, mock_journal_stop):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
-        periodic_processor = journal.JournalPeriodicProcessor()
+        periodic_processor = worker.JournalPeriodicProcessor()
         periodic_processor.stop()
         mock_journal_stop.assert_called_once()
+
+    def test_allow_multiple_starts_gracefully(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+
+        try:
+            periodic_processor.start()
+        except RuntimeError:
+            self.fail('JournalPeriodicProcessor._timer started twice')
+
+    def test_call_stop_without_calling_start(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+
+        try:
+            periodic_processor.stop()
+        except AttributeError:
+            self.fail('start() was not called before calling stop()')
+
+    @mock.patch.object(journal.OpenDaylightJournalThread,
+                       'sync_pending_entries')
+    def test_handle_sighup_gracefully(self, mock_journal):
+        self.journal_thread_fixture.journal_thread_mock.stop()
+        self.addCleanup(self.journal_thread_fixture.journal_thread_mock.start)
+
+        running_statuses = ['S', 'R', 'D']
+
+        def kill_process():
+            if self._get_pid_status(pid)[1] in running_statuses:
+                os.kill(pid, signal.SIGKILL)
+
+        real_reset = worker.JournalPeriodicProcessor.reset
+
+        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
+                                         'reset', autospec=True)
+
+        c2p_read = self.create_ipc_for_mock(mock_patcher, pre_hook=real_reset)
+
+        pid = self._spawn_service(
+            service_maker=lambda: worker.JournalPeriodicProcessor())
+        self.addCleanup(kill_process)
+
+        cmd, state = self._get_pid_status(pid)
+        self.assertIn(state, running_statuses)
+
+        os.kill(pid, signal.SIGHUP)
+
+        self.assert_ipc_mock_called(c2p_read)
+
+        new_cmd, new_state = self._get_pid_status(pid)
+        self.assertIn(new_state, running_statuses)
+        self.assertEqual(cmd, new_cmd)
 
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
@@ -128,6 +243,20 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
         journal_thread.stop(5)
         self.assertTrue(not journal_thread._odl_sync_thread.is_alive())
         mock_journal.assert_called_once()
+
+    @mock.patch.object(journal.OpenDaylightJournalThread,
+                       'sync_pending_entries')
+    def test_allow_multiple_starts_gracefully(self, mock_journal):
+        self.journal_thread_fixture.journal_thread_mock.stop()
+        self.addCleanup(self.journal_thread_fixture.journal_thread_mock.start)
+        journal_thread = journal.OpenDaylightJournalThread(start_thread=False)
+        self.addCleanup(journal_thread.stop)
+        journal_thread.start()
+
+        try:
+            journal_thread.start()
+        except RuntimeError:
+            self.fail('OpenDaylightJournalThread started twice')
 
 
 def _raise_DBReferenceError(*args, **kwargs):

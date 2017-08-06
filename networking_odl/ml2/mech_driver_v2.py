@@ -34,6 +34,7 @@ from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.journal import periodic_task
 from networking_odl.journal import recovery
+from networking_odl.journal import worker
 from networking_odl.ml2 import port_binding
 from networking_odl.ml2 import port_status_update
 from networking_odl.qos import qos_driver_v2 as qos_driver
@@ -78,7 +79,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
 
     def get_workers(self):
         workers = [port_status_update.OdlPortStatusUpdate(),
-                   journal.JournalPeriodicProcessor()]
+                   worker.JournalPeriodicProcessor()]
         workers += self.port_binding_controller.get_workers()
         return workers
 

@@ -21,11 +21,9 @@ import time
 from neutron_lib.callbacks import registry
 from neutron_lib import context as nl_context
 from neutron_lib.plugins import directory
-from neutron_lib import worker
 from oslo_config import cfg
 from oslo_db import exception
 from oslo_log import log as logging
-from oslo_service import loopingcall
 from requests import exceptions
 
 from neutron.db import api as db_api
@@ -175,45 +173,6 @@ def _build_url(row):
     return MAKE_URL.get(row.object_type, _make_url)(row)
 
 
-class JournalPeriodicProcessor(worker.BaseWorker):
-    """Responsible for running the periodic processing of the journal.
-
-    This is a separate worker as the regular journal thread is called when an
-    operation finishes and that run will take care of any and all entries
-    that might be present in the journal, including the one relating to that
-    operation.
-
-    A periodic run over the journal is thus necessary for cases when journal
-    entries in the aforementioned run didn't process correctly due to some
-    error (usually a connection problem) and need to be retried.
-    """
-    def __init__(self):
-        super(JournalPeriodicProcessor, self).__init__()
-        self._journal = OpenDaylightJournalThread(start_thread=False)
-        self._interval = cfg.CONF.ml2_odl.sync_timeout
-        self._timer = loopingcall.FixedIntervalLoopingCall(self._call_journal)
-
-    def start(self):
-        super(JournalPeriodicProcessor, self).start()
-        LOG.debug('JournalPeriodicProcessor starting')
-        self._journal.start()
-        self._timer.start(self._interval)
-
-    def stop(self):
-        LOG.debug('JournalPeriodicProcessor stopping')
-        self._journal.stop()
-        self._timer.stop()
-
-    def wait(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def _call_journal(self):
-        self._journal.set_sync_event()
-
-
 class OpenDaylightJournalThread(object):
     """Thread worker for the OpenDaylight Journal Database."""
 
@@ -226,18 +185,23 @@ class OpenDaylightJournalThread(object):
         self._max_retry_count = cfg.CONF.ml2_odl.retry_count
         self._sleep_time = self._RETRY_SLEEP_MIN
         self.event = threading.Event()
-        self._odl_sync_thread = threading.Thread(
-            name='sync',
-            target=self.run_sync_thread)
+        self._odl_sync_thread = self._create_odl_sync_thread()
         self._odl_sync_thread_stop = threading.Event()
         if start_thread:
             self.start()
 
+    def _create_odl_sync_thread(self):
+        return threading.Thread(name='sync', target=self.run_sync_thread)
+
     def start(self):
         # Start the sync thread
         LOG.debug("Starting a new sync thread")
-        self._odl_sync_thread_stop.clear()
-        self._odl_sync_thread.start()
+        if self._odl_sync_thread_stop.is_set():
+            self._odl_sync_thread_stop.clear()
+            self._odl_sync_thread = self._create_odl_sync_thread()
+
+        if not self._odl_sync_thread.is_alive():
+            self._odl_sync_thread.start()
 
     def stop(self, timeout=None):
         """Allows to stop the sync thread.
