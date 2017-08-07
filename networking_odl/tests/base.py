@@ -96,7 +96,9 @@ class OpenDaylightJournalThreadFixture(fixtures.Fixture):
 class OpenDaylightPeriodicTaskFixture(fixtures.Fixture):
     def _setUp(self):
         super(OpenDaylightPeriodicTaskFixture, self)._setUp()
-        mock.patch.object(periodic_task.PeriodicTask, 'start').start()
+        self.task_start_mock = mock.patch.object(
+            periodic_task.PeriodicTask, 'start')
+        self.task_start_mock.start()
 
 
 class OpenDaylightPseudoAgentPrePopulateFixture(

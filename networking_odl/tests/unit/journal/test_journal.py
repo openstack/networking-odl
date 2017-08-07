@@ -30,15 +30,25 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
+from networking_odl.journal import cleanup
 from networking_odl.journal import dependency_validations
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
+from networking_odl.journal import periodic_task
+from networking_odl.journal import recovery
 from networking_odl.journal import worker
+from networking_odl.tests import base
 from networking_odl.tests.unit import base_v2
 from networking_odl.tests.unit.db import test_db
 
 
 class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
                                    test_service.ServiceTestBase):
+    def setUp(self):
+        super(JournalPeriodicProcessorTest, self).setUp()
+        self.periodic_task_fixture = self.useFixture(
+            base.OpenDaylightPeriodicTaskFixture())
+
     def _get_pid_status(self, pid):
         """Allows to query a system process based on the PID
 
@@ -103,22 +113,33 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         periodic_processor.start()
         utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
 
+    @mock.patch.object(journal.OpenDaylightJournalThread, 'start')
     @mock.patch.object(journal.OpenDaylightJournalThread, 'stop')
-    def test_stops_journal_sync_thread(self, mock_journal_stop):
+    def test_stops_journal_sync_thread(self, mock_stop, mock_start):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
         periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor.start()
         periodic_processor.stop()
-        mock_journal_stop.assert_called_once()
+        mock_stop.assert_called_once()
+        mock_start.assert_called_once()
 
     def test_allow_multiple_starts_gracefully(self):
         periodic_processor = worker.JournalPeriodicProcessor()
         self.addCleanup(periodic_processor.stop)
         periodic_processor.start()
+        periodic_processor.stop()
 
         try:
             periodic_processor.start()
         except RuntimeError:
-            self.fail('JournalPeriodicProcessor._timer started twice')
+            self.fail('Calling a start() after a stop() should be allowed')
+
+    def test_multiple_starts_without_stop_throws_exception(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+
+        self.assertRaises(RuntimeError, periodic_processor.start)
 
     def test_call_stop_without_calling_start(self):
         periodic_processor = worker.JournalPeriodicProcessor()
@@ -161,6 +182,34 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         new_cmd, new_state = self._get_pid_status(pid)
         self.assertIn(new_state, running_statuses)
         self.assertEqual(cmd, new_cmd)
+
+    @mock.patch.object(cleanup, 'delete_completed_rows')
+    @mock.patch.object(cleanup, 'cleanup_processing_rows')
+    @mock.patch.object(full_sync, 'full_sync')
+    @mock.patch.object(recovery, 'journal_recovery')
+    # ^^ The above mocks represent the required calling order starting from
+    # top. Use decorators *only* to specify the stack order.
+    def test_maintenance_task_correctly_registered(self, *stack_order):
+        calls = []
+        for item in reversed(stack_order):
+            calls.append(mock.call(item))
+
+        with mock.patch.object(
+                periodic_task.PeriodicTask,
+                'register_operation') as register_operation_mock:
+            periodic_processor = worker.JournalPeriodicProcessor()
+            periodic_processor._start_maintenance_task()
+            register_operation_mock.assert_has_calls(calls)
+
+    @mock.patch.object(worker.JournalPeriodicProcessor,
+                       '_start_maintenance_task')
+    def test_maintenance_task_started(self, maintenance_mock):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+        periodic_processor._maintenance_task = mock.MagicMock()
+
+        maintenance_mock.assert_called_once()
 
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):

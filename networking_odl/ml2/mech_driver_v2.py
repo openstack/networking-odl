@@ -29,11 +29,8 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import odl_features
 from networking_odl.common import postcommit
 from networking_odl.dhcp import odl_dhcp_driver as dhcp_driver
-from networking_odl.journal import cleanup
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
-from networking_odl.journal import periodic_task
-from networking_odl.journal import recovery
 from networking_odl.journal import worker
 from networking_odl.ml2 import port_binding
 from networking_odl.ml2 import port_status_update
@@ -73,7 +70,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if cfg.CONF.ml2_odl.enable_dhcp_service:
             self.dhcp_driver = dhcp_driver.OdlDhcpDriver()
 
-        self._start_periodic_task()
         full_sync.register(nlib_const.CORE, L2_RESOURCES)
         odl_features.init()
 
@@ -82,21 +78,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                    worker.JournalPeriodicProcessor()]
         workers += self.port_binding_controller.get_workers()
         return workers
-
-    def _start_periodic_task(self):
-        # start the periodic task and register all the phases
-        # operations :
-        # (1) JournalCleanup - Delete completed rows from journal
-        # (2) CleanupProcessing - Mark orphaned processing rows to pending
-        # (3) Full sync - Re-sync when detecting an ODL "cold reboot"
-        interval = cfg.CONF.ml2_odl.maintenance_interval
-        self._periodic_task = periodic_task.PeriodicTask('maintenance',
-                                                         interval)
-        self._periodic_task.register_operation(cleanup.delete_completed_rows)
-        self._periodic_task.register_operation(cleanup.cleanup_processing_rows)
-        self._periodic_task.register_operation(full_sync.full_sync)
-        self._periodic_task.register_operation(recovery.journal_recovery)
-        self._periodic_task.start()
 
     @staticmethod
     def _record_in_journal(context, object_type, operation, data=None):
