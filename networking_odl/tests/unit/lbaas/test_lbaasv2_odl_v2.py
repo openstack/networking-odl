@@ -13,6 +13,7 @@
 import mock
 
 import neutron_lbaas
+from neutron_lbaas.drivers import driver_base
 from neutron_lbaas.services.loadbalancer import data_models
 
 import networking_odl
@@ -91,6 +92,15 @@ class ODLLoadBalancerManagerTestCase(OpenDaylightLBaaSBaseTestCase):
 
     def test_delete_load_balancer(self):
         self._test_operation('delete', odl_const.ODL_DELETE)
+
+    def test_db_delete_method_load_balancer(self):
+        # TODO(mpeterson): implement a proper test. Probably it should test all
+        # drivers in a consistent way.
+        driver = lb_driver.ODLLoadBalancerManager(mock.Mock())
+        self.assertIsInstance(driver.db_delete_method, property)
+        self.assertIs(
+            driver.db_delete_method,
+            driver_base.BaseLoadBalancerManager.db_delete_method)
 
 
 class ODLListenerManagerTestCase(OpenDaylightLBaaSBaseTestCase):

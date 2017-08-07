@@ -17,8 +17,9 @@ import gettext
 
 import six
 
+params = {}
 
 if six.PY2:
-    gettext.install('networking_odl', unicode=1)
-else:
-    gettext.install('networking_odl')
+    params = {'unicode': 1}
+
+gettext.install('networking_odl', **params)

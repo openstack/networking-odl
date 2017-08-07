@@ -112,6 +112,12 @@ class ODLLoadBalancerManager(OpenDaylightManager,
         # TODO(rajivk): implement this method
         pass
 
+    # NOTE(mpeterson): workaround for pylint
+    # pylint raises false positive of abstract-class-instantiated
+    @property
+    def db_delete_method(self):
+        return driver_base.BaseLoadBalancerManager.db_delete_method
+
 
 class ODLListenerManager(OpenDaylightManager,
                          driver_base.BaseListenerManager):

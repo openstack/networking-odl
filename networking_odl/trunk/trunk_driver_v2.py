@@ -128,7 +128,7 @@ class OpenDaylightTrunkHandlerV2(object):
         filters = {'port_id': port_id}
         trunks = trunk_plugin.get_trunks(context.get_admin_context(),
                                          filters=filters)
-        if len(trunks) == 0:
+        if not trunks:
             return ()
         trunk = trunks[0]
         return (subport['port_id'] for subport in trunk['sub_ports'])
