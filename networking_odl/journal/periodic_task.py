@@ -86,14 +86,14 @@ class PeriodicTask(object):
         with db_api.autonested_transaction(session):
             return db.lock_periodic_task(session, self.task)
 
-    def execute_ops(self):
+    def execute_ops(self, forced=False):
         LOG.info("Starting %s periodic task.", self.task)
         context = neutron_context.get_admin_context()
 
         # Lock make sure that periodic task is executed only after
         # specified interval. It makes sure that maintenance tasks
         # are not executed back to back.
-        if self.task_already_executed_recently(context):
+        if not forced and self.task_already_executed_recently(context):
             LOG.info("Periodic %s task executed after periodic interval "
                      "Skipping execution.", self.task)
             return

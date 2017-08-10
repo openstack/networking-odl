@@ -203,3 +203,14 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.thread.cleanup()
         self.assertFalse(task_locked())
         self.assertGreaterEqual(count[0], 1)
+
+    @mock.patch.object(db, "was_periodic_task_executed_recently",
+                       return_value=True)
+    def test_forced_execution(self, mock_status_method):
+        operation = mock.MagicMock()
+        operation.__name__ = "test"
+        self.thread.register_operation(operation)
+
+        self.thread.execute_ops(forced=True)
+
+        operation.assert_called()
