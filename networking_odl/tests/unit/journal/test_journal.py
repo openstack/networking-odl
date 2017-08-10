@@ -42,6 +42,9 @@ from networking_odl.tests.unit import base_v2
 from networking_odl.tests.unit.db import test_db
 
 
+PROCESS_RUNNING_STATUSES = ('S', 'R', 'D')
+
+
 class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
                                    test_service.ServiceTestBase):
     def setUp(self):
@@ -67,6 +70,10 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
             return next(((c, s) for p, s, c in processes if int(p) == pid),
                         (None, None))
+
+    def _kill_process(self, pid):
+        if self._get_pid_status(pid)[1] in PROCESS_RUNNING_STATUSES:
+            os.kill(pid, signal.SIGKILL)
 
     def create_ipc_for_mock(self, patcher, pre_hook=None):
         # NOTE(mpeterson): The following pipe is being used because this is
@@ -108,6 +115,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(journal.OpenDaylightJournalThread, 'set_sync_event')
     def test_processing(self, mock_journal):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
+
         periodic_processor = worker.JournalPeriodicProcessor()
         self.addCleanup(periodic_processor.stop)
         periodic_processor.start()
@@ -149,17 +157,17 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         except AttributeError:
             self.fail('start() was not called before calling stop()')
 
+    def assert_process_running(self, pid):
+        cmd, state = self._get_pid_status(pid)
+        self.assertIn(state, PROCESS_RUNNING_STATUSES)
+        return cmd
+
+    @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops',
+                       new=mock.Mock())
     @mock.patch.object(journal.OpenDaylightJournalThread,
-                       'sync_pending_entries')
-    def test_handle_sighup_gracefully(self, mock_journal):
-        self.journal_thread_fixture.journal_thread_mock.stop()
-        self.addCleanup(self.journal_thread_fixture.journal_thread_mock.start)
-
-        running_statuses = ['S', 'R', 'D']
-
-        def kill_process():
-            if self._get_pid_status(pid)[1] in running_statuses:
-                os.kill(pid, signal.SIGKILL)
+                       'sync_pending_entries', new=mock.Mock())
+    def test_handle_sighup_gracefully(self):
+        self._setup_mocks_for_periodic_task()
 
         real_reset = worker.JournalPeriodicProcessor.reset
 
@@ -170,18 +178,25 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
         pid = self._spawn_service(
             service_maker=lambda: worker.JournalPeriodicProcessor())
-        self.addCleanup(kill_process)
+        self.addCleanup(self._kill_process, pid)
 
-        cmd, state = self._get_pid_status(pid)
-        self.assertIn(state, running_statuses)
+        cmd = self.assert_process_running(pid)
 
         os.kill(pid, signal.SIGHUP)
 
         self.assert_ipc_mock_called(c2p_read)
 
-        new_cmd, new_state = self._get_pid_status(pid)
-        self.assertIn(new_state, running_statuses)
+        new_cmd = self.assert_process_running(pid)
         self.assertEqual(cmd, new_cmd)
+
+    def _setup_mocks_for_periodic_task(self, executed_recently=False):
+        mock_db_module = mock.MagicMock(spec=db)
+        mock_db_module.was_periodic_task_executed_recently.return_value = \
+            executed_recently
+        mock_db = mock.patch('networking_odl.journal.periodic_task.db',
+                             mock_db_module)
+        mock_db.start()
+        self.addCleanup(mock_db.stop)
 
     @mock.patch.object(cleanup, 'delete_completed_rows')
     @mock.patch.object(cleanup, 'cleanup_processing_rows')
@@ -201,15 +216,50 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
             periodic_processor._start_maintenance_task()
             register_operation_mock.assert_has_calls(calls)
 
-    @mock.patch.object(worker.JournalPeriodicProcessor,
-                       '_start_maintenance_task')
-    def test_maintenance_task_started(self, maintenance_mock):
+    def test_maintenance_task_started(self):
+        self.periodic_task_fixture.task_start_mock.stop()
+        mock_start = self.periodic_task_fixture.task_start_mock.start()
         periodic_processor = worker.JournalPeriodicProcessor()
         self.addCleanup(periodic_processor.stop)
         periodic_processor.start()
         periodic_processor._maintenance_task = mock.MagicMock()
 
-        maintenance_mock.assert_called_once()
+        mock_start.assert_called_once()
+
+    def test_reset_called_on_sighup(self):
+        self.cfg.config(sync_timeout=0, group='ml2_odl')
+
+        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
+                                         'reset', autospec=True)
+
+        c2p_read = self.create_ipc_for_mock(mock_patcher)
+
+        pid = self._spawn_service(
+            service_maker=lambda: worker.JournalPeriodicProcessor())
+        self.addCleanup(self._kill_process, pid)
+
+        self.assert_process_running(pid)
+
+        os.kill(pid, signal.SIGHUP)
+
+        self.assert_ipc_mock_called(c2p_read)
+
+    @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops')
+    def test_reset_fires_maintenance_task(self, execute_mock):
+        periodic_processor = worker.JournalPeriodicProcessor()
+
+        periodic_processor._start_maintenance_task()
+        periodic_processor.reset()
+
+        execute_mock.assert_has_calls([mock.call(forced=True)])
+
+    def test_reset_succeeeds_when_maintenance_task_not_setup(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+
+        # NOTE(mpeterson): This tests that if calling reset without setting up
+        # the maintenance task then it would not raise an exception and just
+        # proceed as usual.
+        periodic_processor.reset()
 
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
