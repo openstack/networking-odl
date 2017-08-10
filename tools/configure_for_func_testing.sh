@@ -93,6 +93,9 @@ function _install_base_deps {
 
     INSTALL_TESTONLY_PACKAGES=True
     PACKAGES=$(get_packages general)
+    # for gethostip command
+    enable_plugin networking-odl https://git.openstack.org/openstack/networking-odl
+    PACKAGES="$PACKAGES $(get_plugin_packages)"
     # Do not install 'python-' prefixed packages other than
     # python-dev*. Networking ODL's functional testing relies on deployment
     # to a tox env so there is no point in installing python

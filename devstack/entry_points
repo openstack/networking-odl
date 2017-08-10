@@ -30,20 +30,18 @@ function configure_opendaylight {
     local ODL_LOGGING_CONFIG=${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg
 
     # Add netvirt feature in Karaf, if it's not already there
-    local ODLFEATUREMATCH=$(grep featuresBoot= $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep $ODL_NETVIRT_KARAF_FEATURE)
-    if [ "$ODLFEATUREMATCH" == "" ]; then
+    if ! (grep featuresBoot= $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep $ODL_NETVIRT_KARAF_FEATURE); then
         sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
-               $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+            $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
         # NOTE(yamahata): From Nitrogen, the format has been slightly changed
         sed -i "/^featuresBoot = \\\\$/ s/\\\\$/$ODL_NETVIRT_KARAF_FEATURE, \\\\/" \
-               $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+            $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
     # Move Jetty to $ODL_PORT
-    local _ODLPORT=$(grep $ODL_PORT $ODL_DIR/$ODL_NAME/etc/jetty.xml)
-    if [ "$_ODLPORT" == "" ]; then
+    if ! grep $ODL_PORT $ODL_DIR/$ODL_NAME/etc/jetty.xml; then
         sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" \
-               $ODL_DIR/$ODL_NAME/etc/jetty.xml
+            $ODL_DIR/$ODL_NAME/etc/jetty.xml
     fi
 
     # Configure conntrack for legacy netvirt
@@ -58,14 +56,12 @@ function configure_opendaylight {
     # L3 is always enabled in NETVIRT_VPNSERVICE
     if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]] && [ "${ODL_L3}" == "True" ]; then
         # Configure L3 FWD if it's not there
-        local L3FWD=$(grep ^ovsdb.l3.fwd.enabled $ODL_DIR/$ODL_NAME/etc/custom.properties)
-        if [ "$L3FWD" == "" ]; then
+        if ! grep ^ovsdb.l3.fwd.enabled $ODL_DIR/$ODL_NAME/etc/custom.properties; then
             echo "ovsdb.l3.fwd.enabled=yes" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
         fi
 
         # Configure L3 GW MAC if it's not there
-        local L3GW_MAC=$(grep ^ovsdb.l3gateway.mac $ODL_DIR/$ODL_NAME/etc/custom.properties)
-        if [[ -z "$L3GW_MAC" && -n "$ODL_L3GW_MAC" ]]; then
+        if ! grep ^ovsdb.l3gateway.mac $ODL_DIR/$ODL_NAME/etc/custom.properties && [[ -n "$ODL_L3GW_MAC" ]]; then
             echo "ovsdb.l3gateway.mac=$ODL_L3GW_MAC" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
         fi
     fi
@@ -90,21 +86,18 @@ function configure_opendaylight {
     # Change the karaf logfile
     # disable log rotation by setting max fiel size large enough
     sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
-           -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
-    $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
+        -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
+        $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
 
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
-        local OVSDB_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.ovsdb $ODL_LOGGING_CONFIG)
-        if [ "${OVSDB_DEBUG_LOGS}" == "" ]; then
+        if ! grep ^log4j.logger.org.opendaylight.ovsdb $ODL_LOGGING_CONFIG; then
             echo 'log4j.logger.org.opendaylight.ovsdb = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        local NETVIRT_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.netvirt $ODL_LOGGING_CONFIG)
-        if [ "${NETVIRT_DEBUG_LOGS}" == "" ]; then
+        if ! grep ^log4j.logger.org.opendaylight.netvirt $ODL_LOGGING_CONFIG; then
             echo 'log4j.logger.org.opendaylight.netvirt = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
-        local ODL_NEUTRON_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.neutron $ODL_LOGGING_CONFIG)
-        if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
+        if ! grep ^log4j.logger.org.opendaylight.neutron $ODL_LOGGING_CONFIG; then
             echo 'log4j.logger.org.opendaylight.neutron = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
     fi
@@ -168,8 +161,7 @@ function init_opendaylight {
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
     echo "Installing OpenDaylight and dependent packages"
-    if [[ "$ODL_USING_EXISTING_JAVA" != "True" ]]
-    then
+    if [[ "$ODL_USING_EXISTING_JAVA" != "True" ]]; then
         if ! setup_java "${ODL_REQUIRED_JAVA_VERSION:-7}"; then
             exit 1
         fi
@@ -227,7 +219,7 @@ function start_opendaylight {
         local testcmd="curl -o /dev/null --fail --silent --head -u \
               ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}"
         test_with_retry "$testcmd" "OpenDaylight did not start after $ODL_BOOT_WAIT" \
-              $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
+                        $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
     else
         echo "Waiting for OpenDaylight to start ..."
         # Sleep a bit to let OpenDaylight finish starting up
@@ -278,12 +270,15 @@ function bind_opendaylight_controller {
     read ovstbl <<< $(sudo ovs-vsctl get Open_vSwitch . _uuid)
     local ODL_MANAGERS_PARAM=()
     for manager in $(echo $ODL_OVS_MANAGERS | tr "," "\n"); do
-        local manager_ip=$(gethostip -d ${manager})
+        local manager_ip
+        manager_ip=$(gethostip -d ${manager})
         ODL_MANAGERS_PARAM=( "${ODL_MANAGERS_PARAM[@]}" "tcp:${manager_ip}:$ODL_MGR_PORT" )
     done
     # don't overwrite the already existing managers
-    local ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
-    local ODL_MANAGERS=$(echo $ODL_MANAGERS_OLD ${ODL_MANAGERS_PARAM[@]} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+    local ODL_MANAGERS_OLD
+    ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
+    local ODL_MANAGERS
+    ODL_MANAGERS=$(echo $ODL_MANAGERS_OLD ${ODL_MANAGERS_PARAM[@]} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
     sudo ovs-vsctl set-manager ${ODL_MANAGERS}
     if [[ -n "$PUBLIC_BRIDGE" ]]; then
         sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
@@ -316,7 +311,7 @@ function unbind_opendaylight_controller {
     BRIDGES=$(sudo ovs-vsctl list-br)
     for bridge in $BRIDGES ; do
         sudo ovs-vsctl del-controller $bridge
-     done
+    done
 }
 
 
@@ -328,7 +323,8 @@ function _configure_veth {
     sudo ip link set $Q_PUBLIC_VETH_EX up
     sudo ip addr flush dev $Q_PUBLIC_VETH_EX
     if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]]; then
-        local OVSBR_EX=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
+        local OVSBR_EX
+        OVSBR_EX=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
         sudo ovs-vsctl --may-exist add-port $OVSBR_EX $Q_PUBLIC_VETH_INT
     else
         sudo ovs-vsctl --may-exist add-port $OVS_BR $Q_PUBLIC_VETH_INT

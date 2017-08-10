@@ -47,14 +47,16 @@ function odl_artifcat_id {
     local OFFLINE=$4
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
-    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    local NEXUSPATH
+    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
     _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
     if [[ -f "$MAVENMETAFILE" ]]; then
         # In auto release case, metadata file exists only in parent directly.
         # e.g. https://nexus.opendaylight.org/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/maven-metadata.xml
         _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
     fi
-    local result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
+    local result
+    result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
     echo $result
 }
 
@@ -66,7 +68,8 @@ function odl_snapshot_full_version {
     local OFFLINE=$4
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-snapshot.xml
-    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    local NEXUSPATH
+    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
     _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
     if [[ ! -r $MAVENMETAFILE ]]; then
         echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False and check internet connection to $NEXUSPATH"
@@ -74,9 +77,11 @@ function odl_snapshot_full_version {
     fi
 
     if [[ "$MAJOR_MINOR" == "latest" ]]; then
-        local ODL_FULL_VERSION=$(_xpath "//latest/text()" $MAVENMETAFILE)
+        local ODL_FULL_VERSION
+        ODL_FULL_VERSION=$(_xpath "//latest/text()" $MAVENMETAFILE)
     else
-        local ODL_FULL_VERSION=$(_xpath "//version[starts-with(text(), '$MAJOR_MINOR')][last()]/text()" $MAVENMETAFILE)
+        local ODL_FULL_VERSION
+        ODL_FULL_VERSION=$(_xpath "//version[starts-with(text(), '$MAJOR_MINOR')][last()]/text()" $MAVENMETAFILE)
     fi
     ODL_FULL_VERSION=${ODL_FULL_VERSION/-SNAPSHOT/}
     echo $ODL_FULL_VERSION
@@ -90,7 +95,8 @@ function _odl_export_snapshot_url_pkg {
     local BUNDLE_TIMESTAMP=$5
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
-    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    local NEXUSPATH
+    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
 
     if [ "$BUNDLE_TIMESTAMP" == "latest" ]; then
         # Get build information
@@ -146,8 +152,10 @@ function move_interface_addresses {
     local direction=$1
 
     if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
-        local VETH_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
-        local PHYSICAL_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f2)
+        local VETH_INTERFACE
+        VETH_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f1)
+        local PHYSICAL_INTERFACE
+        PHYSICAL_INTERFACE=$(echo $ODL_PROVIDER_MAPPINGS | cut -d ':' -f2)
 
         if [[ "$direction" == "into_bridge" ]]; then
             _move_neutron_addresses_route "$PHYSICAL_INTERFACE" "$VETH_INTERFACE" True False "inet"
@@ -167,7 +175,8 @@ function move_interface_addresses {
 # is routable on external network
 function _has_public_ipv6_address {
     local interface=$1
-    local interface_public_ipv6_addresses=$(ip -f inet6 a s dev "$interface" | grep -c 'global')
+    local interface_public_ipv6_addresses
+    interface_public_ipv6_addresses=$(ip -f inet6 a s dev "$interface" | grep -c 'global')
     echo "$interface public IPv6 address count: $interface_public_ipv6_addresses"
     if [[ "$interface_public_ipv6_addresses" != 0 ]]; then
         return 0

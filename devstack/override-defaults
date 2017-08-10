@@ -1,10 +1,11 @@
+#!/bin/bash
+#
 # Override few things here as early as we can
 
 # We will enable the opendaylight ML2 MechanismDriver v1 version by default.
 # Note we are also enabling the logger driver, which is helpful for
 # debugging things on the Neutron side.
-if [[ "$ODL_V2DRIVER" == "True" ]]
-then
+if [[ "$ODL_V2DRIVER" == "True" ]]; then
     V2_POSTFIX="_v2"
 else
     V2_POSTFIX=""
@@ -24,8 +25,7 @@ disable_service q-agt
 # If ODL_L3 is enabled, then we don't need the L3 agent and OpenDaylight
 # is going to act as the ML2's L3 service plugin.
 # NETVIRT_VPNSERVICE feature enables ODL L3 by default, so ODL_L3 is disregarded.
-if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE," ]] || [ "$ODL_L3" == "True" ];
-then
+if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE," ]] || [ "$ODL_L3" == "True" ]; then
     disable_service q-l3
     ML2_L3_PLUGIN="${ML2_L3_PLUGIN:-odl-router${V2_POSTFIX}}"
 fi
