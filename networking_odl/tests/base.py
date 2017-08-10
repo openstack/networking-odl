@@ -19,11 +19,14 @@ import mock
 
 from oslo_config import cfg
 
-from networking_odl.common import odl_features
-from networking_odl.journal import periodic_task
 from neutron.tests import base
+from neutron_lib.callbacks import registry
+from neutron_lib import fixture as nl_fixture
 
+from networking_odl.common import odl_features
 from networking_odl.journal import journal
+from networking_odl.journal import periodic_task
+from networking_odl.ml2 import pseudo_agentdb_binding
 
 
 class DietTestCase(base.DietTestCase):
@@ -91,3 +94,23 @@ class OpenDaylightPeriodicTaskFixture(fixtures.Fixture):
     def _setUp(self):
         super(OpenDaylightPeriodicTaskFixture, self)._setUp()
         mock.patch.object(periodic_task.PeriodicTask, 'start').start()
+
+
+class OpenDaylightPseudoAgentPrePopulateFixture(
+        nl_fixture.CallbackRegistryFixture):
+    def _setUp(self):
+        super(OpenDaylightPseudoAgentPrePopulateFixture, self)._setUp()
+        mock.patch.object(
+            pseudo_agentdb_binding.PseudoAgentDBBindingPrePopulate,
+            'before_port_binding').start()
+
+    # NOTE(yamahata): work around
+    # CallbackRegistryFixture._restore causes stopping unstarted patcher
+    # bacause some of base classes neutron test cases issue stop_all()
+    # with tearDown method
+    def _restore(self):
+        registry._CALLBACK_MANAGER = self._orig_manager
+        if mock.mock._is_started(self.patcher):
+            # this may cause RuntimeError('stop called on unstarted patcher')
+            # due to stop_all called by base test cases
+            self.patcher.stop()

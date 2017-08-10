@@ -37,6 +37,7 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.useFixture(odl_base.OpenDaylightJournalThreadFixture())
+        self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OdlDhcpDriverTestBase, self).setUp()
 
     def get_test_parameters(self):

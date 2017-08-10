@@ -18,6 +18,8 @@ from string import Template
 
 from neutron.db import provisioning_blocks
 from neutron_lib.api.definitions import portbindings
+from neutron_lib.callbacks import events
+from neutron_lib.callbacks import registry
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as nl_const
 from neutron_lib import context
@@ -99,6 +101,51 @@ class PseudoAgentDBBindingTaskBase(object):
             return  # retry on next poll
 
         self._worker.update_agents_db(hostconfigs=hostconfigs)
+
+
+@registry.has_registry_receivers
+class PseudoAgentDBBindingPrePopulate(PseudoAgentDBBindingTaskBase):
+    @registry.receives(resources.PORT,
+                       [events.BEFORE_CREATE, events.BEFORE_UPDATE])
+    def before_port_binding(self, resource, event, trigger, **kwargs):
+        LOG.debug("before_port resource %s event %s %s",
+                  resource, event, kwargs)
+        assert resource == resources.PORT
+        assert event in [events.BEFORE_CREATE, events.BEFORE_UPDATE]
+        ml2_plugin = trigger
+        context = kwargs['context']
+        port = kwargs['port']
+
+        host = nl_const.ATTR_NOT_SPECIFIED
+        if port and portbindings.HOST_ID in port:
+            host = port.get(portbindings.HOST_ID)
+        if host == nl_const.ATTR_NOT_SPECIFIED or not host:
+            return
+        agent_type = PseudoAgentDBBindingWorker.L2_TYPE
+        if self._worker.known_agent(host, agent_type):
+            return
+        agents = ml2_plugin.get_agents(
+            context, filters={'agent_type': [agent_type], 'host': [host]})
+        if agents and all(agent['alive'] for agent in agents):
+            self._worker.add_known_agents(agents)
+            LOG.debug("agents %s", agents)
+            return
+
+        # This host may not be created/updated by worker.
+        # try to populate it.
+        urlpath = "hostconfig/{0}/{1}".format(
+            host, PseudoAgentDBBindingWorker.L2_TYPE)
+        try:
+            response = self.odl_rest_client.get(urlpath)
+            response.raise_for_status()
+        except Exception:
+            LOG.warning("REST/GET odl hostconfig/%s failed.", host,
+                        exc_info=True)
+            return
+        LOG.debug("response %s", response.json())
+        hostconfig = response.json().get('hostconfig', [])
+        if hostconfig:
+            self._worker.update_agents_db_row(hostconfig[0])
 
 
 class PseudoAgentDBBindingPeriodicTask(PseudoAgentDBBindingTaskBase):
@@ -187,6 +234,7 @@ class PseudoAgentDBBindingWorker(worker.BaseWorker):
 
     def __init__(self):
         LOG.info("PseudoAgentDBBindingWorker init")
+        self._old_agents = set()
         self._known_agents = set()
         self.agents_db = None
         super(PseudoAgentDBBindingWorker, self).__init__()
@@ -212,6 +260,14 @@ class PseudoAgentDBBindingWorker(worker.BaseWorker):
             self._websocket = PseudoAgentDBBindingWebSocket(self)
         else:
             self._periodic_task = (PseudoAgentDBBindingPeriodicTask(self))
+
+    def known_agent(self, host_id, agent_type):
+        agent = (host_id, agent_type)
+        return agent in self._known_agents or agent in self._old_agents
+
+    def add_known_agents(self, agents):
+        for agent in agents:
+            self._known_agents.add((agent['host'], agent['agent_type']))
 
     def update_agents_db(self, hostconfigs):
         LOG.debug("ODLPORTBINDING Updating agents DB with ODL hostconfigs")
@@ -265,6 +321,7 @@ class PseudoAgentDBBindingWorker(worker.BaseWorker):
             LOG.exception("Unable to delete from agentdb.")
 
 
+@registry.has_registry_receivers
 class PseudoAgentDBBindingController(port_binding.PortBindingController):
     """Switch agnostic Port binding controller for OpenDayLight."""
 
@@ -272,9 +329,14 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         """Initialization."""
         LOG.debug("Initializing ODL Port Binding Controller")
         super(PseudoAgentDBBindingController, self).__init__()
+        self._worker = PseudoAgentDBBindingWorker()
+
+    @registry.receives(resources.PROCESS, [events.BEFORE_SPAWN])
+    def _before_spawn(self, resource, event, trigger, **kwargs):
+        self._prepopulate = PseudoAgentDBBindingPrePopulate(self._worker)
 
     def get_workers(self):
-        return [PseudoAgentDBBindingWorker()]
+        return [self._worker]
 
     def _substitute_hconfig_tmpl(self, port_context, hconfig):
         # TODO(mzmalick): Explore options for inlines string splicing of
@@ -326,7 +388,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                     "owner %(owner)s for host %(host)s "
                     "on network %(network)s.", {
                         'pid': port_context.current['id'],
-                        'devce_id': port_context.current['device_id'],
+                        'device_id': port_context.current['device_id'],
                         'owner': port_context.current['device_owner'],
                         'host': port_context.host,
                         'network': port_context.network.current['id']})

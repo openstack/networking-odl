@@ -57,9 +57,10 @@ SG_RULE_FAKE_ID = uuidutils.generate_uuid()
 
 class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
     def setUp(self):
-        super(OpenDayLightMechanismConfigTests, self).setUp()
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
+        super(OpenDayLightMechanismConfigTests, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')
         cfg.CONF.set_override('port_binding_controller',
@@ -92,23 +93,29 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
         self._test_missing_config(password=None)
 
 
+class _OpenDaylightMechanismBase(base_v2.OpenDaylightTestCase):
+    def setUp(self):
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
+        super(_OpenDaylightMechanismBase, self).setUp()
+
+
 class OpenDaylightMechanismTestBasicGet(test_plugin.TestMl2BasicGet,
-                                        base_v2.OpenDaylightTestCase):
+                                        _OpenDaylightMechanismBase):
     pass
 
 
 class OpenDaylightMechanismTestNetworksV2(test_plugin.TestMl2NetworksV2,
-                                          base_v2.OpenDaylightTestCase):
+                                          _OpenDaylightMechanismBase):
     pass
 
 
 class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
-                                         base_v2.OpenDaylightTestCase):
+                                         _OpenDaylightMechanismBase):
     pass
 
 
 class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
-                                       base_v2.OpenDaylightTestCase):
+                                       _OpenDaylightMechanismBase):
     pass
 
 
@@ -152,6 +159,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
+        self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
@@ -664,7 +672,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                     self.assertEqual(port[key], value)
 
 
-class _OpenDaylightDriverVlanTransparencyBase(base_v2.OpenDaylightTestCase):
+class _OpenDaylightDriverVlanTransparencyBase(_OpenDaylightMechanismBase):
     def _driver_context(self, network):
         return mock.MagicMock(current=network)
 
