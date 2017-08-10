@@ -97,17 +97,17 @@ function configure_opendaylight {
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
         local OVSDB_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.ovsdb)
         if [ "${OVSDB_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.ovsdb = TRACE, out' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.lib = INFO, out' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.NeutronL3Adapter = DEBUG, out' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.impl.TenantNetworkManagerImpl = DEBUG, out' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.openstack.netvirt.providers.openflow13.services.arp.GatewayMacResolverService = DEBUG, out' >> $ODL_LOGGING_CONFIG
-            echo 'log4j.logger.org.opendaylight.ovsdb.plugin.md.OvsdbInventoryManager = INFO, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.ovsdb = INFO, out' >> $ODL_LOGGING_CONFIG
+        fi
+        local NETVIRT_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
+                    grep ^log4j.logger.org.opendaylight.netvirt)
+        if [ "${NETVIRT_DEBUG_LOGS}" == "" ]; then
+            echo 'log4j.logger.org.opendaylight.netvirt = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
         local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
                     grep ^log4j.logger.org.opendaylight.neutron)
         if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
-            echo 'log4j.logger.org.opendaylight.neutron = TRACE, out' >> $ODL_LOGGING_CONFIG
+            echo 'log4j.logger.org.opendaylight.neutron = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
     fi
 }
