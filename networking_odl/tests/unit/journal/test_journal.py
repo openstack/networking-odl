@@ -261,6 +261,62 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         # proceed as usual.
         periodic_processor.reset()
 
+    def test_creates_pidfile(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor._create_pidfile()
+
+        pidfile = str(periodic_processor.pidfile)
+        self.assertTrue(os.path.isfile(pidfile))
+
+        with open(pidfile) as f:
+            pid = int(f.readline())
+
+        self.assertEqual(pid, os.getpid())
+
+        # NOTE(mpeterson): to avoid showing an expected exception while
+        # running the next assert
+        with mock.patch('neutron.agent.linux.daemon.LOG', autospec=True):
+            self.assertRaises(
+                SystemExit,
+                worker.JournalPeriodicProcessor()._create_pidfile
+            )
+
+    @mock.patch.object(worker.JournalPeriodicProcessor, '_create_pidfile')
+    @mock.patch.object(worker.JournalPeriodicProcessor, '_delete_pidfile')
+    def test_pidfile_handling_on_start_stop(self, mock_create, mock_delete):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor.start()
+        periodic_processor.stop()
+
+        mock_create.assert_called_once()
+        mock_delete.assert_called_once()
+
+    def test_deletes_pidfile(self):
+        atexit_mock = self.journal_thread_fixture.remock_atexit()
+
+        periodic_processor = worker.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+
+        pidfile = str(periodic_processor.pidfile)
+        self.assertTrue(os.path.isfile(pidfile))
+
+        periodic_processor._delete_pidfile()
+
+        self.assertFalse(os.path.isfile(pidfile))
+
+        atexit_mock.assert_called_once_with(periodic_processor._delete_pidfile)
+
+    def test_atexit_delete_pidfile_registered_only_once(self):
+        atexit_mock = self.journal_thread_fixture.remock_atexit()
+        periodic_processor = worker.JournalPeriodicProcessor()
+
+        for _ in range(0, 2):
+            periodic_processor.start()
+            periodic_processor.stop()
+
+        atexit_mock.assert_called_once()
+
 
 class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
     def setUp(self):

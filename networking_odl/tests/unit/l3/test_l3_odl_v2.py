@@ -50,6 +50,7 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.cfg = self.useFixture(config_fixture.Config())
+        self.useFixture(odl_base.OpenDaylightJournalThreadFixture())
         super(OpenDayLightMechanismConfigTests, self).setUp()
         self.cfg.config(mechanism_drivers=[
                         'logger', 'opendaylight_v2'], group='ml2')
