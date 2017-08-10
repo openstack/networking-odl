@@ -30,15 +30,14 @@ function configure_opendaylight {
     local ODL_LOGGING_CONFIG=${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg
 
     # Add netvirt feature in Karaf, if it's not already there
-    local ODLFEATUREMATCH=$(cat $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | \
-                            grep featuresBoot= | grep $ODL_NETVIRT_KARAF_FEATURE)
+    local ODLFEATUREMATCH=$(grep featuresBoot= $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep $ODL_NETVIRT_KARAF_FEATURE)
     if [ "$ODLFEATUREMATCH" == "" ]; then
         sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
                $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
     # Move Jetty to $ODL_PORT
-    local _ODLPORT=$(cat $ODL_DIR/$ODL_NAME/etc/jetty.xml | grep $ODL_PORT)
+    local _ODLPORT=$(grep $ODL_PORT $ODL_DIR/$ODL_NAME/etc/jetty.xml)
     if [ "$_ODLPORT" == "" ]; then
         sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" \
                $ODL_DIR/$ODL_NAME/etc/jetty.xml
@@ -56,15 +55,13 @@ function configure_opendaylight {
     # L3 is always enabled in NETVIRT_VPNSERVICE
     if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_OVSDB," ]] && [ "${ODL_L3}" == "True" ]; then
         # Configure L3 FWD if it's not there
-        local L3FWD=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | \
-                      grep ^ovsdb.l3.fwd.enabled)
+        local L3FWD=$(grep ^ovsdb.l3.fwd.enabled $ODL_DIR/$ODL_NAME/etc/custom.properties)
         if [ "$L3FWD" == "" ]; then
             echo "ovsdb.l3.fwd.enabled=yes" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
         fi
 
         # Configure L3 GW MAC if it's not there
-        local L3GW_MAC=$(cat $ODL_DIR/$ODL_NAME/etc/custom.properties | \
-                         grep ^ovsdb.l3gateway.mac)
+        local L3GW_MAC=$(grep ^ovsdb.l3gateway.mac $ODL_DIR/$ODL_NAME/etc/custom.properties)
         if [[ -z "$L3GW_MAC" && -n "$ODL_L3GW_MAC" ]]; then
             echo "ovsdb.l3gateway.mac=$ODL_L3GW_MAC" >> $ODL_DIR/$ODL_NAME/etc/custom.properties
         fi
@@ -95,17 +92,15 @@ function configure_opendaylight {
 
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
-        local OVSDB_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | grep ^log4j.logger.org.opendaylight.ovsdb)
+        local OVSDB_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.ovsdb $ODL_LOGGING_CONFIG)
         if [ "${OVSDB_DEBUG_LOGS}" == "" ]; then
             echo 'log4j.logger.org.opendaylight.ovsdb = INFO, out' >> $ODL_LOGGING_CONFIG
         fi
-        local NETVIRT_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
-                    grep ^log4j.logger.org.opendaylight.netvirt)
+        local NETVIRT_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.netvirt $ODL_LOGGING_CONFIG)
         if [ "${NETVIRT_DEBUG_LOGS}" == "" ]; then
             echo 'log4j.logger.org.opendaylight.netvirt = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
-        local ODL_NEUTRON_DEBUG_LOGS=$(cat $ODL_LOGGING_CONFIG | \
-                    grep ^log4j.logger.org.opendaylight.neutron)
+        local ODL_NEUTRON_DEBUG_LOGS=$(grep ^log4j.logger.org.opendaylight.neutron $ODL_LOGGING_CONFIG)
         if [ "${ODL_NEUTRON_DEBUG_LOGS}" == "" ]; then
             echo 'log4j.logger.org.opendaylight.neutron = DEBUG, out' >> $ODL_LOGGING_CONFIG
         fi
