@@ -67,6 +67,7 @@ _NETWORK_UNMAPPED_KEYS = ['qos_policy_id']
 _SUBNET_UNMAPPED_KEYS = ['segment_id', 'subnetpool_id']
 _PORT_UNMAPPED_KEYS = ['binding:profile', 'dns_name',
                        'port_security_enabled', 'qos_policy_id']
+_FIP_UNMAPPED_KEYS = ['port_id', 'fixed_ip_address', 'router_id']
 
 
 def _filter_network_create(network):
@@ -78,6 +79,10 @@ def _filter_network_update(network):
     odl_utils.try_del(network, ['id', 'status', 'subnets',
                                 'tenant_id', 'project_id'])
     _filter_unmapped_null(network, _NETWORK_UNMAPPED_KEYS)
+
+
+def _filter_floatingip(fip):
+    _filter_unmapped_null(fip, _FIP_UNMAPPED_KEYS)
 
 
 def _filter_subnet_create(subnet):
@@ -167,6 +172,7 @@ _FILTER_MAP = {
     (odl_const.ODL_ROUTER, odl_const.ODL_UPDATE): _filter_router_update,
     (odl_const.ODL_SG_RULE, odl_const.ODL_CREATE): filter_security_group_rule,
     (odl_const.ODL_SG_RULE, odl_const.ODL_UPDATE): filter_security_group_rule,
+    (odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE): _filter_floatingip,
 }
 
 

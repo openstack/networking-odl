@@ -30,6 +30,7 @@ from neutron_lib import constants as q_const
 from neutron_lib.plugins import constants as plugin_constants
 
 from networking_odl.common import client as odl_client
+from networking_odl.common import filters as odl_filters
 from networking_odl.common import utils as odl_utils
 
 
@@ -81,6 +82,11 @@ class OpenDaylightL3RouterPlugin(
     def filter_update_router_attributes(self, router):
         """Filter out router attributes for an update operation."""
         odl_utils.try_del(router, ['id', 'tenant_id', 'status'])
+
+    def filter_disassociate_floatingip_attributes(self, fip_dict):
+        """Filter out floatingip attributes for an disassociate operation."""
+        odl_filters._filter_unmapped_null(
+            fip_dict, ['port_id', 'fixed_ip_address', 'router_id'])
 
     def create_router(self, context, router):
         router_dict = super(OpenDaylightL3RouterPlugin, self).create_router(
@@ -134,6 +140,23 @@ class OpenDaylightL3RouterPlugin(
         super(OpenDaylightL3RouterPlugin, self).delete_floatingip(context, id)
         url = FLOATINGIPS + "/" + id
         self.client.sendjson('delete', url, None)
+
+    def disassociate_floatingips(self, context, port_id, do_notify=True):
+        fip_dicts = self.get_floatingips(context,
+                                         filters={'port_id': [port_id]})
+        router_ids = super(OpenDaylightL3RouterPlugin,
+                           self).disassociate_floatingips(context,
+                                                          port_id,
+                                                          do_notify)
+        for fip_dict in fip_dicts:
+            fip_dict = self.get_floatingip(context, fip_dict['id'])
+            fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
+            self.update_floatingip_status(context, fip_dict['id'],
+                                          fip_dict['status'])
+            self.filter_disassociate_floatingip_attributes(fip_dict)
+            url = FLOATINGIPS + "/" + fip_dict['id']
+            self.client.sendjson('put', url, {FLOATINGIPS[:-1]: fip_dict})
+        return router_ids
 
     dvr_deletens_if_no_port_warned = False
 

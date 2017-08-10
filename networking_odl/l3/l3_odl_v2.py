@@ -150,6 +150,24 @@ class OpenDaylightL3RouterPlugin(
             journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
                            odl_const.ODL_DELETE, dependency_list)
 
+    def disassociate_floatingips(self, context, port_id, do_notify=True):
+        session = db_api.get_session()
+        with session.begin(subtransactions=True):
+            fip_dicts = self.get_floatingips(context,
+                                             filters={'port_id': [port_id]})
+            router_ids = super(OpenDaylightL3RouterPlugin,
+                               self).disassociate_floatingips(context,
+                                                              port_id,
+                                                              do_notify)
+            for fip_dict in fip_dicts:
+                fip_dict = self.get_floatingip(context, fip_dict['id'])
+                fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
+                self.update_floatingip_status(context, fip_dict['id'],
+                                              fip_dict['status'])
+                journal.record(context, odl_const.ODL_FLOATINGIP,
+                               fip_dict['id'], odl_const.ODL_UPDATE, fip_dict)
+        return router_ids
+
     @journal.call_thread_on_end
     def add_router_interface(self, context, router_id, interface_info):
         session = db_api.get_writer_session()
