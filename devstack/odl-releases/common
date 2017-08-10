@@ -42,8 +42,11 @@ fi
 # by default, ODL uses jdk 8 as of Boron
 export ODL_REQUIRED_JAVA_VERSION=${ODL_REQUIRED_JAVA_VERSION:-8}
 
+# artifact id
+_default_artifact_id=$(odl_artifcat_id ${ODL_DIR} ${ODL_URL_PREFIX} ${ODL_BUNDLEVERSION} ${OFFLINE})
+export ODL_ARTIFACT_ID=${ODL_ARTIFACT_ID:-${_default_artifact_id}}
 # karaf distribution name of ODL to download
-export ODL_NAME=${ODL_NAME:-distribution-karaf-${ODL_BUNDLEVERSION}}
+export ODL_NAME=${ODL_NAME:-${ODL_ARTIFACT_ID}-${ODL_BUNDLEVERSION}}
 
 # The network virtualization older feature name (ovsdb based)
 export ODL_NETVIRT_KARAF_FEATURE_OVSDB=${ODL_NETVIRT_KARAF_FEATURE_OVSDB:-odl-ovsdb-openstack}

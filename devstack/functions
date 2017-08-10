@@ -4,7 +4,7 @@
 
 function _odl_nexus_path {
     local ODL_URL_PREFIX=$1
-    echo "${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
+    echo "${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_SNAPSHOT_REPOSITORY_PATH}/${ODL_URL_DISTRIBUTION_KARAF_PATH}}"
 }
 
 function _wget {
@@ -37,6 +37,19 @@ function _xpath {
         yum_install perl-XML-XPath >/dev/null
         result=`xpath $MAVENMETAFILE "$XPATH" 2>/dev/null`
     fi
+    echo $result
+}
+
+function odl_artifcat_id {
+    local ODL_DIR=$1
+    local ODL_URL_PREFIX=$2
+    local BUNDLEVERSION=$3
+    local OFFLINE=$4
+
+    local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
+    local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+    local result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
     echo $result
 }
 
@@ -81,16 +94,16 @@ function _odl_export_snapshot_url_pkg {
     fi
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
-    export ODL_PKG=distribution-karaf-${BUNDLE_TIMESTAMP}.zip
+    export ODL_PKG=${ODL_ARTIFACT_ID}-${BUNDLE_TIMESTAMP}.zip
 }
 
 function _odl_export_release_url_pkg {
     local ODL_URL_PREFIX=$1
     local BUNDLEVERSION=$2
-    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/org/opendaylight/integration/distribution-karaf}"
+    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/${ODL_URL_DISTRIBUTION_KARAF_PATH}}"
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
-    export ODL_PKG=distribution-karaf-${BUNDLEVERSION}.zip
+    export ODL_PKG=${ODL_ARTIFACT_ID}-${BUNDLEVERSION}.zip
 }
 
 function setup_opendaylight_package {
