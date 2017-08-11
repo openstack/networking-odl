@@ -12,5 +12,6 @@ Contents:
    :maxdepth: 2
 
    unreleased
+   pike
    ocata
    newton
