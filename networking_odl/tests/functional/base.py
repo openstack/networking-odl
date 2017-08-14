@@ -15,11 +15,15 @@
 #
 
 import functools
+import os
 
 import mock
 from neutron.common import utils
 from neutron.plugins.ml2 import config
+from neutron.tests import base
+from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from oslo_config import cfg
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -30,6 +34,12 @@ from networking_odl.tests.unit import test_base_db
 
 
 class OdlTestsBase(object):
+    #  this is stolen from neutron.tests.functional.base
+    # This is the directory from which infra fetches log files
+    # for functional tests.
+    DEFAULT_LOG_DIR = os.path.join(helpers.get_test_log_path(),
+                                   'dsvm-functional-logs')
+
     def setUp(self):
         config.cfg.CONF.set_override(
             'url', 'http://127.0.0.1:8181/controller/nb/v2/neutron', 'ml2_odl')
@@ -43,6 +53,8 @@ class OdlTestsBase(object):
                                      group='ml2')
         self.client = client.OpenDaylightRestClient.create_client()
         super(OdlTestsBase, self).setUp()
+        base.setup_test_logging(
+            cfg.CONF, self.DEFAULT_LOG_DIR, "%s.txt" % self.id())
 
     def setup_parent(self):
         """Perform parent setup with the common plugin configuration class."""

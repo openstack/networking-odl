@@ -5,6 +5,7 @@ set -xe
 NETWORKING_ODL_DIR="${NETWORKING_ODL_DIR:-$BASE/new/networking-odl}"
 SCRIPTS_DIR="/usr/os-testr-env/bin/"
 GATE_STACK_USER=stack
+OS_LOG_PATH=${OS_LOG_PATH:-$BASE/logs}
 
 venv=${1:-"dsvm-functional"}
 
@@ -37,6 +38,10 @@ case $venv in
         # Set owner permissions according to job's requirements.
         sudo chown -R $owner:stack $BASE/new
         cd $NETWORKING_ODL_DIR
+        if [[ -n "$OS_LOG_PATH" ]]; then
+            sudo mkdir -p $OS_LOG_PATH
+            sudo chown -R $owner:stack $OS_LOG_PATH
+        fi
 
         # Run tests
         echo "Running networking-odl $venv test suite"

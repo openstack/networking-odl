@@ -12,9 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
+
 from neutron.plugins.ml2 import config
 from neutron.plugins.ml2.drivers import type_vxlan  # noqa
+from neutron.tests import base as tests_base
+from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from oslo_config import cfg
 
 from networking_odl.common import config as odl_config
 
@@ -23,6 +28,13 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
 
     _mechanism_drivers = ['logger', 'opendaylight']
     _extension_drivers = ['port_security']
+
+    # this is stolen from neutron.tests.fullstack.base
+    #
+    # This is the directory from which infra fetches log files
+    # for fullstack tests
+    DEFAULT_LOG_DIR = os.path.join(helpers.get_test_log_path(),
+                                   'dsvm-fullstack-logs')
 
     def setUp(self):
         config.cfg.CONF.set_override('extension_drivers',
@@ -50,3 +62,9 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
                                          group='ml2_odl')
 
         super(TestODLFullStackBase, self).setUp()
+        tests_base.setup_test_logging(
+            cfg.CONF, self.DEFAULT_LOG_DIR, '%s.txt' % self.get_name())
+
+    def get_name(self):
+        class_name, test_name = self.id().split(".")[-2:]
+        return "%s.%s" % (class_name, test_name)
