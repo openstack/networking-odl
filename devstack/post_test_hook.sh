@@ -44,7 +44,8 @@ function _odl_show_info {
     # ODL_PORT=8087
     # There is no good way to retrieve from setting.odl at the moment
     curl --silent --user admin:admin "http://localhost:8087/restconf/config/neutron:neutron?prettyPrint=true"
-    echo -e "\n"
+    echo
+    echo
 }
 
 echo "Some pre-process info"
@@ -58,5 +59,9 @@ set -e
 
 echo "Some post-process info"
 _odl_show_info
+
+# stop ODL server for complete log
+$BASE/new/opendaylight/*karaf-*/bin/stop
+sleep 3
 
 return $retval
