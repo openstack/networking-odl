@@ -30,6 +30,13 @@ Contributor Guide
 
    contributor/index
 
+Reference Deployment Guide
+--------------------------
+.. toctree::
+   :maxdepth: 2
+
+   reference/index
+
 Indices and tables
 ------------------
 
