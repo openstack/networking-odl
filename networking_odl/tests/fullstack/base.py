@@ -22,12 +22,14 @@ from neutron.tests.unit.plugins.ml2 import test_plugin
 from oslo_config import cfg
 
 from networking_odl.common import config as odl_config
+import networking_odl.db.models  # noqa
 
 
 class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
 
-    _mechanism_drivers = ['logger', 'opendaylight']
+    _mechanism_drivers = ['logger', 'opendaylight_v2']
     _extension_drivers = ['port_security']
+    l3_plugin = 'networking_odl.l3.l3_odl_v2.OpenDaylightL3RouterPlugin'
 
     # this is stolen from neutron.tests.fullstack.base
     #
@@ -60,7 +62,9 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
         odl_config.cfg.CONF.set_override('port_binding_controller',
                                          'legacy-port-binding',
                                          group='ml2_odl')
-
+        odl_config.cfg.CONF.set_override('odl_features',
+                                         ['no-feature'],
+                                         group='ml2_odl')
         super(TestODLFullStackBase, self).setUp()
         tests_base.setup_test_logging(
             cfg.CONF, self.DEFAULT_LOG_DIR, '%s.txt' % self.get_name())
