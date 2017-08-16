@@ -17,7 +17,6 @@
 import functools
 import os
 
-import mock
 from neutron.common import utils
 from neutron.plugins.ml2 import config
 from neutron.tests import base
@@ -29,7 +28,6 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 from networking_odl.db import db
-from networking_odl.journal import journal
 from networking_odl.tests.unit import test_base_db
 
 
@@ -105,11 +103,6 @@ class OdlTestsBase(object):
 
 class V2DriverAdjustment(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
-        # NOTE(yamahata): for functional test, timer isn't needed.
-        # and if tearDown/setUp() is called during journal thread is running
-        # by timer, journal thread may be upset by sudden db transaction.
-        mock.patch.object(journal.OpenDaylightJournalThread,
-                          '_start_sync_timer')
         super(V2DriverAdjustment, self).setUp()
 
     def get_odl_resource(self, resource_type, resource):
