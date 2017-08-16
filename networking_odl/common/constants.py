@@ -52,6 +52,15 @@ ODL_SFC_PORT_PAIR_GROUPS = 'portpairgroups'
 ODL_SFC_PORT_CHAIN = 'portchain'
 ODL_SFC_PORT_CHAINS = 'portchains'
 
+NETWORKING_SFC_FLOW_CLASSIFIER = 'flow_classifier'
+NETWORKING_SFC_FLOW_CLASSIFIERS = 'flow_classifiers'
+NETWORKING_SFC_PORT_PAIR = 'port_pair'
+NETWORKING_SFC_PORT_PAIRS = 'port_pairs'
+NETWORKING_SFC_PORT_PAIR_GROUP = 'port_pair_group'
+NETWORKING_SFC_PORT_PAIR_GROUPS = 'port_pair_groups'
+NETWORKING_SFC_PORT_CHAIN = 'port_chain'
+NETWORKING_SFC_PORT_CHAINS = 'port_chains'
+
 ODL_TRUNK = 'trunk'
 ODL_TRUNKS = 'trunks'
 

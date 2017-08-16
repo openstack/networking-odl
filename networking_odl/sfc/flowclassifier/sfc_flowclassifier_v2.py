@@ -25,7 +25,8 @@ from networking_odl.journal import journal
 LOG = logging.getLogger(__name__)
 
 SFC_FC_RESOURCES = {
-    odl_const.ODL_SFC_FLOW_CLASSIFIER: odl_const.ODL_SFC_FLOW_CLASSIFIERS,
+    odl_const.ODL_SFC_FLOW_CLASSIFIER:
+        odl_const.NETWORKING_SFC_FLOW_CLASSIFIERS,
 }
 
 

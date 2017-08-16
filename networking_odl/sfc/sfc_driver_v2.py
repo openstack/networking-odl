@@ -25,9 +25,10 @@ from networking_odl.journal import journal
 LOG = logging.getLogger(__name__)
 
 SFC_RESOURCES = {
-    odl_const.ODL_SFC_PORT_PAIR: odl_const.ODL_SFC_PORT_PAIRS,
-    odl_const.ODL_SFC_PORT_PAIR_GROUP: odl_const.ODL_SFC_PORT_PAIR_GROUPS,
-    odl_const.ODL_SFC_PORT_CHAIN: odl_const.ODL_SFC_PORT_CHAINS
+    odl_const.ODL_SFC_PORT_PAIR: odl_const.NETWORKING_SFC_PORT_PAIRS,
+    odl_const.ODL_SFC_PORT_PAIR_GROUP:
+        odl_const.NETWORKING_SFC_PORT_PAIR_GROUPS,
+    odl_const.ODL_SFC_PORT_CHAIN: odl_const.NETWORKING_SFC_PORT_CHAINS
 }
 
 
