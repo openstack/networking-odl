@@ -89,7 +89,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         # (2) CleanupProcessing - Mark orphaned processing rows to pending
         # (3) Full sync - Re-sync when detecting an ODL "cold reboot"
         cleanup_obj = cleanup.JournalCleanup()
-        interval = cfg.CONF.ml2_odl.restconf_poll_interval
+        interval = cfg.CONF.ml2_odl.maintenance_interval
         self._periodic_task = periodic_task.PeriodicTask('maintenance',
                                                          interval)
         self._periodic_task.register_operation(
