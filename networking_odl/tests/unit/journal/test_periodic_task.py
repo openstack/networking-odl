@@ -34,8 +34,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.db_session.add(row)
         self.db_session.flush()
 
-        self.thread = periodic_task.PeriodicTask('test-maintenance')
-        self.thread.interval = 0.01
+        self.thread = periodic_task.PeriodicTask('test-maintenance', 0.01)
         self.addCleanup(self.thread.cleanup)
 
     def test__execute_op_no_exception(self):
@@ -94,10 +93,9 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertTrue(callback_event.wait(timeout=5))
 
     def test_multiple_thread_work(self):
-        self.thread1 = periodic_task.PeriodicTask('test-maintenance1')
+        self.thread1 = periodic_task.PeriodicTask('test-maintenance1', 0.01)
         callback_event = threading.Event()
         callback_event1 = threading.Event()
-        self.thread1.interval = 0.01
         self.addCleanup(self.thread1.cleanup)
 
         def callback_op(**kwargs):
