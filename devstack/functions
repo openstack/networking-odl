@@ -49,6 +49,11 @@ function odl_artifcat_id {
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
     local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
     _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+    if [[ -f "$MAVENMETAFILE" ]]; then
+        # In auto release case, metadata file exists only in parent directly.
+        # e.g. https://nexus.opendaylight.org/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/maven-metadata.xml
+        _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
+    fi
     local result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
     echo $result
 }
