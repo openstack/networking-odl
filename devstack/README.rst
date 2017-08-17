@@ -181,7 +181,7 @@
 
       [[post-config|$NETWORKING_BGPVPN_CONF]]
       [service_providers]
-      service_provider=BGPVPN:OpenDaylight.networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
+      service_provider=BGPVPN:OpenDaylight:networking_odl.bgpvpn.odl_v2.OpenDaylightBgpvpnDriver:default
 
     and then stack up your devstack.
 
