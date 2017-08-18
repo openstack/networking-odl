@@ -23,25 +23,49 @@ from hacking.checks import docstrings
 # from neutron.hacking import checks
 from neutron_lib.hacking import checks
 
-_ND01_MSG = "ND01: use OpenDaylight (capital D) instead of Opendaylight"
-_ND01_OPENDAYLIGHT = 'Opendaylight'
+_ND01_MSG = (
+    "ND01: use OpenDaylight (capital D) instead of Opendaylight")  # noqa
+_ND01_OPENDAYLIGHT = 'Opendaylight'  # noqa
 
 
-def check_opendaylight_lowercase(logical_line, filename):
+def check_opendaylight_lowercase(logical_line, filename, noqa):
     """ND01 - Enforce using OpenDaylight."""
+    if noqa:
+        return
+
     if _ND01_OPENDAYLIGHT in logical_line:
         pos = logical_line.find(_ND01_OPENDAYLIGHT)
         yield (pos, _ND01_MSG)
 
 
-def check_opendaylight_lowercase_comment(
-        physical_line, previous_logical, tokens):
-    """ND01 - Enforce using OpenDaylight in comment."""
-    for token_type, text, start_index, _, _ in tokens:
-        if token_type == tokenize.COMMENT:
-            pos = physical_line.find(_ND01_OPENDAYLIGHT)
+def _check_opendaylight_lowercase(logical_line, tokens, noqa, token_type):
+    """ND01 - Enforce using OpenDaylight in given token."""
+    if noqa:
+        return
+
+    for _token_type, text, start_index, _, _ in tokens:
+        if _token_type == token_type:
+            pos = text.find(_ND01_OPENDAYLIGHT)
             if pos >= 0:
-                return (pos, _ND01_MSG + " in comment")
+                msg = "{} in {}".format(
+                    _ND01_MSG, tokenize.tok_name[token_type].lower())
+                yield (start_index[1] + pos, msg)
+
+
+def check_opendaylight_lowercase_comment(logical_line, tokens, noqa):
+    """ND01 - Enforce using OpenDaylight in comment."""
+
+    for res in _check_opendaylight_lowercase(
+            logical_line, tokens, noqa, tokenize.COMMENT):
+        yield res
+
+
+def check_opendaylight_lowercase_string(logical_line, tokens, noqa):
+    """ND01 - Enforce using OpenDaylight in string."""
+
+    for res in _check_opendaylight_lowercase(
+            logical_line, tokens, noqa, tokenize.STRING):
+        yield res
 
 
 def check_opendaylight_lowercase_docstring(
@@ -57,4 +81,5 @@ def factory(register):
     checks.factory(register)
     register(check_opendaylight_lowercase)
     register(check_opendaylight_lowercase_comment)
+    register(check_opendaylight_lowercase_string)
     register(check_opendaylight_lowercase_docstring)
