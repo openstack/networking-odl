@@ -135,7 +135,6 @@ def create_pending_row(session, object_type, object_uuid,
     row = models.OpenDaylightJournal(object_type=object_type,
                                      object_uuid=object_uuid,
                                      operation=operation, data=data,
-                                     created_at=func.now(),
                                      state=odl_const.PENDING,
                                      depending_on=depending_on)
     session.add(row)

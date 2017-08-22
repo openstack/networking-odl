@@ -127,13 +127,7 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
                 not rendered_meta_def.reflected and
                 meta_def.for_update == rendered_meta_def.for_update):
             return False
-        if (diff_elem[0][0] == 'modify_default' and
-                diff_elem[0][2] == 'opendaylightjournal' and
-                meta_def is None and
-                isinstance(rendered_meta_def, schema.DefaultClause) and
-                isinstance(rendered_meta_def.arg, sql.functions.now) and
-                not rendered_meta_def.reflected):
-            return False
+
         return True
 
     def filter_metadata_diff(self, diff):

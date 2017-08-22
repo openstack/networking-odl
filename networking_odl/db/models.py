@@ -14,7 +14,6 @@
 #    under the License.
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import sqlite
 
 from neutron_lib.db import model_base
 
@@ -45,10 +44,6 @@ class OpenDaylightJournal(model_base.BASEV2):
                               odl_const.PROCESSING, odl_const.COMPLETED),
                       nullable=False, default=odl_const.PENDING)
     retry_count = sa.Column(sa.Integer, default=0)
-    created_at = sa.Column(
-        sa.DateTime().with_variant(
-            sqlite.DATETIME(truncate_microseconds=True), 'sqlite'),
-        server_default=sa.func.now())
     last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),
                              onupdate=sa.func.now())
     version_id = sa.Column(sa.Integer, server_default='0', nullable=False)
