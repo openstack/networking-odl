@@ -115,16 +115,15 @@ def update_pending_db_row_retry(session, row, retry_count):
         update_db_row_state(session, row, odl_const.PENDING)
 
 
-# This function is currently not used.
-# Deleted resources are marked as 'deleted' in the database.
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
-def delete_row(session, row=None, row_id=None):
+def delete_row(session, row=None, row_id=None, flush=True):
     if row_id:
         row = session.query(models.OpenDaylightJournal).filter_by(
             seqnum=row_id).one()
     if row:
         session.delete(row)
-        session.flush()
+        if flush:
+            session.flush()
 
 
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
@@ -205,12 +204,16 @@ def update_periodic_task(session, task, operation=None):
 
 
 def delete_rows_by_state_and_time(session, state, time_delta):
+    # NOTE(mpeterson): The reason behind deleting one-by-one is that InnoDB
+    # ignores the WHERE clause to issue a LOCK when executing a DELETE. By
+    # executing each operation indepently, we minimize exposures to DEADLOCKS.
     with session.begin():
         now = session.execute(func.now()).scalar()
-        session.query(models.OpenDaylightJournal).filter(
+        rows = session.query(models.OpenDaylightJournal).filter(
             models.OpenDaylightJournal.state == state,
-            models.OpenDaylightJournal.last_retried < now - time_delta).delete(
-            synchronize_session=False)
+            models.OpenDaylightJournal.last_retried < now - time_delta).all()
+        for row in rows:
+            delete_row(session, row, flush=False)
         session.expire_all()
 
 
