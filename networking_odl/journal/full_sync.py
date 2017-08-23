@@ -33,9 +33,6 @@ _CANARY_NETWORK_DATA = {'id': _CANARY_NETWORK_ID,
 _OPS_TO_DELETE_ON_SYNC = (odl_const.ODL_CREATE, odl_const.ODL_UPDATE)
 _CLIENT = client.OpenDaylightRestClientGlobal()
 
-# TODO(yamahata): to add more resources.
-#                 e.g. bgpvpn, fwaas, l2gw, lbaas, qos, sfc
-#                 and as more services are added
 _ORDERED_ODL_RESOURCES = (
     odl_const.ODL_SG,
     odl_const.ODL_SG_RULE,
@@ -62,11 +59,21 @@ _ORDERED_ODL_RESOURCES = (
     odl_const.ODL_L2GATEWAY_CONNECTION,
 )
 
+
+# TODO(rajivk): Remove this variable, while fixing recovery
 ALL_RESOURCES = {}
 
+FULL_SYNC_RESOURCES = {}
 
-def register(driver, resources):
+
+def register(driver, resources, handler=None):
+    def default_handler(context, resource_type):
+        return get_resources(context, driver, resources[resource_type])
+
     ALL_RESOURCES[driver] = resources
+    handler = handler or default_handler
+    for resource in resources:
+        FULL_SYNC_RESOURCES[resource] = handler
 
 
 def full_sync(context):
@@ -76,13 +83,9 @@ def full_sync(context):
     db.delete_pending_rows(context.session, _OPS_TO_DELETE_ON_SYNC)
 
     for resource_type in _ORDERED_ODL_RESOURCES:
-        for plugin_alias, resource in ALL_RESOURCES.items():
-            collection_name = resource.get(resource_type)
-            if collection_name is not None:
-                plugin = directory.get_plugin(plugin_alias)
-                _sync_resources(plugin, context, resource_type,
-                                collection_name)
-                break
+        handler = FULL_SYNC_RESOURCES.get(resource_type)
+        if handler:
+            _sync_resources(context, resource_type, handler)
 
     journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
                    odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
@@ -115,10 +118,28 @@ def _canary_network_not_in_journal(context):
         context.session, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
 
 
-def _sync_resources(plugin, context, object_type, collection_name):
-    obj_getter = getattr(plugin, 'get_%s' % collection_name)
-    resources = obj_getter(context)
+def get_resources_require_id(plugin, context, get_resources_for_id,
+                             method_name_for_resource):
 
+    dep_id_resources = get_resources_for_id(context)
+    resources = []
+    for d_resource in dep_id_resources:
+        obj_getter = getattr(plugin, method_name_for_resource)
+        resource = obj_getter(context, d_resource['id'])
+        if resource:
+            resources.extend(resource)
+
+    return resources
+
+
+def get_resources(context, plugin_type, resource_type):
+    plugin = directory.get_plugin(plugin_type)
+    obj_getter = getattr(plugin, 'get_%s' % resource_type)
+    return obj_getter(context)
+
+
+def _sync_resources(context, object_type, handler):
+    resources = handler(context, object_type)
     for resource in resources:
         journal.record(context, object_type, resource['id'],
                        odl_const.ODL_CREATE, resource)

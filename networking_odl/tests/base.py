@@ -24,6 +24,7 @@ from neutron_lib.callbacks import registry
 from neutron_lib import fixture as nl_fixture
 
 from networking_odl.common import odl_features
+from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.journal import periodic_task
 from networking_odl.ml2 import pseudo_agentdb_binding
@@ -114,3 +115,9 @@ class OpenDaylightPseudoAgentPrePopulateFixture(
             # this may cause RuntimeError('stop called on unstarted patcher')
             # due to stop_all called by base test cases
             self.patcher.stop()
+
+
+class OpenDaylightFullSyncFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(OpenDaylightFullSyncFixture, self)._setUp()
+        self.addCleanup(full_sync.FULL_SYNC_RESOURCES.clear)

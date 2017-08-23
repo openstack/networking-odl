@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from neutron_lbaas.drivers import driver_base
 from neutron_lbaas.drivers import driver_mixins
 from neutron_lib.plugins import constants as nlib_const
+from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import full_sync
@@ -63,13 +64,25 @@ class OpenDaylightManager(driver_mixins.BaseManagerMixin):
         super(OpenDaylightManager, self).__init__(driver)
         self.journal = journal.OpenDaylightJournalThread()
         self.obj_type = obj_type
-        full_sync.register(nlib_const.LOADBALANCERV2, LBAAS_RESOURCES)
+        full_sync.register(nlib_const.LOADBALANCERV2, LBAAS_RESOURCES,
+                           self.get_resources)
         self.driver = driver
 
     def _journal_record(self, context, obj_type, obj_id, operation, obj):
         obj_type = ("lbaas/%s" % obj_type)
         journal.record(context, obj_type, obj_id, operation, obj)
         self.journal.set_sync_event()
+
+    @staticmethod
+    def get_resources(context, resource_type):
+        plugin = directory.get_plugin(nlib_const.LOADBALANCERV2)
+        if resource_type == odl_const.ODL_MEMBER:
+            return full_sync.get_resources_require_id(plugin, context,
+                                                      plugin.get_pools,
+                                                      'get_pool_members')
+
+        obj_getter = getattr(plugin, 'get_%s' % LBAAS_RESOURCES[resource_type])
+        return obj_getter(context)
 
     @log_helpers.log_method_call
     @driver_base.driver_op
