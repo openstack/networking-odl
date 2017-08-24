@@ -65,18 +65,34 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual(expected_state, row.state)
         self.assertEqual(expected_retry_count, row.retry_count)
 
-    def _test_update_row_state(self, from_state, to_state):
+    def _test_update_row_state(self, from_state, to_state, dry_flush=False):
         # add new pending row
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
 
+        mock_flush = mock.MagicMock(side_effect=self.db_session.flush)
+
+        if dry_flush:
+            patch_flush = mock.patch.object(self.db_session, 'flush',
+                                            side_effect=mock_flush)
+
         row = db.get_all_db_rows(self.db_session)[0]
         for state in [from_state, to_state]:
-            # update the row state
-            db.update_db_row_state(self.db_session, row, state)
+            if dry_flush:
+                patch_flush.start()
+
+            try:
+                # update the row state
+                db.update_db_row_state(self.db_session, row, state,
+                                       flush=not dry_flush)
+            finally:
+                if dry_flush:
+                    patch_flush.stop()
 
             # validate the new state
             row = db.get_all_db_rows(self.db_session)[0]
             self.assertEqual(state, row.state)
+
+        return mock_flush
 
     def test_updates_same_object_uuid(self):
         self._test_validate_updates(self.UPDATE_ROW, self.UPDATE_ROW, True)
@@ -266,6 +282,42 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._test_delete_rows_by_state_and_time(6, 5, odl_const.COMPLETED, 0)
         self.assertEqual({'flush': False}, mock_delete_row.call_args[1])
 
+    def _test_reset_processing_rows(self, session, last_retried, max_timedelta,
+                                    quantity, dry_reset=False):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        expected_state = odl_const.PROCESSING
+
+        row = db.get_all_db_rows(self.db_session)[-1]
+        row.state = expected_state
+        row.last_retried = row.last_retried - timedelta(seconds=last_retried)
+        self._update_row(row)
+
+        if not dry_reset:
+            expected_state = odl_const.PENDING
+            reset = db.reset_processing_rows(self.db_session, max_timedelta)
+            self.assertIsInstance(reset, int)
+            self.assertEqual(reset, quantity)
+
+        rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
+
+        self.assertEqual(len(rows), quantity)
+        for row in rows:
+            self.assertEqual(row.state, expected_state)
+
+    def test_reset_processing_rows(self):
+        self._test_reset_processing_rows(self.db_session, 6, 5, 1)
+
+    def test_reset_processing_rows_no_new_rows(self):
+        self._test_reset_processing_rows(self.db_session, 0, 10, 0)
+
+    @mock.patch.object(db, 'update_db_row_state',
+                       side_effect=db.update_db_row_state)
+    def test_reset_processing_rows_individually(self, mock_update_row):
+        self._test_reset_processing_rows(self.db_session, 6, 5, 1, True)
+        self._test_reset_processing_rows(self.db_session, 6, 5, 2)
+        self.assertEqual(mock_update_row.call_count, 2)
+        self.assertEqual(mock_update_row.call_args[1], {'flush': False})
+
     def test_valid_retry_count(self):
         self._test_retry_count(1, 1, 1, odl_const.PENDING)
 
@@ -283,6 +335,14 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_update_row_state_to_completed(self):
         self._test_update_row_state(odl_const.PROCESSING, odl_const.COMPLETED)
+
+    def test_update_row_state_to_status_without_flush(self):
+        mock_flush = self._test_update_row_state(odl_const.PROCESSING,
+                                                 odl_const.COMPLETED,
+                                                 dry_flush=True)
+        # NOTE(mpeterson): call_count=2 because session.merge() calls flush()
+        # and we are changing the status twice
+        self.assertEqual(mock_flush.call_count, 2)
 
     def _test_periodic_task_lock_unlock(self, db_func, existing_state,
                                         expected_state, expected_result,
