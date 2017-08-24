@@ -101,10 +101,11 @@ def delete_dependency(session, entry):
 
 
 @oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
-def update_db_row_state(session, row, state):
+def update_db_row_state(session, row, state, flush=True):
     row.state = state
     session.merge(row)
-    session.flush()
+    if flush:
+        session.flush()
 
 
 def update_pending_db_row_retry(session, row, retry_count):
@@ -216,12 +217,16 @@ def delete_rows_by_state_and_time(session, state, time_delta):
 
 
 def reset_processing_rows(session, max_timedelta):
+    # NOTE(mpeterson): The reason behind updating one-by-one is that InnoDB
+    # ignores the WHERE clause to issue a LOCK when executing an UPDATE. By
+    # executing each operation indepently, we minimize exposures to DEADLOCKS.
     with session.begin():
         now = session.execute(func.now()).scalar()
         max_timedelta = datetime.timedelta(seconds=max_timedelta)
         rows = session.query(models.OpenDaylightJournal).filter(
             models.OpenDaylightJournal.last_retried < now - max_timedelta,
-            models.OpenDaylightJournal.state == odl_const.PROCESSING,
-        ).update({'state': odl_const.PENDING})
+            models.OpenDaylightJournal.state == odl_const.PROCESSING).all()
+        for row in rows:
+            update_db_row_state(session, row, odl_const.PENDING, flush=False)
 
-    return rows
+    return len(rows)
