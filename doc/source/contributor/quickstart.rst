@@ -10,7 +10,7 @@ reviews to an OpenStack project.
 
 .. see also::
 
-   http://docs.openstack.org/infra/manual/developers.html
+   https://docs.openstack.org/infra/manual/developers.html
 
 Setup Dev Environment
 =====================
