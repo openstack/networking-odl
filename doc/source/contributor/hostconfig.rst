@@ -32,7 +32,7 @@ Host Configuration fields
   external_ids field with the key as odl_os_hostconfig_hostid.
   Refer to Neutron config definition for host field for details on this field.
 
-  http://docs.openstack.org/kilo/config-reference/content/section_neutron.conf.html
+  https://docs.openstack.org/kilo/config-reference/content/section_neutron.conf.html
 
 - **host-type**
 
@@ -123,7 +123,7 @@ VPP configuration example::
 
 **Host Config URL**
 
-Url : http://ip:odlport/restconf/operational/neutron:neutron/hostconfigs/
+Url : https://ip:odlport/restconf/operational/neutron:neutron/hostconfigs/
 
 **Commands to setup host config in OVSDB**
 ::
