@@ -80,7 +80,6 @@ if is_service_enabled odl-compute; then
         if is_service_enabled nova; then
             create_nova_conf_neutron
         fi
-        sudo ovs-vsctl --may-exist add-br $OVS_BR
         bind_opendaylight_controller
         wait_for_active_bridge $OVS_BR $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
 
