@@ -73,7 +73,7 @@ case "$ODL_RELEASE" in
     latest-snapshot|nitrogen-snapshot-0.7*)
         # use karaf because distribution-karaf isn't available for Nitrogen at the moment
         # TODO(yamahata): when distriution-karaf is available, remove this
-        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/integration/distribution/karaf}
+        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/karaf}
         ;;
     *)
         ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/distribution-karaf}
