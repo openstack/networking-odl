@@ -33,6 +33,8 @@ function _odl_show_info {
             sudo ovs-ofctl --protocols OpenFlow13 dump-ports $br
             sudo ovs-ofctl --protocols OpenFlow13 dump-ports-desc $br
             sudo ovs-ofctl --protocols OpenFlow13 dump-flows $br
+            sudo ovs-ofctl --protocols OpenFlow13 dump-groups $br
+            sudo ovs-ofctl --protocols OpenFlow13 dump-group-stats $br
         done
     fi
 
