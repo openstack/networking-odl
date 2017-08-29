@@ -121,7 +121,7 @@ def update_pending_db_row_retry(session, row, retry_count):
 def delete_row(session, row=None, row_id=None):
     if row_id:
         row = session.query(models.OpenDaylightJournal).filter_by(
-            id=row_id).one()
+            seqnum=row_id).one()
     if row:
         session.delete(row)
         session.flush()
