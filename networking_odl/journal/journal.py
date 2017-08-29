@@ -22,6 +22,7 @@ from neutron_lib import context as nl_context
 from neutron_lib.plugins import directory
 from neutron_lib import worker
 from oslo_config import cfg
+from oslo_db import exception
 from oslo_log import log as logging
 from oslo_service import loopingcall
 from requests import exceptions
@@ -93,8 +94,16 @@ def record(plugin_context, object_type, object_uuid, operation, data,
     # Calculate depending_on on other journal entries
     depending_on = dependency_validations.calculate(
         plugin_context.session, operation, object_type, object_uuid, data)
-    db.create_pending_row(plugin_context.session, object_type, object_uuid,
-                          operation, data, depending_on=depending_on)
+
+    # NOTE(mpeterson): Between the moment that a dependency is calculated and
+    # the new entry is recorded in the journal, an operation can ocurr that
+    # would make the dependency irrelevant. In that case we request a retry.
+    # For more details, read the commit message that introduced this comment.
+    try:
+        db.create_pending_row(plugin_context.session, object_type, object_uuid,
+                              operation, data, depending_on=depending_on)
+    except exception.DBReferenceError as e:
+        raise exception.RetryRequest(e)
 
 
 def _make_url(row):
