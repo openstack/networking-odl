@@ -124,5 +124,8 @@ class TestMechDriver(base.TestODLFullStackBase):
         vm2._create_ovs_vif_port(uuidutils.generate_uuid())
         vm2.set_address()
 
-        # Step3: test ping
+        # Step3: test arping
+        self.assertTrue(vm1.assert_arping('192.168.1.2'))
+
+        # Step4: test ping
         self.assertTrue(vm1.assert_ping('192.168.1.2'))

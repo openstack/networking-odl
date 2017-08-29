@@ -56,6 +56,10 @@ class FakeMachine(fixtures.Fixture):
         kwargs = {'run_as_root': run_as_root}
         return utils.execute(cmd, **kwargs)
 
+    def assert_arping(self, dst_ip):
+        return self.execute(
+            ['arping', '-c', 3, '-I', self.interface_id, dst_ip])
+
     def assert_ping(self, dst_ip):
         return self.execute(['ping', '-c', 3, '-W', 1, dst_ip])
 

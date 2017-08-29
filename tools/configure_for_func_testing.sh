@@ -238,8 +238,10 @@ function _install_post_devstack {
     if is_ubuntu; then
         install_package isc-dhcp-client
         install_package netcat-openbsd
+        install_package iputils-arping  # needed fullstack arping test
     elif is_fedora; then
         install_package dhclient
+        install_package arping  # needed fullstack arping test
     else
         exit_distro_not_supported "installing dhclient package"
     fi
