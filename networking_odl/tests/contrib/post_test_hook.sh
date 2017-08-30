@@ -41,7 +41,15 @@ function _odl_show_info {
     # ODL_MGR_HOST=$SERVICE_HOST
     # ODL_PORT=8087
     # There is no good way to retrieve from setting.odl at the moment
-    curl --silent --user admin:admin "http://localhost:8087/restconf/config/neutron:neutron?prettyPrint=true"
+    local PATHES="config/neutron:neutron"
+    if [[ "$OVS_DUMP" == "True" ]]; then
+        PATHES="$PATHES config/opendaylight-inventory:nodes config/elan:elan-instances config/elan:elan-interfaces"
+    fi
+    for path in $PATHES; do
+        echo "path=${path}"
+        curl --silent --user admin:admin "http://localhost:8087/restconf/${path}?prettyPrint=true"
+        echo
+    done
     echo
     echo
 }
