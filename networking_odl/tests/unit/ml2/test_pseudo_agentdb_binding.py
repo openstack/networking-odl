@@ -229,6 +229,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         "host": "devstack",      # host-id in ODL JSON
         "agent_type": "ODL L2",  # host-type in ODL JSON
                                  # config in ODL JSON
+        "alive": True,
         "configurations": {"supported_vnic_types": [
             {"vnic_type": "normal", "vif_type": "vhostuser",
              "vif_details": {
@@ -251,6 +252,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         "host": "devstack",      # host-id in ODL JSON
         "agent_type": "ODL L2",  # host-type in ODL JSON
                                  # config in ODL JSON
+        "alive": True,
         "configurations": {"supported_vnic_types": [
             {"vnic_type": "normal", "vif_type": "vhostuser",
              "vif_details": {
@@ -494,6 +496,22 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         port_context.set_binding.assert_called_once_with(
             self.test_valid_segment[ml2_api.ID], pass_vif_type,
             pass_vif_details, status=n_const.PORT_STATUS_ACTIVE)
+
+    def _test_bind_port_failed_when_agent_dead(self, hconfig):
+        hconfig['alive'] = False
+        port_context = self._fake_port_context(
+            fake_segments=[self.test_invalid_segment, self.test_valid_segment],
+            host_agents=[hconfig])
+        self.mgr.bind_port(port_context)
+        port_context.set_binding.assert_not_called()
+
+    def test_bind_port_failed_when_agent_dead_vpp(self):
+        hconfig = deepcopy(self.sample_hconf_str_tmpl_subs_vpp)
+        self._test_bind_port_failed_when_agent_dead(hconfig)
+
+    def test_bind_port_failed_when_agent_dead_ovs(self):
+        hconfig = deepcopy(self.sample_hconf_str_tmpl_subs_ovs)
+        self._test_bind_port_failed_when_agent_dead(hconfig)
 
     def test_bind_port_with_vif_type_vhost_user_vpp(self):
         """test bind_port with vpp."""
