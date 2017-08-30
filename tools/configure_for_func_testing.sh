@@ -230,7 +230,15 @@ function _install_opendaylight {
 function _install_post_devstack {
     echo_summary "Performing post-devstack installation"
 
-    _install_databases
+    if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
+        # NOTE(yamahata):
+        # fullstack can use sqlite. not db server is needed in theory.
+        # _install_databases nopg
+        echo "don't install databases"
+    else
+        _install_databases
+    fi
+
     # networkign-odl devstack plugin requires infra
     _install_infra
     _install_opendaylight
