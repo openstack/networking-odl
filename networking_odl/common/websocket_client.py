@@ -154,6 +154,7 @@ class OpenDaylightWebsocketClient(object):
         self._close_ws(ws)
 
     def _set_websocket_status(self, status):
+        LOG.info("websocket transition to status %s", status)
         try:
             if self.status_cb:
                 self.status_cb(status)
@@ -239,10 +240,10 @@ class OpenDaylightWebsocketClient(object):
         except ValueError:
             with excutils.save_and_reraise_exception():
                 LOG.error("websocket create connection invalid URL")
-        except websocket.WebSocketBadStatusException:
-            LOG.error("webSocket bad status exception", exc_info=True)
-            return None
         except Exception:
+            # Although a number of exceptions can occur here
+            # we handle them all the same way, return None.
+            # As such, enough to just "except Exception."
             LOG.exception("websocket create connection failed",
                           exc_info=True)
             return None
