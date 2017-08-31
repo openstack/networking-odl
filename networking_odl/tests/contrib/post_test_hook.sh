@@ -80,7 +80,7 @@ function generate_testr_results {
 case $venv in
     dsvm-functional*|dsvm-fullstack*)
         owner=$GATE_STACK_USER
-        sudo_env=
+        sudo_env="ODL_RELEASE_BASE=${ODL_RELEASE_BASE}"
 
         # Set owner permissions according to job's requirements.
         sudo chown -R $owner:stack $BASE/new
