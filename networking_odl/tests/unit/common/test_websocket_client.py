@@ -136,6 +136,11 @@ class TestWebsocketClient(base.DietTestCase):
         return_value = self.mgr._socket_create_connection("localhost")
         self.assertIsNone(return_value)
 
+    @mock.patch.object(websocket, 'create_connection',
+                       side_effect=Exception("something went wrong"))
+    def test_create_connection_handles_exception(self, mock_create_connection):
+        self.assertIsNone(self.mgr._socket_create_connection("localhost"))
+
     def test_run_websocket_thread(self):
         self.mgr._connect_ws = mock.MagicMock(return_value=None)
         cfg.CONF.ml2_odl.restconf_poll_interval = 0
