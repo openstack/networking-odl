@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Devstack settings
 
 # Each service you enable has the following meaning:
@@ -65,8 +67,7 @@ esac
 
 
 IS_GATE=$(trueorfalse False IS_GATE)
-if [[ "$IS_GATE" == "True" ]]
-then
+if [[ "$IS_GATE" == "True" ]]; then
     NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$DEST/networking-odl}
 fi
 

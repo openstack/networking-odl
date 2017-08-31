@@ -1,3 +1,5 @@
+#!/bin/bash
+
 register_project_for_upgrade networking-odl
 
 # NOTE(manjeets) Workaround for bug 1648176 to upgrade
