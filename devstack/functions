@@ -28,13 +28,10 @@ function _xpath {
     local MAVENMETAFILE=$2
     local result=""
     if is_ubuntu; then
-        install_package libxml-xpath-perl >/dev/null
         result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
     elif [ "$os_VENDOR" = "Fedora" ]; then
-        yum_install perl-XML-XPath >/dev/null
         result=`xpath -e "$XPATH" $MAVENMETAFILE 2>/dev/null`
     else
-        yum_install perl-XML-XPath >/dev/null
         result=`xpath $MAVENMETAFILE "$XPATH" 2>/dev/null`
     fi
     echo $result
