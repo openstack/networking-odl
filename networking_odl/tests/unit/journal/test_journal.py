@@ -17,10 +17,12 @@ import mock
 
 from neutron.common import utils
 from oslo_config import cfg
+from oslo_db import exception
 from oslo_utils import uuidutils
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
+from networking_odl.journal import dependency_validations
 from networking_odl.journal import journal
 from networking_odl.tests.unit import base_v2
 
@@ -66,3 +68,19 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
 
         url_param = self.journal._json_data(row)
         self.assertEqual(object_type, url_param[1])
+
+
+def _raise_DBReferenceError(*args, **kwargs):
+    args = [mock.Mock(unsafe=True)] * 4
+    e = exception.DBReferenceError(*args)
+    raise e
+
+
+class JournalTest(base_v2.OpenDaylightTestCase):
+    @mock.patch.object(dependency_validations, 'calculate')
+    @mock.patch.object(journal.db, 'create_pending_row',
+                       side_effect=_raise_DBReferenceError)
+    def test_record_triggers_retry_on_reference_error(self, mock_create_row,
+                                                      mock_calculate):
+        args = [mock.Mock(unsafe=True)] * 5
+        self.assertRaises(exception.RetryRequest, journal.record, *args)
