@@ -188,11 +188,37 @@ function _install_opendaylight {
 
     NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$REPO_BASE/networking-odl}
     ODL_V2DRIVER=${ODL_V2DRIVER:-True}
+    Q_USE_PUBLIC_VETH=False
+    ODL_DONT_WAIT_OVS_BR=True
     # openstack service provider isn't needed, only ODL neutron northbound
     # is necessary for functional test
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
     if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
-        export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
+        if [[ "$ODL_RELEASE_BASE" =~ "carbon" ]]; then
+            # NOTE(yamahata): With ODL carbon, there is a race on
+            # loading features When loading netvirt, nicira extension
+            # may not be loaded. In that case OpenFlow rules with
+            # nicira extension installed on MD-SAL inventory can be sent
+            # without no match/no action.
+            # As work around, load netvirt later once OLD booted later
+            local OF_FEATURS="odl-openflowjava-protocol"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-config-pusher"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-forwardingrules-manager"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-topology"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-flow-services"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nsf-model"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nxm-extensions"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nxm-extensions"
+            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-southbound"
+            local OVSDB_FEATURES="odl-ovsdb-hwvtepsouthbound"
+            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-hwvtepsouthbound-api"
+            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-library"
+            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-southbound-api"
+            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-southbound-impl"
+            export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,$OF_FEATURES,$OVSDB_FEATURES,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
+        else
+            export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
+        fi
     fi
     ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
     source $NETWORKING_ODL_DIR/devstack/settings.odl
@@ -227,6 +253,14 @@ function _install_opendaylight {
     fi
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
+
+    if [[ "$VENV" =~ "dsvm-fullstack" ]] && [[ "$ODL_RELEASE_BASE" =~ "carbon" ]]; then
+        # NOTE(yamahata) work around. See the above comment over ODL_NETVIRT_KARAF_FEATURE
+        $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
+        $BASE/new/opendaylight/*karaf-*/bin/client feature:install odl-netvirt-openstack
+        sleep 10
+    fi
+    $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
 }
 
 
