@@ -15,7 +15,6 @@
 #
 
 from neutron_lib import context as neutron_context
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
@@ -26,12 +25,9 @@ LOG = logging.getLogger(__name__)
 
 
 class PeriodicTask(object):
-    def __init__(self, task, interval=None):
+    def __init__(self, task, interval):
         self.task = task
         self.phases = []
-        if interval is None:
-            interval = cfg.CONF.ml2_odl.maintenance_interval
-
         self.timer = loopingcall.FixedIntervalLoopingCall(self.execute_ops)
         self.interval = interval
 
