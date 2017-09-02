@@ -92,6 +92,7 @@ case $venv in
 
         echo "odl info before tests"
         _odl_show_info $venv
+        $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
 
         # Run tests
         echo "Running networking-odl $venv test suite"

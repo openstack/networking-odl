@@ -58,6 +58,7 @@ function _odl_show_info {
 
 echo "Some pre-process info"
 _odl_show_info
+$BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
 
 echo "Running networking-odl test suite"
 set +e
