@@ -30,6 +30,7 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
     def setUp(self):
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.useFixture(base.OpenDaylightRestClientFixture())
+        self.useFixture(base.OpenDaylightFullSyncFixture())
         super(OpenDaylightConfigBase, self).setUp()
         cfg.CONF.set_override('mechanism_drivers',
                               ['logger', 'opendaylight_v2'], 'ml2')

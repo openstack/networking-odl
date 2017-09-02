@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_const
+from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import postcommit
@@ -56,7 +57,21 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         LOG.info("Initializing OpenDaylight BGPVPN v2 driver")
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
         self.journal = journal.OpenDaylightJournalThread()
-        full_sync.register(bgpvpn_const.LABEL, BGPVPN_RESOURCES)
+        full_sync.register(bgpvpn_const.LABEL, BGPVPN_RESOURCES,
+                           self.get_resources)
+
+    @staticmethod
+    def get_resources(context, resource_type):
+        plugin = directory.get_plugin(bgpvpn_const.LABEL)
+        if resource_type == odl_const.ODL_BGPVPN:
+            obj_getter = getattr(plugin,
+                                 'get_%s' % BGPVPN_RESOURCES[resource_type])
+            return obj_getter(context)
+
+        method_name = 'get_%s' % BGPVPN_RESOURCES[resource_type]
+        return full_sync.get_resources_require_id(plugin, context,
+                                                  plugin.get_bgpvpns,
+                                                  method_name)
 
     @log_helpers.log_method_call
     def create_bgpvpn_precommit(self, context, bgpvpn):
