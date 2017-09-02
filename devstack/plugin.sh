@@ -81,7 +81,9 @@ if is_service_enabled odl-compute; then
             create_nova_conf_neutron
         fi
         bind_opendaylight_controller
-        wait_for_active_bridge $OVS_BR $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
+        if [[ -z "$ODL_DONT_WAIT_OVS_BR" ]]; then
+            wait_for_active_bridge $OVS_BR $ODL_RETRY_SLEEP_INTERVAL $ODL_BOOT_WAIT
+        fi
 
         # L3 needs to be configured only for netvirt-ovsdb - in netvirt-vpnservice L3 is configured
         # by provider_mappings, and the provider mappings are added to br-int by default

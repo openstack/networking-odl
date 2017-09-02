@@ -12,22 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
 import re
 
 from oslo_utils import uuidutils
 from tempest.lib.common.utils import test_utils
-import testtools
 
 from neutron.agent.common import utils
 from neutron.tests.common import net_helpers
 
 from networking_odl.tests.fullstack import base
 from networking_odl.tests.fullstack import machine
-
-
-def _is_odl_carbon():
-    return os.environ.get("ODL_RELEASE_BASE", "").startswith("carbon")
 
 
 class TestMechDriver(base.TestODLFullStackBase):
@@ -95,7 +89,6 @@ class TestMechDriver(base.TestODLFullStackBase):
         # Step4: verify device
         self.assertTrue(self._check_device_existence(tap))
 
-    @testtools.skipIf(_is_odl_carbon(), "bug/1714062 odlbug/9076")
     def test_VM_connectivity(self):
         # Step1: create test network
         resp = self._create_network(self.fmt, "test_fullstack_vm_net", True)
