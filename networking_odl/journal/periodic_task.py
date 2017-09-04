@@ -14,6 +14,7 @@
 #  under the License.
 #
 
+from neutron.db import api as db_api
 from neutron_lib import context as neutron_context
 from oslo_log import log as logging
 from oslo_service import loopingcall
@@ -44,6 +45,13 @@ class PeriodicTask(object):
             # some tests call this cleanup without calling start
             pass
 
+    @db_api.retry_if_session_inactive()
+    def _set_operation(self, context, operation):
+        session = context.session
+        with db_api.autonested_transaction(session):
+            db.update_periodic_task(session, task=self.task,
+                                    operation=operation)
+
     def _execute_op(self, operation, context):
         op_details = operation.__name__
         if operation.__doc__:
@@ -52,8 +60,7 @@ class PeriodicTask(object):
         try:
             LOG.info("Starting %s phase of periodic task %s.",
                      op_details, self.task)
-            db.update_periodic_task(context.session, task=self.task,
-                                    operation=operation)
+            self._set_operation(context, operation)
             operation(context=context)
             LOG.info("Finished %s phase of %s task.", op_details, self.task)
         except Exception:
@@ -63,6 +70,20 @@ class PeriodicTask(object):
     def task_already_executed_recently(self, context):
         return db.was_periodic_task_executed_recently(
             context.session, self.task, self.interval)
+
+    @db_api.retry_if_session_inactive()
+    def _clear_and_unlock_task(self, context):
+        session = context.session
+        with db_api.autonested_transaction(session):
+            db.update_periodic_task(session, task=self.task,
+                                    operation=None)
+            db.unlock_periodic_task(session, self.task)
+
+    @db_api.retry_if_session_inactive()
+    def _lock_task(self, context):
+        session = context.session
+        with db_api.autonested_transaction(session):
+            return db.lock_periodic_task(session, self.task)
 
     def execute_ops(self):
         LOG.info("Starting %s periodic task.", self.task)
@@ -76,7 +97,7 @@ class PeriodicTask(object):
                      "Skipping execution.", self.task)
             return
 
-        if not db.lock_periodic_task(context.session, self.task):
+        if self._lock_task(context):
             LOG.info("Periodic %s task already running task", self.task)
             return
 
@@ -84,9 +105,7 @@ class PeriodicTask(object):
             for phase in self.phases:
                 self._execute_op(phase, context)
         finally:
-            db.update_periodic_task(context.session, task=self.task,
-                                    operation=None)
-            db.unlock_periodic_task(context.session, self.task)
+            self._clear_and_unlock_task(context)
 
         LOG.info("%s task has been finished", self.task)
 

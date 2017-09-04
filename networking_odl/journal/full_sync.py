@@ -16,6 +16,7 @@
 
 import requests
 
+from neutron.db import api as db_api
 from neutron_lib.plugins import directory
 
 from networking_odl.common import client
@@ -76,19 +77,21 @@ def register(driver, resources, handler=None):
         FULL_SYNC_RESOURCES[resource] = handler
 
 
+@db_api.retry_if_session_inactive()
 def full_sync(context):
-    if not _full_sync_needed(context):
-        return
+    with db_api.autonested_transaction(context.session):
+        if not _full_sync_needed(context):
+            return
 
-    db.delete_pending_rows(context.session, _OPS_TO_DELETE_ON_SYNC)
+        db.delete_pending_rows(context.session, _OPS_TO_DELETE_ON_SYNC)
 
-    for resource_type in _ORDERED_ODL_RESOURCES:
-        handler = FULL_SYNC_RESOURCES.get(resource_type)
-        if handler:
-            _sync_resources(context, resource_type, handler)
+        for resource_type in _ORDERED_ODL_RESOURCES:
+            handler = FULL_SYNC_RESOURCES.get(resource_type)
+            if handler:
+                _sync_resources(context, resource_type, handler)
 
-    journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
-                   odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
+        journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
+                       odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
 
 
 def _full_sync_needed(context):

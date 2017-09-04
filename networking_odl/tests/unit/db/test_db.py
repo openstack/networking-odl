@@ -18,7 +18,7 @@ from datetime import timedelta
 
 import mock
 
-from sqlalchemy.orm import exc
+from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -33,6 +33,10 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def setUp(self):
         super(DbTestCase, self).setUp()
+        # NOTE(mpeterson): Due to how the pecan lib does introspection
+        # to find a non-decorated function, it needs a function that will
+        # be found in the end. The line below workarounds this limitation.
+        self._mock_function = mock.MagicMock()
 
     def _update_row(self, row):
         self.db_session.merge(row)
@@ -64,6 +68,37 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_all_db_rows(self.db_session)[0]
         self.assertEqual(expected_state, row.state)
         self.assertEqual(expected_retry_count, row.retry_count)
+
+    def _test_retry_wrapper(self, decorated_function, receives_context):
+        # NOTE(mpeterson): we want to make sure that it's configured
+        # to MAX_RETRIES.
+        self.assertEqual(db_api._retry_db_errors.max_retries,
+                         db_api.MAX_RETRIES)
+
+        self._test_retry_exceptions(decorated_function,
+                                    self._mock_function, receives_context,
+                                    False)
+
+    # NOTE(mpeterson): The following two functions serve to workaround a
+    # limitation in the discovery mechanism of pecan lib that does not allow
+    # us to create a generic function that decorates on the fly. It needs to
+    # be decorated through the decorator directive and not via function
+    # composition
+    @db_api.retry_if_session_inactive()
+    def _decorated_retry_if_session_inactive(self, context):
+        self._mock_function()
+
+    @db_api.retry_db_errors
+    def _decorated_retry_db_errors(self, context):
+        self._mock_function()
+
+    def test_retry_db_errors(self):
+        self._test_retry_wrapper(self._decorated_retry_db_errors,
+                                 False)
+
+    def test_retry_if_session_inactive(self):
+        self._test_retry_wrapper(self._decorated_retry_if_session_inactive,
+                                 True)
 
     def _test_update_row_state(self, from_state, to_state, dry_flush=False):
         # add new pending row
@@ -150,19 +185,6 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_oldest_pending_db_row_with_lock(self.db_session)
         self.assertEqual(older_row, row)
 
-    def test_get_oldest_pending_row_when_conflict(self):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        update_mock = mock.MagicMock(
-            side_effect=(exc.StaleDataError, mock.DEFAULT))
-
-        # Mocking is mandatory to achieve a deadlock regardless of the DB
-        # backend being used when running the tests
-        with mock.patch.object(db, 'update_db_row_state', new=update_mock):
-            row = db.get_oldest_pending_db_row_with_lock(self.db_session)
-            self.assertIsNotNone(row)
-
-        self.assertEqual(2, update_mock.call_count)
-
     def _test_get_oldest_pending_row_with_dep(self, dep_state):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
         parent_row = db.get_all_db_rows(self.db_session)[0]
@@ -194,6 +216,11 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def test_get_oldest_pending_row_none_when_dep_processing(self):
         row = self._test_get_oldest_pending_row_with_dep(odl_const.PROCESSING)
         self.assertIsNone(row)
+
+    def test_get_oldest_pending_row_retries_exceptions(self):
+        with mock.patch.object(self.db_session, 'query') as m:
+            self._test_retry_exceptions(db.get_oldest_pending_db_row_with_lock,
+                                        m, False)
 
     def _test_delete_row(self, by_row=False, by_row_id=False, dry_flush=False):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)

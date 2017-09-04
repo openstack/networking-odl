@@ -131,3 +131,18 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
             mock_log_info.assert_called_with(msg, 'test-maintenance')
             mock_status_method.return_value = False
             self.assertTrue(callback_event.wait(timeout=2))
+
+    def test_set_operation_retries_exceptions(self):
+        with mock.patch.object(db, 'update_periodic_task') as m:
+            self._test_retry_exceptions(self.thread._set_operation,
+                                        m, True)
+
+    def test_lock_task_retries_exceptions(self):
+        with mock.patch.object(db, 'lock_periodic_task') as m:
+            self._test_retry_exceptions(self.thread._lock_task,
+                                        m, True)
+
+    def test_clear_and_unlock_task_retries_exceptions(self):
+        with mock.patch.object(db, 'update_periodic_task') as m:
+            self._test_retry_exceptions(self.thread._clear_and_unlock_task,
+                                        m, True)
