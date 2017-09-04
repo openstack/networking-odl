@@ -21,10 +21,12 @@ from oslo_db import exception
 from oslo_utils import uuidutils
 
 from networking_odl.common import constants as odl_const
+from networking_odl.db import db
 from networking_odl.db import models
 from networking_odl.journal import dependency_validations
 from networking_odl.journal import journal
 from networking_odl.tests.unit import base_v2
+from networking_odl.tests.unit.db import test_db
 
 
 class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
@@ -69,6 +71,11 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
         url_param = self.journal._json_data(row)
         self.assertEqual(object_type, url_param[1])
 
+    def test_entry_reset_retries_exceptions(self):
+        with mock.patch.object(db, 'update_db_row_state') as m:
+            self._test_retry_exceptions(
+                journal.entry_reset, m, True)
+
 
 def _raise_DBReferenceError(*args, **kwargs):
     args = [mock.Mock(unsafe=True)] * 4
@@ -84,3 +91,88 @@ class JournalTest(base_v2.OpenDaylightTestCase):
                                                       mock_calculate):
         args = [mock.Mock(unsafe=True)] * 5
         self.assertRaises(exception.RetryRequest, journal.record, *args)
+
+    def test_entry_complete_retries_exceptions(self):
+        with mock.patch.object(db, 'update_db_row_state') as m:
+            self._test_retry_exceptions(journal.entry_complete, m, True)
+
+    def _test_entry_complete(self, retention, expected_length):
+        self.cfg.config(completed_rows_retention=retention, group='ml2_odl')
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        entry = db.get_all_db_rows(self.db_session)[-1]
+        journal.entry_complete(self.db_context, entry)
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertEqual(expected_length, len(rows))
+        self.assertTrue(
+            all(row.state == odl_const.COMPLETED for row in rows))
+
+    def test_entry_complete_with_retention(self):
+        self._test_entry_complete(1, 1)
+
+    def test_entry_complete_with_indefinite_retention(self):
+        self._test_entry_complete(-1, 1)
+
+    def test_entry_complete_with_retention_deletes_dependencies(self):
+        self.cfg.config(completed_rows_retention=1, group='ml2_odl')
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        entry = db.get_all_db_rows(self.db_session)[-1]
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW,
+                              depending_on=[entry])
+        dependant = db.get_all_db_rows(self.db_session)[-1]
+        journal.entry_complete(self.db_context, entry)
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertIn(entry, rows)
+        self.assertEqual([], entry.dependencies)
+        self.assertEqual([], dependant.depending_on)
+
+    def test_entry_reset_retries_exceptions(self):
+        with mock.patch.object(db, 'update_db_row_state') as m:
+            self._test_retry_exceptions(journal.entry_reset, m, True)
+
+    def test_entry_reset(self):
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        entry = db.get_all_db_rows(self.db_session)[-1]
+        entry.state = odl_const.PROCESSING
+        self.db_session.merge(entry)
+        self.db_session.flush()
+        entry = db.get_all_db_rows(self.db_session)[-1]
+        self.assertEqual(entry.state, odl_const.PROCESSING)
+        journal.entry_reset(self.db_context, entry)
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertEqual(2, len(rows))
+        self.assertTrue(all(row.state == odl_const.PENDING for row in rows))
+
+    def test_entry_set_retry_count_retries_exceptions(self):
+        with mock.patch.object(db, 'update_pending_db_row_retry') as m:
+            self._test_retry_exceptions(
+                journal.entry_update_state_by_retry_count, m, True)
+
+    def test_entry_set_retry_count(self):
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        entry_baseline = db.get_all_db_rows(self.db_session)[-1]
+        db.create_pending_row(self.db_session,
+                              *test_db.DbTestCase.UPDATE_ROW)
+        entry_target = db.get_all_db_rows(self.db_session)[-1]
+        self.assertEqual(entry_target.retry_count, 0)
+        self.assertEqual(entry_target.retry_count, entry_baseline.retry_count)
+        self.assertEqual(entry_target.state, entry_baseline.state)
+
+        journal.entry_update_state_by_retry_count(
+            self.db_context, entry_target, 1)
+        self.assertEqual(entry_target.retry_count, 1)
+        self.assertEqual(entry_target.state, odl_const.PENDING)
+
+        journal.entry_update_state_by_retry_count(
+            self.db_context, entry_target, 1)
+        self.assertEqual(entry_target.retry_count, 1)
+        self.assertEqual(entry_target.state, odl_const.FAILED)
+        self.assertNotEqual(entry_target.state, entry_baseline.state)
+        self.assertNotEqual(entry_target.retry_count,
+                            entry_baseline.retry_count)

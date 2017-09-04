@@ -91,6 +91,15 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
             nexc.NotFound, recovery._get_latest_resource,
             self.db_context.session, mock_row)
 
+    def test_journal_recovery_retries_exceptions(self):
+        db.create_pending_row(self.db_context.session, odl_const.ODL_NETWORK,
+                              'id', odl_const.ODL_DELETE, {})
+        created_row = db.get_all_db_rows(self.db_context.session)[0]
+        db.update_db_row_state(self.db_context.session, created_row,
+                               odl_const.FAILED)
+        with mock.patch.object(db, 'update_db_row_state') as m:
+            self._test_retry_exceptions(recovery.journal_recovery, m, True)
+
     def test_journal_recovery_no_rows(self):
         recovery.journal_recovery(self.db_context)
         self.assertFalse(self._CLIENT.get_resource.called)
@@ -111,8 +120,11 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual(created_row['seqnum'], row['seqnum'])
         return created_row
 
-    def test_journal_recovery_hadles_failure_quietly(self):
-        self._CLIENT.get_resource.side_effect = Exception('')
+    def test_journal_recovery_handles_failure_quietly(self):
+        class TestException(Exception):
+            pass
+
+        self._CLIENT.get_resource.side_effect = TestException('')
         self._test_recovery(
             odl_const.ODL_DELETE, None, odl_const.FAILED)
 

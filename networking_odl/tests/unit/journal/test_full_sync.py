@@ -412,3 +412,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         resources = self._get_all_resources()
         for obj_type, plugin_name in resources:
             self._test_sync_resources(obj_type, plugin_name)
+
+    def test_full_sync_retries_exceptions(self):
+        with mock.patch.object(full_sync, '_full_sync_needed') as m:
+            self._test_retry_exceptions(full_sync.full_sync, m, True)

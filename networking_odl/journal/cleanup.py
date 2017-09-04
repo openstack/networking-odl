@@ -16,6 +16,7 @@
 
 from datetime import timedelta
 
+from neutron.db import api as db_api
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -31,16 +32,20 @@ class JournalCleanup(object):
         self._rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
         self._processing_timeout = cfg.CONF.ml2_odl.processing_timeout
 
+    @db_api.retry_if_session_inactive()
     def delete_completed_rows(self, context):
         if self._rows_retention != -1:
             LOG.debug("Deleting completed rows")
-            db.delete_rows_by_state_and_time(
-                context.session, odl_const.COMPLETED,
-                timedelta(seconds=self._rows_retention))
+            with db_api.autonested_transaction(context.session):
+                db.delete_rows_by_state_and_time(
+                    context.session, odl_const.COMPLETED,
+                    timedelta(seconds=self._rows_retention))
 
+    @db_api.retry_if_session_inactive()
     def cleanup_processing_rows(self, context):
-        row_count = db.reset_processing_rows(
-            context.session, self._processing_timeout)
+        with db_api.autonested_transaction(context.session):
+            row_count = db.reset_processing_rows(
+                context.session, self._processing_timeout)
         if row_count:
             LOG.info("Reset %(num)s orphaned rows back to pending",
                      {"num": row_count})

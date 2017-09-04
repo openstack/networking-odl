@@ -19,14 +19,11 @@ from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 
-from networking_odl.common import constants as odl_const
-from networking_odl.db import models
-
 from neutron.db import api as db_api
-
-from oslo_db import api as oslo_db_api
 from oslo_log import log as logging
 
+from networking_odl.common import constants as odl_const
+from networking_odl.db import models
 
 LOG = logging.getLogger(__name__)
 
@@ -72,7 +69,7 @@ def get_all_db_rows_by_state(session, state):
 # of them will get a deadlock from Galera and will have to retry the operation.
 @db_api.retry_db_errors
 def get_oldest_pending_db_row_with_lock(session):
-    with session.begin():
+    with db_api.autonested_transaction(session):
         journal_dep = aliased(models.OpenDaylightJournal)
         dep_query = session.query(journal_dep).filter(
             models.OpenDaylightJournal.seqnum == journal_dep.seqnum
@@ -100,7 +97,6 @@ def delete_dependency(session, entry):
     session.expire_all()
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def update_db_row_state(session, row, state, flush=True):
     row.state = state
     session.merge(row)
@@ -116,7 +112,6 @@ def update_pending_db_row_retry(session, row, retry_count):
         update_db_row_state(session, row, odl_const.PENDING)
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def delete_row(session, row=None, row_id=None, flush=True):
     if row_id:
         row = session.query(models.OpenDaylightJournal).filter_by(
@@ -127,7 +122,6 @@ def delete_row(session, row=None, row_id=None, flush=True):
             session.flush()
 
 
-@oslo_db_api.wrap_db_retry(max_retries=db_api.MAX_RETRIES)
 def create_pending_row(session, object_type, object_uuid,
                        operation, data, depending_on=None):
     if depending_on is None:
@@ -143,9 +137,8 @@ def create_pending_row(session, object_type, object_uuid,
     session.flush()
 
 
-@db_api.retry_db_errors
 def delete_pending_rows(session, operations_to_delete):
-    with session.begin():
+    with db_api.autonested_transaction(session):
         session.query(models.OpenDaylightJournal).filter(
             models.OpenDaylightJournal.operation.in_(operations_to_delete),
             models.OpenDaylightJournal.state == odl_const.PENDING).delete(
@@ -153,18 +146,16 @@ def delete_pending_rows(session, operations_to_delete):
         session.expire_all()
 
 
-@db_api.retry_db_errors
 def _update_periodic_task_state(session, expected_state, state, task):
-    with session.begin():
-        row = session.query(models.OpenDaylightPeriodicTask).filter_by(
-            state=expected_state,
-            task=task).with_for_update().one_or_none()
+    row = session.query(models.OpenDaylightPeriodicTask).filter_by(
+        state=expected_state,
+        task=task).with_for_update().one_or_none()
 
-        if row is None:
-            return False
+    if row is None:
+        return False
 
-        row.state = state
-        return True
+    row.state = state
+    return True
 
 
 def was_periodic_task_executed_recently(session, task, interval):
@@ -198,17 +189,16 @@ def update_periodic_task(session, task, operation=None):
     if operation:
         op_text = operation.__name__
 
-    with session.begin():
-        row = session.query(models.OpenDaylightPeriodicTask).filter_by(
-            task=task).one()
-        row.processing_operation = op_text
+    row = session.query(models.OpenDaylightPeriodicTask).filter_by(
+        task=task).one()
+    row.processing_operation = op_text
 
 
 def delete_rows_by_state_and_time(session, state, time_delta):
     # NOTE(mpeterson): The reason behind deleting one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing a DELETE. By
     # executing each operation indepently, we minimize exposures to DEADLOCKS.
-    with session.begin():
+    with db_api.autonested_transaction(session):
         now = session.execute(func.now()).scalar()
         rows = session.query(models.OpenDaylightJournal).filter(
             models.OpenDaylightJournal.state == state,
@@ -222,7 +212,7 @@ def reset_processing_rows(session, max_timedelta):
     # NOTE(mpeterson): The reason behind updating one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing an UPDATE. By
     # executing each operation indepently, we minimize exposures to DEADLOCKS.
-    with session.begin():
+    with db_api.autonested_transaction(session):
         now = session.execute(func.now()).scalar()
         max_timedelta = datetime.timedelta(seconds=max_timedelta)
         rows = session.query(models.OpenDaylightJournal).filter(
