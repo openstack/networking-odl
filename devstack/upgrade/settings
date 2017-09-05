@@ -11,7 +11,7 @@ ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl
 ODL_NETVIRT_KARAF_FEATURE+=,odl-l2switch-switch,odl-netvirt-openstack
 
 # for base it should be enabling recent stable/release
-devstack_localrc base enable_plugin networking-odl http://github.com/openstack/networking-odl.git stable/ocata
+devstack_localrc base enable_plugin networking-odl http://github.com/openstack/networking-odl.git stable/pike
 
 devstack_localrc target enable_plugin networking-odl http://github.com/openstack/networking-odl.git
 
