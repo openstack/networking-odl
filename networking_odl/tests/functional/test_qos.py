@@ -22,6 +22,7 @@ from neutron.extensions import qos as qos_ext
 from neutron.services.qos import qos_plugin
 from neutron.tests.unit.api import test_extensions
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from neutron_lib import fixture as nlib_fixture
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
@@ -70,6 +71,7 @@ class QoSDriverTests(base.V2DriverAdjustment,
     _mechanism_drivers = ['opendaylight_v2']
 
     def setUp(self):
+        self.useFixture(nlib_fixture.PluginDirectoryFixture())
         super(QoSDriverTests, self).setUp()
         self.qos_plug = qos_plugin.QoSPlugin()
         directory.add_plugin('QOS', self.qos_plug)

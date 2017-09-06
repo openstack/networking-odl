@@ -66,6 +66,7 @@ class OpenDaylightAgentDBFixture(fixtures.Fixture):
         super(OpenDaylightAgentDBFixture, self)._setUp()
         fake_agents_db = mock.MagicMock()
         fake_agents_db.create_or_update_agent = mock.MagicMock()
+        self.useFixture(fixture.PluginDirectoryFixture())
         directory.add_plugin(plugin_constants.CORE, fake_agents_db)
 
 
