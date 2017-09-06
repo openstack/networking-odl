@@ -195,6 +195,29 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = self._test_get_oldest_pending_row_with_dep(odl_const.PROCESSING)
         self.assertIsNone(row)
 
+    def _test_delete_row(self, by_row=False, by_row_id=False):
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertEqual(len(rows), 2)
+        row = rows[-1]
+
+        if by_row:
+            db.delete_row(self.db_session, row=row)
+        elif by_row_id:
+            db.delete_row(self.db_session, row_id=row.seqnum)
+
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertEqual(len(rows), 1)
+        self.assertNotEqual(row.seqnum, rows[0].seqnum)
+
+    def test_delete_row_by_row(self):
+        self._test_delete_row(by_row=True)
+
+    def test_delete_row_by_row_id(self):
+        self._test_delete_row(by_row_id=True)
+
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows):
         db.create_pending_row(self.db_session, *self.UPDATE_ROW)
