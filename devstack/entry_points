@@ -268,21 +268,9 @@ function bind_opendaylight_controller {
     ODL_LOCAL_IP=${ODL_LOCAL_IP:-$HOST_IP}
     ODL_MGR_PORT=${ODL_MGR_PORT:-6640}
     read ovstbl <<< $(sudo ovs-vsctl get Open_vSwitch . _uuid)
-    local ODL_MANAGERS_PARAM=()
-    for manager in $(echo $ODL_OVS_MANAGERS | tr "," "\n"); do
-        local manager_ip
-        manager_ip=$(gethostip -d ${manager})
-        ODL_MANAGERS_PARAM=( "${ODL_MANAGERS_PARAM[@]}" "tcp:${manager_ip}:$ODL_MGR_PORT" )
-    done
-    # don't overwrite the already existing managers
-    local ODL_MANAGERS_OLD
-    ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
-    local ODL_MANAGERS
-    ODL_MANAGERS=$(echo $ODL_MANAGERS_OLD ${ODL_MANAGERS_PARAM[@]} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
-    sudo ovs-vsctl set-manager ${ODL_MANAGERS}
-    if [[ -n "$PUBLIC_BRIDGE" ]]; then
-        sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
-    fi
+
+    # NOTE(yamahata): setup ovsdb configuration first before setting
+    # ovsdb manager not to show transitional state
     if [[ -n "$ODL_PROVIDER_MAPPINGS" ]]; then
         sudo ovs-vsctl set Open_vSwitch $ovstbl \
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
@@ -303,6 +291,24 @@ function bind_opendaylight_controller {
             sudo neutron-odl-ovs-hostconfig --config-file=$NEUTRON_CONF $ODL_OVS_HOSTCONFIGS_OPTIONS
         fi
     fi
+
+    if [[ -n "$PUBLIC_BRIDGE" ]]; then
+        sudo ovs-vsctl --no-wait -- --may-exist add-br $PUBLIC_BRIDGE
+    fi
+
+    # Lastly setup ovsdb manager
+    local ODL_MANAGERS_PARAM=()
+    for manager in $(echo $ODL_OVS_MANAGERS | tr "," "\n"); do
+        local manager_ip
+        manager_ip=$(gethostip -d ${manager})
+        ODL_MANAGERS_PARAM=( "${ODL_MANAGERS_PARAM[@]}" "tcp:${manager_ip}:$ODL_MGR_PORT" )
+    done
+    # don't overwrite the already existing managers
+    local ODL_MANAGERS_OLD
+    ODL_MANAGERS_OLD=$(sudo ovs-vsctl get-manager)
+    local ODL_MANAGERS
+    ODL_MANAGERS=$(echo $ODL_MANAGERS_OLD ${ODL_MANAGERS_PARAM[@]} | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+    sudo ovs-vsctl set-manager ${ODL_MANAGERS}
 }
 
 # unbind_opendaylight_controller() - disconnect controller from switch and clear bridges
