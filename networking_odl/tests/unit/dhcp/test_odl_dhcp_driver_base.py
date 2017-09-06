@@ -40,15 +40,6 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OdlDhcpDriverTestBase, self).setUp()
 
-    def get_test_parameters(self):
-
-        network_id = uuidutils.generate_uuid()
-        subnet_id = uuidutils.generate_uuid()
-        context = neutron_context.get_admin_context()
-        plugin = directory.get_plugin()
-
-        return plugin, context, network_id, subnet_id
-
     def get_network_and_subnet_context(self, cidr,
                                        dhcp_flag, create_subnet,
                                        create_network):
