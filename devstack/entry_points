@@ -11,9 +11,6 @@ function cleanup_opendaylight {
     if [[ -n "$LOGDIR" ]]; then
         rm -f "$LOGDIR/$ODL_KARAF_LOG_BASE*"
     fi
-    if [[ -n "$SCREEN_LOGDIR" ]]; then
-        rm -f "$SCREEN_LOGDIR/$ODL_KARAF_LOG_BASE*"
-    fi
     rm -f "$DEST/logs/$ODL_KARAF_LOG_BASE*"
 
     move_interface_addresses "outof_bridge"
@@ -79,9 +76,6 @@ function configure_opendaylight {
     # Soft link for easy consumption
     sudo mkdir -p "$ODL_LOGDIR"
     ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
-    if [[ -n $SCREEN_LOGDIR ]]; then
-        ln -sf $_LF "$SCREEN_LOGDIR/screen-karaf.log"
-    fi
 
     # Change the karaf logfile
     # disable log rotation by setting max fiel size large enough

@@ -82,9 +82,6 @@ function _init {
     DEST=${GATE_DEST:-$DEST}
     STACK_USER=${GATE_STACK_USER:-$STACK_USER}
     REQUIREMENTS_DIR=$DEST/requirements
-    if [[ -n "$SCREEN_LOGDIR" ]]; then
-        mkdir -p $SCREEN_LOGDIR
-    fi
 }
 
 
@@ -232,16 +229,6 @@ function _install_opendaylight {
     if [ $result -eq 0 ]; then
         echo_summary "OpenDaylight config appears to be complete, skipping"
         return 0
-    fi
-
-    # start_odl tries to run under screen session. ensure screen is running
-    USE_SCREEN=$(trueorfalse True USE_SCREEN)
-    if [[ "$USE_SCREEN" == "True" ]]; then
-        # Create a new named screen to run processes in
-        if ! (etype -p screen > /dev/null && screen -ls | egrep -q "[0-9]\.$SCREEN_NAME"); then
-            screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
-            sleep 1
-        fi
     fi
 
     enable_service odl-server
