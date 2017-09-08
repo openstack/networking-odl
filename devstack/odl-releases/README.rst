@@ -52,3 +52,10 @@ RC carbon-0.6.2-SR2-RC::
 
   ODL_BUNDLEVERSION='0.6.2-Carbon'
   NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/"
+
+
+RC nitroge-0.7.0-RC3::
+
+  ODL_BUNDLEVERSION="0.7.0"
+  NEXUSPATH="${ODL_URL_PREFIX}/content/repositories/autorelease-1963/org/opendaylight/integration/karaf/"
+
