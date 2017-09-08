@@ -63,19 +63,34 @@ function configure_opendaylight {
         fi
     fi
 
-    # Remove existing logfiles
-    local ODL_LOGDIR=$DEST/logs
-    if [[ -n "$LOGDIR" ]]; then
-        ODL_LOGDIR=$LOGDIR
+    # NOTE(yamahata): by default LOGDIR=$DEST via ${LOG_FILE%/*}
+    # default value of LOGFILE by devstack-vm-gate.sh: $BASE/new/devstacklog.txt
+    # default value of LOG_DIR by devstack/stackrc: $BASE/new
+    # however, cleanup_host() in devstack-gate/functions.sh
+    # doesn't copy files under $BASE/new, but $BASE/{old, new}/logs
+    # try to $BASE/logs
+    local ODL_LOGDIR
+    if [[ -n "$SCREEN_LOGDIR" ]]; then
+        ODL_LOGDIR=$SCREEN_LOGDIR
+    elif [[ -n "$LOGDIR" ]]; then
+        if [[ "$LOGDIR" != "$DEST" ]]; then
+            ODL_LOGDIR=$LOGDIR
+        else
+            ODL_LOGDIR=${LOGDIR%/*}/logs
+        fi
+    else
+        ODL_LOGDIR=${DEST%/*}/logs
     fi
 
+    # Remove existing logfiles
     rm -f "$ODL_LOGDIR/$ODL_KARAF_LOG_BASE*"
     # Log karaf output to a file
     _LF=$ODL_LOGDIR/$ODL_KARAF_LOG_NAME
     LF=$(echo $_LF | sed 's/\//\\\//g')
     # Soft link for easy consumption
     sudo mkdir -p "$ODL_LOGDIR"
-    ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
+    sudo chown $(id -un):$(id -gn) "$ODL_LOGDIR"
+    sudo ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
 
     # Change the karaf logfile
     # disable log rotation by setting max fiel size large enough
