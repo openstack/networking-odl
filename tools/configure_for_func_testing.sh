@@ -245,7 +245,13 @@ function _install_opendaylight {
         # NOTE(yamahata) work around. See the above comment over ODL_NETVIRT_KARAF_FEATURE
         $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
         $BASE/new/opendaylight/*karaf-*/bin/client feature:install odl-netvirt-openstack
-        sleep 10
+        sleep 3
+        local ODL_TOPOLOGY_NETVIRTBOOT_URL=restconf/operational/network-topology:network-topology/topology/netvirt:1
+        echo "Waiting for netvirt to start via $ODL_TOPOLOGY_NETVIRTBOOT_URL ..."
+        local testcmd="curl -o /dev/null --fail --silent --head -u \
+              ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_TOPOLOGY_NETVIRTBOOT_URL}"
+        test_with_retry "$testcmd" "OpenDaylight netvirt did not start after $ODL_BOOT_WAIT" \
+                        $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
     fi
     $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
 }
