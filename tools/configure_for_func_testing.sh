@@ -190,40 +190,18 @@ function _install_opendaylight {
     # openstack service provider isn't needed, only ODL neutron northbound
     # is necessary for functional test
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
-    if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
-        if [[ "$ODL_RELEASE_BASE" =~ "carbon" ]]; then
-            # NOTE(yamahata): With ODL carbon, there is a race on
-            # loading features When loading netvirt, nicira extension
-            # may not be loaded. In that case OpenFlow rules with
-            # nicira extension installed on MD-SAL inventory can be sent
-            # without no match/no action.
-            # As work around, load netvirt later once OLD booted later
-            local OF_FEATURS="odl-openflowjava-protocol"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-config-pusher"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-forwardingrules-manager"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-app-topology"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-flow-services"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nsf-model"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nxm-extensions"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-nxm-extensions"
-            OF_FEATURES="$OF_FEATURES,odl-openflowplugin-southbound"
-            local OVSDB_FEATURES="odl-ovsdb-hwvtepsouthbound"
-            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-hwvtepsouthbound-api"
-            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-library"
-            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-southbound-api"
-            OVSDB_FEATURES="$OVSDB_FEATURES,odl-ovsdb-southbound-impl"
-            export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,$OF_FEATURES,$OVSDB_FEATURES,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
-        else
-            export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
-        fi
-    fi
     ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
+    if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
+        ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/topology/netvirt:1
+        export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
+    fi
     source $NETWORKING_ODL_DIR/devstack/settings.odl
 
+    local ODL_NEUTRON_NETWORK_WAIT_URL=controller/nb/v2/neutron/networks
     set +e
     curl -o /dev/null --fail --silent --head -u \
          ${ODL_USERNAME}:${ODL_PASSWORD} \
-         http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_BOOT_WAIT_URL}
+         http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_NEUTRON_NETWORK_WAIT_URL}
     local result=$?
     set -e
     if [ $result -eq 0 ]; then
@@ -241,18 +219,6 @@ function _install_opendaylight {
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
 
-    if [[ "$VENV" =~ "dsvm-fullstack" ]] && [[ "$ODL_RELEASE_BASE" =~ "carbon" ]]; then
-        # NOTE(yamahata) work around. See the above comment over ODL_NETVIRT_KARAF_FEATURE
-        $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
-        $BASE/new/opendaylight/*karaf-*/bin/client feature:install odl-netvirt-openstack
-        sleep 3
-        local ODL_TOPOLOGY_NETVIRTBOOT_URL=restconf/operational/network-topology:network-topology/topology/netvirt:1
-        echo "Waiting for netvirt to start via $ODL_TOPOLOGY_NETVIRTBOOT_URL ..."
-        local testcmd="curl -o /dev/null --fail --silent --head -u \
-              ${ODL_USERNAME}:${ODL_PASSWORD} http://${ODL_MGR_HOST}:${ODL_PORT}/${ODL_TOPOLOGY_NETVIRTBOOT_URL}"
-        test_with_retry "$testcmd" "OpenDaylight netvirt did not start after $ODL_BOOT_WAIT" \
-                        $ODL_BOOT_WAIT $ODL_RETRY_SLEEP_INTERVAL
-    fi
     $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
 }
 
