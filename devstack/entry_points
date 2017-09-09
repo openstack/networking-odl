@@ -63,6 +63,16 @@ function configure_opendaylight {
         fi
     fi
 
+    # create symbolic link from ODL etc, configuration dir under /etc/networking-odl
+    # so that those config files are copied to log server
+    local NETWORKING_ODL_ETC_DIR=/etc/networking-odl
+    local ODL_CONF_DIR=$NETWORKING_ODL_ETC_DIR/odl
+    sudo mkdir -p $ODL_CONF_DIR
+    local d
+    for d in etc configuration; do
+        sudo ln -sf "$ODL_DIR/$ODL_NAME/$d" "$ODL_CONF_DIR/"
+    done
+
     # NOTE(yamahata): by default LOGDIR=$DEST via ${LOG_FILE%/*}
     # default value of LOGFILE by devstack-vm-gate.sh: $BASE/new/devstacklog.txt
     # default value of LOG_DIR by devstack/stackrc: $BASE/new
