@@ -44,13 +44,13 @@ function odl_artifcat_id {
     local OFFLINE=$4
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
-    local NEXUSPATH
-    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
-    _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+    local _NEXUSPATH
+    _NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    _wget $MAVENMETAFILE ${_NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
     if [[ -f "$MAVENMETAFILE" ]]; then
         # In auto release case, metadata file exists only in parent directly.
         # e.g. https://nexus.opendaylight.org/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/maven-metadata.xml
-        _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
+        _wget $MAVENMETAFILE ${_NEXUSPATH}/maven-metadata.xml $OFFLINE
     fi
     local result
     result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
@@ -65,11 +65,11 @@ function odl_snapshot_full_version {
     local OFFLINE=$4
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-snapshot.xml
-    local NEXUSPATH
-    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
-    _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
+    local _NEXUSPATH
+    _NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    _wget $MAVENMETAFILE ${_NEXUSPATH}/maven-metadata.xml $OFFLINE
     if [[ ! -r $MAVENMETAFILE ]]; then
-        echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False and check internet connection to $NEXUSPATH"
+        echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False and check internet connection to $_NEXUSPATH"
         exit 1
     fi
 
@@ -92,25 +92,25 @@ function _odl_export_snapshot_url_pkg {
     local BUNDLE_TIMESTAMP=$5
 
     local MAVENMETAFILE=$ODL_DIR/maven-metadata.xml
-    local NEXUSPATH
-    NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
+    local _NEXUSPATH
+    _NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
 
     if [ "$BUNDLE_TIMESTAMP" == "latest" ]; then
         # Get build information
-        _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+        _wget $MAVENMETAFILE ${_NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
         BUNDLE_TIMESTAMP=$(_xpath "//snapshotVersion[extension='zip'][1]/value/text()" $MAVENMETAFILE)
     fi
 
-    export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+    export ODL_URL=${_NEXUSPATH}/${BUNDLEVERSION}
     export ODL_PKG=${ODL_ARTIFACT_ID}-${BUNDLE_TIMESTAMP}.zip
 }
 
 function _odl_export_release_url_pkg {
     local ODL_URL_PREFIX=$1
     local BUNDLEVERSION=$2
-    local NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/${ODL_URL_DISTRIBUTION_KARAF_PATH}}"
+    local _NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/${ODL_URL_DISTRIBUTION_KARAF_PATH}}"
 
-    export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
+    export ODL_URL=${_NEXUSPATH}/${BUNDLEVERSION}
     export ODL_PKG=${ODL_ARTIFACT_ID}-${BUNDLEVERSION}.zip
 }
 
