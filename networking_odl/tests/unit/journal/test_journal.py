@@ -107,6 +107,9 @@ class JournalTest(base_v2.OpenDaylightTestCase):
         self.assertTrue(
             all(row.state == odl_const.COMPLETED for row in rows))
 
+    def test_entry_complete_no_retention(self):
+        self._test_entry_complete(0, 0)
+
     def test_entry_complete_with_retention(self):
         self._test_entry_complete(1, 1)
 

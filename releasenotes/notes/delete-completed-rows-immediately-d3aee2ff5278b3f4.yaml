@@ -1,0 +1,7 @@
+---
+prelude: >
+    Completed rows are deleted by default.
+upgrade:
+  - Completed rows will now be immediately deleted upon completion.
+    To retain the completed rows, set the completed_rows_retention
+    configuration value explicitly.
