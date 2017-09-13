@@ -29,4 +29,5 @@ subunit.log
 !/.gitreview
 !/.mailmap
 !/.pylintrc
+!/.stestr.conf
 !/.testr.conf
