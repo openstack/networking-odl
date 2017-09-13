@@ -12,7 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from neutron.plugins.ml2 import config
+
+from oslo_config import cfg
+
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron_lib import constants as n_const
 from neutron_lib import context as neutron_context
@@ -28,7 +30,7 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
     _mechanism_drivers = ['opendaylight_v2']
 
     def setUp(self):
-        config.cfg.CONF.set_override('enable_dhcp_service', True, 'ml2_odl')
+        cfg.CONF.set_override('enable_dhcp_service', True, 'ml2_odl')
         super(TestOdlDhcpDriver, self).setUp()
 
     def get_port_data(self, network, subnet):

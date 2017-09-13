@@ -26,7 +26,6 @@ import webob.exc
 
 from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.plugins.ml2 import config
 from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
 from neutron.plugins.ml2 import models
@@ -142,21 +141,20 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDayLightMechanismConfigTests, self).setUp()
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'],
-                                     'ml2')
-        config.cfg.CONF.set_override('port_binding_controller',
-                                     'legacy-port-binding', 'ml2_odl')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
+        cfg.CONF.set_override('port_binding_controller',
+                              'legacy-port-binding', 'ml2_odl')
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
-        config.cfg.CONF.set_override('url', url, 'ml2_odl')
-        config.cfg.CONF.set_override('username', username, 'ml2_odl')
-        config.cfg.CONF.set_override('password', password, 'ml2_odl')
+        cfg.CONF.set_override('url', url, 'ml2_odl')
+        cfg.CONF.set_override('username', username, 'ml2_odl')
+        cfg.CONF.set_override('password', password, 'ml2_odl')
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)
-        self.assertRaisesRegex(config.cfg.RequiredOptError,
+        self.assertRaisesRegex(cfg.RequiredOptError,
                                'value required for option \w+ in group '
                                '\[ml2_odl\]',
                                plugin.Ml2Plugin)
@@ -309,8 +307,8 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'], 'ml2')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
         self.mech = mech_driver.OpenDaylightMechanismDriver()
         self.mech.initialize()
 
@@ -368,13 +366,13 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                 method(context)
         mock_method.assert_called_once_with(
             headers={'Content-Type': 'application/json'},
-            timeout=config.cfg.CONF.ml2_odl.timeout, *args, **kwargs)
+            timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
 
     def _test_create_resource_postcommit(self, object_type, status_code,
                                          exc_class=None):
         method = getattr(self.mech, 'create_%s_postcommit' % object_type)
         context = self._get_mock_operation_context(object_type)
-        url = '%s/%ss' % (config.cfg.CONF.ml2_odl.url, object_type)
+        url = '%s/%ss' % (cfg.CONF.ml2_odl.url, object_type)
         kwargs = {'url': url,
                   'data': DataMatcher(odl_const.ODL_CREATE, object_type,
                                       context)}
@@ -385,7 +383,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                                          exc_class=None):
         method = getattr(self.mech, 'update_%s_postcommit' % object_type)
         context = self._get_mock_operation_context(object_type)
-        url = '%s/%ss/%s' % (config.cfg.CONF.ml2_odl.url, object_type,
+        url = '%s/%ss/%s' % (cfg.CONF.ml2_odl.url, object_type,
                              context.current['id'])
         kwargs = {'url': url,
                   'data': DataMatcher(odl_const.ODL_UPDATE, object_type,
@@ -397,7 +395,7 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
                                          exc_class=None):
         method = getattr(self.mech, 'delete_%s_postcommit' % object_type)
         context = self._get_mock_operation_context(object_type)
-        url = '%s/%ss/%s' % (config.cfg.CONF.ml2_odl.url, object_type,
+        url = '%s/%ss/%s' % (cfg.CONF.ml2_odl.url, object_type,
                              context.current['id'])
         kwargs = {'url': url, 'data': None}
         self._test_single_operation(method, context, status_code, exc_class,
@@ -557,8 +555,8 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
         self.useFixture(odl_base.OpenDaylightFeaturesFixture())
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(TestOpenDaylightMechanismDriver, self).setUp()
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     ['logger', 'opendaylight'], 'ml2')
+        cfg.CONF.set_override('mechanism_drivers',
+                              ['logger', 'opendaylight'], 'ml2')
 
     # given valid  and invalid segments
     valid_segment = {

@@ -14,7 +14,6 @@
 
 import os
 
-from neutron.plugins.ml2 import config
 from neutron.plugins.ml2.drivers import type_vxlan  # noqa
 from neutron.tests import base as tests_base
 from neutron.tests.common import helpers
@@ -39,15 +38,12 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
                                    'dsvm-fullstack-logs')
 
     def setUp(self):
-        config.cfg.CONF.set_override('extension_drivers',
-                                     self._extension_drivers,
-                                     group='ml2')
-        config.cfg.CONF.set_override('tenant_network_types',
-                                     ['vxlan'],
-                                     group='ml2')
-        config.cfg.CONF.set_override('vni_ranges',
-                                     ['1:1000'],
-                                     group='ml2_type_vxlan')
+        cfg.CONF.set_override('extension_drivers',
+                              self._extension_drivers, group='ml2')
+        cfg.CONF.set_override('tenant_network_types',
+                              ['vxlan'], group='ml2')
+        cfg.CONF.set_override('vni_ranges',
+                              ['1:1000'], group='ml2_type_vxlan')
 
         odl_url = 'http://127.0.0.1:8087/controller/nb/v2/neutron'
         odl_config.cfg.CONF.set_override('url',

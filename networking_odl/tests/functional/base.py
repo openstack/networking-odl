@@ -18,7 +18,6 @@ import functools
 import os
 
 from neutron.common import utils
-from neutron.plugins.ml2 import config
 from neutron.tests import base
 from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -39,16 +38,14 @@ class OdlTestsBase(object):
                                    'dsvm-functional-logs')
 
     def setUp(self):
-        config.cfg.CONF.set_override(
+        cfg.CONF.set_override(
             'url', 'http://127.0.0.1:8181/controller/nb/v2/neutron', 'ml2_odl')
-        config.cfg.CONF.set_override('username', 'admin', 'ml2_odl')
-        config.cfg.CONF.set_override('password', 'admin', 'ml2_odl')
-        config.cfg.CONF.set_override('mechanism_drivers',
-                                     self._mechanism_drivers,
-                                     group='ml2')
-        config.cfg.CONF.set_override('extension_drivers',
-                                     ['qos', 'port_security'],
-                                     group='ml2')
+        cfg.CONF.set_override('username', 'admin', 'ml2_odl')
+        cfg.CONF.set_override('password', 'admin', 'ml2_odl')
+        cfg.CONF.set_override('mechanism_drivers',
+                              self._mechanism_drivers, group='ml2')
+        cfg.CONF.set_override('extension_drivers',
+                              ['qos', 'port_security'], group='ml2')
         self.client = client.OpenDaylightRestClient.create_client()
         super(OdlTestsBase, self).setUp()
         base.setup_test_logging(
