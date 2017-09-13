@@ -34,7 +34,7 @@ class JournalCleanup(object):
 
     @db_api.retry_if_session_inactive()
     def delete_completed_rows(self, context):
-        if self._rows_retention != -1:
+        if self._rows_retention > 0:
             LOG.debug("Deleting completed rows")
             with db_api.autonested_transaction(context.session):
                 db.delete_rows_by_state_and_time(

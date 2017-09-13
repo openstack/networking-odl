@@ -83,12 +83,12 @@ def _sync_resource_to_odl(context, row, operation_type, exists_on_odl):
         journal.record(context, row.object_type, row.object_uuid,
                        operation_type, resource)
 
-    db.update_db_row_state(context.session, row, odl_const.COMPLETED)
+    journal.entry_complete(context, row)
 
 
 def _handle_existing_resource(context, row):
     if row.operation == odl_const.ODL_CREATE:
-        db.update_db_row_state(context.session, row, odl_const.COMPLETED)
+        journal.entry_complete(context, row)
     elif row.operation == odl_const.ODL_DELETE:
         db.update_db_row_state(context.session, row, odl_const.PENDING)
     else:
@@ -97,7 +97,7 @@ def _handle_existing_resource(context, row):
 
 def _handle_non_existing_resource(context, row):
     if row.operation == odl_const.ODL_DELETE:
-        db.update_db_row_state(context.session, row, odl_const.COMPLETED)
+        journal.entry_complete(context, row)
     else:
         _sync_resource_to_odl(context, row, odl_const.ODL_CREATE, False)
         # TODO(mkolesni): Handle missing parent resources somehow.

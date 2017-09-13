@@ -37,3 +37,18 @@ class JournalCleanupTestCase(test_base_db.ODLBaseDbTestCase):
         with mock.patch.object(db, 'reset_processing_rows') as m:
             self._test_retry_exceptions(
                 journal_cleanup.cleanup_processing_rows, m, True)
+
+    @mock.patch.object(db, 'delete_rows_by_state_and_time')
+    def _test_delete_completed_rows(self, retention, expected_call, mock_db):
+        journal_cleanup = self._journal_cleanup_object(retention)
+        journal_cleanup.delete_completed_rows(self.db_context)
+        self.assertEqual(expected_call, mock_db.called)
+
+    def test_delete_completed_rows_with_retention(self):
+        self._test_delete_completed_rows(1, True)
+
+    def test_delete_completed_rows_zero_retention(self):
+        self._test_delete_completed_rows(0, False)
+
+    def test_delete_completed_rows_indefinite_retention(self):
+        self._test_delete_completed_rows(-1, False)

@@ -111,8 +111,11 @@ def record(plugin_context, object_type, object_uuid, operation, data,
 def entry_complete(context, entry):
     session = context.session
     with db_api.autonested_transaction(session):
-        db.update_db_row_state(session, entry, odl_const.COMPLETED)
-        db.delete_dependency(session, entry)
+        if cfg.CONF.ml2_odl.completed_rows_retention == 0:
+            db.delete_row(session, entry)
+        else:
+            db.update_db_row_state(session, entry, odl_const.COMPLETED)
+            db.delete_dependency(session, entry)
 
 
 @db_api.retry_if_session_inactive()

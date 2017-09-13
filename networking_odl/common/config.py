@@ -37,12 +37,14 @@ odl_opts = [
     cfg.IntOpt('maintenance_interval', default=300,
                help=_("(V2 driver) Journal maintenance operations interval "
                       "in seconds.")),
-    cfg.IntOpt('completed_rows_retention', default=600,
-               help=_("(V2 driver) Time to keep completed rows in seconds."
-                      "Completed rows retention will be checked every "
-                      "maintenance_interval by the cleanup thread."
-                      "To disable completed rows deletion "
-                      "value should be -1")),
+    cfg.IntOpt('completed_rows_retention', default=0,
+               help=_("(V2 driver) Time to keep completed rows (in seconds)."
+                      "For performance reasons it's not recommended to "
+                      "change this from the default value (0) which "
+                      "indicates completed rows aren't kept."
+                      "This value will be checked every maintenance_interval "
+                      "by the cleanup thread. To keep completed rows "
+                      "indefinitely, set the value to -1")),
     cfg.BoolOpt('enable_lightweight_testing',
                 default=False,
                 help=_('Test without real ODL.')),
