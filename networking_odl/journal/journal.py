@@ -271,6 +271,5 @@ class OpenDaylightJournalThread(object):
                       log_dict, exc_info=True)
             db.update_pending_db_row_retry(
                 session, entry, self._max_retry_count)
-            self._retry_sleep()
 
         return False
