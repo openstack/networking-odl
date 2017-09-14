@@ -210,3 +210,12 @@
 
       [[local|localrc]]
       ODL_INSTALL=False
+
+20. To Enable L3 Flavors with ODL, service providers should be added
+    to neutron.conf::
+
+      [service_providers]
+      service_provider = L3_ROUTER_NAT:ODL:networking_odl.l3.l3_flavor.ODLL3ServiceProvider:default
+
+    Note: Service Plugin 'router' should be used in neutron.conf
+    for enabling L3 flavors completely

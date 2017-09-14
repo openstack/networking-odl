@@ -1,0 +1,15 @@
+---
+prelude: >
+    OpenStack neutron allows L3 flavors to enable multiple L3
+    backends in the same cloud. This is ODL L3 flavor driver to
+    implement L3 flavors for OpenStack Neutron and OpenDaylight
+    integration.
+features:
+  - |
+     L3 flavor driver to implement L3 resource operation callbacks
+     related to router and floating ip create delete and update.
+upgrade:
+  - |
+     The configuration upgrades are required to enable l3 flavors,
+     service_providers should be added to neutron.conf based on
+     flavor used.
