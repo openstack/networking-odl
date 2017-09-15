@@ -17,7 +17,7 @@ mkdir -p $ODL_DIR
 # Import utility functions
 source $TOP_DIR/functions
 source $NETWORKING_ODL_DIR/devstack/functions
-source $TOP_DIR/lib/neutron-legacy
+source $TOP_DIR/lib/neutron
 
 # Import bridge data
 source $TOP_DIR/lib/neutron_plugins/ovs_base
@@ -78,7 +78,7 @@ if is_service_enabled odl-compute; then
         install_opendaylight_compute
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         if is_service_enabled nova; then
-            create_nova_conf_neutron
+            configure_neutron_nova
         fi
         bind_opendaylight_controller
         if [[ -z "$ODL_DONT_WAIT_OVS_BR" ]]; then

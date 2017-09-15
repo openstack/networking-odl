@@ -27,6 +27,9 @@
         cmd: |
           set -e
           set -x
+          # Set this variable for grenade job to be identified and use lib/neutron-legacy
+          # for base release and lib/neutron for target release
+          export IS_GRENADE_JOB=True
           export PROJECTS="openstack-dev/grenade openstack/networking-odl $PROJECTS"
           export PYTHONUNBUFFERED=true
           export DEVSTACK_GATE_TEMPEST=1

@@ -131,30 +131,43 @@ function configure_neutron_odl {
         iniset $NEUTRON_DHCP_CONF OVS ovsdb_connection tcp:127.0.0.1:$ODL_OVSDB_ALTPORT
     fi
 
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl url=$ODL_ENDPOINT
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl username=$ODL_USERNAME
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl password=$ODL_PASSWORD
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl port_binding_controller=$ODL_PORT_BINDING_CONTROLLER
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl enable_dhcp_service=$ODL_DHCP_SERVICE
+    # Addition of L3 service_plugin
+    if ! is_neutron_legacy_enabled; then
+        neutron_service_plugin_class_add $ML2_L3_PLUGIN
+        # NOTE: workaround, mechanism driver is not being set to opendaylight_v2
+        # by lib/neutron. It seems to be hardcoded at
+        # https://github.com/openstack-dev/devstack/blob/master/lib/neutron#L184, fix it, if
+        # fixed in lib/neutron
+        iniset $NEUTRON_CORE_PLUGIN_CONF ml2 mechanism_drivers $Q_ML2_PLUGIN_MECHANISM_DRIVERS
+    fi
+    populate_odl_ml2_config ml2_odl url $ODL_ENDPOINT
+    populate_odl_ml2_config ml2_odl username $ODL_USERNAME
+    populate_odl_ml2_config ml2_odl password $ODL_PASSWORD
+    populate_odl_ml2_config ml2_odl port_binding_controller $ODL_PORT_BINDING_CONTROLLER
+    populate_odl_ml2_config ml2_odl enable_dhcp_service $ODL_DHCP_SERVICE
 
     if [[ -n "$ODL_TIMEOUT" ]]; then
-        populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl timeout=$ODL_TIMEOUT
+        populate_odl_ml2_config ml2_odl timeout $ODL_TIMEOUT
     fi
     # When it's not set, the default value is set by networking-odl
     if [[ -n "$ODL_HOSTCONF_URI" ]]; then
-        populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl odl_hostconf_uri=$ODL_HOSTCONF_URI
+        populate_odl_ml2_config ml2_odl odl_hostconf_uri $ODL_HOSTCONF_URI
     fi
 
     # NOTE(mgkwill): ODL layer-3 and DHCP services currently lack support
     # for metadata. Enabling both native services also requires enabling
     # config drive to provide instances with metadata. If conventional DHCP agent
     # is used instead, configure it to provide instances with metadata.
-    if is_service_enabled q-dhcp; then
+    # TODO(rajivk) Remove q-dhcp on adoption of lib/neutron
+    if is_service_enabled neutron-dhcp; then
         # Conventional DHCP agent must provide all metadata when ODL
         # layer-3 is enabled. The conventional DHCP agent will be forced
         # to provide metadata for all networks.
+        iniset $NEUTRON_DHCP_CONF DEFAULT force_metadata True
+    elif is_service_enabled q-dhcp; then
         iniset $Q_DHCP_CONF_FILE DEFAULT force_metadata True
     fi
+
     if [[ "$ODL_L3" == "True" ]]; then
         if is_service_enabled n-cpu; then
             iniset $NOVA_CONF DEFAULT force_config_drive True
@@ -164,7 +177,9 @@ function configure_neutron_odl {
 
 function configure_neutron_odl_lightweight_testing {
     echo "Configuring lightweight testing for OpenDaylight"
-    populate_ml2_config /$Q_PLUGIN_CONF_FILE ml2_odl enable_lightweight_testing=True
+    if is_service_enabled q-dhcp neutron-dhcp; then
+        populate_odl_ml2_config ml2_odl enable_lightweight_testing True
+    fi
 }
 
 # init_opendaylight() - Initialize databases, etc.
