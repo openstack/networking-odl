@@ -7,8 +7,10 @@
 # https://wiki.opendaylight.org/view/Release_Plan
 #
 #   latest-snapshot          (master latest snapshot)
-#   nitrogen-snapshot-0.7    (master latest nitrogen snapshot)
-#   nitrogen-snapshot-0.7.0  (master)
+#   oxygen-snapshot-0.8      (master latest oxygen snapshot)
+#   oxygen-snapshot-0.8.0    (master)
+#   nitrogen-snapshot-0.7    (stable/nitrogen latest nitrogen snapshot)
+#   nitrogen-snapshot-0.7.0  (stable/nitrogen)
 #   carbon-snapshot-0.6      (stable/carbon latest carbon snapshot)
 #   carbon-snapshot-0.6.2    (stable/carbon)
 #   carbon-0.6.1-SR1
@@ -70,13 +72,16 @@ ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 ODL_URL_SNAPSHOT_REPOSITORY_PATH=${ODL_URL_SNAPSHOT_REPOSITORY_PATH:-content/repositories/opendaylight.snapshot}
 ODL_URL_RELEASE_REPOSITORY_PATH=${ODL_URL_RELEASE_REPOSITORY_PATH:-content/repositories/opendaylight.release}
 case "$ODL_RELEASE" in
-    latest-snapshot|nitrogen-snapshot-0.7*)
-        # use karaf because distribution-karaf isn't available for Nitrogen at the moment
-        # TODO(yamahata): when distriution-karaf is available, remove this
-        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/karaf}
+    hydrogen*|helium*|lithium*|berryllium*)
+        echo "unsupported ODL version $ODL_RELEASE which is too old."
+        exit 1
+        ;;
+    carbon*|boron*)
+        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/distribution-karaf}
         ;;
     *)
-        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/distribution-karaf}
+        # use karaf because distribution-karaf isn't available from Nitrogen for Karaf 4
+        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/karaf}
         ;;
 esac
 
