@@ -15,7 +15,10 @@
 
 # pylint: disable=unused-argument, protected-access
 
+
+from contextlib import contextmanager
 import os
+import sys
 import tempfile
 
 import mock
@@ -25,6 +28,20 @@ import six
 from networking_odl.cmd import set_ovs_hostconfigs
 from networking_odl.tests import base
 from networking_odl.tests import match
+
+LOGGING_ENABLED = "Logging Enabled!"
+LOGGING_PERMISSION_REQUIRED = "permissions are required to configure ovsdb"
+
+
+@contextmanager
+def capture(command, args):
+    out, sys.stdout = sys.stdout, six.StringIO()
+    try:
+        command(args)
+        sys.stdout.seek(0)
+        yield sys.stdout.read()
+    finally:
+        sys.stdout = out
 
 
 class TestSetOvsHostconfigs(base.DietTestCase):
@@ -273,3 +290,15 @@ class TestSetOvsHostconfigs(base.DietTestCase):
     def patch_os_geteuid(self, return_value=0):
         return self.patch(
             set_ovs_hostconfigs.os, "geteuid", return_value=return_value)
+
+    @contextmanager
+    def test_log_on_console_msg(self):
+        with capture(set_ovs_hostconfigs.main, args=()) as output:
+            self.assertNotEqual(-1, output.find(LOGGING_PERMISSION_REQUIRED))
+
+    def test_log_in_file(self):
+        with tempfile.TemporaryFile() as fp:
+            set_ovs_hostconfigs.main(("--log-file=%s" % fp.name,))
+            logs = [LOGGING_ENABLED, LOGGING_PERMISSION_REQUIRED]
+            for line, count in fp.readline():
+                self.assertNotEqual(-1, line.find(logs[count]))
