@@ -37,7 +37,7 @@ function _xpath {
     echo $result
 }
 
-function odl_artifcat_id {
+function odl_artifact_id {
     local ODL_DIR=$1
     local ODL_URL_PREFIX=$2
     local BUNDLEVERSION=$3
