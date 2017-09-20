@@ -35,6 +35,9 @@ function configure_opendaylight {
     if [ "$ODLFEATUREMATCH" == "" ]; then
         sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
                $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+        # NOTE(yamahata): From Nitrogen, the format has been slightly changed
+        sed -i "/^featuresBoot = \\\\$/ s/\\\\$/$ODL_NETVIRT_KARAF_FEATURE, \\\\/" \
+               $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
     fi
 
     # Move Jetty to $ODL_PORT

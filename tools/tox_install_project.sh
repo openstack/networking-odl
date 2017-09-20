@@ -21,7 +21,7 @@ shift 2
 
 ZUUL_CLONER=/usr/zuul-env/bin/zuul-cloner
 neutron_installed=$(echo "import ${MOD}" | python 2>/dev/null ; echo $?)
-BRANCH_NAME=master
+BRANCH_NAME=stable/pike
 NEUTRON_DIR=$HOME/${PROJ}
 
 set -e

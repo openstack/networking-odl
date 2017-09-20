@@ -69,6 +69,16 @@ ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 # Can be overridden in case you host proxy repositories which have a different directory structure than OpenDaylight's
 ODL_URL_SNAPSHOT_REPOSITORY_PATH=${ODL_URL_SNAPSHOT_REPOSITORY_PATH:-content/repositories/opendaylight.snapshot}
 ODL_URL_RELEASE_REPOSITORY_PATH=${ODL_URL_RELEASE_REPOSITORY_PATH:-content/repositories/opendaylight.release}
+case "$ODL_RELEASE" in
+    latest-snapshot|nitrogen-snapshot-0.7*)
+        # use karaf because distribution-karaf isn't available for Nitrogen at the moment
+        # TODO(yamahata): when distriution-karaf is available, remove this
+        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/integration/distribution/karaf}
+        ;;
+    *)
+        ODL_URL_DISTRIBUTION_KARAF_PATH=${ODL_URL_DISTRIBUTION_KARAF_PATH:-org/opendaylight/integration/distribution-karaf}
+        ;;
+esac
 
 # How long (in seconds) to pause after ODL starts to let it complete booting
 ODL_BOOT_WAIT=${ODL_BOOT_WAIT:-600}
