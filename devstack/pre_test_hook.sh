@@ -13,10 +13,10 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=latest-snapshot
         ;;
     nitrogen-snapshot)
-        ODL_RELEASE=nitrogen-snapshot-0.7
+        ODL_RELEASE=nitrogen-latest
         ;;
     carbon-snapshot)
-        ODL_RELEASE=carbon-snapshot-0.6
+        ODL_RELEASE=carbon-latest
         ;;
     boron-snapshot)
         ODL_RELEASE=boron-snapshot-0.5

@@ -49,6 +49,11 @@ function odl_artifact_id {
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
     local NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
     _wget $MAVENMETAFILE ${NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+    if [[ -f "$MAVENMETAFILE" ]]; then
+        # In auto release case, metadata file exists only in parent directly.
+        # e.g. https://nexus.opendaylight.org/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/maven-metadata.xml
+        _wget $MAVENMETAFILE ${NEXUSPATH}/maven-metadata.xml $OFFLINE
+    fi
     local result=$(_xpath "//artifactId/text()" $MAVENMETAFILE)
     echo $result
 }
@@ -95,6 +100,30 @@ function _odl_export_snapshot_url_pkg {
 
     export ODL_URL=${NEXUSPATH}/${BUNDLEVERSION}
     export ODL_PKG=${ODL_ARTIFACT_ID}-${BUNDLE_TIMESTAMP}.zip
+}
+
+# get release bundle version <Name> -> <major>.<minor>.<reivision>-<Name>[-SR<N>]
+function odl_release_bundleversion {
+    local ODL_DIR=$1
+    local ODL_URL_PREFIX=$2
+    local RELEASE_NAME=$3
+    local OFFLINE=$4
+
+    local MAVENMETAFILE=$ODL_DIR/maven-metadata-release.xml
+    local _NEXUSPATH
+    local _NEXUSPATH="${NEXUSPATH:-${ODL_URL_PREFIX}/${ODL_URL_RELEASE_REPOSITORY_PATH}/${ODL_URL_DISTRIBUTION_KARAF_PATH}}"
+
+    _wget $MAVENMETAFILE ${_NEXUSPATH}/maven-metadata.xml $OFFLINE
+    local _ODL_BUNDLEVERSION
+    if [[ "$RELEASE_NAME" == "latest" ]]; then
+        _ODL_BUNDLEVERSION=$(_xpath "//release/text()" $MAVENMETAFILE)
+    else
+        # until carbon, karaf is named as <major>.<minor>.<revision>-<name>
+        # from Nitrogen, it's named as <major>.<minor>.<revision>
+        local _ODL_MAJOR_MINOR=${ODL_NAME_TO_MAJOR_MINOR["$RELEASE_NAME"]}
+        _ODL_BUNDLEVERSION=$(_xpath "//version[starts-with(text(), '$_ODL_MAJOR_MINOR')][last()]/text()" $MAVENMETAFILE)
+    fi
+    echo $_ODL_BUNDLEVERSION
 }
 
 function _odl_export_release_url_pkg {
