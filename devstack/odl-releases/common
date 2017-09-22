@@ -28,13 +28,21 @@ if [[ "$_odl_release" =~ -snapshot ]]; then
     export ODL_BUNDLEVERSION=${ODL_BUNDLEVERSION:-${_odl_bundleversion_default}}
     export ODL_SNAPSHOT_VERSION=${ODL_SNAPSHOT_VERSION:-latest}
 else
-    # <release name>-<N>.<N>.<N>[-SR<N>] -> <N>.<N>.<N>-<Release name>[-SR<N>]
-    _name=$(echo ${_odl_release} | awk -F- '{print toupper(substr($1, 1, 1))substr($1, 2)}')
-    _version=$(echo ${_odl_release} | awk -F- '{print $2}')
-    _sr=$(echo ${_odl_release} | awk -F- '{print $3}')
-    _odl_bundleversion_default=${_version}-${_name}
-    if [[ -n $_sr ]]; then
-        _odl_bundleversion_default=${_odl_bundleversion_default}-${_sr}
+    if [[ "$_odl_release" == "latest-release" ]]; then
+        _odl_bundleversion_default=$(odl_release_bundleversion $ODL_DIR $ODL_URL_PREFIX "latest" $OFFLINE)
+    elif [[ "$_odl_release" =~ "-latest" ]]; then
+        # <releasename>-latest
+        _name=$(echo ${_odl_release} | awk -F- '{print toupper(substr($1, 1, 1))substr($1, 2)}')
+        _odl_bundleversion_default=$(odl_release_bundleversion $ODL_DIR $ODL_URL_PREFIX $_name $OFFLINE)
+    else
+        # <release name>-<N>.<N>.<N>[-SR<N>] -> <N>.<N>.<N>-<Release name>[-SR<N>]
+        _name=$(echo ${_odl_release} | awk -F- '{print toupper(substr($1, 1, 1))substr($1, 2)}')
+        _version=$(echo ${_odl_release} | awk -F- '{print $2}')
+        _sr=$(echo ${_odl_release} | awk -F- '{print $3}')
+        _odl_bundleversion_default=${_version}-${_name}
+        if [[ -n $_sr ]]; then
+            _odl_bundleversion_default=${_odl_bundleversion_default}-${_sr}
+        fi
     fi
     export ODL_BUNDLEVERSION=${ODL_BUNDLEVERSION:-${_odl_bundleversion_default}}
 fi
