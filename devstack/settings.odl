@@ -67,6 +67,11 @@ ODL_V2DRIVER=${ODL_V2DRIVER:-True}
 # use opendaylight dhcp server
 ODL_DHCP_SERVICE=${ODL_DHCP_SERVICE:-False}
 
+# NOTE, this parameter is used for development purpose where opendaylight is
+# already installed and does not have to install again. It will save a lot of
+# time for developer
+ODL_INSTALL=${ODL_INSTALL:-True}
+
 # The OpenDaylight URL PREFIX
 ODL_URL_PREFIX=${ODL_URL_PREFIX:-https://nexus.opendaylight.org}
 
