@@ -121,7 +121,10 @@ function odl_release_bundleversion {
     if [[ "$RELEASE_NAME" == "latest" ]]; then
         _ODL_BUNDLEVERSION=$(_xpath "//release/text()" $MAVENMETAFILE)
     else
-        _ODL_BUNDLEVERSION=$(_xpath "version[contains(text(), '\''-$RELEASE_NAME'\'')][last()]/text()" $MAVENMETAFILE)
+        # until carbon, karaf is named as <major>.<minor>.<revision>-<name>
+        # from Nitrogen, it's named as <major>.<minor>.<revision>
+        local _ODL_MAJOR_MINOR=${ODL_NAME_TO_MAJOR_MINOR["$RELEASE_NAME"]}
+        _ODL_BUNDLEVERSION=$(_xpath "//version[starts-with(text(), '$_ODL_MAJOR_MINOR')][last()]/text()" $MAVENMETAFILE)
     fi
     echo $_ODL_BUNDLEVERSION
 }
