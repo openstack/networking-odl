@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+from datetime import datetime
 import threading
 import time
 
@@ -40,7 +41,7 @@ LOG = logging.getLogger(__name__)
 
 MAKE_URL = {}
 LOG_ENTRY_TEMPLATE = ("%(log_type)s (Entry ID: %(entry_id)s) - %(op)s "
-                      "%(obj_type)s %(obj_id)s")
+                      "%(obj_type)s %(obj_id)s (Time stamp: %(timestamp)s)")
 LOG_RECORDED = 'Recorded'
 LOG_PROCESSING = 'Processing'
 LOG_COMPLETED = 'Completed'
@@ -92,9 +93,11 @@ def _enrich_port(plugin_context, ml2_context, object_type, operation, data):
 
 
 def _log_entry(log_type, entry, log_level=logging.INFO, **kwargs):
+    delta = datetime.now() - datetime.min
+    timestamp = delta.total_seconds()
     log_dict = {'log_type': log_type, 'op': entry.operation,
                 'obj_type': entry.object_type, 'obj_id': entry.object_uuid,
-                'entry_id': entry.seqnum}
+                'entry_id': entry.seqnum, 'timestamp': timestamp}
     LOG.log(log_level, LOG_ENTRY_TEMPLATE, log_dict, **kwargs)
 
 

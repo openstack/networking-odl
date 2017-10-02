@@ -1,0 +1,10 @@
+---
+prelude: >
+    Add command line tool to analyze logs
+
+features:
+  - This tool can be used to analyze logs and determine the journal's
+    operation efficiency.
+    The tool tracks a journal entry's recording and processing to determine
+    how much time it took since a journal entry was recorded until it was
+    processed and sent to ODL.
