@@ -136,10 +136,8 @@ def _generate_sfc_port_pair_group_deps(data):
 
 
 def _generate_sfc_port_chain_deps(data):
-    object_ids = [port_pair_group['id'] for port_pair_group in
-                  data['port_pair_groups']]
-    flow_classifiers = [flow_classifier['id'] for flow_classifier in
-                        data['flow_classifiers']]
+    object_ids = data['port_pair_groups'][:]
+    flow_classifiers = data['flow_classifiers'][:]
     object_ids.extend(flow_classifiers)
 
     return object_ids
