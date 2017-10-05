@@ -57,12 +57,8 @@ FAKE_PORT_CHAIN = {
     "tenant_id": "d382007aa9904763a801f68ecf065cf5",
     "description": "Steering TCP and UDP traffic first to Firewall "
                    "and then to Loadbalancer",
-    "flow_classifiers": [
-        {"id": "4a334cd4-fe9c-4fae-af4b-321c5e2eb051"},
-        {"id": "105a4b0a-73d6-11e5-b392-2c27d72acb4c"}
-    ],
-    "port_pair_groups": [
-        {"id": "4512d643-24fc-4fae-af4b-321c5e2eb3d1"},
-        {"id": "4a634d49-76dc-4fae-af4b-321c5e23d651"}
-    ]
+    "flow_classifiers": ["4a334cd4-fe9c-4fae-af4b-321c5e2eb051",
+                         "105a4b0a-73d6-11e5-b392-2c27d72acb4c"],
+    "port_pair_groups": ["4512d643-24fc-4fae-af4b-321c5e2eb3d1",
+                         "4a634d49-76dc-4fae-af4b-321c5e23d651"]
 }
