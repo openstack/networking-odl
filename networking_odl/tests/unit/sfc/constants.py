@@ -45,9 +45,7 @@ FAKE_PORT_PAIR_GROUP = {
     "id": "4512d643-24fc-4fae-af4b-321c5e2eb3d1",
     "tenant_id": "d382007aa9904763a801f68ecf065cf5",
     "description": "Grouping Firewall SF instances",
-    "port_pairs": [
-        {"id": "78dcd363-fc23-aeb6-f44b-56dc5e2fb3ae"}
-    ]
+    "port_pairs": ["78dcd363-fc23-aeb6-f44b-56dc5e2fb3ae"]
 }
 PORT_CHAINS_BASE_URI = 'sfc/portchains'
 FAKE_PORT_CHAIN_ID = "1278dcd4-459f-62ed-754b-87fc5e4a6751"
