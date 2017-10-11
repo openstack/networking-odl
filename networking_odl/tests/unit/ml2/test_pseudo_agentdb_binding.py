@@ -260,12 +260,12 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
                  "uuid": "TEST_UUID",
                  "has_datapath_type_netdev": True,
                  "support_vhost_user": True,
-                 "port_prefix": "vhu_",
+                 "port_prefix": "vhu",
                  "vhostuser_socket_dir": "/var/run/openvswitch",
                  "vhostuser_ovs_plug": True,
                  "vhostuser_mode": "client",
                  "vhostuser_socket":
-                     "/var/run/openvswitch/vhu_$PORT_ID"
+                     "/var/run/openvswitch/vhu$PORT_ID"
              }}],
             "allowed_network_types": [
                 "local", "vlan", "vxlan", "gre"],
@@ -327,12 +327,12 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
                 "uuid": "TEST_UUID",
                 "has_datapath_type_netdev": True,
                 "support_vhost_user": True,
-                "port_prefix": "vhu_",
+                "port_prefix": "vhu",
                 # Assumption: /var/run mounted as tmpfs
                 "vhostuser_socket_dir": "/var/run/openvswitch",
                 "vhostuser_ovs_plug": True,
                 "vhostuser_mode": "client",
-                "vhostuser_socket": "/var/run/openvswitch/vhu_$PORT_ID"}}],
+                "vhostuser_socket": "/var/run/openvswitch/vhu$PORT_ID"}}],
         "allowed_network_types": ["local", "vlan", "vxlan", "gre"],
         "bridge_mappings": {"physnet1": "br-ex"}}}
 
@@ -475,7 +475,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         vhostuser_socket_dir = vif_details.get(
             'vhostuser_socket_dir', '/var/run/openvswitch')
         port_spec = vif_details.get(
-            'port_prefix', 'vhu_') + port_context.current['id']
+            'port_prefix', 'vhu') + port_context.current['id']
         socket_path = os_path.join(vhostuser_socket_dir, port_spec)
         vif_details.update({portbindings.VHOST_USER_SOCKET: socket_path})
 
