@@ -16,12 +16,6 @@ import fixtures
 
 from neutron.agent.common import utils
 from neutron.tests.common import net_helpers
-from neutron_lib.exceptions import NeutronException
-
-
-class FakeMachineException(NeutronException):
-
-    message = _('Fail to establish fakeMachine %(namespace)s')
 
 
 class FakeMachine(fixtures.Fixture):
@@ -43,12 +37,9 @@ class FakeMachine(fixtures.Fixture):
         self.port = port
 
     def _setUp(self):
-        try:
-            ns_fixture = self.useFixture(
-                net_helpers.NamespaceFixture())
-            self.namespace = ns_fixture.name
-        except Exception:
-            raise FakeMachineException(self.namespace)
+        ns_fixture = self.useFixture(
+            net_helpers.NamespaceFixture())
+        self.namespace = ns_fixture.name
 
     def execute(self, cmds, run_as_root=True):
         ns_params = ['ip', 'netns', 'exec', self.namespace]

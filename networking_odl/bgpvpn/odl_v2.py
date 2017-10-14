@@ -109,6 +109,10 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     @log_helpers.log_method_call
     def delete_net_assoc_precommit(self, context, net_assoc):
         bgpvpn = self.get_bgpvpn(context, net_assoc['bgpvpn_id'])
+        # NOTE(yamahata): precommit is called within db transaction.
+        # so removing network_id is still associated.
+        # it needs to be removed explicitly from dict.
+        bgpvpn['networks'].remove(net_assoc['network_id'])
         journal.record(context, odl_const.ODL_BGPVPN,
                        bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)
 
@@ -127,5 +131,9 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
     @log_helpers.log_method_call
     def delete_router_assoc_precommit(self, context, router_assoc):
         bgpvpn = self.get_bgpvpn(context, router_assoc['bgpvpn_id'])
+        # NOTE(yamahata): precommit is called within db transaction.
+        # so removing router_id is still associated.
+        # it needs to be removed explicitly from dict.
+        bgpvpn['routers'].remove(router_assoc['router_id'])
         journal.record(context, odl_const.ODL_BGPVPN,
                        bgpvpn['id'], odl_const.ODL_UPDATE, bgpvpn)

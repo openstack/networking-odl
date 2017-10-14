@@ -15,6 +15,7 @@
 import os
 
 from neutron.plugins.ml2.drivers import type_vxlan  # noqa
+from neutron import privileged  # noqa
 from neutron.tests import base as tests_base
 from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2 import test_plugin
@@ -38,6 +39,20 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
                                    'dsvm-fullstack-logs')
 
     def setUp(self):
+        # NOTE(yamahata):
+        # When tox is using virtualenv and oslo.privsep is also installed
+        # in system, sudo chooses system one.
+        # However for privsep-helper to find python module in virtualenv
+        # we need to use the on under .tox. So specify the full path
+        # and preserve environmental variables.
+        privsep_helper = "privsep-helper"
+        if "VIRTUAL_ENV" in os.environ:
+            privsep_helper = os.path.join(
+                os.environ["VIRTUAL_ENV"], "bin", privsep_helper)
+        cfg.CONF.set_override(
+            "helper_command", "sudo --preserve-env " + privsep_helper,
+            group="privsep")
+
         cfg.CONF.set_override('extension_drivers',
                               self._extension_drivers, group='ml2')
         cfg.CONF.set_override('tenant_network_types',

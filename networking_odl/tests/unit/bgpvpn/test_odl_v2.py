@@ -112,7 +112,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_delete_router_assoc(self):
         fake_rtr_assoc_data = self._get_fake_router_assoc()
-        fake_bgpvpn_data = self._get_fake_bgpvpn(router=False)
+        fake_bgpvpn_data = self._get_fake_bgpvpn(router=True)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
             self.driver.delete_router_assoc_precommit(self.db_context,
@@ -143,7 +143,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def test_delete_net_assoc(self):
         fake_net_assoc_data = self._get_fake_net_assoc()
-        fake_bgpvpn_data = self._get_fake_bgpvpn(net=False)
+        fake_bgpvpn_data = self._get_fake_bgpvpn(net=True)
         with mock.patch.object(self.driver, 'get_bgpvpn',
                                return_value=fake_bgpvpn_data):
             self.driver.delete_net_assoc_precommit(self.db_context,
