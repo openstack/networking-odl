@@ -92,12 +92,12 @@ OVS_DPDK configuration example::
                 "uuid": "TEST_UUID",
                 "has_datapath_type_netdev": True,
                 "support_vhost_user": True,
-                "port_prefix": "vhu_",
+                "port_prefix": "vhu",
                 # Assumption: /var/run mounted as tmpfs
                 "vhostuser_socket_dir": "/var/run/openvswitch",
                 "vhostuser_ovs_plug": True,
                 "vhostuser_mode": "client",
-                "vhostuser_socket": "/var/run/openvswitch/vhu_$PORT_ID"}
+                "vhostuser_socket": "/var/run/openvswitch/vhu$PORT_ID"}
         }]
         “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
         “bridge_mappings”: {“physnet1":"br-ex”}
