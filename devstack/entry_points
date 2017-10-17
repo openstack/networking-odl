@@ -80,9 +80,7 @@ function configure_opendaylight {
     # doesn't copy files under $BASE/new, but $BASE/{old, new}/logs
     # try to $BASE/logs
     local ODL_LOGDIR
-    if [[ -n "$SCREEN_LOGDIR" ]]; then
-        ODL_LOGDIR=$SCREEN_LOGDIR
-    elif [[ -n "$LOGDIR" ]]; then
+    if [[ -n "$LOGDIR" ]]; then
         if [[ "$LOGDIR" != "$DEST" ]]; then
             ODL_LOGDIR=$LOGDIR
         else
