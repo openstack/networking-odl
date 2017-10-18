@@ -34,6 +34,12 @@ class TestUtils(base.DietTestCase):
         url_object = utils.make_url_object('policy')
         self.assertEqual('qos/policies', url_object)
 
+    def test_make_url_sfc_object_in_resource_map(self):
+        objs = ['flowclassifier', 'portpair', 'portpairgroup', 'portchain']
+        for obj in objs:
+            url_object = utils.make_url_object(obj)
+            self.assertEqual('sfc/%ss' % obj, url_object)
+
     def test_make_url_object_conversion(self):
         self.assertEqual('networks', utils.make_url_object('network'))
         self.assertEqual('l2-gateways', utils.make_url_object('l2_gateway'))
