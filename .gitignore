@@ -31,3 +31,4 @@ subunit.log
 !/.pylintrc
 !/.stestr.conf
 !/.testr.conf
+!/.zuul.d
