@@ -265,6 +265,12 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         mock_flush = self._test_delete_row(by_row=True, dry_flush=True)
         mock_flush.assert_not_called()
 
+    def test_create_pending_row(self):
+        row = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        self.assertIsNotNone(row)
+        rows = db.get_all_db_rows(self.db_session)
+        self.assertTrue(row in rows)
+
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows,
                                             dry_delete=False):
