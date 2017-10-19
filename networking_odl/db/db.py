@@ -135,6 +135,7 @@ def create_pending_row(session, object_type, object_uuid,
     # Keep session flush for unit tests. NOOP for L2/L3 events since calls are
     # made inside database session transaction with subtransactions=True.
     session.flush()
+    return row
 
 
 def delete_pending_rows(session, operations_to_delete):
