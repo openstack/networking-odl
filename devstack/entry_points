@@ -177,6 +177,10 @@ function init_opendaylight {
 
 # install_opendaylight() - Collect source and prepare
 function install_opendaylight {
+    if [[ "$ODL_INSTALL" == "False" ]]; then
+        return
+    fi
+
     echo "Installing OpenDaylight and dependent packages"
     if [[ "$ODL_USING_EXISTING_JAVA" != "True" ]]; then
         if ! setup_java "${ODL_REQUIRED_JAVA_VERSION:-7}"; then
