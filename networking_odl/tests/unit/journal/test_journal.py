@@ -13,11 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import fixtures
 import mock
 
 from neutron.common import utils
 from oslo_config import cfg
 from oslo_db import exception
+from oslo_log import log as logging
 from oslo_utils import uuidutils
 
 from networking_odl.common import client
@@ -89,6 +91,25 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
         self.journal._sync_entry(self.db_context, entry)
         self.assertEqual(entry.retry_count, 1)
         self.assertEqual(entry.state, odl_const.FAILED)
+
+    def _test__sync_entry_logs(self, log_type):
+        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        logger = self.useFixture(fixtures.FakeLogger())
+
+        self.journal._sync_entry(self.db_context, entry)
+
+        self.assertIn(log_type, logger.output)
+
+    def test__sync_entry_logs_processing(self):
+        self._test__sync_entry_logs(journal.LOG_PROCESSING)
+
+    def test__sync_entry_logs_completed(self):
+        self._test__sync_entry_logs(journal.LOG_COMPLETED)
+
+    @mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
+                       mock.Mock(side_effect=Exception))
+    def test__sync_entry_logs_failed(self):
+        self._test__sync_entry_logs(journal.LOG_ERROR_PROCESSING)
 
 
 def _raise_DBReferenceError(*args, **kwargs):
@@ -193,3 +214,16 @@ class JournalTest(base_v2.OpenDaylightTestCase):
         self.assertNotEqual(entry_target.state, entry_baseline.state)
         self.assertNotEqual(entry_target.retry_count,
                             entry_baseline.retry_count)
+
+    def test_record_logs_recording(self):
+        logger = self.useFixture(fixtures.FakeLogger())
+        journal.record(self.db_context, *self.UPDATE_ROW)
+        for arg in self.UPDATE_ROW[0:3]:
+            self.assertIn(arg, logger.output)
+
+    def test_record_logs_dependencies(self):
+        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+
+        logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
+        journal.record(self.db_context, *self.UPDATE_ROW)
+        self.assertIn(str(entry.seqnum), logger.output)
