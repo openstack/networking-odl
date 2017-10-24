@@ -14,6 +14,8 @@
 #  under the License.
 #
 
+from debtcollector import removals
+
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from oslo_config import cfg
@@ -37,6 +39,9 @@ LOG = logging.getLogger(__name__)
 
 
 @registry.has_registry_receivers
+@removals.removed_class(
+    'OpenDaylightTrunkHandlerV1', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightTrunkHandlerV1(object):
     def __init__(self):
         self.client = odl_client.OpenDaylightRestClient.create_client()

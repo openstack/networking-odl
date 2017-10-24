@@ -16,6 +16,7 @@
 import abc
 import copy
 
+from debtcollector import removals
 import six
 
 import netaddr
@@ -237,6 +238,9 @@ class SecurityGroupRuleFilter(ResourceFilterBase):
         filters.filter_security_group_rule(sg_rule)
 
 
+@removals.removed_class(
+    'OpenDaylightDriver', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightDriver(object):
 
     """OpenDaylight Python Driver for Neutron.
@@ -446,6 +450,9 @@ class OpenDaylightDriver(object):
                    for segment in segments)
 
 
+@removals.removed_class(
+    'OpenDaylightMechanismDriver', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightMechanismDriver(api.MechanismDriver):
 
     """Mechanism Driver for OpenDaylight.

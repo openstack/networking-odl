@@ -18,6 +18,8 @@ from oslo_config import cfg
 from networking_odl._i18n import _
 
 
+# TODO(mkolesni): Remove V2 notes from messages once V1 driver is removed
+# from the tree.
 odl_opts = [
     cfg.StrOpt('url',
                help=_("HTTP URL of OpenDaylight REST interface.")),

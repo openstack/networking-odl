@@ -15,6 +15,8 @@
 
 import copy
 
+from debtcollector import removals
+
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -30,6 +32,9 @@ L2GATEWAYS = 'l2-gateways'
 L2GATEWAY_CONNECTIONS = 'l2gateway-connections'
 
 
+@removals.removed_class(
+    'OpenDaylightL2gwDriver', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightL2gwDriver(service_drivers.L2gwDriver):
     """OpenDaylight L2Gateway Service Driver
 

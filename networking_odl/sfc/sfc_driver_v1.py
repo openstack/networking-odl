@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from debtcollector import removals
+
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
@@ -24,6 +26,9 @@ from networking_odl.common import constants as odl_const
 LOG = logging.getLogger(__name__)
 
 
+@removals.removed_class(
+    'OpenDaylightSFCDriverV1', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightSFCDriverV1(sfc_driver.SfcDriverBase):
     """OpenDaylight SFC Driver for networking-sfc.
 
