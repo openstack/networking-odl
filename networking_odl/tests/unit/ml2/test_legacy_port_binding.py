@@ -15,7 +15,6 @@
 
 import mock
 
-from neutron.plugins.ml2 import driver_api
 from neutron.plugins.ml2 import driver_context as ctx
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_constants
@@ -60,7 +59,7 @@ class TestLegacyPortBindingManager(base.DietTestCase):
 
     def test_bind_port(self):
 
-        network = mock.MagicMock(spec=driver_api.NetworkContext)
+        network = mock.MagicMock(spec=api.NetworkContext)
 
         port_context = mock.MagicMock(
             spec=ctx.PortContext, current={'id': 'CURRENT_CONTEXT_ID'},
@@ -77,7 +76,7 @@ class TestLegacyPortBindingManager(base.DietTestCase):
             mgr.vif_details, status=n_constants.PORT_STATUS_ACTIVE)
 
     def test_bind_port_unsupported_vnic_type(self):
-        network = mock.MagicMock(spec=driver_api.NetworkContext)
+        network = mock.MagicMock(spec=api.NetworkContext)
         port_context = mock.MagicMock(
             spec=ctx.PortContext,
             current={'id': 'CURRENT_CONTEXT_ID',
