@@ -56,7 +56,7 @@ With `nose`
 You can use `nose`_ to run individual tests, as well as use for debugging
 portions of your code::
 
-    source .venv/bin/activate
+    . .venv/bin/activate
     pip install nose
     nosetests
 
