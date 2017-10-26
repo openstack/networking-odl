@@ -17,7 +17,6 @@ from oslo_config import cfg
 
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron_lib import constants as n_const
-from neutron_lib import context as neutron_context
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
@@ -34,8 +33,7 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
         super(TestOdlDhcpDriver, self).setUp()
 
     def get_port_data(self, network, subnet):
-
-        plugin, context = self.get_plugin_and_context()
+        plugin = self.get_plugin()
         device_id = driver_base.OPENDAYLIGHT_DEVICE_ID + \
             '-' + subnet[odl_const.ODL_SUBNET]['id']
         filters = {
@@ -43,15 +41,13 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
             'device_id': [device_id],
             'device_owner': [n_const.DEVICE_OWNER_DHCP]
         }
-        ports = plugin.get_ports(context, filters=filters)
+        ports = plugin.get_ports(self.context, filters=filters)
         if ports:
             port = ports[0]
             return {odl_const.ODL_PORT: {'id': port['id']}}
 
-    def get_plugin_and_context(self):
-        context = neutron_context.get_admin_context()
-        plugin = directory.get_plugin()
-        return plugin, context
+    def get_plugin(self):
+        return directory.get_plugin()
 
     def test_subnet_create(self):
         with self.network() as network:
@@ -64,12 +60,12 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
         with self.network() as network:
             with self.subnet(network=network, enable_dhcp=False) as subnet:
                 self.get_odl_resource(odl_const.ODL_SUBNET, subnet)
-                plugin, context = self.get_plugin_and_context()
+                plugin = self.get_plugin()
                 port = self.get_port_data(network, subnet)
                 self.assertIsNone(port)
                 subnet[odl_const.ODL_SUBNET]['enable_dhcp'] = True
                 plugin.update_subnet(
-                    context, subnet[odl_const.ODL_SUBNET]['id'], subnet)
+                    self.context, subnet[odl_const.ODL_SUBNET]['id'], subnet)
                 self.get_odl_resource(odl_const.ODL_SUBNET, subnet)
                 port = self.get_port_data(network, subnet)
                 self.assert_resource_created(odl_const.ODL_PORT, port)
@@ -78,13 +74,13 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
         with self.network() as network:
             with self.subnet(network=network) as subnet:
                 self.get_odl_resource(odl_const.ODL_SUBNET, subnet)
-                plugin, context = self.get_plugin_and_context()
+                plugin = self.get_plugin()
                 port = self.get_port_data(network, subnet)
                 self.assert_resource_created(odl_const.ODL_PORT, port)
 
                 subnet[odl_const.ODL_SUBNET]['enable_dhcp'] = False
                 plugin.update_subnet(
-                    context, subnet[odl_const.ODL_SUBNET]['id'], subnet)
+                    self.context, subnet[odl_const.ODL_SUBNET]['id'], subnet)
                 resource = self.get_odl_resource(odl_const.ODL_PORT, port)
                 self.assertIsNone(resource)
 
@@ -92,10 +88,10 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
         with self.network() as network:
             with self.subnet(network=network) as subnet:
                 self.get_odl_resource(odl_const.ODL_SUBNET, subnet)
-                plugin, context = self.get_plugin_and_context()
+                plugin = self.get_plugin()
                 port = self.get_port_data(network, subnet)
                 self.assert_resource_created(odl_const.ODL_PORT, port)
                 plugin.delete_subnet(
-                    context, subnet[odl_const.ODL_SUBNET]['id'])
+                    self.context, subnet[odl_const.ODL_SUBNET]['id'])
                 resource = self.get_odl_resource(odl_const.ODL_PORT, port)
                 self.assertIsNone(resource)
