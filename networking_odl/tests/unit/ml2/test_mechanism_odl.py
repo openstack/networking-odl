@@ -26,7 +26,6 @@ import webob.exc
 
 from neutron.db import segments_db
 from neutron.extensions import multiprovidernet as mpnet
-from neutron.plugins.ml2 import driver_api as api
 from neutron.plugins.ml2 import driver_context as driver_context
 from neutron.plugins.ml2 import models
 from neutron.plugins.ml2 import plugin
@@ -36,7 +35,7 @@ from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import portbindings
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
-from neutron_lib.plugins.ml2 import api as ml2_api
+from neutron_lib.plugins.ml2 import api
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
@@ -560,16 +559,16 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
 
     # given valid  and invalid segments
     valid_segment = {
-        ml2_api.ID: 'API_ID',
-        ml2_api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
-        ml2_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        ml2_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_LOCAL,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     invalid_segment = {
-        ml2_api.ID: 'API_ID',
-        ml2_api.NETWORK_TYPE: n_constants.TYPE_NONE,
-        ml2_api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
-        ml2_api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
+        api.ID: 'API_ID',
+        api.NETWORK_TYPE: n_constants.TYPE_NONE,
+        api.SEGMENTATION_ID: 'API_SEGMENTATION_ID',
+        api.PHYSICAL_NETWORK: 'API_PHYSICAL_NETWORK'}
 
     def test_bind_port_front_end(self):
         given_front_end = mech_driver.OpenDaylightMechanismDriver()
@@ -585,7 +584,7 @@ class TestOpenDaylightMechanismDriver(base.DietTestCase):
         # then context binding is setup with returned vif_type and valid
         # segment API ID
         given_port_context.set_binding.assert_called_once_with(
-            self.valid_segment[ml2_api.ID], portbindings.VIF_TYPE_OVS,
+            self.valid_segment[api.ID], portbindings.VIF_TYPE_OVS,
             given_back_end.port_binding_controller.vif_details,
             status=n_constants.PORT_STATUS_ACTIVE)
 
