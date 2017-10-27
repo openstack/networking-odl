@@ -17,6 +17,7 @@ from oslo_config import cfg
 
 from neutron.tests import base
 
+from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
 
 
@@ -30,19 +31,31 @@ class TestUtils(base.DietTestCase):
     def test_neutronify_empty(self):
         self.assertEqual('', utils.neutronify(''))
 
-    def test_make_url_object_in_resource_map(self):
-        url_object = utils.make_url_object('policy')
-        self.assertEqual('qos/policies', url_object)
+    @staticmethod
+    def _get_resources():
+        # TODO(rajivk): Load balancer resources are not specified because
+        # urls builder is registered explictly. Add load balancer resources
+        # here, once lbaas url creation is directed through this method
+        return {odl_const.ODL_SG: 'security-groups',
+                odl_const.ODL_SG_RULE: 'security-group-rules',
+                odl_const.ODL_NETWORK: 'networks',
+                odl_const.ODL_SUBNET: 'subnets',
+                odl_const.ODL_ROUTER: 'routers',
+                odl_const.ODL_PORT: 'ports',
+                odl_const.ODL_FLOATINGIP: 'floatingips',
+                odl_const.ODL_QOS_POLICY: 'qos/policies',
+                odl_const.ODL_TRUNK: 'trunks',
+                odl_const.ODL_BGPVPN: 'bgpvpns',
+                odl_const.ODL_SFC_FLOW_CLASSIFIER: 'sfc/flowclassifiers',
+                odl_const.ODL_SFC_PORT_PAIR: 'sfc/portpairs',
+                odl_const.ODL_SFC_PORT_PAIR_GROUP: 'sfc/portpairgroups',
+                odl_const.ODL_SFC_PORT_CHAIN: 'sfc/portchains',
+                odl_const.ODL_L2GATEWAY: 'l2-gateways',
+                odl_const.ODL_L2GATEWAY_CONNECTION: 'l2gateway-connections'}
 
-    def test_make_url_sfc_object_in_resource_map(self):
-        objs = ['flowclassifier', 'portpair', 'portpairgroup', 'portchain']
-        for obj in objs:
-            url_object = utils.make_url_object(obj)
-            self.assertEqual('sfc/%ss' % obj, url_object)
-
-    def test_make_url_object_conversion(self):
-        self.assertEqual('networks', utils.make_url_object('network'))
-        self.assertEqual('l2-gateways', utils.make_url_object('l2_gateway'))
+    def test_all_resources_url(self):
+        for obj, url in self._get_resources().items():
+            self.assertEqual(utils.make_url_object(obj), url)
 
     def test_get_odl_url(self):
         """test make uri."""
