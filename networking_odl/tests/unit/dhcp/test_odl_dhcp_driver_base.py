@@ -15,7 +15,6 @@
 import testscenarios
 
 from neutron_lib import constants as n_const
-from neutron_lib import context as neutron_context
 from neutron_lib.plugins import directory
 
 from networking_odl.dhcp import odl_dhcp_driver_base as driver_base
@@ -46,11 +45,10 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
         data = {}
         network_id = uuidutils.generate_uuid()
         subnet_id = uuidutils.generate_uuid()
-        context = neutron_context.get_admin_context()
         plugin = directory.get_plugin()
         data['network_id'] = network_id
         data['subnet_id'] = subnet_id
-        data['context'] = context
+        data['context'] = self.context
         data['plugin'] = plugin
         if create_network:
             network, network_context = self.get_network_context(network_id,
@@ -99,9 +97,9 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
                    'shared': False}
         subnet = {'subnet': AttributeDict(current)}
         if create_subnet:
-            context = neutron_context.get_admin_context()
             plugin = directory.get_plugin()
-            result, subnet_context = plugin._create_subnet_db(context, subnet)
+            result, subnet_context = plugin._create_subnet_db(self.context,
+                                                              subnet)
             return subnet, subnet_context
         else:
             return subnet
@@ -122,10 +120,9 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
                    'provider:segmentation_id': None}
         network = {'network': AttributeDict(current)}
         if create_network:
-            context = neutron_context.get_admin_context()
             plugin = directory.get_plugin()
             result, network_context = plugin._create_network_db(
-                context, network)
+                self.context, network)
             return [network, network_context]
         return network
 
