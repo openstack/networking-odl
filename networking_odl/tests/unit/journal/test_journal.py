@@ -20,6 +20,7 @@ from oslo_config import cfg
 from oslo_db import exception
 from oslo_utils import uuidutils
 
+from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.db import models
@@ -75,6 +76,19 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
         with mock.patch.object(db, 'update_db_row_state') as m:
             self._test_retry_exceptions(
                 journal.entry_reset, m, True)
+
+    @mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
+                       mock.Mock(side_effect=Exception))
+    def test__sync_entry_update_state_by_retry_count_on_exception(self):
+        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        self.journal._max_retry_count = 1
+        self.assertEqual(entry.retry_count, 0)
+        self.journal._sync_entry(self.db_context, entry)
+        self.assertEqual(entry.retry_count, 1)
+        self.assertEqual(entry.state, odl_const.PENDING)
+        self.journal._sync_entry(self.db_context, entry)
+        self.assertEqual(entry.retry_count, 1)
+        self.assertEqual(entry.state, odl_const.FAILED)
 
 
 def _raise_DBReferenceError(*args, **kwargs):

@@ -275,7 +275,6 @@ class OpenDaylightJournalThread(object):
         LOG.info("Processing - %(op)s %(type)s %(id)s", log_dict)
         method, urlpath, to_send = self._json_data(entry)
 
-        session = context.session
         try:
             self.client.sendjson(method, urlpath, to_send)
             registry.notify(entry.object_type, odl_const.BEFORE_COMPLETE,
@@ -294,6 +293,6 @@ class OpenDaylightJournalThread(object):
             LOG.error("Error while processing %(op)s %(type)s %(id)s",
                       log_dict, exc_info=True)
             entry_update_state_by_retry_count(
-                session, entry, self._max_retry_count)
+                context, entry, self._max_retry_count)
 
         return False
