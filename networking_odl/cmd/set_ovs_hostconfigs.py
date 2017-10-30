@@ -255,9 +255,6 @@ COMMAND_LINE_OPTIONS = [
 ]
 
 
-DEFAULT_COMMAND_LINE_OPTIONS = tuple(sys.argv[1:])
-
-
 def set_ovs_extid_hostconfigs(conf, ovs_vsctl):
     if conf.ovs_hostconfigs:
         json_str = conf.ovs_hostconfigs.replace("\'", "\"")
@@ -374,12 +371,8 @@ def _vif_details_from_conf(conf, uuid, vif_type):
                     conf.vhostuser_port_prefix + '$PORT_ID')}
 
 
-def setup_conf(args=None):
+def setup_conf(args):
     """setup cmdline options."""
-
-    if args is None:
-        args = DEFAULT_COMMAND_LINE_OPTIONS
-
     conf = cfg.ConfigOpts()
     if '-h' in args or '--help' in args:
         # Prints out script documentation."
@@ -472,6 +465,9 @@ class OvsVsctl(object):
 
 def main(args=None):
     """Main."""
+
+    if args is None:
+        args = sys.argv[1:]
 
     conf = setup_conf(args)
 
