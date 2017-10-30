@@ -27,10 +27,6 @@ from networking_odl.tests.unit import test_base_db
 
 
 class DbTestCase(test_base_db.ODLBaseDbTestCase):
-
-    UPDATE_ROW = [odl_const.ODL_NETWORK, 'id', odl_const.ODL_UPDATE,
-                  {'test': 'data'}]
-
     def setUp(self):
         super(DbTestCase, self).setUp()
         # NOTE(mpeterson): Due to how the pecan lib does introspection

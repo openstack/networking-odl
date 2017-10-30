@@ -44,6 +44,10 @@ class _InnerException(Exception):
 
 
 class ODLBaseDbTestCase(SqlTestCaseLight):
+
+    UPDATE_ROW = [constants.ODL_NETWORK, 'id', constants.ODL_UPDATE,
+                  {'test': 'data'}]
+
     def setUp(self):
         super(ODLBaseDbTestCase, self).setUp()
         self.db_context = context.get_admin_context()
