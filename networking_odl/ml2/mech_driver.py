@@ -19,6 +19,7 @@ import copy
 import six
 
 import netaddr
+from neutron_lib.api.definitions import allowedaddresspairs as addr_apidef
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as p_const
@@ -31,7 +32,6 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
-from neutron.extensions import allowedaddresspairs as addr_pair
 from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_context
@@ -170,7 +170,7 @@ class PortFilter(ResourceFilterBase):
     def filter_create_attributes(cls, port, context):
         """Filter out port attributes not required for a create."""
         cls._add_security_groups(port, context)
-        cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
+        cls._fixup_allowed_ipaddress_pairs(port[addr_apidef.ADDRESS_PAIRS])
         cls._filter_unmapped_null(port, cls._UNMAPPED_KEYS)
         odl_utils.try_del(port, ['status'])
 
@@ -192,7 +192,7 @@ class PortFilter(ResourceFilterBase):
     def filter_update_attributes(cls, port, context):
         """Filter out port attributes for an update operation."""
         cls._add_security_groups(port, context)
-        cls._fixup_allowed_ipaddress_pairs(port[addr_pair.ADDRESS_PAIRS])
+        cls._fixup_allowed_ipaddress_pairs(port[addr_apidef.ADDRESS_PAIRS])
         cls._filter_unmapped_null(port, cls._UNMAPPED_KEYS)
         odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id'])
 
