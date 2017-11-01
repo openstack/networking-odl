@@ -74,8 +74,8 @@ ODL_BGPVPN = 'bgpvpn'
 ODL_BGPVPNS = 'bgpvpns'
 ODL_BGPVPN_NETWORK_ASSOCIATION = 'bgpvpn_network_association'
 ODL_BGPVPN_NETWORK_ASSOCIATIONS = 'bgpvpn_network_associations'
-ODL_BGPVPN_ROUTER_ASSOCIATION = 'bgpvpn_network_association'
-ODL_BGPVPN_ROUTER_ASSOCIATIONS = 'bgpvpn_network_associations'
+ODL_BGPVPN_ROUTER_ASSOCIATION = 'bgpvpn_router_association'
+ODL_BGPVPN_ROUTER_ASSOCIATIONS = 'bgpvpn_router_associations'
 
 ODL_ML2_MECH_DRIVER_V1 = "opendaylight"
 ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"
