@@ -11,15 +11,6 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-dsvm-boron-snapshot-v2driver:
-            voting: false
-            branches: ^(?!stable/newton).*$
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
         - networking-odl-tempest-dsvm-carbon-snapshot-vpnservice-v2driver:
             voting: false
             irrelevant-files:
