@@ -1,0 +1,12 @@
+---
+prelude: >
+    V1 drivers are marked depracated beginning with Queens cycle, to be removed
+    in Rocky cycle.
+deprecations:
+  - The V1 drivers are not actively maintained by the networking-odl team for a
+    few cycles already and aren't guaranteed to even work.
+    As such, the networking-odl team has decided that the drivers will be
+    marked as deprecated beginning Queens cycle, and removed in the beginning
+    of the Rocky cycle.
+    If you're still using the V1 drivers, please switch to using the V2 drivers
+    by updating the appropriate configuration values.

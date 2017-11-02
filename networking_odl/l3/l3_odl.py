@@ -14,6 +14,8 @@
 #  under the License.
 #
 
+from debtcollector import removals
+
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -40,6 +42,9 @@ ROUTERS = 'routers'
 FLOATINGIPS = 'floatingips'
 
 
+@removals.removed_class(
+    'OpenDaylightL3RouterPlugin', version='Queens', removal_version='Rocky',
+    message="Usage of V1 drivers is deprecated. Please use V2 instead.")
 class OpenDaylightL3RouterPlugin(
         common_db_mixin.CommonDbMixin,
         extraroute_db.ExtraRoute_db_mixin,
