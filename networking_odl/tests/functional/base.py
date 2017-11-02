@@ -37,7 +37,7 @@ class OdlTestsBase(object):
     # This is the directory from which infra fetches log files
     # for functional tests.
     DEFAULT_LOG_DIR = os.path.join(helpers.get_test_log_path(),
-                                   'dsvm-functional-logs')
+                                   'functional-logs')
 
     def setUp(self):
         self.cfg = self.useFixture(config_fixture.Config())

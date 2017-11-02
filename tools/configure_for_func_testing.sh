@@ -57,7 +57,7 @@ REPO_BASE=${GATE_DEST:-$(cd $(dirname "$0")/../.. && pwd)}
 INSTALL_MYSQL_ONLY=${INSTALL_MYSQL_ONLY:-False}
 # The gate should automatically install dependencies.
 INSTALL_BASE_DEPENDENCIES=${INSTALL_BASE_DEPENDENCIES:-$IS_GATE}
-
+ODL_DIR=$GATE_DEST/opendaylight
 
 if [ ! -f "$DEVSTACK_PATH/stack.sh" ]; then
     >&2 echo "Unable to find devstack at '$DEVSTACK_PATH'.  Please verify that the specified path points to a valid devstack repo."
@@ -91,7 +91,9 @@ function _install_base_deps {
     INSTALL_TESTONLY_PACKAGES=True
     PACKAGES=$(get_packages general)
     # for gethostip command
-    enable_plugin networking-odl https://git.openstack.org/openstack/networking-odl
+    if ! is_plugin_enabled networking-odl; then
+        enable_plugin networking-odl https://git.openstack.org/openstack/networking-odl
+    fi
     PACKAGES="$PACKAGES $(get_plugin_packages)"
     # Do not install 'python-' prefixed packages other than
     # python-dev*. Networking ODL's functional testing relies on deployment
@@ -219,7 +221,7 @@ function _install_opendaylight {
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
 
-    $BASE/new/opendaylight/*karaf-*/bin/client "feature:list -i"
+    $ODL_DIR/*karaf-*/bin/client "feature:list -i"
 }
 
 
