@@ -39,7 +39,7 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
     # This is the directory from which infra fetches log files
     # for fullstack tests
     DEFAULT_LOG_DIR = os.path.join(helpers.get_test_log_path(),
-                                   'dsvm-fullstack-logs')
+                                   'fullstack-logs')
 
     def setUp(self):
         # NOTE(yamahata):

@@ -1,0 +1,27 @@
+- hosts: all
+  tasks:
+    - include_role:
+        name: setup-devstack-log-dir
+    # TODO(mpeterson): Remove when https://github.com/ansible/ansible/issues/21890 is fixed
+    - set_fact:
+        devstack_base_dir: /opt/stack
+      when: devstack_base_dir is not defined
+    - name: Create networking-odl fullstack logs dir
+      file:
+        path: '{{ devstack_base_dir }}/logs/fullstack-logs'
+        state: directory
+        owner: zuul
+      become: yes
+    - name: Configure the environment for fullstack testing
+      shell:
+        cmd: |
+          VENV="dsvm-fullstack"
+          GATE_DEST="{{ devstack_base_dir }}"
+          DEVSTACK_PATH=$GATE_DEST/devstack
+          NETWORKING_ODL_DIR=$GATE_DEST/networking-odl
+          IS_GATE=True
+          source ./tools/configure_for_func_testing.sh
+          configure_host_for_func_testing
+        executable: /bin/bash
+        chdir: "{{ zuul.project.src_dir }}"
+      become: yes
