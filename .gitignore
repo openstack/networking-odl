@@ -30,3 +30,4 @@ subunit.log
 !/.mailmap
 !/.pylintrc
 !/.testr.conf
+!/.zuul.d
