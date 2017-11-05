@@ -131,8 +131,7 @@ def _generate_sfc_port_pair_deps(data):
 
 
 def _generate_sfc_port_pair_group_deps(data):
-    port_pairs = [port_pair['id'] for port_pair in data['port_pairs']]
-    return port_pairs
+    return data['port_pairs']
 
 
 def _generate_sfc_port_chain_deps(data):
