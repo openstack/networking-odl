@@ -19,14 +19,14 @@ Install OS-specific prerequisites::
 
     # Ubuntu/Debian 14.04:
     sudo apt-get update
-    sudo apt-get install -y python-dev libssl-dev libxml2-dev curl \
-                            libmysqlclient-dev libxslt1-dev libpq-dev git \
-                            libffi-dev gettext build-essential
+    sudo apt-get install python-dev libssl-dev libxml2-dev curl \
+                         libmysqlclient-dev libxslt1-dev libpq-dev git \
+                         libffi-dev gettext build-essential
 
     # CentOS/RHEL 7.2:
-    sudo yum install -y python-devel openssl-devel mysql-devel curl \
-                        libxml2-devel libxslt-devel postgresql-devel git \
-                        libffi-devel gettext gcc
+    sudo yum install python-devel openssl-devel mysql-devel curl \
+                     libxml2-devel libxslt-devel postgresql-devel git \
+                     libffi-devel gettext gcc
 
     # openSUSE/SLE 12:
     sudo zypper --non-interactive install git libffi-devel curl \
