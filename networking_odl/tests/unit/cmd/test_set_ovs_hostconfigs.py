@@ -62,11 +62,8 @@ class TestSetOvsHostconfigs(base.DietTestCase):
         _, actual_json = execute.call_args_list[2][0][0][4].split("=", 1)
         self.assertEqual(match.json(expected), actual_json)
 
-    @mock.patch.object(
-        set_ovs_hostconfigs, 'DEFAULT_COMMAND_LINE_OPTIONS',
-        ('--host=my_host',))
     def test_given_no_args(self):
-        self._test_given_args()
+        self._test_given_args(tuple())
 
     def test_given_default_values(self):
         self._test_given_args([])
