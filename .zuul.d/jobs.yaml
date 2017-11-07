@@ -1,7 +1,7 @@
-# >>> LEGACY JOBS TO REPLACE AND ADJUST NAMING
+# >>> LEGACY JOBS TO REPLACE
 
 - job:
-    name: networking-odl-grenade-dsvm
+    name: networking-odl-grenade
     parent: legacy-dsvm-base
     run: playbooks/legacy/grenade-dsvm-networking-odl/run.yaml
     post-run: playbooks/legacy/grenade-dsvm-networking-odl/post.yaml
@@ -12,7 +12,7 @@
       - openstack/networking-odl
 
 - job:
-    name: networking-odl-tempest-dsvm-carbon-snapshot-vpnservice-v2driver
+    name: networking-odl-tempest-carbon
     parent: legacy-dsvm-base
     run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/run.yaml
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/post.yaml
@@ -23,7 +23,7 @@
       - openstack/tempest
 
 - job:
-    name: networking-odl-tempest-dsvm-nitrogen-snapshot-vpnservice-v2driver
+    name: networking-odl-tempest-nitrogen
     parent: legacy-dsvm-base
     run: playbooks/legacy/tempest-dsvm-networking-odl-nitrogen-snapshot-vpnservice-v2driver/run.yaml
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-nitrogen-snapshot-vpnservice-v2driver/post.yaml
@@ -34,7 +34,7 @@
       - openstack/tempest
 
 - job:
-    name: networking-odl-tempest-dsvm-multinode-carbon-snapshot
+    name: networking-odl-tempest-carbon-multinode
     parent: legacy-dsvm-base-multinode
     run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/run.yaml
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/post.yaml
@@ -46,7 +46,7 @@
     nodeset: legacy-ubuntu-xenial-2-node
 
 - job:
-    name: networking-odl-tempest-dsvm-multinode-nitrogen-snapshot
+    name: networking-odl-tempest-nitrogen-multinode
     parent: legacy-dsvm-base-multinode
     run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-nitrogen-snapshot/run.yaml
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-nitrogen-snapshot/post.yaml
@@ -58,7 +58,7 @@
     nodeset: legacy-ubuntu-xenial-2-node
 
 - job:
-    name: networking-odl-rally-dsvm-carbon-snapshot
+    name: networking-odl-rally-carbon
     parent: legacy-dsvm-base
     run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/run.yaml
     post-run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/post.yaml
@@ -69,7 +69,7 @@
       - openstack/rally
 
 - job:
-    name: networking-odl-rally-dsvm-nitrogen-snapshot
+    name: networking-odl-rally-nitrogen
     parent: legacy-dsvm-base
     run: playbooks/legacy/rally-dsvm-networking-odl-nitrogen-snapshot/run.yaml
     post-run: playbooks/legacy/rally-dsvm-networking-odl-nitrogen-snapshot/post.yaml
@@ -80,7 +80,7 @@
       - openstack/rally
 
 - job:
-    name: networking-odl-dsvm-fullstack-carbon-snapshot
+    name: networking-odl-fullstack-carbon
     parent: legacy-dsvm-base
     run: playbooks/legacy/dsvm-networking-odl-fullstack-carbon-snapshot/run.yaml
     post-run: playbooks/legacy/dsvm-networking-odl-fullstack-carbon-snapshot/post.yaml
@@ -92,7 +92,7 @@
       - openstack/networking-bgpvpn
 
 - job:
-    name: networking-odl-dsvm-functional-carbon-snapshot
+    name: networking-odl-functional-carbon
     parent: legacy-dsvm-base
     run: playbooks/legacy/dsvm-networking-odl-functional-carbon-snapshot/run.yaml
     post-run: playbooks/legacy/dsvm-networking-odl-functional-carbon-snapshot/post.yaml
@@ -104,7 +104,7 @@
       - openstack/networking-bgpvpn
 
 - job:
-    name: networking-odl-dsvm-fullstack-nitrogen-snapshot
+    name: networking-odl-fullstack-nitrogen
     parent: legacy-dsvm-base
     run: playbooks/legacy/dsvm-networking-odl-fullstack-nitrogen-snapshot/run.yaml
     post-run: playbooks/legacy/dsvm-networking-odl-fullstack-nitrogen-snapshot/post.yaml
@@ -116,7 +116,7 @@
       - openstack/networking-bgpvpn
 
 - job:
-    name: networking-odl-dsvm-functional-nitrogen-snapshot
+    name: networking-odl-functional-nitrogen
     parent: legacy-dsvm-base
     run: playbooks/legacy/dsvm-networking-odl-functional-nitrogen-snapshot/run.yaml
     post-run: playbooks/legacy/dsvm-networking-odl-functional-nitrogen-snapshot/post.yaml

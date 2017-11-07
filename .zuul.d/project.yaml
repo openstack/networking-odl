@@ -2,7 +2,7 @@
     name: openstack/networking-odl
     check:
       jobs:
-        - networking-odl-grenade-dsvm:
+        - networking-odl-grenade:
             voting: false
             branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
             irrelevant-files:
@@ -11,7 +11,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-dsvm-carbon-snapshot-vpnservice-v2driver:
+        - networking-odl-tempest-carbon:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -19,7 +19,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-dsvm-nitrogen-snapshot-vpnservice-v2driver:
+        - networking-odl-tempest-nitrogen:
             voting: false
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
@@ -28,7 +28,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-dsvm-multinode-carbon-snapshot:
+        - networking-odl-tempest-carbon-multinode:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -36,7 +36,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-dsvm-multinode-nitrogen-snapshot:
+        - networking-odl-tempest-nitrogen-multinode:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -44,37 +44,37 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-rally-dsvm-carbon-snapshot:
+        - networking-odl-rally-carbon:
             branches: ^(?!stable/newton).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-rally-dsvm-nitrogen-snapshot:
+        - networking-odl-rally-nitrogen:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-fullstack-carbon-snapshot:
+        - networking-odl-fullstack-carbon:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-functional-carbon-snapshot:
+        - networking-odl-functional-carbon:
             branches: ^(?!stable/newton).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-fullstack-nitrogen-snapshot:
+        - networking-odl-fullstack-nitrogen:
             branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-functional-nitrogen-snapshot:
+        - networking-odl-functional-nitrogen:
             branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
@@ -82,37 +82,37 @@
               - ^releasenotes/.*$
     gate:
       jobs:
-        - networking-odl-rally-dsvm-carbon-snapshot:
+        - networking-odl-rally-carbon:
             branches: ^(?!stable/newton).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-rally-dsvm-nitrogen-snapshot:
+        - networking-odl-rally-nitrogen:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-fullstack-carbon-snapshot:
+        - networking-odl-fullstack-carbon:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-functional-carbon-snapshot:
+        - networking-odl-functional-carbon:
             branches: ^(?!stable/newton).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-fullstack-nitrogen-snapshot:
+        - networking-odl-fullstack-nitrogen:
             branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-dsvm-functional-nitrogen-snapshot:
+        - networking-odl-functional-nitrogen:
             branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
