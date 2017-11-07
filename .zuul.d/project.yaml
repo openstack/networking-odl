@@ -60,7 +60,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
         - networking-odl-rally-dsvm-nitrogen-snapshot:
-            branches: ^(?!stable/newton).*$
+            branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
@@ -98,7 +98,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
         - networking-odl-rally-dsvm-nitrogen-snapshot:
-            branches: ^(?!stable/newton).*$
+            branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
