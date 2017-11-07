@@ -17,7 +17,6 @@ import contextlib
 
 from oslo_utils import uuidutils
 
-from neutron.api.v2 import attributes
 from neutron.extensions import qos as qos_ext
 from neutron.services.qos import qos_plugin
 from neutron.tests.unit.api import test_extensions
@@ -32,12 +31,6 @@ from networking_odl.tests.functional import base
 class QoSTestExtensionManager(object):
 
     def get_resources(self):
-        # Add the resources to the global attribute map
-        # This is done here as the setup process won't
-        # initialize the main API QoS which extends
-        # the global attribute map
-        attributes.RESOURCE_ATTRIBUTE_MAP.update(
-            qos_ext.RESOURCE_ATTRIBUTE_MAP)
         return qos_ext.Qos.get_resources()
 
     def get_actions(self):
