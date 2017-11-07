@@ -12,17 +12,6 @@
       - openstack/networking-odl
 
 - job:
-    name: networking-odl-tempest-dsvm-boron-snapshot-v2driver
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/tempest-dsvm-networking-odl-boron-snapshot-v2driver/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-boron-snapshot-v2driver/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
-
-- job:
     name: networking-odl-tempest-dsvm-carbon-snapshot-vpnservice-v2driver
     parent: legacy-dsvm-base
     run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/run.yaml
