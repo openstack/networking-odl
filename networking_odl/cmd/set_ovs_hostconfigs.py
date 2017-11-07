@@ -57,7 +57,7 @@ Examples:
 
 import os
 import socket
-import subprocess
+import subprocess  # nosec
 import sys
 
 from oslo_config import cfg
@@ -460,7 +460,7 @@ class OvsVsctl(object):
         command_line = (self.COMMAND,) + args
         LOG.info(
             "SET-HOSTCONFIGS: Executing cmd: %s", ' '.join(command_line))
-        return subprocess.check_output(command_line).strip()
+        return subprocess.check_output(command_line).strip()  # nosec
 
 
 def main(args=None):
