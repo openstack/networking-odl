@@ -223,13 +223,23 @@ function start_opendaylight {
     # Wipe out the data and journal directories ... grumble grumble grumble
     rm -rf $ODL_DIR/$ODL_NAME/{data,journal}
 
-    # The following variables are needed by the running karaf process.
-    # See the "bin/setenv" file in the OpenDaylight distribution for
-    # their individual meaning.
+    # There variables needed by the running karaf process are set in the
+    # function setup_java_env. See the "bin/setenv" file in the OpenDaylight
+    # distribution for their individual meaning.
     setup_java_env
-    export JAVA_MIN_MEM=$ODL_JAVA_MIN_MEM
-    export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
-    export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
+
+    # Extra configuration variables that may be used if required.
+    if [[ -n "$JAVA_MIN_MEM" ]]; then
+        export JAVA_MIN_MEM=$ODL_JAVA_MIN_MEM
+    fi
+
+    if [[ -n "$JAVA_MAX_MEM" ]]; then
+        export JAVA_MAX_MEM=$ODL_JAVA_MAX_MEM
+    fi
+
+    if [[ -n "$JAVA_MAX_PERM_MEM" ]]; then
+        export JAVA_MAX_PERM_MEM=$ODL_JAVA_MAX_PERM_MEM
+    fi
 
     # this is a forking process, just start it in the background
     $ODL_DIR/$ODL_NAME/bin/start
