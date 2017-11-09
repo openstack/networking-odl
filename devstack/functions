@@ -11,8 +11,13 @@ function _wget {
     local MAVENMETAFILE=$1
     local URL=$2
     local $OFFLINE=$3
+    local ALLOW_MISSING=${4:-False}
 
     if [[ "$OFFLINE" == "True" ]]; then
+        if [[ ! -r $MAVENMETAFILE && "$ALLOW_MISSING" != "True" ]]; then
+            echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False to download $URL"
+            exit 1
+        fi
         return
     fi
 
@@ -21,6 +26,10 @@ function _wget {
 
     # Acquire the timestamp information from maven-metadata.xml
     wget -O $MAVENMETAFILE $URL
+    if [[ ! -r $MAVENMETAFILE && "$ALLOW_MISSING" != "True" ]]; then
+        echo "can't download $URL. Please check intenet connection, site availability or directory permision to create file $MAVENMETAFILE"
+        exit 1
+    fi
 }
 
 function _xpath {
@@ -34,6 +43,11 @@ function _xpath {
     else
         result=`xpath $MAVENMETAFILE "$XPATH" 2>/dev/null`
     fi
+    if [[ -z "$result" ]]; then
+        echo "xpath can't find matching xpath $XPATH" 1>&2
+        cat $MAVENMETAFILE 1>&2
+        exit 1
+    fi
     echo $result
 }
 
@@ -46,7 +60,7 @@ function odl_artifact_id {
     local MAVENMETAFILE=$ODL_DIR/maven-metadata-artifact-id.xml
     local _NEXUSPATH
     _NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
-    _wget $MAVENMETAFILE ${_NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE
+    _wget $MAVENMETAFILE ${_NEXUSPATH}/${BUNDLEVERSION}/maven-metadata.xml $OFFLINE True
     if [[ -f "$MAVENMETAFILE" ]]; then
         # In auto release case, metadata file exists only in parent directly.
         # e.g. https://nexus.opendaylight.org/content/repositories/autorelease-1929/org/opendaylight/integration/distribution-karaf/maven-metadata.xml
@@ -68,10 +82,6 @@ function odl_snapshot_full_version {
     local _NEXUSPATH
     _NEXUSPATH=$(_odl_nexus_path $ODL_URL_PREFIX)
     _wget $MAVENMETAFILE ${_NEXUSPATH}/maven-metadata.xml $OFFLINE
-    if [[ ! -r $MAVENMETAFILE ]]; then
-        echo "$MAVENMETAFILE doesn't exist. Please try with OFFLINE=False and check internet connection to $_NEXUSPATH"
-        exit 1
-    fi
 
     if [[ "$MAJOR_MINOR" == "latest" ]]; then
         local ODL_FULL_VERSION
