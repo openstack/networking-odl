@@ -24,6 +24,7 @@ from neutron.extensions import l3
 from neutron.extensions import l3_ext_gw_mode
 from neutron.tests.unit.api.v2 import test_base
 from neutron.tests.unit.extensions import base as test_extensions_base
+from neutron_lib.api.definitions import l3 as l3_apidef
 from neutron_lib.plugins import constants
 from webob import exc
 
@@ -42,16 +43,14 @@ class Testodll3(test_extensions_base.ExtensionTestCase):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(Testodll3, self).setUp()
-        # support ext-gw-mode
-        for key in l3.RESOURCE_ATTRIBUTE_MAP.keys():
-            l3.RESOURCE_ATTRIBUTE_MAP[key].update(
-                l3_ext_gw_mode.EXTENDED_ATTRIBUTES_2_0.get(key, {}))
         self._setUpExtension(
             'networking_odl.l3.l3_odl.OpenDaylightL3RouterPlugin',
-            constants.L3, l3.RESOURCE_ATTRIBUTE_MAP,
+            constants.L3, l3_apidef.RESOURCE_ATTRIBUTE_MAP,
             l3.L3, '', allow_pagination=True, allow_sorting=True,
-            supported_extension_aliases=['router', 'ext-gw-mode'],
+            supported_extension_aliases=[l3_apidef.ALIAS, 'ext-gw-mode'],
             use_quota=True)
+        # support ext-gw-mode after fixture used via _setUpExtension()
+        l3.L3().update_attributes_map(l3_ext_gw_mode.EXTENDED_ATTRIBUTES_2_0)
 
     @staticmethod
     def _get_mock_network_operation_context():
