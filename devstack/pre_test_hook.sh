@@ -7,6 +7,7 @@ GATE_DEST=$BASE/new
 DEVSTACK_PATH=$GATE_DEST/devstack
 # for localrc_set
 source $DEVSTACK_PATH/inc/ini-config
+source $GATE_DEST/networking-odl/devstack/functions
 
 case "$ODL_RELEASE_BASE" in
     latest-snapshot)
@@ -117,18 +118,5 @@ localrc_set $localrc_file "RALLY_SCENARIO" "${RALLY_SCENARIO}"
 # https://bugs.opendaylight.org/show_bug.cgi?id=7456
 # https://bugs.opendaylight.org/show_bug.cgi?id=8133
 if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] || [[ "$ODL_GATE_SERVICE_PROVIDER" == "vpnservice" ]]; then
-    cat <<EOF >> $DEVSTACK_PATH/local.sh
-#!/usr/bin/env bash
-
-sudo ifconfig br-ex 172.24.5.1/24 up
-source $DEVSTACK_PATH/openrc admin
-openstack router unset --external-gateway router1
-openstack port list --router router1 -c ID -f value | xargs -I {} openstack router remove port router1 {}
-openstack router delete router1
-openstack subnet list | grep -e public -e private | cut -f2 -d'|' | xargs openstack subnet delete
-openstack network list | grep -e public -e private | cut -f2 -d'|' | xargs openstack network delete
-openstack network create public --external --provider-network-type=flat --provider-physical-network=public
-openstack subnet create --network=public --subnet-range=172.24.5.0/24 --gateway 172.24.5.1 public-subnet
-EOF
-    chmod 755 $DEVSTACK_PATH/local.sh
+    purge_and_recreate_initial_networks $DEVSTACK_PATH
 fi

@@ -1,36 +1,47 @@
 #!/bin/bash
 
 register_project_for_upgrade networking-odl
+NET_ODL_DIR=/opt/stack/new/networking-odl
 
 # NOTE(manjeets) Workaround for bug 1648176 to upgrade
 # networking-odl before neutron
 UPGRADE_PROJECTS="networking-odl ${UPGRADE_PROJECTS/ networking-odl/}"
 
 # Add karaf features to be enabled for ODL
-ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-mdsal-apidocs
-ODL_NETVIRT_KARAF_FEATURE+=,odl-l2switch-switch,odl-netvirt-openstack
+ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-dlux-core,odl-aaa-authn,odl-mdsal-apidocs
+ODL_NETVIRT_KARAF_FEATURE+=,odl-netvirt-openstack,odl-neutron-logger,odl-neutron-hostconfig-ovs
 
-# for base it should be enabling recent stable/release
-devstack_localrc base enable_plugin networking-odl http://github.com/openstack/networking-odl.git stable/pike
-
-devstack_localrc target enable_plugin networking-odl http://github.com/openstack/networking-odl.git
+# NOTE(manjeets) br-ex is not up when neutron initial networks are created so this workaround
+# is done to bring up the br-ex, remove the existing networks and recreate public network.
+# without this l3 connectivity for vm doesn't work.
+# TODO This can be removed later on once odl start bringing up br-ex properly
+function pre_test_grenade_hook {
+    RELEASE_TARGET=$1
+    if [ -z "$RELEASE_TARGET" ]; then
+        echo "Release_target is required"
+        exit 1
+    else
+        if [[ "$RELEASE_TARGET" == "base" ]] ; then
+            DEVSTACK_DIR=/opt/stack/old/devstack
+        else
+            DEVSTACK_DIR=/opt/stack/new/devstack
+        fi
+        source $NET_ODL_DIR/devstack/functions
+        purge_and_recreate_initial_networks $DEVSTACK_DIR
+    fi
+    }
 
 for w in base target; do
-    devstack_localrc $w disable_service q-agt
-    devstack_localrc $w disable_service q-l3
-    devstack_localrc $w enable_service q-dhcp
-    devstack_localrc $w enable_service q-meta
-    devstack_localrc $w enable_service placement-api
-    devstack_localrc $w enable_service placement-client
+    devstack_localrc $w ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE}
     devstack_localrc $w Q_PLUGIN=ml2
-    devstack_localrc $w ODL_CONFIG_BRIDGES=True
     devstack_localrc $w ODL_L3=True
     devstack_localrc $w ODL_V2DRIVER=True
-    devstack_localrc $w Q_ML2_PLUGIN_TYPE_DRIVERS=flat,vlan,gre,vxlan
-    devstack_localrc $w Q_USE_PUBLIC_VETH=True
-    devstack_localrc $w Q_PUBLIC_VETH_EX=veth-pub-ex
-    devstack_localrc $w Q_PUBLIC_VETH_INT=veth-pub-int
+    devstack_localrc $w Q_USE_PUBLIC_VETH=False
+    devstack_localrc $w PUBLIC_BRIDGE=br-ex
+    devstack_localrc $w ODL_PROVIDER_MAPPINGS=public:br-ex
+    devstack_localrc $w ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
+    devstack_localrc $w enable_plugin networking-odl http://github.com/openstack/networking-odl
     devstack_localrc $w ODL_RELEASE=carbon-snapshot-0.6
-    devstack_localrc $w ODL_PROVIDER_MAPPINGS=public:${Q_PUBLIC_VETH_INT}
-    devstack_localrc $w ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE}
+    devstack_localrc $w ODL_TIMEOUT=60
+    pre_test_grenade_hook $w
 done
