@@ -97,7 +97,7 @@ class PeriodicTask(object):
                      "Skipping execution.", self.task)
             return
 
-        if self._lock_task(context):
+        if not self._lock_task(context):
             LOG.info("Periodic %s task already running task", self.task)
             return
 
