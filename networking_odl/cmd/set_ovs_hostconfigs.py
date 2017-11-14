@@ -61,13 +61,13 @@ import subprocess  # nosec
 import sys
 
 from oslo_config import cfg
-from oslo_log import log
+from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
 from networking_odl._i18n import _
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 USERSPACE_DATAPATH_TYPES = ['netdev', 'dpdkvhostuser']
 
@@ -120,15 +120,6 @@ COMMAND_LINE_OPTIONS = [
 
             Default: --datapath_type=netdev         # if support is detected
                      --datapath_type=system         # in all other cases
-            """)),
-
-    cfg.BoolOpt(
-        'debug',
-        default=False,
-        help=_("""
-            It shows debugging informations.
-
-            Default: --nodebug
             """)),
 
     cfg.StrOpt(
@@ -374,6 +365,11 @@ def _vif_details_from_conf(conf, uuid, vif_type):
 def setup_conf(args):
     """setup cmdline options."""
     conf = cfg.ConfigOpts()
+    # NOTE, Logging options must be registered before parsing cli
+    # options, refer:-
+    # https://docs.openstack.org/oslo.log/latest/user/usage.html#oslo-logging-setup-methods
+    logging.register_options(conf)
+
     if '-h' in args or '--help' in args:
         # Prints out script documentation."
         print(__doc__)
@@ -463,6 +459,17 @@ class OvsVsctl(object):
         return subprocess.check_output(command_line).strip()  # nosec
 
 
+def setup_logging(conf):
+    # NOTE, Hacky way to enable logging. oslo log needs other parameters also
+    # to register, but neutron.conf is not present on compute node therefore
+    # we can not dependant on it. However, nova-compute is present on compute
+    # node, so code can depend on oslo log
+    # if script does not have write permission in the directory then
+    # stack trace appear on console.
+    logging.setup(conf, 'networking-odl')
+    LOG.info("Logging enabled!")
+
+
 def main(args=None):
     """Main."""
 
@@ -470,6 +477,7 @@ def main(args=None):
         args = sys.argv[1:]
 
     conf = setup_conf(args)
+    setup_logging(conf)
 
     if os.geteuid() != 0:
         LOG.error('Root permissions are required to configure ovsdb.')
