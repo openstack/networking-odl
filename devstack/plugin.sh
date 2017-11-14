@@ -67,8 +67,8 @@ if is_service_enabled odl-server; then
     fi
 
     if [[ "$1" == "clean" ]]; then
-        # no-op
-        :
+        stop_opendaylight
+        cleanup_opendaylight
     fi
 fi
 
