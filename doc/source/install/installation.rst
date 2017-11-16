@@ -89,7 +89,7 @@ All related neutron services need to be restarted after configuration change.
 
         [DEFAULT]
         ...
-        service_plugins = odl-router
+        service_plugins = odl-router_v2
 
 
 #. Configure the ML2 plug-in. Edit the
