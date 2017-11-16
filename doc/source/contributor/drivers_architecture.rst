@@ -87,3 +87,67 @@ amount of times. Expected failures don't change the counter. If the counter
 exceeds the configured amount of retries, the entry is marked as 'failed'.
 Otherwise, the entry is marked back as 'pending' so that it can later be
 retried.
+
+Full Sync & Recovery
+--------------------
+
+.. code:: python
+
+  file: networking_odl/journal/base_driver.py
+
+  ALL_RESOURCES = {}
+
+  class ResourceBaseDriver(object):
+      # RESOURCES is dictionary of resource_type and resource_suffix to
+      # be defined by the drivers class.
+      RESOURCES = {}
+
+      def __init__(self, plugin_type, *args, **kwargs):
+          super(ResourceBaseDriver, self).__init__(*args, **kwargs)
+          self.plugin_type = plugin_type
+          # All the common methods to be used by full sync and recovery
+          # specific to driver.
+
+          # Only driver is enough for all the information. Driver has
+          # plugin_type for fetching the information from db and resource
+          # suffix is available through driver.RESOURCES.
+          for resource, resource_suffix in self.RESOURCES.items():
+              ALL_RESOURCES[resource] = self
+
+      def get_resource_for_recovery(self, resource_type, resource_id):
+          # default definition to be used, if get_resource method is not
+          # defined then this method gets called by recovery
+
+      def get_resources_for_full_sync(self, resource_type):
+          # default definition to be used, if get_resources method is not
+          # defined then this method gets called by full sync
+
+      @staticmethod
+      def get_method_name_by_resource_suffix(method_suffix):
+          # Returns method name given resource suffix
+
+      @staticmethod
+      def get_method(plugin, method_name):
+          # Returns method for a specific plugin
+
+  file: networking_odl/<driver-name>/<driver-file>.py
+
+  class XXXXDriver(ResourceBaseDriver, XXXXDriverBase):
+      RESOURCES = {
+          odl_const.XXXX: odl_const.XXXY,
+          odl_const.XXXY: odl_const.XXYY
+      }
+
+      def __init__(self, *args, **kwargs):
+          super(XXXXDriver, self)(plugin_type, *args, **kwargs)
+          # driver specific things
+
+      # get_resources_for_full_sync and get_resource_for_recovery methods are
+      # optional and they have to be defined, if customized behaviour is
+      # required. If these methods are not defined in the driver then default
+      # methods defined in ResourceBaseDriver is used.
+      def get_resources_for_full_sync(self, resource_type):
+          # returns resource for full sync
+
+      def get_resource_for_recovery(self, resource_type, resource_id):
+          # returns resource for recovery
