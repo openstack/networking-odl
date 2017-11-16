@@ -23,6 +23,7 @@ from neutron.db import api as db_api
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
+from networking_odl.journal import base_driver
 from networking_odl.journal import journal
 
 # Define which pending operation types should be deleted
@@ -147,3 +148,16 @@ def _sync_resources(context, object_type, handler):
     for resource in resources:
         journal.record(context, object_type, resource['id'],
                        odl_const.ODL_CREATE, resource)
+
+
+@db_api.retry_if_session_inactive()
+# TODO(rajivk): Change name from sync_resource to _sync_resources
+# once, we are completely moved to new sync mechanism to plug new syncing
+# mechanism.
+def sync_resources(context, resource_type):
+    driver = base_driver.get_driver(resource_type)
+    resources = driver.get_resources_for_full_sync(context, resource_type)
+    with db_api.autonested_transaction(context.session):
+        for resource in resources:
+            journal.record(context, resource_type, resource['id'],
+                           odl_const.ODL_CREATE, resource)
