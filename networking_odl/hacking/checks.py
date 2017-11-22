@@ -27,6 +27,10 @@ _ND01_MSG = (
     "ND01: use OpenDaylight (capital D) instead of Opendaylight")  # noqa
 _ND01_OPENDAYLIGHT = 'Opendaylight'  # noqa
 
+_ND02_MSG = (
+    "ND02: use the config fixture provided by oslo_config and use config()"
+    " instead of using cfg.CONF.set_override()")  # noqa
+
 
 def check_opendaylight_lowercase(logical_line, filename, noqa):
     """ND01 - Enforce using OpenDaylight."""
@@ -77,9 +81,27 @@ def check_opendaylight_lowercase_docstring(
         return (pos, _ND01_MSG + " in docstring")
 
 
+def check_config_over_set_override(logical_line, filename, noqa):
+    """ND02 - Enforcement of config fixture
+
+    Enforce agreement of not use set_override() but use
+    instead the fixture's config() helper for tests.
+    """
+
+    if noqa:
+        return
+
+    if 'networking_odl/tests/' not in filename:
+        return
+
+    if 'cfg.CONF.set_override' in logical_line:
+        yield (0, _ND02_MSG)
+
+
 def factory(register):
     checks.factory(register)
     register(check_opendaylight_lowercase)
     register(check_opendaylight_lowercase_comment)
     register(check_opendaylight_lowercase_string)
     register(check_opendaylight_lowercase_docstring)
+    register(check_config_over_set_override)
