@@ -36,8 +36,8 @@ class ClientTestCase(base.DietTestCase):
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)
         self.assertRaisesRegex(cfg.RequiredOptError,
-                               'value required for option \w+ in group '
-                               '\[ml2_odl\]',
+                               r'value required for option \w+ in group '
+                               r'\[ml2_odl\]',
                                client.OpenDaylightRestClient._check_opt,
                                cfg.CONF.ml2_odl.url)
 

@@ -30,7 +30,7 @@ import neutron_lib.plugins.directory
 
 class TestOdlPortStatusUpdate(base.DietTestCase):
 
-    WEBSOCK_NOTIFICATION = re.sub('\s*', '', """
+    WEBSOCK_NOTIFICATION = re.sub(r'\s*', '', """
         {
             "notification": {
                 "data-changed-notification": {
