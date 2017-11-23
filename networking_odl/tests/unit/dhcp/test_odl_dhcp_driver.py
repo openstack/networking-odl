@@ -30,7 +30,7 @@ class OdlDhcpDriverTestCase(test_odl_dhcp_driver_base.OdlDhcpDriverTestBase):
 
     def setUp(self):
         super(OdlDhcpDriverTestCase, self).setUp()
-        cfg.CONF.set_override('enable_dhcp_service', True, 'ml2_odl')
+        self.cfg.config(enable_dhcp_service=True, group='ml2_odl')
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
 

@@ -14,7 +14,6 @@
 #    under the License.
 
 import mock
-from oslo_config import cfg
 
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
@@ -227,15 +226,13 @@ class TestTrunkDriver(base_v2.OpenDaylightConfigBase):
 
     def test_is_loaded(self):
         driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
-        cfg.CONF.set_override('mechanism_drivers',
-                              ["logger", odl_const.ODL_ML2_MECH_DRIVER_V2],
-                              group='ml2')
+        self.cfg.config(mechanism_drivers=["logger",
+                                           odl_const.ODL_ML2_MECH_DRIVER_V2],
+                        group='ml2')
         self.assertTrue(driver.is_loaded)
 
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger'],
-                              group='ml2')
+        self.cfg.config(mechanism_drivers=['logger'], group='ml2')
         self.assertFalse(driver.is_loaded)
 
-        cfg.CONF.set_override('core_plugin', 'some_plugin')
+        self.cfg.config(core_plugin='some_plugin')
         self.assertFalse(driver.is_loaded)

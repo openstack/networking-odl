@@ -14,8 +14,6 @@
 #  under the License.
 #
 
-from oslo_config import cfg
-
 import mock
 
 from neutron_lib import exceptions as nexc
@@ -129,7 +127,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         return created_row
 
     def _disable_retention(self):
-        cfg.CONF.set_override('completed_rows_retention', 0, 'ml2_odl')
+        self.cfg.config(completed_rows_retention=0, group='ml2_odl')
 
     def test_journal_recovery_handles_failure_quietly(self):
         class TestException(Exception):

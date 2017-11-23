@@ -15,18 +15,17 @@
 
 import mock
 
+from neutron.services.trunk import callbacks
+from neutron.services.trunk import constants as trunk_consts
 from neutron.tests import base as base_test
+from neutron_lib.callbacks import events
+from oslo_config import fixture as config_fixture
+
 
 from networking_odl.common.client import OpenDaylightRestClient as client
 from networking_odl.common import constants as odl_const
 from networking_odl.tests import base as odl_base
 from networking_odl.trunk import trunk_driver_v1 as trunk_driver
-
-from neutron.services.trunk import callbacks
-from neutron.services.trunk import constants as trunk_consts
-
-from neutron_lib.callbacks import events
-from oslo_config import cfg
 
 
 FAKE_TRUNK = {
@@ -109,15 +108,14 @@ class TestTrunkDriver(base_test.BaseTestCase):
 
     def test_is_loaded(self):
         driver = trunk_driver.OpenDaylightTrunkDriverV1.create()
-        cfg.CONF.set_override('mechanism_drivers',
-                              ["logger", odl_const.ODL_ML2_MECH_DRIVER_V1],
-                              group='ml2')
+        self.cfg = self.useFixture(config_fixture.Config())
+        self.cfg.config(mechanism_drivers=["logger",
+                                           odl_const.ODL_ML2_MECH_DRIVER_V1],
+                        group='ml2')
         self.assertTrue(driver.is_loaded)
 
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger'],
-                              group='ml2')
+        self.cfg.config(mechanism_drivers=['logger'], group='ml2')
         self.assertFalse(driver.is_loaded)
 
-        cfg.CONF.set_override('core_plugin', 'some_plugin')
+        self.cfg.config(core_plugin='some_plugin')
         self.assertFalse(driver.is_loaded)

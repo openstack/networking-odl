@@ -20,9 +20,12 @@ from neutron.tests import base as tests_base
 from neutron.tests.common import helpers
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 
-from networking_odl.common import config as odl_config
 import networking_odl.db.models  # noqa
+
+
+cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 
 class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
@@ -49,33 +52,26 @@ class TestODLFullStackBase(test_plugin.Ml2PluginV2TestCase):
         if "VIRTUAL_ENV" in os.environ:
             privsep_helper = os.path.join(
                 os.environ["VIRTUAL_ENV"], "bin", privsep_helper)
-        cfg.CONF.set_override(
-            "helper_command", "sudo --preserve-env " + privsep_helper,
+        self.cfg = self.useFixture(config_fixture.Config())
+        self.cfg.config(
+            helper_command="sudo --preserve-env %s" % privsep_helper,
             group="privsep")
 
-        cfg.CONF.set_override('extension_drivers',
-                              self._extension_drivers, group='ml2')
-        cfg.CONF.set_override('tenant_network_types',
-                              ['vxlan'], group='ml2')
-        cfg.CONF.set_override('vni_ranges',
-                              ['1:1000'], group='ml2_type_vxlan')
+        self.cfg.config(extension_drivers=self._extension_drivers, group='ml2')
+        self.cfg.config(tenant_network_types=['vxlan'], group='ml2')
+        self.cfg.config(vni_ranges=['1:1000'], group='ml2_type_vxlan')
 
         odl_url = 'http://127.0.0.1:8087/controller/nb/v2/neutron'
-        odl_config.cfg.CONF.set_override('url',
-                                         odl_url,
-                                         group='ml2_odl')
-        odl_config.cfg.CONF.set_override('username',
-                                         'admin',
-                                         group='ml2_odl')
-        odl_config.cfg.CONF.set_override('password',
-                                         'admin',
-                                         group='ml2_odl')
-        odl_config.cfg.CONF.set_override('port_binding_controller',
-                                         'legacy-port-binding',
-                                         group='ml2_odl')
-        odl_config.cfg.CONF.set_override('odl_features',
-                                         ['no-feature'],
-                                         group='ml2_odl')
+        self.cfg.config(url=odl_url,
+                        group='ml2_odl')
+        self.cfg.config(username='admin',
+                        group='ml2_odl')
+        self.cfg.config(password='admin',
+                        group='ml2_odl')
+        self.cfg.config(port_binding_controller='legacy-port-binding',
+                        group='ml2_odl')
+        self.cfg.config(odl_features=['no-feature'],
+                        group='ml2_odl')
         super(TestODLFullStackBase, self).setUp()
         tests_base.setup_test_logging(
             cfg.CONF, self.DEFAULT_LOG_DIR, '%s.txt' % self.get_name())

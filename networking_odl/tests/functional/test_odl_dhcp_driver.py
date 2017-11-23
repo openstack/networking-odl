@@ -13,11 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
+from oslo_config import fixture as config_fixture
 
 from networking_odl.common import constants as odl_const
 from networking_odl.dhcp import odl_dhcp_driver_base as driver_base
@@ -29,7 +28,8 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
     _mechanism_drivers = ['opendaylight_v2']
 
     def setUp(self):
-        cfg.CONF.set_override('enable_dhcp_service', True, 'ml2_odl')
+        self.cfg = self.useFixture(config_fixture.Config())
+        self.cfg.config(enable_dhcp_service=True, group='ml2_odl')
         super(TestOdlDhcpDriver, self).setUp()
 
     def get_port_data(self, network, subnet):

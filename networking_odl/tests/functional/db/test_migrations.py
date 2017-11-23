@@ -68,7 +68,7 @@ VERSION_TABLE = 'odl_alembic_version'
 
 class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
     def db_sync(self, engine):
-        cfg.CONF.set_override('connection', engine.url, group='database')
+        self.cfg.config(connection=engine.url, group='database')
         for conf in migration.get_alembic_configs():
             self.alembic_config = conf
             self.alembic_config.neutron_config = cfg.CONF

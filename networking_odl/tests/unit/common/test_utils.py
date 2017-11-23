@@ -13,15 +13,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-
 from neutron.tests import base
+from oslo_config import fixture as config_fixture
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
 
 
 class TestUtils(base.DietTestCase):
+
+    def setUp(self):
+        self.cfg = self.useFixture(config_fixture.Config())
+        super(TestUtils, self).setUp()
 
     # TODO(manjeets) remove this test once neutronify is
     # consolidated with make_plural
@@ -59,9 +62,8 @@ class TestUtils(base.DietTestCase):
 
     def test_get_odl_url(self):
         """test make uri."""
-        cfg.CONF.set_override('url',
-                              'http://localhost:8080'
-                              '/controller/nb/v2/neutron', 'ml2_odl')
+        self.cfg.config(url='http://localhost:8080/controller/nb/v2/neutron',
+                        group='ml2_odl')
         test_path = '/restconf/neutron:neutron/hostconfigs'
         expected = "http://localhost:8080/restconf/neutron:neutron/hostconfigs"
         test_uri = utils.get_odl_url(path=test_path)
