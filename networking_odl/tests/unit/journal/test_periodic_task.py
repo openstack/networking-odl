@@ -15,7 +15,6 @@
 #
 
 import threading
-import time
 
 import mock
 from neutron.common import utils
@@ -124,21 +123,31 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
     @mock.patch.object(db, "was_periodic_task_executed_recently")
     def test_back_to_back_job(self, mock_status_method):
         callback_event = threading.Event()
+        continue_event = threading.Event()
 
         def callback_op(**kwargs):
             callback_event.set()
+
+        return_value = True
+
+        def continue_(*args, **kwargs):
+            continue_event.set()
+            return return_value
+        mock_status_method.side_effect = continue_
 
         self.thread.register_operation(callback_op)
         msg = ("Periodic %s task executed after periodic "
                "interval Skipping execution.")
         with mock.patch.object(periodic_task.LOG, 'info') as mock_log_info:
-            mock_status_method.return_value = True
             self.thread.start()
-            time.sleep(1)
+            self.assertTrue(continue_event.wait(timeout=1))
+            continue_event.clear()
             mock_log_info.assert_called_with(msg, TEST_TASK_NAME)
-            self.assertFalse(callback_event.wait(timeout=1))
+            self.assertFalse(callback_event.is_set())
+            self.assertTrue(continue_event.wait(timeout=1))
+            continue_event.clear()
             mock_log_info.assert_called_with(msg, TEST_TASK_NAME)
-            mock_status_method.return_value = False
+            return_value = False
             self.assertTrue(callback_event.wait(timeout=2))
 
     def test_set_operation_retries_exceptions(self):
