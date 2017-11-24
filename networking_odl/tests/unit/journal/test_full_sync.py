@@ -40,7 +40,7 @@ from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.sfc.flowclassifier import sfc_flowclassifier_v2
 from networking_odl.sfc import sfc_driver_v2 as sfc_driver
 from networking_odl.tests import base
-from networking_odl.tests.unit.journal import test_base_driver
+from networking_odl.tests.unit.journal import helper
 from networking_odl.tests.unit import test_base_db
 from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
@@ -428,7 +428,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual([], db.get_all_db_rows(self.db_session))
 
     def _register_resources(self):
-        test_base_driver.TestDriver()
+        helper.TestDriver()
         self.addCleanup(base_driver.ALL_RESOURCES.clear)
 
     def add_plugin(self, plugin_type, plugin):
@@ -437,22 +437,22 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def test_plugin_not_registered(self):
         self._register_resources()
         # NOTE(rajivk): workaround, as we don't have delete method for plugin
-        plugin = directory.get_plugin(test_base_driver.TEST_PLUGIN)
-        directory.add_plugin(test_base_driver.TEST_PLUGIN, None)
-        self.addCleanup(self.add_plugin, test_base_driver.TEST_PLUGIN, plugin)
+        plugin = directory.get_plugin(helper.TEST_PLUGIN)
+        directory.add_plugin(helper.TEST_PLUGIN, None)
+        self.addCleanup(self.add_plugin, helper.TEST_PLUGIN, plugin)
         self.assertRaises(exceptions.PluginMethodNotFound,
                           full_sync.sync_resources,
                           self.db_context,
-                          test_base_driver.TEST_RESOURCE1)
+                          helper.TEST_RESOURCE1)
         self.assertEqual([], db.get_all_db_rows(self.db_session))
 
     def test_sync_resources(self):
         self._register_resources()
-        plugin = test_base_driver.TestPlugin()
-        self.add_plugin(test_base_driver.TEST_PLUGIN, plugin)
+        plugin = helper.TestPlugin()
+        self.add_plugin(helper.TEST_PLUGIN, plugin)
         resources = plugin.get_test_resource1s(self.db_context)
         full_sync.sync_resources(self.db_context,
-                                 test_base_driver.TEST_RESOURCE1)
+                                 helper.TEST_RESOURCE1)
         entries = [entry.data for entry in db.get_all_db_rows(self.db_session)]
         for resource in resources:
             self.assertIn(resource, entries)
@@ -463,7 +463,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def test_get_resources_failed(self, mock_get_resources):
         self._register_resources()
         mock_get_resources.side_effect = exceptions.UnsupportedResourceType()
-        resource_name = test_base_driver.TEST_RESOURCE1
+        resource_name = helper.TEST_RESOURCE1
         self.assertRaises(exceptions.UnsupportedResourceType,
                           full_sync.sync_resources, self.db_context,
                           resource_name)
