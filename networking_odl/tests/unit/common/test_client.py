@@ -14,6 +14,7 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 
 from networking_odl.common import client
 
@@ -22,16 +23,16 @@ from neutron.tests import base
 
 class ClientTestCase(base.DietTestCase):
     def setUp(self):
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight_v2'],
-                              'ml2')
+        self.cfg = self.useFixture(config_fixture.Config())
+        self.cfg.config(mechanism_drivers=[
+                        'logger', 'opendaylight_v2'], group='ml2')
         super(ClientTestCase, self).setUp()
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
-        cfg.CONF.set_override('url', url, 'ml2_odl')
-        cfg.CONF.set_override('username', username, 'ml2_odl')
-        cfg.CONF.set_override('password', password, 'ml2_odl')
+        self.cfg.config(url=url, group='ml2_odl')
+        self.cfg.config(username=username, group='ml2_odl')
+        self.cfg.config(password=password, group='ml2_odl')
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)

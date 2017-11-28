@@ -17,11 +17,11 @@
 import fixtures
 import mock
 
-from oslo_config import cfg
-
 from neutron.tests import base
 from neutron_lib.callbacks import registry
 from neutron_lib import fixture as nl_fixture
+from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 
 from networking_odl.common import odl_features
 from networking_odl.journal import full_sync
@@ -44,14 +44,14 @@ class OpenDaylightRestClientFixture(fixtures.Fixture):
     # They are not used in these tests since requests.request is overwritten.
     def _setUp(self):
         super(OpenDaylightRestClientFixture, self)._setUp()
+        self.cfg = self.useFixture(config_fixture.Config())
         mock.patch('requests.sessions.Session.request').start()
-        cfg.CONF.set_override('url',
-                              'http://localhost:8080'
-                              '/controller/nb/v2/neutron', 'ml2_odl')
-        cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
-        cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
-        cfg.CONF.set_override('port_binding_controller',
-                              'legacy-port-binding', 'ml2_odl')
+        self.cfg.config(url='http://localhost:8080/controller/nb/v2/neutron',
+                        group='ml2_odl')
+        self.cfg.config(username='someuser', group='ml2_odl')
+        self.cfg.config(password='somepass', group='ml2_odl')
+        self.cfg.config(port_binding_controller='legacy-port-binding',
+                        group='ml2_odl')
 
 
 class OpenDaylightRestClientGlobalFixture(fixtures.Fixture):
@@ -67,12 +67,13 @@ class OpenDaylightRestClientGlobalFixture(fixtures.Fixture):
 class OpenDaylightFeaturesFixture(fixtures.Fixture):
     def _setUp(self):
         super(OpenDaylightFeaturesFixture, self)._setUp()
+        self.cfg = self.useFixture(config_fixture.Config())
         if cfg.CONF.ml2_odl.url is None:
-            cfg.CONF.set_override('url', 'http://127.0.0.1:9999', 'ml2_odl')
+            self.cfg.config(url='http://127.0.0.1:9999', group='ml2_odl')
         if cfg.CONF.ml2_odl.username is None:
-            cfg.CONF.set_override('username', 'someuser', 'ml2_odl')
+            self.cfg.config(username='someuser', group='ml2_odl')
         if cfg.CONF.ml2_odl.password is None:
-            cfg.CONF.set_override('password', 'somepass', 'ml2_odl')
+            self.cfg.config(password='somepass', group='ml2_odl')
         # make sure init is not called, it'll block the main thread
         self.mock_odl_features_init = mock.patch.object(
             odl_features, 'init', side_effect=self.fake_init)

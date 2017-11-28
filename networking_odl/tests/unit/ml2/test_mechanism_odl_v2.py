@@ -30,6 +30,7 @@ from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
 from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
@@ -60,17 +61,18 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
+        self.cfg = self.useFixture(config_fixture.Config())
         super(OpenDayLightMechanismConfigTests, self).setUp()
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight_v2'], 'ml2')
-        cfg.CONF.set_override('port_binding_controller',
-                              'legacy-port-binding', 'ml2_odl')
+        self.cfg.config(mechanism_drivers=[
+                        'logger', 'opendaylight_v2'], group='ml2')
+        self.cfg.config(
+            port_binding_controller='legacy-port-binding', group='ml2_odl')
 
     def _set_config(self, url='http://127.0.0.1:9999', username='someuser',
                     password='somepass'):
-        cfg.CONF.set_override('url', url, 'ml2_odl')
-        cfg.CONF.set_override('username', username, 'ml2_odl')
-        cfg.CONF.set_override('password', password, 'ml2_odl')
+        self.cfg.config(url=url, group='ml2_odl')
+        self.cfg.config(username=username, group='ml2_odl')
+        self.cfg.config(password=password, group='ml2_odl')
 
     def _test_missing_config(self, **kwargs):
         self._set_config(**kwargs)

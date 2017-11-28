@@ -15,22 +15,23 @@
 
 import mock
 
+from neutron.tests import base
+from oslo_config import fixture as config_fixture
+
 from networking_odl.common import lightweight_testing as lwt
 from networking_odl.tests import base as odl_base
-
-from neutron.tests import base
 
 
 class LightweightTestingTestCase(base.DietTestCase):
     def setUp(self):
         self.useFixture(odl_base.OpenDaylightRestClientFixture())
+        self.cfg = self.useFixture(config_fixture.Config())
         super(LightweightTestingTestCase, self).setUp()
 
     def test_create_client_with_lwt_enabled(self):
         """Have to do the importation here, otherwise there will be a loop"""
         from networking_odl.common import client as odl_client
-        odl_client.cfg.CONF.set_override('enable_lightweight_testing',
-                                         True, 'ml2_odl')
+        self.cfg.config(enable_lightweight_testing=True, group='ml2_odl')
         # DietTestCase does not automatically cleans configuration overrides
         self.addCleanup(odl_client.cfg.CONF.reset)
 
@@ -40,8 +41,7 @@ class LightweightTestingTestCase(base.DietTestCase):
     def test_create_client_with_lwt_disabled(self):
         """Have to do the importation here, otherwise there will be a loop"""
         from networking_odl.common import client as odl_client
-        odl_client.cfg.CONF.set_override('enable_lightweight_testing',
-                                         False, 'ml2_odl')
+        self.cfg.config(enable_lightweight_testing=False, group='ml2_odl')
         # DietTestCase does not automatically cleans configuration overrides
         self.addCleanup(odl_client.cfg.CONF.reset)
 

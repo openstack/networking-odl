@@ -19,7 +19,6 @@ from string import Template
 
 import fixtures
 import mock
-from oslo_config import cfg
 from oslo_serialization import jsonutils
 from requests.exceptions import HTTPError
 
@@ -37,6 +36,7 @@ from neutron_lib import fixture
 from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 from neutron_lib.plugins.ml2 import api
+from oslo_config import fixture as config_fixture
 
 from networking_odl.common import odl_features
 from networking_odl.common import websocket_client
@@ -693,12 +693,13 @@ class TestPseudoAgentNeutronWorker(testlib_api.SqlTestCase):
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         self.useFixture(base.OpenDaylightFeaturesFixture())
         self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
+        self.cfg = self.useFixture(config_fixture.Config())
         self.mock_periodic_thread = mock.patch.object(
             periodic_task.PeriodicTask, 'start').start()
         super(TestPseudoAgentNeutronWorker, self).setUp()
-        cfg.CONF.set_override('mechanism_drivers', ['opendaylight_v2'], 'ml2')
-        cfg.CONF.set_override('port_binding_controller',
-                              'pseudo-agentdb-binding', 'ml2_odl')
+        self.cfg.config(mechanism_drivers=['opendaylight_v2'], group='ml2')
+        self.cfg.config(
+            port_binding_controller='pseudo-agentdb-binding', group='ml2_odl')
 
     def test_get_worker(self):
         workers = ml2_plugin.Ml2Plugin().get_workers()
@@ -714,8 +715,7 @@ class TestPseudoAgentNeutronWorker(testlib_api.SqlTestCase):
         worker.reset()
 
     def test_worker_start_websocket(self):
-        cfg.CONF.set_override('enable_websocket_pseudo_agentdb',
-                              True, 'ml2_odl')
+        self.cfg.config(enable_websocket_pseudo_agentdb=True, group='ml2_odl')
         worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
         with mock.patch.object(
                 websocket_client.OpenDaylightWebsocketClient,
@@ -724,8 +724,7 @@ class TestPseudoAgentNeutronWorker(testlib_api.SqlTestCase):
             mock_odl_create_websocket.assert_called_once()
 
     def test_worker_start_periodic(self):
-        cfg.CONF.set_override('enable_websocket_pseudo_agentdb',
-                              False, 'ml2_odl')
+        self.cfg.config(enable_websocket_pseudo_agentdb=False, group='ml2_odl')
         worker = pseudo_agentdb_binding.PseudoAgentDBBindingWorker()
         with mock.patch.object(
                 periodic_task.PeriodicTask, 'start') as mock_start:

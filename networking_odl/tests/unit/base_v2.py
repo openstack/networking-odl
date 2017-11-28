@@ -16,7 +16,6 @@
 import mock
 
 from neutron.tests.unit.plugins.ml2 import test_plugin
-from oslo_config import cfg
 
 from networking_odl.common import client
 from networking_odl.journal import journal
@@ -32,10 +31,10 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFullSyncFixture())
         super(OpenDaylightConfigBase, self).setUp()
-        cfg.CONF.set_override('mechanism_drivers',
-                              ['logger', 'opendaylight_v2'], 'ml2')
-        cfg.CONF.set_override('extension_drivers',
-                              ['port_security', 'qos'], 'ml2')
+        self.cfg.config(mechanism_drivers=[
+                        'logger', 'opendaylight_v2'], group='ml2')
+        self.cfg.config(extension_drivers=[
+                        'port_security', 'qos'], group='ml2')
         self.thread = journal.OpenDaylightJournalThread()
 
     def run_journal_processing(self):

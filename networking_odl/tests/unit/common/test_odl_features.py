@@ -15,7 +15,7 @@
 
 import mock
 
-from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 from requests import exceptions
 
@@ -34,6 +34,7 @@ class TestOdlFeatures(base.DietTestCase):
     def setUp(self):
         self.features_fixture = base.OpenDaylightFeaturesFixture()
         self.useFixture(self.features_fixture)
+        self.cfg = self.useFixture(config_fixture.Config())
         super(TestOdlFeatures, self).setUp()
         self.features_fixture.mock_odl_features_init.stop()
 
@@ -69,7 +70,7 @@ class TestOdlFeatures(base.DietTestCase):
         self.assertTrue(odl_features.has(odl_features.OPERATIONAL_PORT_STATUS))
 
     def test_init_from_config(self):
-        cfg.CONF.set_override('odl_features', 'thing1,thing2', 'ml2_odl')
+        self.cfg.config(odl_features='thing1,thing2', group='ml2_odl')
         odl_features.init()
         self.assertTrue(odl_features.has('thing1'))
         self.assertTrue(odl_features.has('thing2'))
