@@ -68,45 +68,58 @@ class TestWebsocketClient(base.DietTestCase):
     @classmethod
     def _get_mock_request_response(cls, status_code):
         response = mock.Mock(status_code=status_code)
-        response.raise_for_status = mock.Mock() if status_code < 400 else (
-            mock.Mock(side_effect=requests.exceptions.HTTPError()))
+        side_effect = None
+        # NOTE(rajivk): requests.codes.bad_request constant value is 400,
+        # so it filters requests where client(4XX) or server(5XX) has erred.
+        if status_code >= requests.codes.bad_request:
+            side_effect = requests.exceptions.HTTPError()
+
+        response.raise_for_status = mock.Mock(side_effect=side_effect)
         return response
 
     @mock.patch.object(odl_client, 'sendjson')
     def test_subscribe_websocket_sendjson(self, mocked_sendjson):
-        request_response = self._get_raised_response(401)
+        request_response = self._get_raised_response(
+            requests.codes.unauthorized)
+
         mocked_sendjson.return_value = request_response
         stream_url = self.mgr._subscribe_websocket()
         self.assertIsNone(stream_url)
 
-        request_response = self._get_raised_response(400)
+        request_response = self._get_raised_response(
+            requests.codes.bad_request)
+
         mocked_sendjson.return_value = request_response
         self.assertRaises(ValueError, self.mgr._subscribe_websocket)
 
-        request_response = self._get_mock_request_response(200)
+        request_response = self._get_mock_request_response(requests.codes.ok)
         request_response.json = mock.Mock(
             return_value=(TestWebsocketClient.
                           INVALID_WEBSOCKET_STREAM_NAME_DATA))
         mocked_sendjson.return_value = request_response
         self.assertRaises(ValueError, self.mgr._subscribe_websocket)
 
-        request_response = self._get_mock_request_response(200)
+        request_response = self._get_mock_request_response(requests.codes.ok)
         request_response.json = mock.Mock(return_value={""})
         mocked_sendjson.return_value = request_response
         self.assertIsNone(self.mgr._subscribe_websocket())
 
     @mock.patch.object(odl_client, 'get')
     def test_subscribe_websocket_get(self, mocked_get):
-        request_response = self._get_raised_response(404)
+        request_response = self._get_raised_response(requests.codes.not_found)
         mocked_get.return_value = request_response
         self.assertRaises(ValueError, self.mgr._subscribe_websocket)
 
-        request_response = self._get_raised_response(400)
+        request_response = self._get_raised_response(
+            requests.codes.bad_request)
+
         mocked_get.return_value = request_response
         stream_url = self.mgr._subscribe_websocket()
         self.assertIsNone(stream_url)
 
-        request_response = self._get_raised_response(401)
+        request_response = self._get_raised_response(
+            requests.codes.unauthorized)
+
         mocked_get.return_value = request_response
         stream_url = self.mgr._subscribe_websocket()
         self.assertIsNone(stream_url)
@@ -114,12 +127,12 @@ class TestWebsocketClient(base.DietTestCase):
     @mock.patch.object(odl_client, 'sendjson')
     @mock.patch.object(odl_client, 'get')
     def test_subscribe_websocket(self, mocked_get, mocked_sendjson):
-        request_response = self._get_mock_request_response(200)
+        request_response = self._get_mock_request_response(requests.codes.ok)
         request_response.json = mock.Mock(
             return_value=TestWebsocketClient.FAKE_WEBSOCKET_STREAM_NAME_DATA)
         mocked_sendjson.return_value = request_response
 
-        request_response = self._get_mock_request_response(200)
+        request_response = self._get_mock_request_response(requests.codes.ok)
         request_response.headers = TestWebsocketClient.FAKE_WEBSOCKET_SUBS_DATA
         mocked_get.return_value = request_response
         stream_url = self.mgr._subscribe_websocket()
