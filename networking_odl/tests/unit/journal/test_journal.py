@@ -17,7 +17,6 @@ import fixtures
 import mock
 
 from neutron.common import utils
-from oslo_config import cfg
 from oslo_db import exception
 from oslo_log import log as logging
 from oslo_utils import uuidutils
@@ -35,7 +34,7 @@ from networking_odl.tests.unit.db import test_db
 class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase):
     @mock.patch.object(journal.OpenDaylightJournalThread, 'set_sync_event')
     def test_processing(self, mock_journal):
-        cfg.CONF.ml2_odl.sync_timeout = 0.1
+        self.cfg.config(sync_timeout=0.1, group='ml2_odl')
         periodic_processor = journal.JournalPeriodicProcessor()
         self.addCleanup(periodic_processor.stop)
         periodic_processor.start()

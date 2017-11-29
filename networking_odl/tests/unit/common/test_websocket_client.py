@@ -14,7 +14,7 @@
 #    under the License.
 
 import mock
-from oslo_config import cfg
+from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 import requests
 import websocket
@@ -51,6 +51,7 @@ class TestWebsocketClient(base.DietTestCase):
         self.useFixture(base.OpenDaylightRestClientFixture())
         mock.patch.object(wsc.OpenDaylightWebsocketClient,
                           'start_odl_websocket_thread').start()
+        self.cfg = self.useFixture(config_fixture.Config())
         super(TestWebsocketClient, self).setUp()
 
         self.mgr = wsc.OpenDaylightWebsocketClient.odl_create_websocket(
@@ -156,7 +157,7 @@ class TestWebsocketClient(base.DietTestCase):
 
     def test_run_websocket_thread(self):
         self.mgr._connect_ws = mock.MagicMock(return_value=None)
-        cfg.CONF.ml2_odl.restconf_poll_interval = 0
+        self.cfg.config(restconf_poll_interval=0, group='ml2_odl')
         self.mgr.run_websocket_thread(True)
         assert self.mgr._connect_ws.call_count == 1
 
