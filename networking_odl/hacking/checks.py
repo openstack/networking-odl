@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
 import tokenize
 
 from hacking.checks import docstrings
@@ -29,7 +30,9 @@ _ND01_OPENDAYLIGHT = 'Opendaylight'  # noqa
 
 _ND02_MSG = (
     "ND02: use the config fixture provided by oslo_config and use config()"
-    " instead of using cfg.CONF.set_override()")  # noqa
+    " instead of %s")  # noqa
+
+_ND02_REGEXP_DIRECT = re.compile(r'cfg\.CONF\..* =')
 
 
 def check_opendaylight_lowercase(logical_line, filename, noqa):
@@ -95,7 +98,24 @@ def check_config_over_set_override(logical_line, filename, noqa):
         return
 
     if 'cfg.CONF.set_override' in logical_line:
-        yield (0, _ND02_MSG)
+        yield (0, _ND02_MSG % "using cfg.CONF.set_override()")
+
+
+def check_config_over_direct_override(logical_line, filename, noqa):
+    """ND02 - Enforcement of config fixture
+
+    Enforce usage of the fixture's config() helper instead
+    of overriding a setting directly
+    """
+
+    if noqa:
+        return
+
+    if 'networking_odl/tests/' not in filename:
+        return
+
+    if _ND02_REGEXP_DIRECT.match(logical_line):
+        yield (0, _ND02_MSG % "overriding it directly.")
 
 
 def factory(register):
@@ -105,3 +125,4 @@ def factory(register):
     register(check_opendaylight_lowercase_string)
     register(check_opendaylight_lowercase_docstring)
     register(check_config_over_set_override)
+    register(check_config_over_direct_override)
