@@ -32,10 +32,6 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         self.useFixture(base.OpenDaylightRestClientFixture())
         self.useFixture(base.OpenDaylightFullSyncFixture())
         super(OpenDaylightConfigBase, self).setUp()
-        self.cfg.config(mechanism_drivers=[
-                        'logger', 'opendaylight_v2'], group='ml2')
-        self.cfg.config(extension_drivers=[
-                        'port_security', 'qos'], group='ml2')
         self.thread = journal.OpenDaylightJournalThread()
 
     def run_journal_processing(self):
