@@ -26,26 +26,25 @@ from networking_odl.db import db
 LOG = logging.getLogger(__name__)
 
 
-class JournalCleanup(object):
+@db_api.retry_if_session_inactive()
+def delete_completed_rows(context):
     """Journal maintenance operation for deleting completed rows."""
-    def __init__(self):
-        self._rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
-        self._processing_timeout = cfg.CONF.ml2_odl.processing_timeout
+    rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
+    if rows_retention <= 0:
+        return
 
-    @db_api.retry_if_session_inactive()
-    def delete_completed_rows(self, context):
-        if self._rows_retention > 0:
-            LOG.debug("Deleting completed rows")
-            with db_api.autonested_transaction(context.session):
-                db.delete_rows_by_state_and_time(
-                    context.session, odl_const.COMPLETED,
-                    timedelta(seconds=self._rows_retention))
+    LOG.debug("Deleting completed rows")
+    with db_api.autonested_transaction(context.session):
+        db.delete_rows_by_state_and_time(
+            context.session, odl_const.COMPLETED,
+            timedelta(seconds=rows_retention))
 
-    @db_api.retry_if_session_inactive()
-    def cleanup_processing_rows(self, context):
-        with db_api.autonested_transaction(context.session):
-            row_count = db.reset_processing_rows(
-                context.session, self._processing_timeout)
-        if row_count:
-            LOG.info("Reset %(num)s orphaned rows back to pending",
-                     {"num": row_count})
+
+@db_api.retry_if_session_inactive()
+def cleanup_processing_rows(context):
+    with db_api.autonested_transaction(context.session):
+        row_count = db.reset_processing_rows(
+            context.session, cfg.CONF.ml2_odl.processing_timeout)
+    if row_count:
+        LOG.info("Reset %(num)s orphaned rows back to pending",
+                 {"num": row_count})

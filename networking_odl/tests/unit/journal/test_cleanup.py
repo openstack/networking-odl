@@ -17,31 +17,26 @@
 import mock
 
 from networking_odl.db import db
-from networking_odl.journal.cleanup import JournalCleanup
+from networking_odl.journal import cleanup
 from networking_odl.tests.unit import test_base_db
 
 
 class JournalCleanupTestCase(test_base_db.ODLBaseDbTestCase):
-    def _journal_cleanup_object(self, retention):
-        self.cfg.config(completed_rows_retention=retention, group='ml2_odl')
-        return JournalCleanup()
-
     def test_delete_completed_rows_retries_exceptions(self):
-        journal_cleanup = self._journal_cleanup_object(1)
+        self.cfg.config(completed_rows_retention=1, group='ml2_odl')
         with mock.patch.object(db, 'delete_rows_by_state_and_time') as m:
             self._test_retry_exceptions(
-                journal_cleanup.delete_completed_rows, m, True)
+                cleanup.delete_completed_rows, m, True)
 
     def test_cleanup_processsing_rows_retries_exceptions(self):
-        journal_cleanup = self._journal_cleanup_object(1)
         with mock.patch.object(db, 'reset_processing_rows') as m:
             self._test_retry_exceptions(
-                journal_cleanup.cleanup_processing_rows, m, True)
+                cleanup.cleanup_processing_rows, m, True)
 
     @mock.patch.object(db, 'delete_rows_by_state_and_time')
     def _test_delete_completed_rows(self, retention, expected_call, mock_db):
-        journal_cleanup = self._journal_cleanup_object(retention)
-        journal_cleanup.delete_completed_rows(self.db_context)
+        self.cfg.config(completed_rows_retention=retention, group='ml2_odl')
+        cleanup.delete_completed_rows(self.db_context)
         self.assertEqual(expected_call, mock_db.called)
 
     def test_delete_completed_rows_with_retention(self):

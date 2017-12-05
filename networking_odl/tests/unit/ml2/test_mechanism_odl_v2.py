@@ -471,7 +471,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         # Test if the cleanup marks this in the desired state
         # based on the last_retried timestamp
-        cleanup.JournalCleanup().cleanup_processing_rows(self.db_context)
+        cleanup.cleanup_processing_rows(self.db_context)
 
         # Verify that the Db row is in the desired state
         rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
