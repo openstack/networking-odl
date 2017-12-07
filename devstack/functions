@@ -253,3 +253,8 @@ function populate_odl_ml2_config {
         iniset $NEUTRON_CORE_PLUGIN_CONF $section $param $value
     fi
 }
+
+
+function neutron_plugin_create_nova_conf {
+    :
+}
