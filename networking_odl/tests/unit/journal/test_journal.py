@@ -52,6 +52,11 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         self.periodic_task_fixture = self.useFixture(
             base.OpenDaylightPeriodicTaskFixture())
 
+    def _create_periodic_processor(self):
+        periodic_processor = worker.JournalPeriodicProcessor()
+        self.addCleanup(periodic_processor.stop)
+        return periodic_processor
+
     def _get_pid_status(self, pid):
         """Allows to query a system process based on the PID
 
@@ -116,8 +121,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     def test_processing(self, mock_journal):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
 
-        periodic_processor = worker.JournalPeriodicProcessor()
-        self.addCleanup(periodic_processor.stop)
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
 
@@ -125,15 +129,14 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(journal.OpenDaylightJournalThread, 'stop')
     def test_stops_journal_sync_thread(self, mock_stop, mock_start):
         self.cfg.config(sync_timeout=0.1, group='ml2_odl')
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         periodic_processor.stop()
         mock_stop.assert_called_once()
         mock_start.assert_called_once()
 
     def test_allow_multiple_starts_gracefully(self):
-        periodic_processor = worker.JournalPeriodicProcessor()
-        self.addCleanup(periodic_processor.stop)
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         periodic_processor.stop()
 
@@ -143,14 +146,13 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
             self.fail('Calling a start() after a stop() should be allowed')
 
     def test_multiple_starts_without_stop_throws_exception(self):
-        periodic_processor = worker.JournalPeriodicProcessor()
-        self.addCleanup(periodic_processor.stop)
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
 
         self.assertRaises(RuntimeError, periodic_processor.start)
 
     def test_call_stop_without_calling_start(self):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
 
         try:
             periodic_processor.stop()
@@ -212,15 +214,14 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         with mock.patch.object(
                 periodic_task.PeriodicTask,
                 'register_operation') as register_operation_mock:
-            periodic_processor = worker.JournalPeriodicProcessor()
+            periodic_processor = self._create_periodic_processor()
             periodic_processor._start_maintenance_task()
             register_operation_mock.assert_has_calls(calls)
 
     def test_maintenance_task_started(self):
         self.periodic_task_fixture.task_start_mock.stop()
         mock_start = self.periodic_task_fixture.task_start_mock.start()
-        periodic_processor = worker.JournalPeriodicProcessor()
-        self.addCleanup(periodic_processor.stop)
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         periodic_processor._maintenance_task = mock.MagicMock()
 
@@ -249,7 +250,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
     @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops')
     def test_reset_fires_maintenance_task(self, execute_mock):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
 
         periodic_processor._start_maintenance_task()
         execute_mock.reset_mock()
@@ -259,7 +260,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         execute_mock.assert_has_calls([mock.call(forced=True)])
 
     def test_reset_succeeeds_when_maintenance_task_not_setup(self):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
 
         # NOTE(mpeterson): This tests that if calling reset without setting up
         # the maintenance task then it would not raise an exception and just
@@ -268,15 +269,14 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
     @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops')
     def test_start_fires_maintenance_task(self, execute_mock):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
 
-        self.addCleanup(periodic_processor.stop)
         periodic_processor.start()
 
         execute_mock.called_once_with([mock.call(forced=True)])
 
     def test_creates_pidfile(self):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
         periodic_processor._create_pidfile()
 
         pidfile = str(periodic_processor.pidfile)
@@ -298,7 +298,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(worker.JournalPeriodicProcessor, '_create_pidfile')
     @mock.patch.object(worker.JournalPeriodicProcessor, '_delete_pidfile')
     def test_pidfile_handling_on_start_stop(self, mock_create, mock_delete):
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         periodic_processor.stop()
 
@@ -308,8 +308,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     def test_deletes_pidfile(self):
         atexit_mock = self.journal_thread_fixture.remock_atexit()
 
-        periodic_processor = worker.JournalPeriodicProcessor()
-        self.addCleanup(periodic_processor.stop)
+        periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
 
         pidfile = str(periodic_processor.pidfile)
@@ -323,7 +322,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
     def test_atexit_delete_pidfile_registered_only_once(self):
         atexit_mock = self.journal_thread_fixture.remock_atexit()
-        periodic_processor = worker.JournalPeriodicProcessor()
+        periodic_processor = self._create_periodic_processor()
 
         for _ in range(0, 2):
             periodic_processor.start()
