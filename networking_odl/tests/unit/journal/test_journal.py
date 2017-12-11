@@ -51,6 +51,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         super(JournalPeriodicProcessorTest, self).setUp()
         self.periodic_task_fixture = self.useFixture(
             base.OpenDaylightPeriodicTaskFixture())
+        self.cfg.config(sync_timeout=0, group='ml2_odl')
 
     def _create_periodic_processor(self):
         periodic_processor = worker.JournalPeriodicProcessor()
@@ -119,8 +120,6 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
     @mock.patch.object(journal.OpenDaylightJournalThread, 'set_sync_event')
     def test_processing(self, mock_journal):
-        self.cfg.config(sync_timeout=0.1, group='ml2_odl')
-
         periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         utils.wait_until_true(lambda: mock_journal.call_count > 1, 5, 0.1)
@@ -128,7 +127,6 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(journal.OpenDaylightJournalThread, 'start')
     @mock.patch.object(journal.OpenDaylightJournalThread, 'stop')
     def test_stops_journal_sync_thread(self, mock_stop, mock_start):
-        self.cfg.config(sync_timeout=0.1, group='ml2_odl')
         periodic_processor = self._create_periodic_processor()
         periodic_processor.start()
         periodic_processor.stop()
@@ -230,7 +228,6 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops',
                        new=mock.Mock())
     def test_reset_called_on_sighup(self):
-        self.cfg.config(sync_timeout=0, group='ml2_odl')
         self._setup_mocks_for_periodic_task()
 
         mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
