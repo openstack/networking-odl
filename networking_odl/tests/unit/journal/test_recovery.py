@@ -54,7 +54,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         return mock.MagicMock(object_type=resource_type)
 
     def _test__get_latest_resource(self, plugin, resource_type):
-        l2 = mech_driver_v2.L2_RESOURCES
+        l2 = mech_driver_v2.OpenDaylightMechanismDriver.RESOURCES
         full_sync.ALL_RESOURCES[plugin_constants.CORE] = l2
         mock_resource = self._mock_resource(plugin, resource_type)
         mock_row = self._mock_row(resource_type)
@@ -65,7 +65,9 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l2(self, plugin_mock):
-        for resource_type in mech_driver_v2.L2_RESOURCES:
+        for resource_type in(
+                mech_driver_v2.OpenDaylightMechanismDriver.RESOURCES):
+
             plugin = plugin_mock.return_value
             self._test__get_latest_resource(plugin, resource_type)
 
@@ -85,7 +87,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_none(self, plugin_mock):
         plugin_mock.return_value.get_network.side_effect = nexc.NotFound()
-        l2 = mech_driver_v2.L2_RESOURCES
+        l2 = mech_driver_v2.OpenDaylightMechanismDriver.RESOURCES
         full_sync.ALL_RESOURCES[plugin_constants.CORE] = l2
 
         mock_row = self._mock_row(odl_const.ODL_NETWORK)

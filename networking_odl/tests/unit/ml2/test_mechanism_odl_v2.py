@@ -38,6 +38,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.common import utils
 from networking_odl.db import db
+from networking_odl.journal import base_driver
 from networking_odl.journal import cleanup
 from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
@@ -175,6 +176,14 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         super(OpenDaylightMechanismDriverTestCase, self).setUp()
         self.mech = mech_driver_v2.OpenDaylightMechanismDriver()
         self.mech.initialize()
+
+    def test_registered_plugin_type(self):
+        self.assertEqual(self.mech.plugin_type, n_constants.CORE)
+
+    def test_registered_resources(self):
+        for resource in self.mech.RESOURCES:
+            self.assertIn(resource, base_driver.ALL_RESOURCES)
+            self.assertEqual(base_driver.ALL_RESOURCES[resource], self.mech)
 
     def _get_mock_network_operation_context(self):
         current = {'status': 'ACTIVE',
