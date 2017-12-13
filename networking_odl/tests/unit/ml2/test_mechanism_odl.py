@@ -369,6 +369,10 @@ class OpenDaylightMechanismDriverTestCase(base.BaseTestCase):
         mock_method.assert_called_once_with(
             headers={'Content-Type': 'application/json'},
             timeout=cfg.CONF.ml2_odl.timeout, *args, **kwargs)
+        if args[0] == 'put' and \
+                kwargs['data']._object_type == odl_const.ODL_SUBNET:
+            alloc_pools = kwargs['data']._data['allocation_pools']
+            self.assertEqual(FAKE_SUBNET['allocation_pools'], alloc_pools)
 
     def _test_create_resource_postcommit(self, object_type, status_code,
                                          exc_class=None):

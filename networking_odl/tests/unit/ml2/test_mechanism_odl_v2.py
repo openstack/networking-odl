@@ -626,6 +626,14 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                             'tenant_id': 'test-tenant',
                             'id': SG_FAKE_ID, 'name': 'test_sg'})])
 
+    def test_subnet_allocation_pools(self):
+        context = self._get_mock_operation_context(odl_const.ODL_SUBNET)
+        alloc_pool = context.current['allocation_pools']
+        self._call_operation_object(odl_const.ODL_UPDATE,
+                                    odl_const.ODL_SUBNET)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        self.assertEqual(alloc_pool, row.data['allocation_pools'])
+
     def test_sync_multiple_updates(self):
         # add 2 updates
         for i in range(2):
