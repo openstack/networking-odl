@@ -6,6 +6,8 @@
 ignore=.git,tests
 
 [MESSAGES CONTROL]
+# TODO(manjeets) Enable raising-format-tuple, inconsistent-return-statements
+# and wrong-import-order.
 # NOTE(gus): This is a long list.  A number of these are important and
 # should be re-enabled once the offending code is fixed (or marked
 # with a local disable)
@@ -35,6 +37,7 @@ disable=
  no-init,
  non-parent-init-called,
  protected-access,
+ raising-format-tuple,
  redefined-builtin,
  redefined-outer-name,
  signature-differs,
@@ -49,10 +52,12 @@ disable=
  invalid-name,
  missing-docstring,
  superfluous-parens,
+ wrong-import-order,
 # "R" Refactor recommendations
  abstract-class-little-used,
  abstract-class-not-used,
  duplicate-code,
+ inconsistent-return-statements,
  interface-not-implemented,
  no-self-use,
  too-few-public-methods,

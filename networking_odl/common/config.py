@@ -31,8 +31,9 @@ odl_opts = [
                help=_("HTTP timeout in seconds.")),
     cfg.IntOpt('session_timeout', default=30,
                help=_("Tomcat session timeout in minutes.")),
-    cfg.IntOpt('sync_timeout', default=10,
-               help=_("(V2 driver) Sync thread timeout in seconds.")),
+    cfg.FloatOpt('sync_timeout', default=10,
+                 help=_("(V2 driver) Sync thread timeout in seconds "
+                        "or fraction.")),
     cfg.IntOpt('retry_count', default=5,
                help=_("(V2 driver) Number of times to retry a row "
                       "before failing.")),

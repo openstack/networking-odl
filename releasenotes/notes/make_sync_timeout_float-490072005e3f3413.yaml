@@ -1,0 +1,9 @@
+---
+prelude: >
+    The config parameter sync_timeout sometimes uses the
+    fraction value and because it is set to Intopt, that
+    use of fraction value may end up in error.
+upgrade:
+  - |
+    Making config paramter sync_timeout of FloatOpt type to allow
+    use of fraction values for timeouts.

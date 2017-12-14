@@ -144,7 +144,9 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def _get_mock_floatingip_operation_info(network, subnet):
         floatingip = {odl_const.ODL_FLOATINGIP:
                       {'floating_network_id': network['network']['id'],
-                       'tenant_id': network['network']['tenant_id']}}
+                       'tenant_id': network['network']['tenant_id'],
+                       'subnet_id': None,
+                       'floating_ip_address': None}}
         return floatingip
 
     @staticmethod
