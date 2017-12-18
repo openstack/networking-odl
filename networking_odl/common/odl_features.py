@@ -70,7 +70,7 @@ def _load_features(json):
     """parse and save features from json"""
     features = json['features']
     if 'feature' not in features:
-        return
+        return None
 
     LOG.info('Retrieved ODL features %s', features)
     response = set()

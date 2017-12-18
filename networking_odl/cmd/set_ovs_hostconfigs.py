@@ -360,6 +360,7 @@ def _vif_details_from_conf(conf, uuid, vif_type):
                 "vhostuser_socket": os.path.join(
                     conf.vhostuser_socket_dir,
                     conf.vhostuser_port_prefix + '$PORT_ID')}
+    return None
 
 
 def setup_conf(args):

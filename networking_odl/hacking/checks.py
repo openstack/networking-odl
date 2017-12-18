@@ -79,6 +79,7 @@ def check_opendaylight_lowercase_docstring(
     if docstring and _ND01_OPENDAYLIGHT in docstring:
         pos = physical_line.find(_ND01_OPENDAYLIGHT)
         return (pos, _ND01_MSG + " in docstring")
+    return None
 
 
 def check_config_over_set_override(logical_line, filename, noqa):

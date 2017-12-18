@@ -167,6 +167,7 @@ class OpenDaylightDriver(driver.Driver):
             return self._iter_switch_port
         elif meter_name.startswith('port'):
             return self._iter_port
+        return None
 
     def _get_extractor(self, meter_name):
         if (meter_name == 'switch.port' or

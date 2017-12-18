@@ -6,8 +6,7 @@
 ignore=.git,tests
 
 [MESSAGES CONTROL]
-# TODO(manjeets) Enable raising-format-tuple, inconsistent-return-statements
-# and wrong-import-order.
+# TODO(manjeets) Enable raising-format-tuple, and wrong-import-order.
 # NOTE(gus): This is a long list.  A number of these are important and
 # should be re-enabled once the offending code is fixed (or marked
 # with a local disable)
@@ -57,7 +56,6 @@ disable=
  abstract-class-little-used,
  abstract-class-not-used,
  duplicate-code,
- inconsistent-return-statements,
  interface-not-implemented,
  no-self-use,
  too-few-public-methods,

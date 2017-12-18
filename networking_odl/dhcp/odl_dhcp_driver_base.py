@@ -84,3 +84,4 @@ class OdlDhcpDriverBase(object):
             LOG.debug("Retrieved ODL owned port %s for subnet %s",
                       port['id'], subnet_id)
             return port['id']
+        return None
