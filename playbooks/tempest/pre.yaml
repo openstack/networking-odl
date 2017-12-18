@@ -1,0 +1,17 @@
+- hosts: all
+  tasks:
+    # TODO(mpeterson): Remove when https://github.com/ansible/ansible/issues/21890 is fixed
+    - set_fact:
+        devstack_base_dir: /opt/stack
+      when: devstack_base_dir is not defined
+
+    # delete and recreate network to workaroud netvirt bug:
+    # https://bugs.opendaylight.org/show_bug.cgi?id=7456
+    # https://bugs.opendaylight.org/show_bug.cgi?id=8133
+    - name: Purge and recreate initial networks
+      shell:
+        cmd: |
+          source ./devstack/functions
+          purge_and_recreate_initial_networks "{{devstack_base_dir}}/devstack"
+        executable: /bin/bash
+        chdir: "{{ zuul.project.src_dir }}"

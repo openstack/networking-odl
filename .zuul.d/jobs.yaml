@@ -1,3 +1,166 @@
+- job:
+    name: networking-odl-config-job
+    description: Fake job to hold configuration settings for jobs
+    vars:
+      odl_version_map:
+        carbon: &carbon carbon-snapshot-0.6
+        nitrogen: &nitrogen nitrogen-snapshot-0.7
+      common_devstack_vars: &devstack_vars
+        devstack_localrc:
+          ODL_TIMEOUT: 60
+          ODL_RELEASE: latest-snapshot
+          # Set here which ODL openstack service provider to use
+          ODL_NETVIRT_KARAF_FEATURE: odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger,odl-neutron-hostconfig-ovs
+          # Switch to using the ODL's L3 implementation
+          ODL_L3: True
+          # Switch to V2 Driver
+          ODL_V2DRIVER: True
+          # public network connectivity
+          ODL_PROVIDER_MAPPINGS: public:br-ex
+          PUBLIC_PHYSICAL_NETWORK: public
+          PUBLIC_BRIDGE: br-ex
+          Q_USE_PUBLIC_VETH: False
+          # Enable debug logs for odl ovsdb
+          ODL_NETVIRT_DEBUG_LOGS: True
+          # Database
+          MYSQL_PASSWORD: secretmysql
+          DATABASE_QUERY_LOGGING: True
+          OS_LOG_PATH: '{{ zuul.executor.log_root }}'
+          IS_GATE: True
+        devstack_services: &devstack_services
+          c-api: True
+          c-bak: True
+          c-sch: True
+          c-vol: True
+          cinder: True
+          dstat: True
+          g-api: True
+          g-reg: True
+          horizon: False
+          key: True
+          mysql: True
+          n-api-meta: True
+          n-api: True
+          n-cauth: False
+          n-cond: True
+          n-cpu: True
+          n-crt: True
+          n-novnc: False
+          n-obj: True
+          n-sch: True
+          neutron: True
+          neutron-agent: False
+          neutron-api: True
+          neutron-dhcp: True
+          neutron-l3: False
+          neutron-metadata-agent: True
+          placement-api: True
+          placement-client: False
+          q-agt: False
+          q-dhcp: False
+          q-l3: False
+          q-meta: False
+          q-svc: False
+          rabbit: True
+        devstack_plugins:
+          networking-odl: git://git.openstack.org/openstack/networking-odl
+
+- job:
+    name: networking-odl-tempest-base
+    parent: devstack-tempest
+    description: |
+        Base job for tempest-based tests
+    pre-run: playbooks/tempest/pre.yaml
+    run: playbooks/tempest/run.yaml
+    post-run: playbooks/tempest/post.yaml
+    voting: false
+    required-projects:
+      - openstack/ceilometer
+      - openstack/networking-odl
+      - openstack/networking-l2gw
+      - openstack/networking-sfc
+      - openstack/networking-bgpvpn
+      - openstack/neutron-fwaas
+      - openstack/neutron-lbaas
+    roles:
+      - zuul: openstack-dev/devstack
+    timeout: 9000
+    irrelevant-files: &irrelevant_files
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+    vars:
+      <<: *devstack_vars
+      tox_envlist: all
+      tempest_test_regex: |
+        (?x)      # Ignore comments and whitespaces
+        # \\\\ BEGIN LIST OF EXCLUSIONS
+        ^(?!.*
+        # exclude the slow tag (part of the default for 'full')
+        (?:.*\[.*\bslow\b.*\])
+        # ____ BEGIN: EXCLUDE THINGS THAT JUST AREN'T ENABLED
+        |(?:tempest\.api\.network\.admin\.test_quotas\.QuotasTest\.test_lbaas_quotas.*)
+        |(?:tempest\.api\.network\.test_load_balancer.*)
+        |(?:tempest\.scenario\.test_load_balancer.*)
+        |(?:tempest\.api\.network\.admin\.test_load_balancer.*)
+        |(?:tempest\.api\.network\.admin\.test_lbaas.*)
+        |(?:tempest\.api\.network\.test_fwaas_extensions.*)
+        |(?:tempest\.api\.network\.test_vpnaas_extensions.*)
+        |(?:tempest\.api\.network\.test_metering_extensions.*)
+        |(?:tempest\.thirdparty\.boto\.test_s3.*)
+        # ^^^^ END: EXCLUDE THINGS THAT JUST AREN'T ENABLED
+        # ____ BEGIN: EXCLUDE STUFF LESS RELATED TO NETWORKING, TO REDUCE GATE LOAD
+        |(?:tempest\.api\.object.*)
+        |(?:tempest\.api\.compute\.admin.*)
+        |(?:tempest\.api\.compute\.images.*)
+        |(?:tempest\.api\.compute\.volumes.*)
+        # ^^^^ END: EXCLUDE STUFF LESS RELATED TO NETWORKING, TO REDUCE GATE LOAD
+        # ____ BEGIN: EXCLUDE STUFF WE'RE LESS LIKELY TO BREAK
+        |(?:tempest\.api\.identity.*)
+        |(?:tempest\.api\.image.*)
+        |(?:tempest\.api\.volume.*)
+        # ^^^^ END: EXCLUDE STUFF WE'RE LESS LIKELY TO BREAK
+        # ____ BEGIN: UNSUPPORTED FEATURES
+        # ODL legacy netvirt doesn't support ipv6
+        |(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)
+        # ^^^^ END: UNSUPPORTED FEATURES
+        # ____ BEGIN: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
+        #             FIXED AS APPROPRIATE.
+        # TODO(yamahata): fix bugs and remove those tests from here
+        # BUG: https://bugs.launchpad.net/networking-odl/+bug/1642158
+        # legacy netvirt ignores admin-state-up state for network/port
+        |(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_instance_port_admin_state.*)
+        |(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_router_admin_state.*)
+        # BUG: https://bugs.launchpad.net/networking-odl/+bug/1643033
+        # stateful security group: conntracking needs to be enabled
+        |(?:tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_hotplug_nic.*)
+        |(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)
+        |(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)
+        # BUG: https://bugs.launchpad.net/networking-odl/+bug/1656129
+        # exluding some tests temporarily
+        # ^^^^ END: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
+        #           FIXED AS APPROPRIATE.
+        # //// END LIST OF EXCLUSIONS.
+        )
+        # only run tempest.api/scenario/thirdparty tests (part of the default for 'full')
+        (tempest\.(api|scenario|thirdparty)).*$
+
+- job:
+    name: networking-odl-tempest-carbon
+    parent: networking-odl-tempest-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *carbon
+
+- job:
+    name: networking-odl-tempest-nitrogen
+    parent: networking-odl-tempest-base
+    branches: ^(?!stable/(newton|ocata)).*$
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *nitrogen
+
+
 # >>> LEGACY JOBS TO REPLACE
 
 - job:
@@ -10,28 +173,6 @@
       - openstack-dev/grenade
       - openstack-infra/devstack-gate
       - openstack/networking-odl
-
-- job:
-    name: networking-odl-tempest-carbon
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
-
-- job:
-    name: networking-odl-tempest-nitrogen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/tempest-dsvm-networking-odl-nitrogen-snapshot-vpnservice-v2driver/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-nitrogen-snapshot-vpnservice-v2driver/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
 
 - job:
     name: networking-odl-tempest-carbon-multinode

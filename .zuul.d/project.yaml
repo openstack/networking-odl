@@ -11,23 +11,8 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-carbon:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-nitrogen:
-            voting: false
-            branches: ^(?!stable/(newton|ocata)).*$
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
+        - networking-odl-tempest-carbon
+        - networking-odl-tempest-nitrogen
         - networking-odl-tempest-carbon-multinode:
             voting: false
             irrelevant-files:
