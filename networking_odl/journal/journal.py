@@ -17,7 +17,6 @@ import copy
 import threading
 import time
 
-from neutron.db import api as db_api
 from neutron_lib.callbacks import registry
 from neutron_lib import context as nl_context
 from neutron_lib.plugins import directory
@@ -27,6 +26,8 @@ from oslo_db import exception
 from oslo_log import log as logging
 from oslo_service import loopingcall
 from requests import exceptions
+
+from neutron.db import api as db_api
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const

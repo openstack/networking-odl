@@ -12,16 +12,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from neutron.plugins.ml2 import driver_context
 
 from neutron_lib.callbacks import registry
 from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
+from oslo_log import log as logging
+
+from neutron.plugins.ml2 import driver_context
 
 from networking_odl.common import constants
 from networking_odl.dhcp import odl_dhcp_driver_base as driver_base
-
-from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

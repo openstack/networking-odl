@@ -14,14 +14,14 @@
 #  under the License.
 #
 
+from neutron_lib.api.definitions import bgpvpn as bgpvpn_const
+from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
-from neutron_lib.api.definitions import bgpvpn as bgpvpn_const
-from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import postcommit

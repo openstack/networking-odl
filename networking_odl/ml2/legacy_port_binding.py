@@ -13,12 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-from oslo_log import log
-
 from neutron_lib.api.definitions import portbindings
 from neutron_lib import constants as n_const
 from neutron_lib.plugins.ml2 import api
+from oslo_log import log
 
 from networking_odl.ml2 import port_binding
 

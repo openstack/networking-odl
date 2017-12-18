@@ -14,10 +14,11 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
+
+from neutron.db import api as db_api
 
 from networking_odl._i18n import _
 from networking_odl.common import client

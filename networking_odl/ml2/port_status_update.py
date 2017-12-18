@@ -15,13 +15,14 @@
 
 import threading
 
-from neutron.db import provisioning_blocks
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
 from neutron_lib import worker
 from oslo_log import log
+
+from neutron.db import provisioning_blocks
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import odl_features

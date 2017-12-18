@@ -14,14 +14,14 @@
 #  under the License.
 #
 
+from neutron_lib.plugins import constants as nlib_const
+from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from neutron_lbaas.drivers import driver_base
 from neutron_lbaas.drivers import driver_mixins
-from neutron_lib.plugins import constants as nlib_const
-from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
 from networking_odl.journal import full_sync

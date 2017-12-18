@@ -6,7 +6,7 @@
 ignore=.git,tests
 
 [MESSAGES CONTROL]
-# TODO(manjeets) Enable raising-format-tuple, and wrong-import-order.
+# TODO(manjeets) Enable raising-format-tuple.
 # NOTE(gus): This is a long list.  A number of these are important and
 # should be re-enabled once the offending code is fixed (or marked
 # with a local disable)
@@ -51,7 +51,6 @@ disable=
  invalid-name,
  missing-docstring,
  superfluous-parens,
- wrong-import-order,
 # "R" Refactor recommendations
  abstract-class-little-used,
  abstract-class-not-used,
