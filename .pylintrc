@@ -6,7 +6,6 @@
 ignore=.git,tests
 
 [MESSAGES CONTROL]
-# TODO(manjeets) Enable raising-format-tuple.
 # NOTE(gus): This is a long list.  A number of these are important and
 # should be re-enabled once the offending code is fixed (or marked
 # with a local disable)
@@ -36,7 +35,6 @@ disable=
  no-init,
  non-parent-init-called,
  protected-access,
- raising-format-tuple,
  redefined-builtin,
  redefined-outer-name,
  signature-differs,
