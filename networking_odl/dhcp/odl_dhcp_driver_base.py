@@ -14,11 +14,11 @@
 #    under the License.
 
 
+from neutron_lib import constants as n_const
+from oslo_log import log as logging
+
 from neutron.db import api as db_api
 from neutron.plugins.common import utils as p_utils
-from neutron_lib import constants as n_const
-
-from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

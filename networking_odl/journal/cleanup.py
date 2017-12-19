@@ -16,9 +16,10 @@
 
 from datetime import timedelta
 
-from neutron.db import api as db_api
 from oslo_config import cfg
 from oslo_log import log as logging
+
+from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db

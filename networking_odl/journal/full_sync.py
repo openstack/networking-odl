@@ -16,8 +16,9 @@
 
 import requests
 
-from neutron.db import api as db_api
 from neutron_lib.plugins import directory
+
+from neutron.db import api as db_api
 
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const

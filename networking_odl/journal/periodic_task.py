@@ -14,10 +14,11 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
 from neutron_lib import context as neutron_context
 from oslo_log import log as logging
 from oslo_service import loopingcall
+
+from neutron.db import api as db_api
 
 from networking_odl.db import db
 

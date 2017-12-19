@@ -16,7 +16,6 @@
 import logging
 from string import Template
 
-from neutron.db import provisioning_blocks
 from neutron_lib.api.definitions import portbindings
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
@@ -31,6 +30,8 @@ from oslo_log import log
 from oslo_serialization import jsonutils
 from requests import codes
 from requests import exceptions
+
+from neutron.db import provisioning_blocks
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import odl_features

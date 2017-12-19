@@ -15,7 +15,8 @@
 #
 
 from debtcollector import removals
-
+from neutron_lib import constants as q_const
+from neutron_lib.plugins import constants as plugin_constants
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -28,8 +29,6 @@ from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
-from neutron_lib import constants as q_const
-from neutron_lib.plugins import constants as plugin_constants
 
 from networking_odl.common import client as odl_client
 from networking_odl.common import filters as odl_filters

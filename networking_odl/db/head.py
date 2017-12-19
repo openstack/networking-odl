@@ -15,9 +15,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from networking_odl.db import models  # noqa
-
 from neutron.db.migration.models import head
+
+from networking_odl.db import models  # noqa
 
 
 def get_metadata():

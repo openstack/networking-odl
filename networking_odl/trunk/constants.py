@@ -13,8 +13,9 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 #
-from neutron.services.trunk import constants as t_consts
 from neutron_lib.api.definitions import portbindings
+
+from neutron.services.trunk import constants as t_consts
 
 
 SUPPORTED_INTERFACES = (
