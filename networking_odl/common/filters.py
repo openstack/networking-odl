@@ -14,9 +14,14 @@
 #    under the License.
 
 from neutron_lib import constants as n_const
+from oslo_log import log
+from oslo_serialization import jsonutils
 
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
+
+
+LOG = log.getLogger(__name__)
 
 
 # NOTE(yamahata): As neutron keystone v3 support, tenant_id would be renamed to
@@ -95,17 +100,30 @@ def _filter_subnet_update(subnet):
     _filter_unmapped_null(subnet, _SUBNET_UNMAPPED_KEYS)
 
 
+def _convert_value_to_str(dictionary, key):
+    try:
+        # use jsonutils to convert unicode & ascii
+        dictionary[key] = jsonutils.dumps(dictionary[key])
+    except KeyError:
+        LOG.warning("key %s is not present in dict %s", key, dictionary)
+
+
+def _filter_port(port, attributes):
+    odl_utils.try_del(port, attributes)
+    _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
+    # ODL excpects binding:profile to be a string, not a dict
+    _convert_value_to_str(port, key='binding:profile')
+
+
 def _filter_port_create(port):
     """Filter out port attributes not required for a create."""
-    odl_utils.try_del(port, ['status'])
-    _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
+    _filter_port(port, ['status'])
 
 
 def _filter_port_update(port):
     """Filter out port attributes for an update operation."""
-    odl_utils.try_del(port, ['network_id', 'id', 'status', 'tenant_id',
-                             'project_id'])
-    _filter_unmapped_null(port, _PORT_UNMAPPED_KEYS)
+    _filter_port(port, ['network_id', 'id', 'status', 'tenant_id',
+                        'project_id'])
 
 
 def _filter_router_update(router):
