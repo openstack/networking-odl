@@ -99,9 +99,9 @@ class PortBindingManager(PortBindingController):
         if isinstance(extension.obj, PortBindingController):
             return cls(extension.name, extension.obj)
         else:
-            raise ValueError(
-                ("Port binding controller '%(name)s (%(controller)r)' "
-                 "doesn't implement PortBindingController interface."),
+            raise ValueError(_(
+                "Port binding controller '%(name)s (%(controller)r)' "
+                "doesn't implement PortBindingController interface."),
                 {'name': extension.name, 'controller': extension.obj})
 
     def get_workers(self):
