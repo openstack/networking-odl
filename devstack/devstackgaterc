@@ -24,7 +24,8 @@
 # not collect almost any logs, making it hard to debug.
 export DEVSTACK_LOCAL_CONFIG+=$'\n'"BUILD_TIMEOUT=60"
 
-COMMON_SERVICES=c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,rabbit,placement-api,n-api-meta
+CINDER_SERVICES=c-api,c-bak,c-sch,c-vol,cinder
+COMMON_SERVICES=dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,rabbit,placement-api,n-api-meta
 NEUTRON_NEW=neutron-dhcp,neutron-metadata-agent,neutron-api,neutron
 # This variable is not being used, it will be removed once migration is complete
 NEUTRON_LEGACY=q-dhcp,q-meta,q-svc,quantum
@@ -36,12 +37,12 @@ if [[ "$IS_GRENADE_JOB" == "True"  ]]; then
     # override and register neutron from networking-odl because it will look for
     # required files avaialble with neutron only. For now, lib/neutron-legacy to
     # lib/neutron is not done for grenade jobs.
-    NEUTRON_SERVICES=$NEUTRON_LEGACY
+    ALL_ENABLED_SERVICES=${COMMON_SERVICES},${NEUTRON_LEGACY}
 else
-    NEUTRON_SERVICES=$NEUTRON_NEW
+    ALL_ENABLED_SERVICES=${CINDER_SERVICES},${COMMON_SERVICES},${NEUTRON_NEW}
 fi
 
-export OVERRIDE_ENABLED_SERVICES=${COMMON_SERVICES},${NEUTRON_SERVICES}
+export OVERRIDE_ENABLED_SERVICES=${ALL_ENABLED_SERVICES}
 if [ -z "${RALLY_SCENARIO}" ] ; then
     # Only include tempest if this is not a rally job, As running tempest in Rally is likely to cause failure
     export OVERRIDE_ENABLED_SERVICES=${OVERRIDE_ENABLED_SERVICES},tempest
