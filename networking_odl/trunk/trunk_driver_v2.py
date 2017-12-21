@@ -62,10 +62,19 @@ class OpenDaylightTrunkHandlerV2(object):
                                 odl_const.ODL_CREATE, data)
 
     @log_helpers.log_method_call
-    def trunk_update_precommit(self, resource, event, trunk_plugin, payload):
-        payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
-        data = payload.current_trunk.to_dict()
-        self._record_in_journal(payload.context, payload.trunk_id,
+    def trunk_update_precommit(self, resource, event,
+                               trunk_plugin, payload=None):
+        if isinstance(payload, events.EventPayload):
+            # TODO(boden): remove shim once all callbacks use lib paylaods
+            payload.desired_state.update(status=t_consts.ACTIVE_STATUS)
+            data = payload.desired_state.to_dict()
+            trunk_id = payload.resource_id
+        else:
+            payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
+            data = payload.current_trunk.to_dict()
+            trunk_id = payload.trunk_id
+
+        self._record_in_journal(payload.context, trunk_id,
                                 odl_const.ODL_UPDATE, data)
 
     @log_helpers.log_method_call

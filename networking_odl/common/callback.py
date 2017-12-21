@@ -83,18 +83,25 @@ class OdlSecurityGroupsHandler(object):
                            resources.SECURITY_GROUP, events.AFTER_UPDATE)
 
     def _sg_callback(self, callback, resource, event, trigger, **kwargs):
-        context = kwargs['context']
-        res = kwargs.get(resource)
-        res_id = kwargs.get("%s_id" % resource)
+        if 'payload' in kwargs:
+            # TODO(boden): remove shim once all callbacks use payloads
+            context = kwargs['payload'].context
+            res = kwargs['payload'].desired_state
+            res_id = kwargs['payload'].resource_id
+            copy_kwargs = kwargs
+        else:
+            context = kwargs['context']
+            res = kwargs.get(resource)
+            res_id = kwargs.get("%s_id" % resource)
+            copy_kwargs = kwargs.copy()
+            copy_kwargs.pop('context')
+
         if res_id is None:
             res_id = res.get('id')
         odl_res_type = _RESOURCE_MAPPING[resource]
 
         odl_ops = _OPERATION_MAPPING[event]
         odl_res_dict = None if res is None else {odl_res_type.singular: res}
-
-        copy_kwargs = kwargs.copy()
-        copy_kwargs.pop('context')
 
         _log_on_callback(logging.DEBUG, "Calling callback", odl_ops,
                          odl_res_type, res_id, odl_res_dict, copy_kwargs)
