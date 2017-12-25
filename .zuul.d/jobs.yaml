@@ -55,6 +55,7 @@
           neutron-dhcp: True
           neutron-l3: False
           neutron-metadata-agent: True
+          neutron-qos: True
           placement-api: True
           placement-client: False
           q-agt: False
@@ -63,8 +64,9 @@
           q-meta: False
           q-svc: False
           rabbit: True
-        devstack_plugins:
+        devstack_plugins: &devstack_plugins
           networking-odl: git://git.openstack.org/openstack/networking-odl
+          neutron: git://git.openstack.org/openstack/neutron
 
 - job:
     name: networking-odl-tempest-base
@@ -83,6 +85,7 @@
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
       - openstack/neutron-lbaas
+      - openstack/neutron-tempest-plugin
     roles:
       - zuul: openstack-dev/devstack
     timeout: 9000
@@ -92,7 +95,10 @@
       - ^releasenotes/.*$
     vars:
       <<: *devstack_vars
-      tox_envlist: all
+      tox_envlist: all-plugin
+      devstack_plugins:
+        <<: *devstack_plugins
+        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
       tempest_test_regex: |
         (?x)      # Ignore comments and whitespaces
         # \\\\ BEGIN LIST OF EXCLUSIONS
@@ -125,6 +131,16 @@
         # ODL legacy netvirt doesn't support ipv6
         |(?:tempest\.scenario\.test_network_v6\.TestGettingAddress.*)
         # ^^^^ END: UNSUPPORTED FEATURES
+        # ____ BEGIN: EXCLUSION OF NEUTRON'S TEMPEST PLUGIN
+        # DNS domain isn't supported
+        |(?:neutron_tempest_plugin.*dns_domain.*?)
+        # DNS name for port doesn't seem to be supported
+        |(?:neutron_tempest_plugin\.api\.test_ports\.PortsTestJSON.*dns_name.*?)
+        # Reporting router interface status isn't supported
+        |(?:neutron_tempest_plugin.*test_router_interface_status.*?)
+        # DVR is not interesting in the context of ODL
+        |(?:neutron_tempest_plugin\..*[dD]vr.*?)
+        # ^^^^ END: EXCLUSION OF NEUTRON'S TEMPEST PLUGIN
         # ____ BEGIN: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
         #             FIXED AS APPROPRIATE.
         # TODO(yamahata): fix bugs and remove those tests from here
@@ -138,13 +154,16 @@
         |(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic.*)
         |(?:tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group.*)
         # BUG: https://bugs.launchpad.net/networking-odl/+bug/1656129
+        # These tests seem broken regardless of networking-odl functionality
+        |(?:neutron_tempest_plugin\.api\.test_revisions\.TestRevisions.*subnet.*?)
         # exluding some tests temporarily
         # ^^^^ END: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
         #           FIXED AS APPROPRIATE.
         # //// END LIST OF EXCLUSIONS.
         )
-        # only run tempest.api/scenario/thirdparty tests (part of the default for 'full')
-        (tempest\.(api|scenario|thirdparty)).*$
+        # run tempest.api/scenario/thirdparty tests (part of the default for 'full')
+        # and also neutron's tempest plugin
+        (tempest\.(api|scenario|thirdparty)|neutron_tempest_plugin).*$
 
 - job:
     name: networking-odl-tempest-carbon
