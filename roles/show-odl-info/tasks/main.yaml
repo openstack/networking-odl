@@ -1,0 +1,55 @@
+- name: Print interfaces information
+  command: ip address
+  become: true
+
+- name: Print link information
+  command: ip link
+  become: true
+
+- name: Print routing tables
+  command: ip route
+  become: true
+
+- name: Print a dump of ovsdb\'s database
+  command: ovsdb-client dump
+  become: true
+
+- name: Print overview of ovs-vswitchd\'s database
+  command: ovs-vsctl show
+  become: true
+
+- name: Retrieve ovs-vswitchd bridges
+  command: ovs-vsctl list-br
+  become: true
+  register: ovs_bridges
+
+# TODO(mpeterson): move to include_tasks when Zuul uses ansible 2.4
+- include: ovs_flows.yaml
+  with_items: "{{ ovs_bridges.stdout_lines }}"
+
+- name: Print openstack information
+  shell:
+    cmd: |
+      source "{{ devstack_base_dir }}/devstack/openrc" admin admin
+      echo "Openstack networks"
+      openstack network list
+
+      echo "Openstack ports"
+      openstack port list
+
+      echo "Openstack subnets"
+      openstack subnet list
+
+      echo "Openstack routers"
+      openstack router list
+    executable: /bin/bash
+    chdir: "{{ zuul.project.src_dir }}"
+  ignore_errors: true
+
+- name: Print ODL configuration
+  command: curl --silent --user admin:admin "http://{{ inventory_hostname }}:8087/restconf/{{ item }}?prettyPrint=true"
+  with_items:
+    - config/neutron:neutron
+    - config/opendaylight-inventory:nodes
+    - config/elan:elan-instances
+    - config/elan:elan-interfaces
