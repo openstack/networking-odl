@@ -222,11 +222,12 @@ function _has_public_ipv6_address {
 # TODO delete this workaround once br-ex bringup is fixed.
 function purge_and_recreate_initial_networks {
     DEVSTACK_DIR=$1
-    if [-z "$DEVSTACK_DIR" ]; then
+    if [ -z "$DEVSTACK_DIR" ]; then
         echo "Please specify devstack directory"
         exit 1
-    else
-        cat <<EOF >> $DEVSTACK_DIR/local.sh
+    fi
+
+    cat <<EOF >> $DEVSTACK_DIR/local.sh
 #!/usr/bin/env bash
 sudo ifconfig br-ex 172.24.5.1/24 up
 source $DEVSTACK_DIR/openrc admin
@@ -239,7 +240,6 @@ openstack network create public --external --provider-network-type=flat --provid
 openstack subnet create --network=public --subnet-range=172.24.5.0/24 --gateway 172.24.5.1 public-subnet
 EOF
     chmod 755 $DEVSTACK_DIR/local.sh
-    fi
 }
 
 
