@@ -13,10 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import atexit
+import os
+
 from neutron_lib import worker
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import loopingcall
+
+# TODO(mpeterson): this should go back to the previous block once the problems
+# with flake8-import-order are fixed.
+from neutron.agent.linux import daemon
 
 from networking_odl._i18n import _
 from networking_odl.journal import cleanup
@@ -47,7 +54,28 @@ class JournalPeriodicProcessor(worker.BaseWorker):
         self._interval = cfg.CONF.ml2_odl.sync_timeout
         self._timer = None
         self._maintenance_task = None
-        self._running = False
+        self._running = None
+        self.pidfile = None
+
+    def _create_pidfile(self):
+        pidfile = os.path.join(cfg.CONF.state_path,
+                               type(self).__name__.lower() + '.pid')
+        self.pidfile = daemon.Pidfile(pidfile, 'python')
+
+        # NOTE(mpeterson): We want self._running to be None before the first
+        # run so atexit is only registered once and not several times.
+        # TODO(mpeterson): Once we drop support for PY2 we need to change
+        # the logic to use atexit.unregister at stop.
+        if self._running is None:
+            atexit.register(self._delete_pidfile)
+
+        self.pidfile.write(os.getpid())
+
+    def _delete_pidfile(self):
+        if self.pidfile is not None:
+            self.pidfile.unlock()
+            os.remove(str(self.pidfile))
+            self.pidfile = None
 
     def start(self):
         if self._running:
@@ -61,6 +89,7 @@ class JournalPeriodicProcessor(worker.BaseWorker):
         self._timer = loopingcall.FixedIntervalLoopingCall(self._call_journal)
         self._timer.start(self._interval)
         self._start_maintenance_task()
+        self._create_pidfile()
         self._running = True
 
     def stop(self):
@@ -71,6 +100,7 @@ class JournalPeriodicProcessor(worker.BaseWorker):
         self._journal.stop()
         self._timer.stop()
         self._maintenance_task.cleanup()
+        self._delete_pidfile()
         super(JournalPeriodicProcessor, self).stop()
         self._running = False
 

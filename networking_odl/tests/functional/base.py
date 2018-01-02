@@ -28,6 +28,7 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 from networking_odl.db import db
+from networking_odl.tests import base as test_base
 from networking_odl.tests.unit import test_base_db
 
 
@@ -103,6 +104,7 @@ class OdlTestsBase(object):
 class V2DriverAdjustment(test_base_db.ODLBaseDbTestCase):
     def setUp(self):
         super(V2DriverAdjustment, self).setUp()
+        self.useFixture(test_base.JournalWorkerPidFileFixture())
 
     def get_odl_resource(self, resource_type, resource):
         def no_journal_rows():

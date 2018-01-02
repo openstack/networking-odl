@@ -91,6 +91,26 @@ class OpenDaylightJournalThreadFixture(fixtures.Fixture):
         self.journal_thread_mock = mock.patch.object(
             journal.OpenDaylightJournalThread, 'start')
         self.journal_thread_mock.start()
+        self.pidfile_fixture = self.useFixture(JournalWorkerPidFileFixture())
+
+    def remock_atexit(self):
+        self.pidfile_fixture.atexit_mock.stop()
+        return self.pidfile_fixture.atexit_mock.start()
+
+
+class JournalWorkerPidFileFixture(fixtures.Fixture):
+    def _setUp(self):
+        super(JournalWorkerPidFileFixture, self)._setUp()
+        # Every pidfile that is created for the JournalPeriodicProcessor
+        # worker registers an operation to clean it when the interpreter
+        # is about to exit. Tests each have a temporary directory where
+        # they work, this directory is deleted after each test. That means
+        # that by the time atexit is called the pidfile does not exist anymore
+        # and therefore fails with an error. This avoids this problem.
+        self.atexit_mock = mock.patch(
+            'networking_odl.journal.worker.atexit.register'
+        )
+        self.atexit_mock.start()
 
 
 class OpenDaylightPeriodicTaskFixture(fixtures.Fixture):

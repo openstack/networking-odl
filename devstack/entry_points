@@ -124,6 +124,15 @@ function configure_opendaylight {
 function configure_neutron_odl {
     echo "Configuring ML2 for OpenDaylight"
 
+    # NOTE(mpeterson): Create the state_path that will be used by neutron
+    # since although it expects it to exist, it is not created at any time
+    # and therefore when we first want to use it in the driver it fails.
+    # refer to: https://github.com/openstack-dev/devstack/blob/d37119e797d3140aeb0038a1129ce5e9016c1a36/lib/neutron#L46
+    # and: https://github.com/openstack-dev/devstack/blob/d37119e797d3140aeb0038a1129ce5e9016c1a36/lib/neutron-legacy#L698
+    sudo mkdir -p $DATA_DIR/neutron
+    safe_chown -R $STACK_USER $DATA_DIR
+    safe_chmod 0755 $DATA_DIR/neutron
+
     # https://bugs.launchpad.net/neutron/+bug/1614766
     # Allow ovsdb_interface native by avoiding port conflict.
     if [[ -n "$ODL_OVSDB_ALTPORT" ]]; then
