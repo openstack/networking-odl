@@ -78,7 +78,8 @@ class JournalPeriodicProcessor(worker.BaseWorker):
         pass
 
     def reset(self):
-        pass
+        if self._maintenance_task is not None:
+            self._maintenance_task.execute_ops(forced=True)
 
     def _call_journal(self):
         self._journal.set_sync_event()
