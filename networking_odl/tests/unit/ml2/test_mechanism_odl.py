@@ -23,7 +23,6 @@ from oslo_config import cfg
 from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 import requests
-import webob.exc
 
 from neutron.db import segments_db
 from neutron.plugins.ml2 import driver_context as driver_context
@@ -172,39 +171,6 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
 
     def test_missing_password_raises_exception(self):
         self._test_missing_config(password=None)
-
-
-class OpenDaylightMechanismTestBasicGet(test_plugin.TestMl2BasicGet,
-                                        OpenDaylightTestCase):
-    pass
-
-
-class OpenDaylightMechanismTestNetworksV2(test_plugin.TestMl2NetworksV2,
-                                          OpenDaylightTestCase):
-    pass
-
-
-class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
-                                         OpenDaylightTestCase):
-    pass
-
-
-class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
-                                       OpenDaylightTestCase):
-
-    def setUp(self):
-        mock.patch.object(
-            mech_driver.OpenDaylightDriver,
-            'out_of_sync',
-            new_callable=mock.PropertyMock(return_value=False)).start()
-        super(OpenDaylightMechanismTestPortsV2, self).setUp()
-
-    def test_update_port_mac(self):
-        self.check_update_port_mac(
-            host_arg={portbindings.HOST_ID: HOST},
-            arg_list=(portbindings.HOST_ID,),
-            expected_status=webob.exc.HTTPConflict.code,
-            expected_error='PortBound')
 
 
 class DataMatcher(object):

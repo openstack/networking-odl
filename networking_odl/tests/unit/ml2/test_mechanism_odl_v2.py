@@ -23,10 +23,8 @@ import testscenarios
 from neutron.db.models import securitygroup
 from neutron.db import segments_db
 from neutron.plugins.ml2 import plugin
-from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
-from neutron_lib.api.definitions import portbindings
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
@@ -34,7 +32,6 @@ from oslo_config import cfg
 from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
-from webob import exc
 
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
@@ -132,33 +129,6 @@ class _OpenDaylightMechanismBase(base_v2.OpenDaylightTestCase):
         # the helper assert_called_once
         msg = "The opendaylight_v2 ML2 Mechanism Driver was not initialized"
         self.assertTrue(self.mech_initialize_mock.called, msg)
-
-
-class OpenDaylightMechanismTestBasicGet(test_plugin.TestMl2BasicGet,
-                                        _OpenDaylightMechanismBase):
-    pass
-
-
-class OpenDaylightMechanismTestNetworksV2(test_plugin.TestMl2NetworksV2,
-                                          _OpenDaylightMechanismBase):
-    pass
-
-
-class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
-                                         _OpenDaylightMechanismBase):
-    pass
-
-
-class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
-                                       _OpenDaylightMechanismBase):
-    # NOTE(mpeterson): Override this test to verify that updating
-    # a port MAC fails when the port is bound.
-    def test_update_port_mac(self):
-        self.check_update_port_mac(
-            host_arg={portbindings.HOST_ID: 'fake-host'},
-            arg_list=(portbindings.HOST_ID,),
-            expected_status=exc.HTTPConflict.code,
-            expected_error='PortBound')
 
 
 class DataMatcher(object):
