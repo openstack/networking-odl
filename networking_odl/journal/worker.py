@@ -126,4 +126,5 @@ class JournalPeriodicProcessor(worker.BaseWorker):
         ):
             self._maintenance_task.register_operation(phase)
 
+        self._maintenance_task.execute_ops(forced=True)
         self._maintenance_task.start()

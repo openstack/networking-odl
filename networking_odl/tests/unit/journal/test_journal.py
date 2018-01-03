@@ -226,8 +226,11 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
 
         mock_start.assert_called_once()
 
+    @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops',
+                       new=mock.Mock())
     def test_reset_called_on_sighup(self):
         self.cfg.config(sync_timeout=0, group='ml2_odl')
+        self._setup_mocks_for_periodic_task()
 
         mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
                                          'reset', autospec=True)
@@ -249,6 +252,8 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         periodic_processor = worker.JournalPeriodicProcessor()
 
         periodic_processor._start_maintenance_task()
+        execute_mock.reset_mock()
+
         periodic_processor.reset()
 
         execute_mock.assert_has_calls([mock.call(forced=True)])
@@ -260,6 +265,15 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         # the maintenance task then it would not raise an exception and just
         # proceed as usual.
         periodic_processor.reset()
+
+    @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops')
+    def test_start_fires_maintenance_task(self, execute_mock):
+        periodic_processor = worker.JournalPeriodicProcessor()
+
+        self.addCleanup(periodic_processor.stop)
+        periodic_processor.start()
+
+        execute_mock.called_once_with([mock.call(forced=True)])
 
     def test_creates_pidfile(self):
         periodic_processor = worker.JournalPeriodicProcessor()
