@@ -151,7 +151,7 @@ class OpenDaylightL3RouterPlugin(
                            odl_const.ODL_DELETE, dependency_list)
 
     def disassociate_floatingips(self, context, port_id, do_notify=True):
-        session = db_api.get_session()
+        session = db_api.get_writer_session()
         with session.begin(subtransactions=True):
             fip_dicts = self.get_floatingips(context,
                                              filters={'port_id': [port_id]})
