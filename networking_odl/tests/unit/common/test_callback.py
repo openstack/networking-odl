@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
 from networking_odl.ml2.mech_driver import OpenDaylightDriver
@@ -153,3 +155,27 @@ class ODLCallbackTestCase(testtools.TestCase):
     def test_callback_postcommit_sg_rules_delete(self):
         self._test_callback_postcommit_for_sg_rules(
             events.AFTER_DELETE, odl_const.ODL_DELETE, None, FAKE_ID)
+
+    def test_callback_exception(self):
+        class TestException(Exception):
+            def __init__(self):
+                pass
+
+        self._precommit.side_effect = TestException()
+        resource = callback._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE]
+        op = callback._OPERATION_MAPPING[events.PRECOMMIT_CREATE]
+        rule = mock.Mock()
+        rule_id = rule.get('id')
+        with mock.patch.object(callback, 'LOG') as log_mock:
+            self.assertRaises(TestException,
+                              self._test_callback_precommit_for_sg_rules,
+                              events.PRECOMMIT_CREATE, odl_const.ODL_CREATE,
+                              rule, rule_id)
+            log_mock.log.assert_called_with(
+                logging.ERROR, callback.LOG_TEMPLATE,
+                {'msg': 'Exception from callback', 'op': op,
+                 'res_type': resource, 'res_id': rule_id,
+                 'res_dict': {odl_const.ODL_SG_RULE: rule},
+                 'data': {odl_const.ODL_SG_RULE: rule,
+                          'security_group_rule_id': rule_id},
+                 'exc_info': True})
