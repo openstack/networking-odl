@@ -61,7 +61,8 @@ def _generate_subnet_deps(data):
 
 
 def _generate_port_deps(data):
-    object_ids = [fixed_ip['subnet_id'] for fixed_ip in data['fixed_ips']]
+    object_ids = set(fixed_ip['subnet_id'] for fixed_ip in data['fixed_ips'])
+    object_ids = list(object_ids)
     object_ids.append(data['network_id'])
     qos_policy_id = data.get('qos_policy_id')
     if qos_policy_id is not None:
