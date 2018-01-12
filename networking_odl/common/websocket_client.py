@@ -259,6 +259,10 @@ class OpenDaylightWebsocketClient(object):
         stream_url = self._subscribe_websocket()
         if stream_url is None:
             return None
+        if 'https:' in self.odl_rest_client.url and 'wss:' not in stream_url:
+            LOG.warning('TLS ODL URL detected, but websocket URL is not.  '
+                        'Forcing websocket URL to TLS')
+            stream_url = stream_url.replace('ws:', 'wss:')
         # Delay here causes websocket notification lose (ODL Bug 8299)
         ws = self._socket_create_connection(stream_url)
         if ws is not None:
