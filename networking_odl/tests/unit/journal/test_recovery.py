@@ -21,6 +21,7 @@ from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import exceptions
 from networking_odl.db import db
 from networking_odl.journal import full_sync
 from networking_odl.journal import recovery
@@ -77,7 +78,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
     def test__get_latest_resource_unsupported(self):
         mock_row = self._mock_row('aaa')
         self.assertRaises(
-            recovery.UnsupportedResourceType, recovery._get_latest_resource,
+            exceptions.UnsupportedResourceType, recovery._get_latest_resource,
             self.db_context.session, mock_row)
 
     @mock.patch.object(directory, 'get_plugin')
