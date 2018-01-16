@@ -1,0 +1,19 @@
+- name: Print statistics for network devices associated with "{{ item }}"
+  command: ovs-ofctl --protocols OpenFlow13 dump-ports "{{ item|quote }}"
+  become: true
+
+- name: Print detailed information about network devices associated with "{{ item }}"
+  command: ovs-ofctl --protocols OpenFlow13 dump-ports-desc "{{ item|quote }}"
+  become: true
+
+- name: Print all flow entries in "{{ item }}"\'s tables that match flows
+  command: ovs-ofctl --protocols OpenFlow13 dump-flows "{{ item|quote }}"
+  become: true
+
+- name: Print group entries in "{{ item }}"\'s tables
+  command: ovs-ofctl --protocols OpenFlow13 dump-groups "{{ item|quote }}"
+  become: true
+
+- name: Print statistics for the specified groups in the "{{ item }}"\'s tables
+  command: ovs-ofctl --protocols OpenFlow13 dump-group-stats "{{ item|quote }}"
+  become: true
