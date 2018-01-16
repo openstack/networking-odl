@@ -19,7 +19,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import utils as odl_utils
 
 
-# NOTE(yamahata): As neutron keyston v3 support, tenant_id would be renamed to
+# NOTE(yamahata): As neutron keystone v3 support, tenant_id would be renamed to
 # project_id. In order to keep compatibility, populate both
 # 'project_id' and 'tenant_id'
 # for details refer to
