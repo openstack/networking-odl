@@ -333,7 +333,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
         self._worker = PseudoAgentDBBindingWorker()
 
     @registry.receives(resources.PROCESS, [events.BEFORE_SPAWN])
-    def _before_spawn(self, resource, event, trigger, **kwargs):
+    def _before_spawn(self, resource, event, trigger, payload=None):
         self._prepopulate = PseudoAgentDBBindingPrePopulate(self._worker)
 
     def get_workers(self):
