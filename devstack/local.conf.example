@@ -69,9 +69,9 @@ enable_service n-novnc
 enable_service n-sch
 enable_service placement-api
 enable_service placement-client
-enable_service q-dhcp
-enable_service q-meta
-enable_service q-svc
+enable_service neutron-dhcp
+enable_service neutron-metadata-agent
+enable_service neutron-api
 enable_service rabbit
 enable_service tempest
 
