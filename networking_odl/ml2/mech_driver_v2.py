@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as p_const
 from neutron_lib.plugins import constants as nlib_const
@@ -20,8 +21,6 @@ from neutron_lib.plugins.ml2 import api
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
-
-from neutron.extensions import multiprovidernet as mpnet
 
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
@@ -217,7 +216,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
             return (network[providernet.NETWORK_TYPE] in
                     VLAN_TRANSPARENT_NETWORK_TYPES)
         # multi providernet
-        segments = network.get(mpnet.SEGMENTS)
+        segments = network.get(mpnet_apidef.SEGMENTS)
         if segments is None:
             return True
         return all(segment[providernet.NETWORK_TYPE]

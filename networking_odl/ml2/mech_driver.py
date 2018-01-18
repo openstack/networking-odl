@@ -21,6 +21,7 @@ import six
 
 import netaddr
 from neutron_lib.api.definitions import allowedaddresspairs as addr_apidef
+from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as p_const
@@ -33,7 +34,6 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import requests
 
-from neutron.extensions import multiprovidernet as mpnet
 from neutron.extensions import securitygroup as sg
 from neutron.plugins.ml2 import driver_context
 
@@ -442,7 +442,7 @@ class OpenDaylightDriver(object):
             return (network[providernet.NETWORK_TYPE] in
                     VLAN_TRANSPARENT_NETWORK_TYPES)
         # multi providernet
-        segments = network.get(mpnet.SEGMENTS)
+        segments = network.get(mpnet_apidef.SEGMENTS)
         if segments is None:
             return True
         return all(segment[providernet.NETWORK_TYPE]
