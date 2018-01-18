@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import io
 import os
 import signal
+import time
 
 import fixtures
 import mock
@@ -90,29 +90,39 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         # the test process will read the result on c2p_read.
         c2p_read, c2p_write = os.pipe()
 
+        def close_pipe_end(fd):
+            try:
+                os.close(fd)
+            except OSError:
+                print('failed closing: %s' % fd)
+
+        # First we want to close the write, to unlock any running read()
+        self.addCleanup(close_pipe_end, c2p_read)
+        self.addCleanup(close_pipe_end, c2p_write)
+
         mock_ = patcher.start()
         self.addCleanup(patcher.stop)
 
         def was_called(*args, **kwargs):
+            os.close(c2p_read)
             try:
                 if pre_hook:
                     pre_hook(*args, **kwargs)
-                with io.open(c2p_write, 'wb', 0) as f:
-                    f.write(b'1')
+                os.write(c2p_write, b'1')
             except Exception:
                 # This is done so any read on the pipe is unblocked.
-                with io.open(c2p_write, 'wb', 0) as f:
-                    f.write(b'0')
+                os.write(c2p_write, b'0')
+            finally:
+                os.close(c2p_write)
 
         mock_.side_effect = was_called
 
         return c2p_read
 
     def assert_ipc_mock_called(self, c2p_read):
-        with io.open(c2p_read, 'rb', 0) as f:
-            # If it timeouts on the read then it means the function was
-            # not called.
-            called = int(f.read(1))
+        # If it timeouts on the read then it means the function was
+        # not called.
+        called = int(os.read(c2p_read, 1))
 
         self.assertEqual(called, 1,
                          'The IPC mock was called but during the '
@@ -162,23 +172,31 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         self.assertIn(state, PROCESS_RUNNING_STATUSES)
         return cmd
 
+    def _create_periodic_processor_ipc_fork(self, target, pre_hook=None):
+        self._setup_mocks_for_periodic_task()
+
+        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
+                                         target, autospec=True)
+
+        c2p_read = self.create_ipc_for_mock(mock_patcher, pre_hook)
+
+        pid = self._spawn_service(
+            service_maker=lambda: worker.JournalPeriodicProcessor())
+        self.addCleanup(self._kill_process, pid)
+
+        # Allow the process to spawn and signal handling to be registered
+        time.sleep(0.3)
+
+        return pid, c2p_read
+
     @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops',
                        new=mock.Mock())
     @mock.patch.object(journal.OpenDaylightJournalThread,
                        'sync_pending_entries', new=mock.Mock())
     def test_handle_sighup_gracefully(self):
-        self._setup_mocks_for_periodic_task()
-
         real_reset = worker.JournalPeriodicProcessor.reset
-
-        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
-                                         'reset', autospec=True)
-
-        c2p_read = self.create_ipc_for_mock(mock_patcher, pre_hook=real_reset)
-
-        pid = self._spawn_service(
-            service_maker=lambda: worker.JournalPeriodicProcessor())
-        self.addCleanup(self._kill_process, pid)
+        pid, c2p_read = self._create_periodic_processor_ipc_fork('reset',
+                                                                 real_reset)
 
         cmd = self.assert_process_running(pid)
 
@@ -228,16 +246,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     @mock.patch.object(periodic_task.PeriodicTask, 'execute_ops',
                        new=mock.Mock())
     def test_reset_called_on_sighup(self):
-        self._setup_mocks_for_periodic_task()
-
-        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
-                                         'reset', autospec=True)
-
-        c2p_read = self.create_ipc_for_mock(mock_patcher)
-
-        pid = self._spawn_service(
-            service_maker=lambda: worker.JournalPeriodicProcessor())
-        self.addCleanup(self._kill_process, pid)
+        pid, c2p_read = self._create_periodic_processor_ipc_fork('reset')
 
         self.assert_process_running(pid)
 
