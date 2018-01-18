@@ -62,7 +62,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
 
     @classmethod
     def _get_resource_id(cls, urlpath):
-        # resouce ID is the last element of urlpath
+        # resource ID is the last element of urlpath
         return str(urlpath).rsplit('/', 1)[-1]
 
     @classmethod
