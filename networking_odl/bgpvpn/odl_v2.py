@@ -15,6 +15,7 @@
 #
 
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_const
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
@@ -24,6 +25,7 @@ from networking_bgpvpn.neutron.extensions import bgpvpn as bgpvpn_ext
 from networking_bgpvpn.neutron.services.service_drivers import driver_api
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import odl_features
 from networking_odl.common import postcommit
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
@@ -32,6 +34,8 @@ from networking_odl.journal import journal
 cfg.CONF.import_group('ml2_odl', 'networking_odl.common.config')
 
 LOG = logging.getLogger(__name__)
+
+BGPVPN_VNI = 'bgpvpn-vni'
 
 BGPVPN_RESOURCES = {
     odl_const.ODL_BGPVPN: odl_const.ODL_BGPVPNS,
@@ -59,6 +63,8 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         self.journal = journal.OpenDaylightJournalThread()
         full_sync.register(bgpvpn_const.ALIAS, BGPVPN_RESOURCES,
                            self.get_resources)
+        if odl_features.has(BGPVPN_VNI):
+            self.more_supported_extension_aliases = [bgpvpn_vni_def.ALIAS]
 
     @staticmethod
     def get_resources(context, resource_type):
