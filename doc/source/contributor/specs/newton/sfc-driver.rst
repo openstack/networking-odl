@@ -120,7 +120,7 @@ References
 
 [1] https://docs.openstack.org/networking-sfc/latest/
 
-[2] https://github.com/openstack/networking-sfc/blob/master/doc/source/api.rst
+[2] https://github.com/openstack/networking-sfc/blob/master/doc/source/contributor/api.rst
 
 [3] https://wiki.opendaylight.org/view/Service_Function_Chaining:Main
 
