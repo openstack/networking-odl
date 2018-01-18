@@ -135,7 +135,7 @@ class SubnetFilter(ResourceFilterBase):
     def filter_update_attributes(cls, subnet, context):
         """Filter out subnet attributes for an update operation."""
         odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
-                          'allocation_pools', 'tenant_id'])
+                          'tenant_id'])
         cls._filter_unmapped_null(subnet, cls._UNMAPPED_KEYS)
 
     @classmethod

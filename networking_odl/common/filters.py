@@ -91,7 +91,7 @@ def _filter_subnet_create(subnet):
 
 def _filter_subnet_update(subnet):
     odl_utils.try_del(subnet, ['id', 'network_id', 'ip_version', 'cidr',
-                               'allocation_pools', 'tenant_id', 'project_id'])
+                               'tenant_id', 'project_id'])
     _filter_unmapped_null(subnet, _SUBNET_UNMAPPED_KEYS)
 
 
