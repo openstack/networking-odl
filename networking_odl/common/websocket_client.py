@@ -14,6 +14,7 @@
 #    under the License.
 
 import re
+import ssl
 import threading
 import time
 
@@ -126,6 +127,21 @@ class OpenDaylightWebsocketClient(object):
                     continue
             except websocket.WebSocketTimeoutException:
                 continue
+            except ssl.SSLError as e:
+                message = e.args[0] if e.args else None
+                # TODO(trozet): Workaround due to SSL Timeout not being caught
+                # in websocket-client lib (issue 387).  Remove when fixed in
+                # websocket-client lib.
+                if message and 'timed out' in message:
+                    continue
+                else:
+                    LOG.error("SSL websocket unexpected exception, "
+                              "closing and restarting...", exc_info=True)
+                    # TODO(rsood): Websocket reconnect can cause race
+                    # conditions
+                    self._close_ws(ws)
+                    ws = None
+                    continue
             except websocket.WebSocketConnectionClosedException:
                 # per websocket-client, "If remote host closed the connection
                 # or some network error happened"
