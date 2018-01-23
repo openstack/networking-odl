@@ -53,6 +53,11 @@ _TRUNK_DATA = {'trunk_id': _TRUNK_ID,
                'port_id': _PORT_ID,
                'sub_ports': [{'port_id': _SUBPORT_ID}]}
 _BGPVPN_ID = 'BGPVPN_ID'
+_SG_ID = 'SG_ID'
+_SG_DATA = {'id': _SG_ID}
+_SG_RULE_ID = 'SG_RULE_ID'
+_SG_RULE_DATA = {'id': _SG_RULE_ID,
+                 'security_group_id': _SG_ID}
 
 
 def get_data(res_type, operation):
@@ -89,6 +94,12 @@ def get_data(res_type, operation):
             return [{'id': _BGPVPN_ID, 'networks': networks,
                      'routers': routers,
                      'route_distinguishers': ['100:1']}]
+    elif res_type == const.ODL_SG:
+        return [_SG_DATA]
+    elif res_type == const.ODL_SG_RULE:
+        if operation == const.ODL_DELETE:
+            return [[_SG_RULE_ID]]
+        return [_SG_RULE_DATA]
     return [[]]
 
 
@@ -161,6 +172,80 @@ class SubnetDependencyValidationsTestCase(
          subnet_succeed_network_dep(const.ODL_CREATE, const.ODL_DELETE)),
         ("subnet_delete_doesnt_depend_on_newer_network_update",
          subnet_succeed_network_dep(const.ODL_UPDATE, const.ODL_DELETE)),
+    )
+
+
+def security_rule_fail_security_group_dep(sg_op, sgr_op):
+    return {'expected': 1,
+            'first_type': const.ODL_SG,
+            'first_operation': sg_op,
+            'first_id': _SG_ID,
+            'second_type': const.ODL_SG_RULE,
+            'second_operation': sgr_op,
+            'second_id': _SG_RULE_ID}
+
+
+def security_rule_succeed_security_group_dep(sg_op, sgr_op):
+    return {'expected': 0,
+            'first_type': const.ODL_SG_RULE,
+            'first_operation': sgr_op,
+            'first_id': _SG_RULE_ID,
+            'second_type': const.ODL_SG,
+            'second_operation': sg_op,
+            'second_id': _SG_ID}
+
+
+class SecurityRuleDependencyValidationsTestCase(
+        test_base_db.ODLBaseDbTestCase, BaseDependencyValidationsTestCase):
+    scenarios = (
+        ("security_rule_create_depends_on_older_security_group_create",
+         security_rule_fail_security_group_dep(const.ODL_CREATE,
+                                               const.ODL_CREATE)),
+        ("security_rule_create_depends_on_older_security_group_update",
+         security_rule_fail_security_group_dep(const.ODL_UPDATE,
+                                               const.ODL_CREATE)),
+        ("security_rule_create_depends_on_older_security_group_delete",
+         security_rule_fail_security_group_dep(const.ODL_DELETE,
+                                               const.ODL_CREATE)),
+        ("security_rule_create_doesnt_depend_on_newer_security_group_create",
+         security_rule_succeed_security_group_dep(const.ODL_CREATE,
+                                                  const.ODL_CREATE)),
+        ("security_rule_create_doesnt_depend_on_newer_security_group_update",
+         security_rule_succeed_security_group_dep(const.ODL_UPDATE,
+                                                  const.ODL_CREATE)),
+        ("security_rule_create_doesnt_depend_on_newer_security_group_delete",
+         security_rule_succeed_security_group_dep(const.ODL_DELETE,
+                                                  const.ODL_CREATE)),
+        ("security_rule_update_depends_on_older_security_group_create",
+         security_rule_fail_security_group_dep(const.ODL_CREATE,
+                                               const.ODL_UPDATE)),
+        ("security_rule_update_depends_on_older_security_group_update",
+         security_rule_fail_security_group_dep(const.ODL_UPDATE,
+                                               const.ODL_UPDATE)),
+        ("security_rule_update_depends_on_older_security_group_delete",
+         security_rule_fail_security_group_dep(const.ODL_DELETE,
+                                               const.ODL_UPDATE)),
+        ("security_rule_update_doesnt_depend_on_newer_security_group_create",
+         security_rule_succeed_security_group_dep(const.ODL_CREATE,
+                                                  const.ODL_UPDATE)),
+        ("security_rule_update_doesnt_depend_on_newer_security_group_update",
+         security_rule_succeed_security_group_dep(const.ODL_UPDATE,
+                                                  const.ODL_UPDATE)),
+        ("security_rule_update_doesnt_depend_on_newer_security_group_delete",
+         security_rule_succeed_security_group_dep(const.ODL_DELETE,
+                                                  const.ODL_UPDATE)),
+        ("security_rule_delete_doesnt_depend_on_older_security_group_create",
+         security_rule_succeed_security_group_dep(const.ODL_CREATE,
+                                                  const.ODL_DELETE)),
+        ("security_rule_delete_doesnt_depend_on_older_security_group_update",
+         security_rule_succeed_security_group_dep(const.ODL_UPDATE,
+                                                  const.ODL_DELETE)),
+        ("security_rule_delete_doesnt_depend_on_newer_security_group_create",
+         security_rule_succeed_security_group_dep(const.ODL_CREATE,
+                                                  const.ODL_DELETE)),
+        ("security_rule_delete_doesnt_depend_on_newer_security_group_update",
+         security_rule_succeed_security_group_dep(const.ODL_UPDATE,
+                                                  const.ODL_DELETE)),
     )
 
 

@@ -322,6 +322,12 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                             security_group={'security_group_rules':
                                             {'id': SG_RULE_FAKE_ID}},
                             security_group_rule_ids=[SG_RULE_FAKE_ID])
+            elif (object_type == odl_const.ODL_SG_RULE and
+                  operation == odl_const.ODL_DELETE):
+                with self.db_session.begin(subtransactions=True):
+                    self.mech.sync_from_callback_precommit(
+                        plugin_context, operation, res_type, res_id,
+                        context_, security_group_id=SG_FAKE_ID)
             else:
                 with self.db_session.begin(subtransactions=True):
                     self.mech.sync_from_callback_precommit(
@@ -623,6 +629,24 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                             'security_group_rules': [],
                             'tenant_id': 'test-tenant',
                             'id': SG_FAKE_ID, 'name': 'test_sg'})])
+
+    def test_sg_rule_delete(self):
+        with mock.patch.object(journal, 'record') as record:
+            context = self._get_mock_operation_context(odl_const.ODL_SG_RULE)
+            res_id = context[odl_const.ODL_SG_RULE]['id']
+            rule = mock.Mock()
+            rule.id = SG_RULE_FAKE_ID
+            rule.security_group_id = SG_FAKE_ID
+            kwargs = {'security_group_rule_id': SG_RULE_FAKE_ID,
+                      'security_group_id': SG_FAKE_ID}
+            with self.db_session.begin(subtransactions=True):
+                self.mech.sync_from_callback_precommit(
+                    self.db_context, odl_const.ODL_DELETE,
+                    callback._RESOURCE_MAPPING[odl_const.ODL_SG_RULE],
+                    res_id, context, **kwargs)
+            record.assert_has_calls(
+                [mock.call(mock.ANY, 'security_group_rule',
+                           SG_RULE_FAKE_ID, 'delete', [SG_FAKE_ID])])
 
     def test_sync_multiple_updates(self):
         # add 2 updates
