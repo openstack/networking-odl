@@ -1,0 +1,28 @@
+- hosts: all
+  tasks:
+    - include_role:
+        name: show-odl-info
+
+    # TODO(mpeterson): Remove when https://github.com/ansible/ansible/issues/21890 is fixed
+    - set_fact:
+        devstack_base_dir: /opt/stack
+      when: devstack_base_dir is not defined
+
+    - name: Stop ODL
+      shell:
+        cmd: "{{devstack_base_dir}}/opendaylight/*karaf-*/bin/stop"
+        executable: /bin/bash
+        chdir: "{{ zuul.project.src_dir }}"
+
+    # TODO(mpeterson): We can use pause when https://github.com/ansible/ansible/issues/31694
+    # is merged to the ansible version Zuul uses.
+    - name: Pause to give ODL time to finish
+      command: sleep 5s
+
+    - include_role:
+        name: stage-output
+      vars:
+        zuul_copy_output:
+          { '{{ devstack_base_dir }}/logs/screen-karaf.log': 'logs' }
+        extensions_to_txt:
+          - log

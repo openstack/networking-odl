@@ -1,0 +1,32 @@
+# This is taken from https://github.com/openstack/tempest/blob/7541031d1742f31b467134816202485d5a630e05/playbooks/devstack-tempest.yaml
+# TODO(mpeterson): Ideally we want to use their run playbook but until https://review.openstack.org/#/c/530642/ is resolved.
+
+# Changes that run through devstack-tempest are likely to have an impact on
+# the devstack part of the job, so we keep devstack in the main play to
+# avoid zuul retrying on legitimate failures.
+- hosts: all
+  tasks:
+    - include_role:
+        name: run-devstack
+
+    - include_role:
+        name: show-odl-info
+
+    # TODO(mpeterson): Remove when https://github.com/ansible/ansible/issues/21890 is fixed
+    - set_fact:
+        devstack_base_dir: /opt/stack
+      when: devstack_base_dir is not defined
+
+    - name: Print karaf feature list
+      shell:
+        cmd: "{{devstack_base_dir}}/opendaylight/*karaf-*/bin/client 'feature:list -i'"
+        executable: /bin/bash
+        chdir: "{{ zuul.project.src_dir }}"
+
+# We run tests only on one node, regardless how many nodes are in the system
+- hosts: tempest
+  roles:
+    - setup-tempest-run-dir
+    - setup-tempest-data-dir
+    - acl-devstack-files
+    - run-tempest
