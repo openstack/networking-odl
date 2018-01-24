@@ -22,10 +22,10 @@ import testscenarios
 
 from neutron.db.models import securitygroup
 from neutron.db import segments_db
-from neutron.extensions import multiprovidernet as mpnet
 from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
+from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
@@ -731,6 +731,6 @@ class TestOpenDaylightDriverVlanTransparency(
     def test_network_segments(self):
         segments = [{providernet.NETWORK_TYPE: type_}
                     for type_ in self.network_types]
-        context = self._driver_context({mpnet.SEGMENTS: segments})
+        context = self._driver_context({mpnet_apidef.SEGMENTS: segments})
         self.assertEqual(self.expected,
                          self.mech.check_vlan_transparency(context))
