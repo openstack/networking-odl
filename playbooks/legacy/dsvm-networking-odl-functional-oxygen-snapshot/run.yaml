@@ -1,0 +1,88 @@
+- hosts: all
+  name: Autoconverted job legacy-dsvm-networking-odl-functional-oxygen-snapshot
+    from old job gate-dsvm-networking-odl-functional-oxygen-snapshot
+  tasks:
+
+    - name: Ensure legacy workspace directory
+      file:
+        path: '{{ ansible_user_dir }}/workspace'
+        state: directory
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat > clonemap.yaml << EOF
+          clonemap:
+            - name: openstack-infra/devstack-gate
+              dest: devstack-gate
+          EOF
+          /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
+              git://git.openstack.org \
+              openstack-infra/devstack-gate
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          cat << 'EOF' >>"/tmp/dg-local.conf"
+          [[local|localrc]]
+          enable_plugin networking-odl git://git.openstack.org/openstack/networking-odl
+          # Fullstack test cases now assumes ODL available at this IP
+          HOST_IP=127.0.0.1
+          UNSTACK_KEEP_ODL=True
+
+          EOF
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'
+
+    - shell:
+        cmd: |
+          set -e
+          set -x
+          export PYTHONUNBUFFERED=true
+          export DEVSTACK_GATE_UNSTACK=1
+          export DEVSTACK_GATE_TEMPEST=0
+          export DEVSTACK_GATE_EXERCISES=0
+          export DEVSTACK_GATE_NEUTRON=1
+          export DEVSTACK_GATE_INSTALL_TESTONLY=1
+          # Fullstack pre_test.sh will need to sudo
+          export DEVSTACK_GATE_REMOVE_STACK_SUDO=0
+          export BRANCH_OVERRIDE=default
+          if [ "$BRANCH_OVERRIDE" != "default" ] ; then
+              export OVERRIDE_ZUUL_BRANCH=$BRANCH_OVERRIDE
+          fi
+
+          export PROJECTS="openstack/networking-odl $PROJECTS"
+
+          # Keep localrc to be able to set some vars in pre_test_hook
+          export KEEP_LOCALRC=1
+
+          # specify ODL release to use
+          export ODL_RELEASE_BASE=oxygen-snapshot
+
+          function pre_test_hook {
+              . $BASE/new/networking-odl/devstack/pre_test_hook.sh
+          }
+          export -f pre_test_hook
+
+          function gate_hook {
+              bash -xe $BASE/new/networking-odl/networking_odl/tests/contrib/gate_hook.sh dsvm-functional
+          }
+          export -f gate_hook
+
+          function post_test_hook {
+             bash -xe $BASE/new/networking-odl/networking_odl/tests/contrib/post_test_hook.sh dsvm-functional
+          }
+          export -f post_test_hook
+
+          export DEVSTACK_GATE_SETTINGS=/opt/stack/new/networking-odl/devstack/devstackgaterc
+          cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
+          ./safe-devstack-vm-gate-wrap.sh
+        executable: /bin/bash
+        chdir: '{{ ansible_user_dir }}/workspace'
+      environment: '{{ zuul | zuul_legacy_vars }}'

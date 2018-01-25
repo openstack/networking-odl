@@ -13,6 +13,7 @@
               - ^setup.cfg$
         - networking-odl-tempest-carbon
         - networking-odl-tempest-nitrogen
+        - networking-odl-tempest-oxygen
         - networking-odl-tempest-carbon-multinode:
             voting: false
             irrelevant-files:
@@ -29,6 +30,14 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+        - networking-odl-tempest-oxygen-multinode:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
         - networking-odl-rally-carbon:
             branches: ^(?!stable/newton).*$
             irrelevant-files:
@@ -37,6 +46,13 @@
               - ^releasenotes/.*$
         - networking-odl-rally-nitrogen:
             branches: ^(?!stable/(newton|ocata)).*$
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - networking-odl-rally-oxygen:
+            voting: false
+            branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
@@ -60,6 +76,20 @@
               - ^doc/.*$
               - ^releasenotes/.*$
         - networking-odl-functional-nitrogen:
+            branches: ^(?!stable/(newton|ocata|pike)).*$
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - networking-odl-fullstack-oxygen:
+            voting: false
+            branches: ^(?!stable/(newton|ocata|pike)).*$
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - networking-odl-functional-oxygen:
+            voting: false
             branches: ^(?!stable/(newton|ocata|pike)).*$
             irrelevant-files:
               - ^.*\.rst$
