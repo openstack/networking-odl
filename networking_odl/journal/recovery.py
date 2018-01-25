@@ -20,9 +20,9 @@ from oslo_log import log as logging
 
 from neutron.db import api as db_api
 
-from networking_odl._i18n import _
 from networking_odl.common import client
 from networking_odl.common import constants as odl_const
+from networking_odl.common import exceptions
 from networking_odl.db import db
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
@@ -30,10 +30,6 @@ from networking_odl.journal import journal
 _CLIENT = client.OpenDaylightRestClientGlobal()
 
 LOG = logging.getLogger(__name__)
-
-
-class UnsupportedResourceType(Exception):
-    pass
 
 
 @db_api.retry_if_session_inactive()
@@ -45,7 +41,7 @@ def journal_recovery(context):
             odl_resource = _CLIENT.get_client().get_resource(
                 row.object_type,
                 row.object_uuid)
-        except UnsupportedResourceType:
+        except exceptions.UnsupportedResourceType:
             LOG.warning('Unsupported resource %s', row.object_type)
         except Exception:
             LOG.exception("Failure while recovering journal entry %s.", row)
@@ -65,8 +61,7 @@ def _get_latest_resource(context, row):
             plugin = directory.get_plugin(plugin_alias)
             break
     else:
-        raise UnsupportedResourceType(
-            _("unsupported resource type: {}").format(object_type))
+        raise exceptions.UnsupportedResourceType(resource=object_type)
 
     obj_getter = getattr(plugin, 'get_{}'.format(object_type))
     return obj_getter(context, row.object_uuid)
