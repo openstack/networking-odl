@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Fixes an issue with SSL websocket connections where a read timeout was
+    causing the client to close the connection.  Read timeout is normal when
+    no port status update is being sent by the server (ODL).
