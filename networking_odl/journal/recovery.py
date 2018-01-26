@@ -24,6 +24,7 @@ from networking_odl.common import client
 from networking_odl.common import constants as odl_const
 from networking_odl.common import exceptions
 from networking_odl.db import db
+from networking_odl.journal import base_driver
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 
@@ -53,6 +54,16 @@ def journal_recovery(context):
                     _handle_non_existing_resource(context, row)
 
 
+def get_latest_resource(context, row):
+    try:
+        driver = base_driver.get_driver(row.object_type)
+    except exceptions.ResourceNotRegistered:
+        raise exceptions.UnsupportedResourceType(resource=row.object_type)
+
+    return driver.get_resource_for_recovery(context, row)
+
+
+# TODO(rajivk): Remove this method once recovery is fully supported
 def _get_latest_resource(context, row):
     object_type = row.object_type
 

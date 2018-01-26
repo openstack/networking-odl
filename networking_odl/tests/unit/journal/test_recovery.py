@@ -28,6 +28,7 @@ from networking_odl.journal import recovery
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
+from networking_odl.tests.unit.journal import helper
 from networking_odl.tests.unit import test_base_db
 
 
@@ -209,3 +210,26 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         rmock.side_effect = nexc.NotFound
         self._disable_retention()
         self._test_recovery(odl_const.ODL_UPDATE, None, None)
+
+    def _test_get_latest_resource(self, resource_type):
+        # Drivers needs to be initialized to register resources for recovery
+        # and full sync mechasnim.
+        helper.TestDriver()
+        directory.add_plugin(helper.TEST_PLUGIN, helper.TestPlugin())
+        self.addCleanup(directory.add_plugin, helper.TEST_PLUGIN, None)
+        return db.create_pending_row(self.db_context.session, resource_type,
+                                     'id', odl_const.ODL_DELETE, {})
+
+    def test_get_latest_resource(self):
+        row = self._test_get_latest_resource(helper.TEST_RESOURCE1)
+        plugin = directory.get_plugin(helper.TEST_PLUGIN)
+        resource = recovery.get_latest_resource(self.db_context, row)
+        self.assertDictEqual(resource,
+                             plugin.get_test_resource1(self.db_context, 'id'))
+
+    def test_get_unsupported_latest_resource(self):
+        row = self._test_get_latest_resource(helper.TEST_RESOURCE1)
+        row.object_type = helper.INVALID_RESOURCE
+        self.assertRaises(exceptions.UnsupportedResourceType,
+                          recovery.get_latest_resource,
+                          self.db_context, row)

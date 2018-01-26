@@ -54,20 +54,28 @@ class ResourceBaseDriver(object):
         for resource in self.RESOURCES:
             ALL_RESOURCES[resource] = self
 
+    def _get_resource_getter(self, method_suffix):
+        method_name = "get_%s" % method_suffix
+        try:
+            return getattr(self.plugin, method_name)
+        except AttributeError:
+            raise exceptions.PluginMethodNotFound(plugin=self.plugin_type,
+                                                  method=method_name)
+
     def get_resources_for_full_sync(self, context, resource_type):
         """Provide all resources of type resource_type """
         if resource_type not in self.RESOURCES:
             raise exceptions.UnsupportedResourceType
 
-        method_name = 'get_%s' % self.RESOURCES[resource_type]
-        try:
-            resource_getter = getattr(self.plugin, method_name)
-        except AttributeError:
-            raise exceptions.PluginMethodNotFound(plugin=self.plugin_type,
-                                                  method=method_name)
+        resource_getter = self._get_resource_getter(
+            self.RESOURCES[resource_type])
 
         return resource_getter(context)
 
     @property
     def plugin(self):
         return directory.get_plugin(self.plugin_type)
+
+    def get_resource_for_recovery(self, context, obj):
+        resource_getter = self._get_resource_getter(obj.object_type)
+        return resource_getter(context, obj.object_uuid)

@@ -30,7 +30,7 @@ class FullSyncError(NetworkingODLException):
 
 class UnsupportedResourceType(NetworkingODLException):
     """An exception for unsupported resource for full sync and recovery"""
-    pass
+    message = _("unsupported resource type: %(resource)s")
 
 
 class PluginMethodNotFound(NetworkingODLException, AttributeError):
