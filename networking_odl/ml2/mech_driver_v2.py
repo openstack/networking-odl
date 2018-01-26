@@ -169,20 +169,27 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
 
         object_uuid = (resource_dict.get('id')
                        if operation == 'create' else res_id)
+        data = resource_dict
 
-        # NOTE(yamahata): DB auto deletion
-        # Security Group Rule under this Security Group needs to
-        # be deleted. At NeutronDB layer rules are auto deleted with
-        # cascade='all,delete'.
-        if (object_type == odl_const.ODL_SG and
-                operation == odl_const.ODL_DELETE):
-            for rule_id in kwargs['security_group_rule_ids']:
-                journal.record(context, odl_const.ODL_SG_RULE,
-                               rule_id, odl_const.ODL_DELETE, [object_uuid])
+        if (operation == odl_const.ODL_DELETE):
+            # NOTE(yamahata): DB auto deletion
+            # Security Group Rule under this Security Group needs to
+            # be deleted. At NeutronDB layer rules are auto deleted with
+            # cascade='all,delete'.
+            if (object_type == odl_const.ODL_SG):
+                for rule_id in kwargs['security_group_rule_ids']:
+                    journal.record(context, odl_const.ODL_SG_RULE,
+                                   rule_id, odl_const.ODL_DELETE,
+                                   [object_uuid])
+            elif (object_type == odl_const.ODL_SG_RULE):
+                # Set the parent security group id so that dependencies
+                # to this security rule deletion can be properly found
+                # in the journal.
+                data = [kwargs['security_group_id']]
 
         assert object_uuid is not None
         journal.record(context, object_type, object_uuid,
-                       operation, resource_dict)
+                       operation, data)
 
     def sync_from_callback_postcommit(self, context, operation, res_type,
                                       res_id, resource_dict, **kwargs):
