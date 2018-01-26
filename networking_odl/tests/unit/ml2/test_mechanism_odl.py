@@ -25,7 +25,7 @@ from oslo_serialization import jsonutils
 import requests
 
 from neutron.db import segments_db
-from neutron.plugins.ml2 import driver_context as driver_context
+from neutron.plugins.ml2 import driver_context
 from neutron.plugins.ml2 import models
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
