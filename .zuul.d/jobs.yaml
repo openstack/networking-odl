@@ -175,7 +175,6 @@
 - job:
     name: networking-odl-tempest-nitrogen
     parent: networking-odl-tempest-base
-    branches: ^(?!stable/(newton|ocata)).*$
     vars:
       devstack_localrc:
         ODL_RELEASE: *nitrogen
@@ -183,7 +182,6 @@
 - job:
     name: networking-odl-tempest-oxygen
     parent: networking-odl-tempest-base
-    branches: ^(?!stable/(newton|ocata|pike)).*$
     vars:
       devstack_localrc:
         ODL_RELEASE: *oxygen
