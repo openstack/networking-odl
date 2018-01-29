@@ -15,7 +15,6 @@
 
 import os
 import signal
-import time
 
 import fixtures
 import mock
@@ -81,6 +80,11 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         if self._get_pid_status(pid)[1] in PROCESS_RUNNING_STATUSES:
             os.kill(pid, signal.SIGKILL)
 
+    def mock_object_with_ipc(self, target, attribute, pre_hook=None):
+            patcher = mock.patch.object(target, attribute, autospec=True)
+            c2p_read = self.create_ipc_for_mock(patcher, pre_hook)
+            return c2p_read
+
     def create_ipc_for_mock(self, patcher, pre_hook=None):
         # NOTE(mpeterson): The following pipe is being used because this is
         # testing something inter processeses and we need to have a value on
@@ -104,16 +108,21 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         self.addCleanup(patcher.stop)
 
         def was_called(*args, **kwargs):
-            os.close(c2p_read)
+            # OSError is caught because start is called twice on the worker
+            # and the second time the pipe is already closed.
             try:
-                if pre_hook:
-                    pre_hook(*args, **kwargs)
-                os.write(c2p_write, b'1')
-            except Exception:
-                # This is done so any read on the pipe is unblocked.
-                os.write(c2p_write, b'0')
-            finally:
-                os.close(c2p_write)
+                os.close(c2p_read)
+                try:
+                    if pre_hook:
+                        pre_hook(*args, **kwargs)
+                    os.write(c2p_write, b'1')
+                except Exception:
+                    # This is done so any read on the pipe is unblocked.
+                    os.write(c2p_write, b'0')
+                finally:
+                    os.close(c2p_write)
+            except OSError:
+                pass
 
         mock_.side_effect = was_called
 
@@ -175,17 +184,19 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
     def _create_periodic_processor_ipc_fork(self, target, pre_hook=None):
         self._setup_mocks_for_periodic_task()
 
-        mock_patcher = mock.patch.object(worker.JournalPeriodicProcessor,
-                                         target, autospec=True)
+        real_start = worker.JournalPeriodicProcessor.start
+        pipe_start = self.mock_object_with_ipc(worker.JournalPeriodicProcessor,
+                                               'start', real_start)
 
-        c2p_read = self.create_ipc_for_mock(mock_patcher, pre_hook)
+        c2p_read = self.mock_object_with_ipc(worker.JournalPeriodicProcessor,
+                                             target, pre_hook)
 
         pid = self._spawn_service(
             service_maker=lambda: worker.JournalPeriodicProcessor())
         self.addCleanup(self._kill_process, pid)
 
         # Allow the process to spawn and signal handling to be registered
-        time.sleep(0.3)
+        self.assert_ipc_mock_called(pipe_start)
 
         return pid, c2p_read
 
