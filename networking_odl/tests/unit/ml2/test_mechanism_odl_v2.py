@@ -26,6 +26,7 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
+from neutron_lib.api.definitions import portbindings
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
 from neutron_lib.plugins import directory
@@ -33,6 +34,7 @@ from oslo_config import cfg
 from oslo_config import fixture as config_fixture
 from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
+from webob import exc
 
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
@@ -96,9 +98,40 @@ class OpenDayLightMechanismConfigTests(testlib_api.SqlTestCase):
 
 
 class _OpenDaylightMechanismBase(base_v2.OpenDaylightTestCase):
+    _mechanism_drivers = ['logger', 'opendaylight_v2']
+    # TODO(mpeterson): Add a test to make sure extension_drivers are honored.
+    _extension_drivers = ['port_security', 'qos']
+
     def setUp(self):
+        mech_initialize_patcher = mock.patch.object(
+            mech_driver_v2.OpenDaylightMechanismDriver,
+            'initialize',
+            autospec=True,
+            side_effect=mech_driver_v2.OpenDaylightMechanismDriver.initialize
+        )
+        self.mech_initialize_mock = mech_initialize_patcher.start()
+        mock.patch('networking_odl.common.odl_features.init').start()
+        # NOTE(mpeterson): We cannot use stop in the following cleanup because
+        # several of the following fixtures and setUp() add a cleanup for
+        # stopall. The reason to add the stopall ourselves is to make sure
+        # that it will be stopped if anything were to change in the future.
+        self.addCleanup(mock.patch.stopall)
         self.useFixture(base.OpenDaylightPseudoAgentPrePopulateFixture())
+        self.cfg = self.useFixture(config_fixture.Config())
+        self.cfg.config(extension_drivers=self._extension_drivers, group='ml2')
         super(_OpenDaylightMechanismBase, self).setUp()
+
+    def test_mechanism_driver_is_initialized(self):
+        """Test that the mech driver is initialized.
+
+        This test will allow us know if the mech driver is not initialized
+        in case there is a change in the way Ml2PluginV2TestCase instantiate
+        them
+        """
+        # NOTE(mpeterson): Because of the autospec the mock lacks
+        # the helper assert_called_once
+        msg = "The opendaylight_v2 ML2 Mechanism Driver was not initialized"
+        self.assertTrue(self.mech_initialize_mock.called, msg)
 
 
 class OpenDaylightMechanismTestBasicGet(test_plugin.TestMl2BasicGet,
@@ -118,7 +151,14 @@ class OpenDaylightMechanismTestSubnetsV2(test_plugin.TestMl2SubnetsV2,
 
 class OpenDaylightMechanismTestPortsV2(test_plugin.TestMl2PortsV2,
                                        _OpenDaylightMechanismBase):
-    pass
+    # NOTE(mpeterson): Override this test to verify that updating
+    # a port MAC fails when the port is bound.
+    def test_update_port_mac(self):
+        self.check_update_port_mac(
+            host_arg={portbindings.HOST_ID: 'fake-host'},
+            arg_list=(portbindings.HOST_ID,),
+            expected_status=exc.HTTPConflict.code,
+            expected_error='PortBound')
 
 
 class DataMatcher(object):
