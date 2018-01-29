@@ -5,10 +5,10 @@
 # We will enable the opendaylight ML2 MechanismDriver v1 version by default.
 # Note we are also enabling the logger driver, which is helpful for
 # debugging things on the Neutron side.
-if [[ "$ODL_V2DRIVER" == "True" ]]; then
-    V2_POSTFIX="_v2"
-else
+if [[ "$ODL_V2DRIVER" == "False" ]]; then
     V2_POSTFIX=""
+else
+    V2_POSTFIX="_v2"
 fi
 
 Q_ML2_PLUGIN_MECHANISM_DRIVERS=${Q_ML2_PLUGIN_MECHANISM_DRIVERS:-"logger,opendaylight${V2_POSTFIX}"}
