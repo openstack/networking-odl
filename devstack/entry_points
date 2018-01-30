@@ -26,17 +26,37 @@ function configure_opendaylight {
     # The logging config file in ODL
     local ODL_LOGGING_CONFIG=${ODL_DIR}/${ODL_NAME}/etc/org.ops4j.pax.logging.cfg
 
+    # The feature config file in ODL for booting karaf features
+    local ODL_KARAF_CONFIG=$ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+
     # Add netvirt feature in Karaf, if it's not already there
-    if ! (grep featuresBoot= $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg | grep $ODL_NETVIRT_KARAF_FEATURE); then
-        sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
-            $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
-        # NOTE(yamahata): From Nitrogen, the format has been slightly changed
-        sed -i "/^featuresBoot = \\\\$/ s/\\\\$/$ODL_NETVIRT_KARAF_FEATURE, \\\\/" \
-            $ODL_DIR/$ODL_NAME/etc/org.apache.karaf.features.cfg
+    if ! (grep -w '^featuresBoot' $ODL_KARAF_CONFIG | grep $ODL_NETVIRT_KARAF_FEATURE); then
+        case "$ODL_RELEASE" in
+            boron*|carbon*)
+                sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
+                    $ODL_KARAF_CONFIG
+                ;;
+            nitrogen*)
+                # NOTE(yamahata): From Nitrogen, the format has been slightly changed
+                sed -i "/^featuresBoot = \\\\$/ s/\\\\$/$ODL_NETVIRT_KARAF_FEATURE, \\\\/" \
+                    $ODL_KARAF_CONFIG
+                ;;
+            *)
+                # Oxygen or later
+                # In Oxygen, the format has been modified again
+                sed -i "/^featuresBoot = / s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
+                    $ODL_KARAF_CONFIG
+                ;;
+        esac
     fi
 
     # Move Jetty to $ODL_PORT
     if ! grep $ODL_PORT $ODL_DIR/$ODL_NAME/etc/jetty.xml; then
+        # NOTE(yamahata): https://git.opendaylight.org/gerrit/#/c/51531/
+        # removed 8080 port.
+        if ! grep 808. $ODL_DIR/$ODL_NAME/etc/jetty.xml; then
+            patch --input=$NETWORKING_ODL_DIR/devstack/jetty-legacy.patch $ODL_DIR/$ODL_NAME/etc/jetty.xml
+        fi
         sed -i "/\<Property name\=\"jetty\.port/ s/808./$ODL_PORT/" \
             $ODL_DIR/$ODL_NAME/etc/jetty.xml
     fi
