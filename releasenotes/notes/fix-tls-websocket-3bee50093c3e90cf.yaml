@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixes using TLS secured websocket when HTTPS is used in ML2 ODL URL.

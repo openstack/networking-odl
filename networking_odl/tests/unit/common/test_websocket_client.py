@@ -44,6 +44,18 @@ class TestWebsocketClient(base.DietTestCase):
         'neutron:neutron/neutron:hostconfigs/datastore=OPERATIONAL'
         '/scope=SUBTREE'}
 
+    ODL_URI = "http://localhost:8080/"
+
+    WEBSOCKET_URI = (
+        "ws://localhost:8185/" +
+        "data-change-event-subscription/neutron:neutron/" +
+        "neutron:hostconfigs/datastore=OPERATIONAL/scope=SUBTREE")
+
+    WEBSOCKET_SSL_URI = (
+        "wss://localhost:8185/" +
+        "data-change-event-subscription/neutron:neutron/" +
+        "neutron:hostconfigs/datastore=OPERATIONAL/scope=SUBTREE")
+
     mock_callback_handler = mock.MagicMock()
 
     def setUp(self):
@@ -55,7 +67,7 @@ class TestWebsocketClient(base.DietTestCase):
         super(TestWebsocketClient, self).setUp()
 
         self.mgr = wsc.OpenDaylightWebsocketClient.odl_create_websocket(
-            "http://localhost:8080/",
+            TestWebsocketClient.ODL_URI,
             "restconf/operational/neutron:neutron/hostconfigs",
             wsc.ODL_OPERATIONAL_DATASTORE, wsc.ODL_NOTIFICATION_SCOPE_SUBTREE,
             TestWebsocketClient.mock_callback_handler
@@ -138,11 +150,7 @@ class TestWebsocketClient(base.DietTestCase):
         mocked_get.return_value = request_response
         stream_url = self.mgr._subscribe_websocket()
 
-        EXPECTED_OUTPUT = (
-            "ws://localhost:8185/" +
-            "data-change-event-subscription/neutron:neutron/" +
-            "neutron:hostconfigs/datastore=OPERATIONAL/scope=SUBTREE")
-        self.assertEqual(EXPECTED_OUTPUT, stream_url)
+        self.assertEqual(TestWebsocketClient.WEBSOCKET_URI, stream_url)
 
     @mock.patch.object(websocket, 'create_connection')
     def test_create_connection(self, mock_create_connection):
@@ -154,6 +162,32 @@ class TestWebsocketClient(base.DietTestCase):
                        side_effect=Exception("something went wrong"))
     def test_create_connection_handles_exception(self, mock_create_connection):
         self.assertIsNone(self.mgr._socket_create_connection("localhost"))
+
+    def test_websocket_connect(self):
+        self.mgr._subscribe_websocket = mock.MagicMock(
+            return_value=TestWebsocketClient.WEBSOCKET_URI)
+        self.mgr._socket_create_connection = mock.MagicMock(return_value=True)
+        self.mgr._connect_ws()
+        self.mgr._socket_create_connection.assert_called_with(
+            TestWebsocketClient.WEBSOCKET_URI)
+
+    def test_websocket_connect_ssl(self):
+        self.mgr._subscribe_websocket = mock.MagicMock(
+            return_value=TestWebsocketClient.WEBSOCKET_SSL_URI)
+        self.mgr._socket_create_connection = mock.MagicMock(return_value=True)
+        self.mgr._connect_ws()
+        self.mgr._socket_create_connection.assert_called_with(
+            TestWebsocketClient.WEBSOCKET_SSL_URI)
+
+    def test_websocket_connect_ssl_negative_uri(self):
+        self.mgr._subscribe_websocket = mock.MagicMock(
+            return_value=TestWebsocketClient.WEBSOCKET_URI)
+        self.mgr._socket_create_connection = mock.MagicMock(return_value=True)
+        self.mgr.odl_rest_client.url = self.mgr.odl_rest_client.url.replace(
+            'http:', 'https:')
+        self.mgr._connect_ws()
+        self.mgr._socket_create_connection.assert_called_with(
+            TestWebsocketClient.WEBSOCKET_SSL_URI)
 
     def test_run_websocket_thread(self):
         self.mgr._connect_ws = mock.MagicMock(return_value=None)
