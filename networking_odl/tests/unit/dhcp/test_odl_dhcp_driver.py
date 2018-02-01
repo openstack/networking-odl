@@ -56,6 +56,21 @@ class OdlDhcpDriverTestCase(test_odl_dhcp_driver_base.OdlDhcpDriverTestBase):
                                 data['subnet_id'])
         self.assertIsNotNone(port)
 
+    def test_dhcp_port_create_on_v6subnet_event(self):
+
+        data = self.get_network_and_subnet_context('2001:db8:abcd:0012::0/64',
+                                                   True, True, True, False)
+        subnet_context = data['subnet_context']
+        mech_driver_v2.OpenDaylightMechanismDriver._record_in_journal(
+            subnet_context, odl_const.ODL_SUBNET, odl_const.ODL_CREATE)
+        self.mech.journal.sync_pending_entries()
+
+        port = self.get_port_id(data['plugin'],
+                                data['context'],
+                                data['network_id'],
+                                data['subnet_id'])
+        self.assertIsNone(port)
+
     def test_dhcp_delete_on_port_update_event(self):
 
         data = self.get_network_and_subnet_context('10.0.50.0/24', True, True,

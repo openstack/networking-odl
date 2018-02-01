@@ -39,9 +39,8 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
         self.useFixture(odl_base.OpenDaylightPseudoAgentPrePopulateFixture())
         super(OdlDhcpDriverTestBase, self).setUp()
 
-    def get_network_and_subnet_context(self, cidr,
-                                       dhcp_flag, create_subnet,
-                                       create_network):
+    def get_network_and_subnet_context(self, cidr, dhcp_flag, create_subnet,
+                                       create_network, ipv4=True):
         data = {}
         network_id = uuidutils.generate_uuid()
         subnet_id = uuidutils.generate_uuid()
@@ -50,40 +49,40 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
         data['subnet_id'] = subnet_id
         data['context'] = self.context
         data['plugin'] = plugin
+        network, network_context = \
+            self.get_network_context(network_id, create_network, ipv4)
         if create_network:
-            network, network_context = self.get_network_context(network_id,
-                                                                create_network)
-            data['network'] = network
             data['network_context'] = network_context
-        else:
-            network = self.get_network_context(network_id,
-                                               create_network)
-            data['network'] = network
+        data['network'] = network
+        subnet, subnet_context = \
+            self.get_subnet_context(network_id, subnet_id, cidr,
+                                    dhcp_flag, create_subnet, ipv4)
         if create_subnet:
-            subnet, subnet_context = self.get_subnet_context(network_id,
-                                                             subnet_id, cidr,
-                                                             dhcp_flag,
-                                                             create_subnet)
-            data['subnet'] = subnet
             data['subnet_context'] = subnet_context
-        else:
-            subnet = self.get_subnet_context(network_id,
-                                             subnet_id, cidr,
-                                             dhcp_flag,
-                                             create_subnet)
-            data['subnet'] = subnet
+        data['subnet'] = subnet
         return data
 
     def get_subnet_context(self, network_id, subnet_id, cidr,
-                           dhcp_flag, create_subnet):
-
-        index = cidr.rfind('.') + 1
-        ip_range = cidr[:index]
-        current = {'ipv6_ra_mode': None,
+                           dhcp_flag, create_subnet, ipv4=True):
+        if ipv4:
+            index = cidr.rfind('.') + 1
+            ip_range = cidr[:index]
+            cidr_end = ip_range + str(254)
+            ipv6_ramode = None
+            ipv6_addmode = None
+            ipversion = 4
+        else:
+            index = cidr.rfind(':') + 1
+            ip_range = cidr[:index]
+            cidr_end = cidr[:index - 1] + 'ffff:ffff:ffff:fffe'
+            ipv6_ramode = 'slaac'
+            ipv6_addmode = 'slaac'
+            ipversion = 6
+        current = {'ipv6_ra_mode': ipv6_ramode,
                    'allocation_pools': [{'start': ip_range + str(2),
-                                         'end': ip_range + str(254)}],
+                                         'end': cidr_end}],
                    'host_routes': [],
-                   'ipv6_address_mode': None,
+                   'ipv6_address_mode': ipv6_addmode,
                    'cidr': cidr,
                    'id': subnet_id,
                    'name': '',
@@ -93,7 +92,7 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
                    'project_id': ODL_TENANT_ID,
                    'dns_nameservers': [],
                    'gateway_ip': ip_range + str(1),
-                   'ip_version': 4,
+                   'ip_version': ipversion,
                    'shared': False}
         subnet = {'subnet': AttributeDict(current)}
         if create_subnet:
@@ -104,11 +103,13 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
         else:
             return subnet
 
-    def get_network_context(self, network_id, create_network):
-
+    def get_network_context(self, network_id, create_network, ipv4=True):
+        netwrk = 'netv4'
+        if not ipv4:
+            netwrk = 'netv6'
         current = {'status': 'ACTIVE',
                    'subnets': [],
-                   'name': 'net1',
+                   'name': netwrk,
                    'provider:physical_network': None,
                    'admin_state_up': True,
                    'tenant_id': ODL_TENANT_ID,
@@ -164,6 +165,19 @@ class OdlDhcpDriverBaseTestCase(OdlDhcpDriverTestBase):
                                 data['network_id'],
                                 data['subnet_id'])
         self.assertIsNotNone(port)
+
+    def test_dhcp_port_create_v6network(self):
+        dhcp_driver = driver_base.OdlDhcpDriverBase()
+
+        data = self.get_network_and_subnet_context('2001:db8:abcd:0012::0/64',
+                                                   True, True, True, False)
+        dhcp_driver.create_or_delete_dhcp_port(data['subnet_context'])
+
+        port = self.get_port_id(data['plugin'],
+                                data['context'],
+                                data['network_id'],
+                                data['subnet_id'])
+        self.assertIsNone(port)
 
     def test_dhcp_create_without_dhcp_flag(self):
         dhcp_driver = driver_base.OdlDhcpDriverBase()
