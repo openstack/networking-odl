@@ -96,6 +96,8 @@
     vars:
       <<: *devstack_vars
       tox_envlist: all-plugin
+      extensions_to_txt:
+        log: True
       devstack_plugins:
         <<: *devstack_plugins
         neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
