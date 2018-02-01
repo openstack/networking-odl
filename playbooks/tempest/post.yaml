@@ -18,9 +18,3 @@
     # is merged to the ansible version Zuul uses.
     - name: Pause to give ODL time to finish
       command: sleep 5s
-
-    - include_role:
-        name: stage-output
-      vars:
-        zuul_copy_output:
-          { '{{ devstack_base_dir }}/logs/screen-karaf.log': 'logs' }
