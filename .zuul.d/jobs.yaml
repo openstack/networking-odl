@@ -96,6 +96,8 @@
     vars:
       <<: *devstack_vars
       tox_envlist: all-plugin
+      zuul_copy_output:
+        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       extensions_to_txt:
         log: True
       devstack_plugins:
