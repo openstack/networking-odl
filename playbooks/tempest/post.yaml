@@ -24,5 +24,3 @@
       vars:
         zuul_copy_output:
           { '{{ devstack_base_dir }}/logs/screen-karaf.log': 'logs' }
-        extensions_to_txt:
-          - log
