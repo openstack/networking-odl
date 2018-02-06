@@ -37,7 +37,7 @@ Host Configuration fields
 - **host-type**
 
   The field is for type of the node. This value corresponds to agent_type in
-  agent_db. Example value are “ODL L2” and “ODL L3” for Compute and Network
+  agent_db. Example value are "ODL L2" and "ODL L3" for Compute and Network
   node respectively. Same host can be configured to have multiple
   configurations and can therefore can have both L2, L3 and other
   configurations at the same time. This string will be populated by ODL based
@@ -60,35 +60,35 @@ Config is a Json string. Some examples of config:
 
 OVS configuration example::
 
-   {“supported_vnic_types”: [{
-            “vnic_type”: “normal”,
-            “vif_type”: “ovs”,
-            “vif_details”: “{}”
+   {"supported_vnic_types": [{
+            "vnic_type": "normal",
+            "vif_type": "ovs",
+            "vif_details": "{}"
         }]
-        “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
-        “bridge_mappings”: {“physnet1":"br-ex”}
+        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
 OVS SR-IOV Hardware Offload configuration example::
 
-   {“supported_vnic_types”: [{
-            “vnic_type”: “normal”,
-            “vif_type”: “ovs”,
-            “vif_details”: “{}”},
-            {“vnic_type”: “direct”,
-            “vif_type”: “ovs”,
-            “vif_details”: “{}”}
+   {"supported_vnic_types": [{
+            "vnic_type": "normal",
+            "vif_type": "ovs",
+            "vif_details": "{}"},
+            {"vnic_type": "direct",
+            "vif_type": "ovs",
+            "vif_details": "{}"}
         }]
-        “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
-        “bridge_mappings”: {“physnet1":"br-ex”}
+        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
 OVS_DPDK configuration example::
 
-   {“supported_vnic_types”: [{
-            “vnic_type”: “normal”,
-            “vif_type”: “vhostuser”,
-            “vif_details”: {
+   {"supported_vnic_types": [{
+            "vnic_type": "normal",
+            "vif_type": "vhostuser",
+            "vif_details": {
                 "uuid": "TEST_UUID",
                 "has_datapath_type_netdev": True,
                 "support_vhost_user": True,
@@ -99,15 +99,15 @@ OVS_DPDK configuration example::
                 "vhostuser_mode": "client",
                 "vhostuser_socket": "/var/run/openvswitch/vhu$PORT_ID"}
         }]
-        “allowed_network_types”: ["local", "gre", "vlan", "vxlan"]”,
-        “bridge_mappings”: {“physnet1":"br-ex”}
+        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
 VPP configuration example::
 
    { {"supported_vnic_types": [
         {"vnic_type": "normal",
-         "vif_type": “vhostuser”,
+         "vif_type": "vhostuser",
          "vif_details": {
              "uuid": "TEST_UUID",
              "has_datapath_type_netdev": True,
@@ -131,7 +131,7 @@ Url : https://ip:odlport/restconf/operational/neutron:neutron/hostconfigs/
  export OVSUUID=$(ovs-vsctl get Open_vSwitch . _uuid)
  ovs-vsctl set Open_vSwitch $OVSUUID external_ids:odl_os_hostconfig_hostid=test_host
  ovs-vsctl set Open_vSwitch $OVSUUID external_ids:odl_os_hostconfig_config_odl_l2 =
- "{“supported_vnic_types”: [{“vnic_type”: “normal”, “vif_type”: “ovs”, "vif_details": {} }], “allowed_network_types”: [“local”], “bridge_mappings”: {“physnet1":"br-ex”}}"
+ "{"supported_vnic_types": [{"vnic_type": "normal", "vif_type": "ovs", "vif_details": {} }], "allowed_network_types": ["local"], "bridge_mappings": {"physnet1":"br-ex"}}"
 
 Example for host configuration
 -------------------------------
@@ -145,13 +145,13 @@ Example for host configuration
         "host-id": "test_host1",
         "host-type": "ODL L2",
         "config":
-        "{“supported_vnic_types”: [{
-            “vnic_type”: “normal”,
-            “vif_type”: “ovs”,
-            “vif_details”: {}
+        "{"supported_vnic_types": [{
+            "vnic_type": "normal",
+            "vif_type": "ovs",
+            "vif_details": {}
         }]
-        “allowed_network_types”: ["local", "gre", "vlan", "vxlan"],
-        “bridge_mappings”: {“physnet1":"br-ex”}}"
+        "allowed_network_types": ["local", "gre", "vlan", "vxlan"],
+        "bridge_mappings": {"physnet1":"br-ex"}}"
       },
       {
         "host-id": "test_host2",
