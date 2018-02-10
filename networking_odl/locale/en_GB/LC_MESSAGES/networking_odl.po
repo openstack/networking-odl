@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: networking-odl VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2017-12-20 21:22+0000\n"
+"POT-Creation-Date: 2018-02-09 19:46+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -411,9 +411,6 @@ msgstr "resource_list can not be None"
 
 msgid "unsupported operation {}"
 msgstr "unsupported operation {}"
-
-msgid "unsupported resource type: {}"
-msgstr "unsupported resource type: {}"
 
 msgid "websocket subscribe bad stream data"
 msgstr "websocket subscribe bad stream data"
