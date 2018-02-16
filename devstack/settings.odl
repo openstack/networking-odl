@@ -8,8 +8,11 @@
 #
 #   latest-snapshot          (master latest snapshot)
 #   latest-release
-#   oxygen-snapshot-0.8      (master latest oxygen snapshot)
-#   oxygen-snapshot-0.8.0    (master)
+#   fluorine-latest
+#   fluorine-snapshot-0.0    (master latest fluorine snapshot)
+#   fluorine-snapshot-0.9.0  (master)
+#   oxygen-snapshot-0.8      (stable/oxygen latest oxygen snapshot)
+#   oxygen-snapshot-0.8.0    (stable/oxygen)
 #   nitrogen-snapshot-0.7    (stable/nitrogen latest nitrogen snapshot)
 #   nitrogen-snapshot-0.7.3  (stable/nitrogen)
 #   nitrogen-latest

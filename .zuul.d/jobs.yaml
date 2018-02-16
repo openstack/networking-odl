@@ -5,6 +5,7 @@
       odl_version_map:
         nitrogen: &nitrogen nitrogen-snapshot-0.7
         oxygen: &oxygen oxygen-snapshot-0.8
+        fluorine: &fluorine fluorine-snapshot-0.9
       common_devstack_vars: &devstack_vars
         devstack_localrc:
           ODL_TIMEOUT: 60
@@ -121,6 +122,13 @@
         ODL_RELEASE: *oxygen
 
 - job:
+    name: networking-odl-tempest-fluorine
+    parent: networking-odl-tempest-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *fluorine
+
+- job:
     name: networking-odl-devstack-base
     parent: devstack
     description: |
@@ -208,6 +216,14 @@
         ODL_RELEASE: *oxygen
 
 - job:
+    name: networking-odl-functional-fluorine
+    parent: networking-odl-functional-base
+    voting: false
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *fluorine
+
+- job:
     name: networking-odl-fullstack-nitrogen
     parent: networking-odl-fullstack-base
     vars:
@@ -220,6 +236,14 @@
     vars:
       devstack_localrc:
         ODL_RELEASE: *oxygen
+
+- job:
+    name: networking-odl-fullstack-fluorine
+    parent: networking-odl-fullstack-base
+    voting: false
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *fluorine
 
 # >>> LEGACY JOBS TO REPLACE
 
@@ -259,6 +283,18 @@
     nodeset: legacy-ubuntu-xenial-2-node
 
 - job:
+    name: networking-odl-tempest-fluorine-multinode
+    parent: legacy-dsvm-base-multinode
+    run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-fluorine-snapshot/run.yaml
+    post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-fluorine-snapshot/post.yaml
+    timeout: 10800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-odl
+      - openstack/tempest
+    nodeset: legacy-ubuntu-xenial-2-node
+
+- job:
     name: networking-odl-rally-nitrogen
     parent: legacy-dsvm-base
     run: playbooks/legacy/rally-dsvm-networking-odl-nitrogen-snapshot/run.yaml
@@ -274,6 +310,17 @@
     parent: legacy-dsvm-base
     run: playbooks/legacy/rally-dsvm-networking-odl-oxygen-snapshot/run.yaml
     post-run: playbooks/legacy/rally-dsvm-networking-odl-oxygen-snapshot/post.yaml
+    timeout: 7500
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/networking-odl
+      - openstack/rally
+
+- job:
+    name: networking-odl-rally-fluorine
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/rally-dsvm-networking-odl-fluorine-snapshot/run.yaml
+    post-run: playbooks/legacy/rally-dsvm-networking-odl-fluorine-snapshot/post.yaml
     timeout: 7500
     required-projects:
       - openstack-infra/devstack-gate

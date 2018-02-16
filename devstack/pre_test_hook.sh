@@ -13,6 +13,9 @@ case "$ODL_RELEASE_BASE" in
     latest-snapshot)
         ODL_RELEASE=latest-snapshot
         ;;
+    fluorine-snapshot)
+        ODL_RELEASE=fluorine-snapshot-0.9
+        ;;
     oxygen-snapshot)
         ODL_RELEASE=oxygen-snapshot-0.8
         ;;

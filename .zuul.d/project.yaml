@@ -21,6 +21,7 @@
               - ^setup.cfg$
         - networking-odl-tempest-nitrogen
         - networking-odl-tempest-oxygen
+        - networking-odl-tempest-fluorine
         - networking-odl-tempest-nitrogen-multinode:
             voting: false
             irrelevant-files:
@@ -30,6 +31,14 @@
               - ^releasenotes/.*$
               - ^setup.cfg$
         - networking-odl-tempest-oxygen-multinode:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+        - networking-odl-tempest-fluorine-multinode:
             voting: false
             irrelevant-files:
               - ^(test-|)requirements.txt$
@@ -50,10 +59,19 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
+        - networking-odl-rally-fluorine:
+            voting: false
+            branches: ^(?!stable/(newton|ocata|pike)).*$
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
         - networking-odl-functional-nitrogen
         - networking-odl-fullstack-nitrogen
         - networking-odl-functional-oxygen
         - networking-odl-fullstack-oxygen
+        - networking-odl-functional-fluorine
+        - networking-odl-fullstack-fluorine
     gate:
       jobs:
         - openstack-tox-lower-constraints:

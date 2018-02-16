@@ -12,6 +12,7 @@ ODL_NAME_TO_MAJOR_MINOR["Boron"]="0.5"
 ODL_NAME_TO_MAJOR_MINOR["Carbon"]="0.6"
 ODL_NAME_TO_MAJOR_MINOR["Nitrogen"]="0.7"
 ODL_NAME_TO_MAJOR_MINOR["Oxygen"]="0.8"
+ODL_NAME_TO_MAJOR_MINOR["Fluorine"]="0.9"
 
 _odl_release=$1
 if [[ "$_odl_release" =~ -snapshot ]]; then
