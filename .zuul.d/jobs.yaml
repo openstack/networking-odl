@@ -3,7 +3,6 @@
     description: Fake job to hold configuration settings for jobs
     vars:
       odl_version_map:
-        carbon: &carbon carbon-snapshot-0.6
         nitrogen: &nitrogen nitrogen-snapshot-0.7
         oxygen: &oxygen oxygen-snapshot-0.8
       common_devstack_vars: &devstack_vars
@@ -108,13 +107,6 @@
       tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
 
 - job:
-    name: networking-odl-tempest-carbon
-    parent: networking-odl-tempest-base
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *carbon
-
-- job:
     name: networking-odl-tempest-nitrogen
     parent: networking-odl-tempest-base
     vars:
@@ -202,14 +194,6 @@
       run_devstack: False
 
 - job:
-    name: networking-odl-functional-carbon
-    parent: networking-odl-functional-base
-    voting: false
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *carbon
-
-- job:
     name: networking-odl-functional-nitrogen
     parent: networking-odl-functional-base
     vars:
@@ -223,14 +207,6 @@
     vars:
       devstack_localrc:
         ODL_RELEASE: *oxygen
-
-- job:
-    name: networking-odl-fullstack-carbon
-    parent: networking-odl-fullstack-base
-    voting: false
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *carbon
 
 - job:
     name: networking-odl-fullstack-nitrogen
@@ -261,18 +237,6 @@
       - openstack/networking-odl
 
 - job:
-    name: networking-odl-tempest-carbon-multinode
-    parent: legacy-dsvm-base-multinode
-    run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
-    nodeset: legacy-ubuntu-xenial-2-node
-
-- job:
     name: networking-odl-tempest-nitrogen-multinode
     parent: legacy-dsvm-base-multinode
     run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-nitrogen-snapshot/run.yaml
@@ -295,18 +259,6 @@
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
-
-- job:
-    name: networking-odl-rally-carbon
-    parent: legacy-dsvm-base
-    voting: false
-    run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/run.yaml
-    post-run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/post.yaml
-    timeout: 7500
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/networking-odl
-      - openstack/rally
 
 - job:
     name: networking-odl-rally-nitrogen
