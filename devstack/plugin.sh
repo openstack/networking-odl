@@ -19,6 +19,10 @@ source $TOP_DIR/functions
 source $NETWORKING_ODL_DIR/devstack/functions
 source $TOP_DIR/lib/neutron
 
+# TODO(manjeets) Remove this once lib/neutron is
+# adapted for grenade job.
+source $TOP_DIR/lib/neutron-legacy
+
 # Import bridge data
 source $TOP_DIR/lib/neutron_plugins/ovs_base
 
