@@ -104,6 +104,6 @@ localrc_set $localrc_file "RALLY_SCENARIO" "${RALLY_SCENARIO}"
 # delete and recreate network to workaroud netvirt bug:
 # https://bugs.opendaylight.org/show_bug.cgi?id=7456
 # https://bugs.opendaylight.org/show_bug.cgi?id=8133
-if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]] || [[ "$ODL_GATE_SERVICE_PROVIDER" == "vpnservice" ]]; then
+if [[ "$DEVSTACK_GATE_TOPOLOGY" == "multinode" ]]; then
     purge_and_recreate_initial_networks $DEVSTACK_PATH
 fi
