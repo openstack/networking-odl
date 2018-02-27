@@ -100,6 +100,7 @@
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       extensions_to_txt:
         log: True
+        ini: True
       devstack_plugins:
         <<: *devstack_plugins
         neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
