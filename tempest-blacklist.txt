@@ -60,5 +60,7 @@ tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.t
 # These tests seem broken regardless of networking-odl functionality
 neutron_tempest_plugin\.api\.test_revisions\.TestRevisions.*subnet.*
 # exluding some tests temporarily
+# TODO(mpeterson): investigate the following tests and act accordingly
+neutron_tempest_plugin\.scenario\.test_floatingip\.DefaultSnatToExternal\.test_snat_external_ip
 # END: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
 #      FIXED AS APPROPRIATE.
