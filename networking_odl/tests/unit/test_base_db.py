@@ -25,6 +25,7 @@ from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import context
 from oslo_config import fixture as config_fixture
 from oslo_db import exception as db_exc
+import sqlalchemy
 from sqlalchemy.orm import exc
 
 from networking_odl.common import constants
@@ -55,6 +56,26 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         self.addCleanup(self._db_cleanup)
         self.cfg = self.useFixture(config_fixture.Config())
         self.cfg.config(completed_rows_retention=-1, group='ml2_odl')
+        self._setup_retry_tracker_table()
+
+    def _setup_retry_tracker_table(self):
+        metadata = sqlalchemy.MetaData()
+        self.retry_table = sqlalchemy.Table(
+            'retry_tracker', metadata,
+            sqlalchemy.Column(
+                'id', sqlalchemy.Integer,
+                autoincrement=True,
+                primary_key=True,
+            ),
+        )
+        metadata.create_all(self.engine)
+        self.addCleanup(metadata.drop_all, self.engine)
+
+        class RetryTracker(object):
+            pass
+
+        sqlalchemy.orm.mapper(RetryTracker, self.retry_table)
+        self.retry_tracker = RetryTracker
 
     def _db_cleanup(self):
         self.db_session.query(models.OpenDaylightJournal).delete()
@@ -120,35 +141,52 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         expected_retries = RETRY_MAX if expect_retries else 0
         db_object = self.db_context if receives_context else self.db_session
 
+        # TODO(mpeterson): Make this an int when Py2 is no longer supported
+        # and use the `nonlocal` directive
+        retry_counter = [0]
         for exception in exceptions:
-            mock_object.side_effect = exception(_e)
+            def increase_retry_counter_and_except(*args, **kwargs):
+                retry_counter[0] += 1
+                session = db_object.session if receives_context else db_object
+                session.add(self.retry_tracker())
+                session.flush()
+                raise exception(_e)
+            mock_object.side_effect = increase_retry_counter_and_except
 
             _assertRaises((exception, _InnerException), method,
                           db_object, *args)
             self.assertEqual(expected_retries, mock_object.call_count - 1)
             mock_object.reset_mock()
 
-    def _test_retry_exceptions(self, method, mock_object, receives_context,
-                               assert_begin_transaction=True):
-        # NOTE(mpeterson): the reason we test for begining of transactions is
-        # that it's not possible to retry without a new transaction or a
-        # savepoint.
-        with mock.patch.object(self.db_session, 'begin',
-                               side_effect=self.db_session.begin) as m:
-            self._test_db_exceptions_handled(method, mock_object,
-                                             receives_context, True)
-            # NOTE(mpeterson): RETRIABLE * 3 when expect_retries=True since
-            # it will retry twice as per the test, plus the original call.
-            if assert_begin_transaction:
-                self.assertEqual(m.call_count,
-                                 len(RETRIABLE_EXCEPTIONS) * (RETRY_MAX + 1))
+        return retry_counter[0]
 
-            if receives_context:
-                with self.db_session.begin():
-                    m.reset_mock()
-                    self._test_db_exceptions_handled(method, mock_object,
-                                                     receives_context, False)
-                    # NOTE(mpeterson): only once when expect_retries=False
-                    if assert_begin_transaction:
-                        self.assertEqual(m.call_count,
-                                         len(RETRIABLE_EXCEPTIONS))
+    def _assertRetryCount(self, expected_count):
+        actual_count = \
+            self.db_context.session.query(self.retry_tracker).count()
+        self.assertEqual(expected_count, actual_count)
+
+    def _test_retry_exceptions(self, method, mock_object, receives_context,
+                               assert_transaction=True):
+        retries = self._test_db_exceptions_handled(method, mock_object,
+                                                   receives_context, True)
+
+        if assert_transaction:
+            # It should be 0 as long as the retriable method creates save
+            # points or transactions, which is the correct behavior
+            self._assertRetryCount(0)
+            # RETRIABLE * 3 when expect_retries=True since it will retry
+            # twice as per the test, plus the original call.
+            self.assertEqual(
+                len(RETRIABLE_EXCEPTIONS) * (RETRY_MAX + 1),
+                retries
+            )
+
+        if receives_context:
+            with self.db_session.begin():
+                retries = self._test_db_exceptions_handled(
+                    method, mock_object, receives_context, False
+                )
+                if assert_transaction:
+                    self._assertRetryCount(0)
+                    # only once per exception when expect_retries=False
+                    self.assertEqual(len(RETRIABLE_EXCEPTIONS), retries)

@@ -214,7 +214,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertIsNone(row)
 
     def test_get_oldest_pending_row_retries_exceptions(self):
-        with mock.patch.object(self.db_session, 'query') as m:
+        with mock.patch.object(db, 'aliased') as m:
             self._test_retry_exceptions(db.get_oldest_pending_db_row_with_lock,
                                         m, False)
 
