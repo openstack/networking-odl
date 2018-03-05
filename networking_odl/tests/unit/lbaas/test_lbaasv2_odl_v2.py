@@ -60,7 +60,7 @@ class OpenDaylightLBaaSBaseTestCase(base_v2.OpenDaylightConfigBase):
                             mock_set_sync_event, mock_successful_completion):
         obj = self._get_faked_model(obj_type)
         getattr(obj_driver, operation)(self.db_context, obj)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_context.session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(operation, row['operation'])
         if obj_type != odl_const.ODL_MEMBER:
             self.assertEqual(("lbaas/%s" % obj_type), row['object_type'])

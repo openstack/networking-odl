@@ -96,10 +96,10 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
             self.db_context.session, mock_row)
 
     def test_journal_recovery_retries_exceptions(self):
-        db.create_pending_row(self.db_context.session, odl_const.ODL_NETWORK,
+        db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
                               'id', odl_const.ODL_DELETE, {})
-        created_row = db.get_all_db_rows(self.db_context.session)[0]
-        db.update_db_row_state(self.db_context.session, created_row,
+        created_row = db.get_all_db_rows(self.db_context)[0]
+        db.update_db_row_state(self.db_context, created_row,
                                odl_const.FAILED)
         with mock.patch.object(db, 'update_db_row_state') as m:
             self._test_retry_exceptions(recovery.journal_recovery, m, True)
@@ -109,10 +109,10 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertFalse(self._CLIENT.get_resource.called)
 
     def _test_recovery(self, operation, odl_resource, expected_state):
-        db.create_pending_row(self.db_context.session, odl_const.ODL_NETWORK,
+        db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
                               'id', operation, {})
-        created_row = db.get_all_db_rows(self.db_context.session)[0]
-        db.update_db_row_state(self.db_context.session, created_row,
+        created_row = db.get_all_db_rows(self.db_context)[0]
+        db.update_db_row_state(self.db_context, created_row,
                                odl_const.FAILED)
 
         self._CLIENT.get_resource.return_value = odl_resource
@@ -121,10 +121,10 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
 
         if expected_state is None:
             completed_rows = db.get_all_db_rows_by_state(
-                self.db_context.session, odl_const.COMPLETED)
+                self.db_context, odl_const.COMPLETED)
             self.assertEqual([], completed_rows)
         else:
-            row = db.get_all_db_rows_by_state(self.db_context.session,
+            row = db.get_all_db_rows_by_state(self.db_context,
                                               expected_state)[0]
             self.assertEqual(created_row['seqnum'], row['seqnum'])
 
@@ -170,7 +170,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
             operation, odl_resource, odl_const.COMPLETED)
 
         pending_row = db.get_all_db_rows_by_state(
-            self.db_context.session, odl_const.PENDING)[0]
+            self.db_context, odl_const.PENDING)[0]
         self.assertEqual(expected_operation, pending_row['operation'])
         self.assertEqual(original_row['object_type'],
                          pending_row['object_type'])
@@ -219,7 +219,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         helper.TestDriver()
         directory.add_plugin(helper.TEST_PLUGIN, helper.TestPlugin())
         self.addCleanup(directory.add_plugin, helper.TEST_PLUGIN, None)
-        return db.create_pending_row(self.db_context.session, resource_type,
+        return db.create_pending_row(self.db_context, resource_type,
                                      'id', odl_const.ODL_DELETE, {})
 
     def test_get_latest_resource(self):

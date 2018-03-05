@@ -74,7 +74,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
         self._call_operation_object(operation, timing, resource_str, context)
         if timing == 'precommit':
             self.db_session.flush()
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
 
         if timing == 'precommit':
             self.assertEqual(operation, row['operation'])

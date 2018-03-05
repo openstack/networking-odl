@@ -40,28 +40,28 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def _test_validate_updates(self, first_entry, second_entry, expected_deps,
                                state=None):
-        db.create_pending_row(self.db_session, *first_entry)
+        db.create_pending_row(self.db_context, *first_entry)
         if state:
-            row = db.get_all_db_rows(self.db_session)[0]
+            row = db.get_all_db_rows(self.db_context)[0]
             row.state = state
             self._update_row(row)
 
         deps = db.get_pending_or_processing_ops(
-            self.db_session, second_entry[1], second_entry[2])
+            self.db_context, second_entry[1], second_entry[2])
         self.assertEqual(expected_deps, len(deps) != 0)
 
     def _test_retry_count(self, retry_num, max_retry,
                           expected_retry_count, expected_state):
         # add new pending row
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
         # update the row with the requested retry_num
-        row = db.get_all_db_rows(self.db_session)[0]
+        row = db.get_all_db_rows(self.db_context)[0]
         row.retry_count = retry_num - 1
-        db.update_pending_db_row_retry(self.db_session, row, max_retry)
+        db.update_pending_db_row_retry(self.db_context, row, max_retry)
 
         # validate the state and the retry_count of the row
-        row = db.get_all_db_rows(self.db_session)[0]
+        row = db.get_all_db_rows(self.db_context)[0]
         self.assertEqual(expected_state, row.state)
         self.assertEqual(expected_retry_count, row.retry_count)
 
@@ -75,7 +75,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                                     self._mock_function, receives_context,
                                     False)
 
-    # NOTE(mpeterson): The following two functions serve to workaround a
+    # NOTE(mpeterson): The following function serves to workaround a
     # limitation in the discovery mechanism of pecan lib that does not allow
     # us to create a generic function that decorates on the fly. It needs to
     # be decorated through the decorator directive and not via function
@@ -84,21 +84,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def _decorated_retry_if_session_inactive(self, context):
         self._mock_function()
 
-    @db_api.retry_db_errors
-    def _decorated_retry_db_errors(self, context):
-        self._mock_function()
-
-    def test_retry_db_errors(self):
-        self._test_retry_wrapper(self._decorated_retry_db_errors,
-                                 False)
-
     def test_retry_if_session_inactive(self):
         self._test_retry_wrapper(self._decorated_retry_if_session_inactive,
                                  True)
 
     def _test_update_row_state(self, from_state, to_state, dry_flush=False):
         # add new pending row
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
         mock_flush = mock.MagicMock(side_effect=self.db_session.flush)
 
@@ -106,21 +98,21 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
             patch_flush = mock.patch.object(self.db_session, 'flush',
                                             side_effect=mock_flush)
 
-        row = db.get_all_db_rows(self.db_session)[0]
+        row = db.get_all_db_rows(self.db_context)[0]
         for state in [from_state, to_state]:
             if dry_flush:
                 patch_flush.start()
 
             try:
                 # update the row state
-                db.update_db_row_state(self.db_session, row, state,
+                db.update_db_row_state(self.db_context, row, state,
                                        flush=not dry_flush)
             finally:
                 if dry_flush:
                     patch_flush.stop()
 
             # validate the new state
-            row = db.get_all_db_rows(self.db_session)[0]
+            row = db.get_all_db_rows(self.db_context)[0]
             self.assertEqual(state, row.state)
 
         return mock_flush
@@ -144,16 +136,16 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                                     state=odl_const.PROCESSING)
 
     def test_get_oldest_pending_row_none_when_no_rows(self):
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertIsNone(row)
 
     def _test_get_oldest_pending_row_none(self, state):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        row = db.get_all_db_rows(self.db_session)[0]
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        row = db.get_all_db_rows(self.db_context)[0]
         row.state = state
         self._update_row(row)
 
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertIsNone(row)
 
     def test_get_oldest_pending_row_none_when_row_processing(self):
@@ -166,28 +158,28 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._test_get_oldest_pending_row_none(odl_const.COMPLETED)
 
     def test_get_oldest_pending_row(self):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertIsNotNone(row)
         self.assertEqual(odl_const.PROCESSING, row.state)
 
     def test_get_oldest_pending_row_order(self):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        older_row = db.get_all_db_rows(self.db_session)[0]
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        older_row = db.get_all_db_rows(self.db_context)[0]
         older_row.last_retried -= timedelta(minutes=1)
         self._update_row(older_row)
 
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(older_row, row)
 
     def _test_get_oldest_pending_row_with_dep(self, dep_state):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        parent_row = db.get_all_db_rows(self.db_session)[0]
-        db.update_db_row_state(self.db_session, parent_row, dep_state)
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW,
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        parent_row = db.get_all_db_rows(self.db_context)[0]
+        db.update_db_row_state(self.db_context, parent_row, dep_state)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW,
                               depending_on=[parent_row])
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         if row is not None:
             self.assertNotEqual(parent_row.seqnum, row.seqnum)
 
@@ -202,11 +194,11 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual(odl_const.PROCESSING, row.state)
 
     def test_get_oldest_pending_row_returns_parent_when_dep_pending(self):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        parent_row = db.get_all_db_rows(self.db_session)[0]
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW,
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        parent_row = db.get_all_db_rows(self.db_context)[0]
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW,
                               depending_on=[parent_row])
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(parent_row, row)
 
     def test_get_oldest_pending_row_none_when_dep_processing(self):
@@ -216,13 +208,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def test_get_oldest_pending_row_retries_exceptions(self):
         with mock.patch.object(db, 'aliased') as m:
             self._test_retry_exceptions(db.get_oldest_pending_db_row_with_lock,
-                                        m, False)
+                                        m, True)
 
     def _test_delete_row(self, by_row=False, by_row_id=False, dry_flush=False):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual(len(rows), 2)
         row = rows[-1]
 
@@ -239,13 +231,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
             mock_flush = patch_flush.start()
 
         try:
-            db.delete_row(self.db_session, **params)
+            db.delete_row(self.db_context, **params)
         finally:
             if dry_flush:
                 patch_flush.stop()
                 self.db_session.flush()
 
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual(len(rows), 1)
         self.assertNotEqual(row.seqnum, rows[0].seqnum)
 
@@ -262,29 +254,29 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         mock_flush.assert_not_called()
 
     def test_create_pending_row(self):
-        row = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        row = db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         self.assertIsNotNone(row)
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertTrue(row in rows)
 
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows,
                                             dry_delete=False):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
         # update state and last retried
-        row = db.get_all_db_rows(self.db_session)[-1]
+        row = db.get_all_db_rows(self.db_context)[-1]
         row.state = state
         row.last_retried = row.last_retried - timedelta(seconds=last_retried)
         self._update_row(row)
 
         if not dry_delete:
-            db.delete_rows_by_state_and_time(self.db_session,
+            db.delete_rows_by_state_and_time(self.db_context,
                                              odl_const.COMPLETED,
                                              timedelta(seconds=row_retention))
 
         # validate the number of rows in the journal
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual(expected_rows, len(rows))
 
     def test_delete_completed_rows_no_new_rows(self):
@@ -313,21 +305,21 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
     def _test_reset_processing_rows(self, session, last_retried, max_timedelta,
                                     quantity, dry_reset=False):
-        db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         expected_state = odl_const.PROCESSING
 
-        row = db.get_all_db_rows(self.db_session)[-1]
+        row = db.get_all_db_rows(self.db_context)[-1]
         row.state = expected_state
         row.last_retried = row.last_retried - timedelta(seconds=last_retried)
         self._update_row(row)
 
         if not dry_reset:
             expected_state = odl_const.PENDING
-            reset = db.reset_processing_rows(self.db_session, max_timedelta)
+            reset = db.reset_processing_rows(self.db_context, max_timedelta)
             self.assertIsInstance(reset, int)
             self.assertEqual(reset, quantity)
 
-        rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
+        rows = db.get_all_db_rows_by_state(self.db_context, expected_state)
 
         self.assertEqual(len(rows), quantity)
         for row in rows:
@@ -381,7 +373,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.db_session.add(row)
         self.db_session.flush()
 
-        self.assertEqual(expected_result, db_func(self.db_session,
+        self.assertEqual(expected_result, db_func(self.db_context,
                                                   task))
         row = self.db_session.query(models.OpenDaylightPeriodicTask).filter_by(
             task=task).one()
@@ -446,7 +438,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                 models.OpenDaylightPeriodicTask).filter_by(task=task).one()
 
             self.assertEqual(row['state'], curr_state)
-            self.assertTrue(func(self.db_session, task))
+            self.assertTrue(func(self.db_context, task))
             rows = self.db_session.query(
                 models.OpenDaylightPeriodicTask).filter_by().all()
 
@@ -458,7 +450,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                 else:
                     self.assertEqual(curr_state, row['state'])
 
-        self.assertFalse(func(self.db_session, tasks[-1]))
+        self.assertFalse(func(self.db_context, tasks[-1]))
 
     def test_multiple_row_tasks_lock_unlock(self):
         task1 = 'test_random_task'

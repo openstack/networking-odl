@@ -109,9 +109,9 @@ class V2DriverAdjustment(test_base_db.ODLBaseDbTestCase):
     def get_odl_resource(self, resource_type, resource):
         def no_journal_rows():
             pending_rows = db.get_all_db_rows_by_state(
-                self.db_session, odl_const.PENDING)
+                self.db_context, odl_const.PENDING)
             processing_rows = db.get_all_db_rows_by_state(
-                self.db_session, odl_const.PROCESSING)
+                self.db_context, odl_const.PROCESSING)
             return len(pending_rows) == 0 and len(processing_rows) == 0
 
         utils.wait_until_true(no_journal_rows, 5, 0.5)

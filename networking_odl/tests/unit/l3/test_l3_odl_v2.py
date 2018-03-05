@@ -243,7 +243,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 new_object_dict = self._test_operation_thread_processing(
                     object_type, odl_const.ODL_CREATE, network, None, None)
                 object_id = new_object_dict['id']
-                rows = db.get_all_db_rows_by_state(self.db_session,
+                rows = db.get_all_db_rows_by_state(self.db_context,
                                                    odl_const.COMPLETED)
                 self.assertEqual(1, len(rows))
 
@@ -251,7 +251,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 self._test_operation_thread_processing(
                     object_type, odl_const.ODL_UPDATE, network, None,
                     object_id)
-                rows = db.get_all_db_rows_by_state(self.db_session,
+                rows = db.get_all_db_rows_by_state(self.db_context,
                                                    odl_const.COMPLETED)
                 self.assertEqual(2, len(rows))
 
@@ -259,12 +259,12 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
                 self._test_operation_thread_processing(
                     object_type, odl_const.ODL_DELETE, network, None,
                     object_id)
-                rows = db.get_all_db_rows_by_state(self.db_session,
+                rows = db.get_all_db_rows_by_state(self.db_context,
                                                    odl_const.COMPLETED)
                 self.assertEqual(3, len(rows))
 
     def _test_db_results(self, object_id, operation, object_type):
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
 
         self.assertEqual(1, len(rows))
         self.assertEqual(operation, rows[0]['operation'])
@@ -316,8 +316,8 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         # be processed by the journal thread.
         ctxt = self.db_context
         journal.record(ctxt, dep_object, dep_id, dep_operation, dep_data)
-        row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
-        db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
+        row = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
+        db.update_db_row_state(self.db_context, row[0], odl_const.PROCESSING)
 
         # Create test row with dependent ID.
         journal.record(ctxt, test_object, test_id, test_operation, test_data)
@@ -326,13 +326,13 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.thread.sync_pending_entries()
 
         # Verify that dependency row is still set at 'processing'.
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.PROCESSING)
         self.assertEqual(1, len(rows))
 
         # Verify that the test row was processed and set back to 'pending'
         # to be processed again.
-        rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
+        rows = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
         self.assertEqual(1, len(rows))
 
         # Verify that _json_data was not called.

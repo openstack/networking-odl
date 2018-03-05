@@ -109,7 +109,7 @@ def record(plugin_context, object_type, object_uuid, operation, data,
 
     # Calculate depending_on on other journal entries
     depending_on = dependency_validations.calculate(
-        plugin_context.session, operation, object_type, object_uuid, data)
+        plugin_context, operation, object_type, object_uuid, data)
 
     # NOTE(mpeterson): Between the moment that a dependency is calculated and
     # the new entry is recorded in the journal, an operation can ocurr that
@@ -117,7 +117,7 @@ def record(plugin_context, object_type, object_uuid, operation, data,
     # For more details, read the commit message that introduced this comment.
     try:
         entry = db.create_pending_row(
-            plugin_context.session, object_type, object_uuid, operation, data,
+            plugin_context, object_type, object_uuid, operation, data,
             depending_on=depending_on)
     except exception.DBReferenceError as e:
         raise exception.RetryRequest(e)
@@ -131,27 +131,24 @@ def record(plugin_context, object_type, object_uuid, operation, data,
 
 @db_api.retry_if_session_inactive()
 def entry_complete(context, entry):
-    session = context.session
-    with db_api.autonested_transaction(session):
+    with db_api.autonested_transaction(context.session):
         if cfg.CONF.ml2_odl.completed_rows_retention == 0:
-            db.delete_row(session, entry)
+            db.delete_row(context, entry)
         else:
-            db.update_db_row_state(session, entry, odl_const.COMPLETED)
-            db.delete_dependency(session, entry)
+            db.update_db_row_state(context, entry, odl_const.COMPLETED)
+            db.delete_dependency(context, entry)
 
 
 @db_api.retry_if_session_inactive()
 def entry_reset(context, entry):
-    session = context.session
-    with db_api.autonested_transaction(session):
-        db.update_db_row_state(session, entry, odl_const.PENDING)
+    with db_api.autonested_transaction(context.session):
+        db.update_db_row_state(context, entry, odl_const.PENDING)
 
 
 @db_api.retry_if_session_inactive()
 def entry_update_state_by_retry_count(context, entry, retry_count):
-    session = context.session
-    with db_api.autonested_transaction(session):
-        db.update_pending_db_row_retry(session, entry, retry_count)
+    with db_api.autonested_transaction(context.session):
+        db.update_pending_db_row_retry(context, entry, retry_count)
 
 
 def _make_url(row):
@@ -252,7 +249,7 @@ class OpenDaylightJournalThread(object):
     def sync_pending_entries(self):
         LOG.debug("Start processing journal entries")
         context = nl_context.get_admin_context()
-        entry = db.get_oldest_pending_db_row_with_lock(context.session)
+        entry = db.get_oldest_pending_db_row_with_lock(context)
         if entry is None:
             LOG.debug("No journal entries to process")
             return
@@ -262,7 +259,7 @@ class OpenDaylightJournalThread(object):
             if stop_processing:
                 break
 
-            entry = db.get_oldest_pending_db_row_with_lock(context.session)
+            entry = db.get_oldest_pending_db_row_with_lock(context)
         LOG.debug("Finished processing journal entries")
 
     def _retry_sleep(self):

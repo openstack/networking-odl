@@ -50,7 +50,7 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
         self._call_operation_object(operation, timing)
         if timing == 'precommit':
             self.db_session.flush()
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
 
         if timing == 'precommit':
             self.assertEqual(operation, row['operation'])
