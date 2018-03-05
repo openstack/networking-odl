@@ -26,12 +26,12 @@ class JournalCleanupTestCase(test_base_db.ODLBaseDbTestCase):
         self.cfg.config(completed_rows_retention=1, group='ml2_odl')
         with mock.patch.object(db, 'delete_rows_by_state_and_time') as m:
             self._test_retry_exceptions(
-                cleanup.delete_completed_rows, m, True)
+                cleanup.delete_completed_rows, m)
 
     def test_cleanup_processsing_rows_retries_exceptions(self):
         with mock.patch.object(db, 'reset_processing_rows') as m:
             self._test_retry_exceptions(
-                cleanup.cleanup_processing_rows, m, True)
+                cleanup.cleanup_processing_rows, m)
 
     @mock.patch.object(db, 'delete_rows_by_state_and_time')
     def _test_delete_completed_rows(self, retention, expected_call, mock_db):

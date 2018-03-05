@@ -102,7 +102,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         db.update_db_row_state(self.db_context, created_row,
                                odl_const.FAILED)
         with mock.patch.object(db, 'update_db_row_state') as m:
-            self._test_retry_exceptions(recovery.journal_recovery, m, True)
+            self._test_retry_exceptions(recovery.journal_recovery, m)
 
     def test_journal_recovery_no_rows(self):
         recovery.journal_recovery(self.db_context)
