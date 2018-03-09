@@ -33,7 +33,14 @@ class OdlDhcpDriverBase(object):
     # reissue the same command in case of failure.
     @db_api.retry_db_errors
     def create_or_delete_dhcp_port(self, subnet_context):
-
+        # NOTE:(Achuth) Fixes bug 1746715
+        # DHCP port to be created for IPv4 subnets only, since ODL doesn't
+        # support IPv6 neutron port ARP responses. This prevents validations
+        # in ODL and avoids processing  these ports incorrectly.
+        if subnet_context.current['ip_version'] != 4:
+            LOG.warning("ODL DHCP port is supported  only for IPv4 subnet %s",
+                        subnet_context.current['id'])
+            return
         port_id = self.get_dhcp_port_if_exists(subnet_context)
         plugin = subnet_context._plugin
         if not port_id and subnet_context.current['enable_dhcp']:
