@@ -121,10 +121,20 @@ function configure_opendaylight {
     sudo ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
 
     # Change the karaf logfile
-    # disable log rotation by setting max fiel size large enough
-    sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
-        -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
-        $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
+    # disable log rotation by setting file size large enough
+    case "$ODL_RELEASE" in
+        boron*|carbon*|nitrogen*)
+        sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
+            -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
+            $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
+            ;;
+        *)
+        # oxygen or later
+        sed -i -e "/^log4j2\.appender\.rolling\.fileName/ s/.*/log4j2\.appender\.rolling\.fileName\ = $LF/" \
+            -e "/^log4j2\.appender\.rolling\.policies\.size\.size/ s/.*/log4j2\.appender\.rolling\.policies\.size\.size\ = 1024GB/" \
+            $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
+            ;;
+    esac
 
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then
