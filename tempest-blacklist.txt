@@ -1,0 +1,64 @@
+# BEGIN: EXCLUDE SLOW TESTS
+.*\[.*\bslow\b.*\]
+# END EXCLUDE SLOW TESTS
+
+# BEGIN: EXCLUDE THINGS THAT JUST AREN'T ENABLED
+tempest\.api\.network\.admin\.test_quotas\.QuotasTest\.test_lbaas_quotas
+tempest\.api\.network\.test_load_balancer
+tempest\.scenario\.test_load_balancer
+tempest\.api\.network\.admin\.test_load_balancer
+tempest\.api\.network\.admin\.test_lbaas
+tempest\.api\.network\.test_fwaas_extensions
+tempest\.api\.network\.test_vpnaas_extensions
+tempest\.api\.network\.test_metering_extensions
+tempest\.thirdparty\.boto\.test_s3
+# END: EXCLUDE THINGS THAT JUST AREN'T ENABLED
+
+# BEGIN: EXCLUDE STUFF LESS RELATED TO NETWORKING, TO REDUCE GATE LOAD
+tempest\.api\.object.*
+tempest\.api\.compute\.admin.*
+tempest\.api\.compute\.images.*
+tempest\.api\.compute\.volumes.*
+# END: EXCLUDE STUFF LESS RELATED TO NETWORKING, TO REDUCE GATE LOAD
+
+
+# BEGIN: EXCLUDE STUFF WE'RE LESS LIKELY TO BREAK
+tempest\.api\.identity
+tempest\.api\.image
+tempest\.api\.volume
+# END: EXCLUDE STUFF WE'RE LESS LIKELY TO BREAK
+
+# BEGIN: UNSUPPORTED FEATURES
+# ODL legacy netvirt doesn't support ipv6
+tempest\.scenario\.test_network_v6\.TestGettingAddress
+# END: UNSUPPORTED FEATURES
+
+# BEGIN: EXCLUSION OF NEUTRON'S TEMPEST PLUGIN
+# DNS domain isn't supported
+neutron_tempest_plugin.*dns_domain.*
+# DNS name for port doesn't seem to be supported
+neutron_tempest_plugin\.api\.test_ports\.PortsTestJSON.*dns_name.*
+# Reporting router interface status isn't supported
+neutron_tempest_plugin.*test_router_interface_status.*
+# DVR is not interesting in the context of ODL
+neutron_tempest_plugin\..*[dD]vr.*
+# END: EXCLUSION OF NEUTRON'S TEMPEST PLUGIN
+
+# BEGIN: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
+#        FIXED AS APPROPRIATE.
+# TODO(yamahata): fix bugs and remove those tests from here
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1642158
+# legacy netvirt ignores admin-state-up state for network/port
+tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_instance_port_admin_state
+tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_update_router_admin_state
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1643033
+# stateful security group: conntracking needs to be enabled
+tempest\.scenario\.test_network_basic_ops\.TestNetworkBasicOps\.test_hotplug_nic
+tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_cross_tenant_traffic
+tempest\.scenario\.test_security_groups_basic_ops\.TestSecurityGroupsBasicOps\.test_port_security_disable_security_group
+# BUG: https://bugs.launchpad.net/networking-odl/+bug/1656129
+# These tests seem broken regardless of networking-odl functionality
+neutron_tempest_plugin\.api\.test_revisions\.TestRevisions.*subnet.*
+# exluding some tests temporarily
+# END: CURRENT LIST OF FAILING TESTS THAT NEED TO BE TRIAGED, HAVE BUGS FILED, AND
+#      FIXED AS APPROPRIATE.
