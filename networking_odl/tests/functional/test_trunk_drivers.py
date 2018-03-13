@@ -18,10 +18,10 @@ import contextlib
 
 from networking_odl.common import constants as odl_const
 from networking_odl.tests.functional import base
-from neutron.plugins.common import utils
 from neutron.services.trunk import constants
 from neutron.services.trunk import plugin as trunk_plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
+from neutron_lib.plugins import utils
 
 from oslo_utils import uuidutils
 

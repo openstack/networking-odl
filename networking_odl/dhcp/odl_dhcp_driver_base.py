@@ -48,6 +48,7 @@ class OdlDhcpDriverBase(object):
                       subnet_context.current['id'],
                       subnet_context.current['network_id'])
             port = self._make_dhcp_port_dict(subnet_context)
+            # TODO(boden): rehome and consume from neutron-lib
             p_utils.create_port(plugin, subnet_context._plugin_context, port)
         if port_id and not subnet_context.current['enable_dhcp']:
             self._delete_port(plugin, subnet_context._plugin_context, port_id)
