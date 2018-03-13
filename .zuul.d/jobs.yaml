@@ -158,6 +158,92 @@
     description: |
         Base job for devstack tests that use a tox environment
 
+- job:
+    name: networking-odl-functional-base
+    parent: networking-odl-devstack-base-tox
+    pre-run: playbooks/functional/pre.yaml
+    description: |
+        Base job for functional tests
+    timeout: 1800
+    roles:
+      - zuul: openstack-dev/devstack
+    vars:
+      tox_envlist: functional
+      zuul_copy_output:
+        '{{ devstack_log_dir }}/functional-logs': 'logs'
+        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
+      extensions_to_txt:
+        log: True
+      devstack_localrc:
+        HOST_IP: 127.0.0.1
+        UNSTACK_KEEP_ODL: True
+      run_devstack: False
+
+- job:
+    name: networking-odl-fullstack-base
+    parent: networking-odl-devstack-base-tox
+    pre-run: playbooks/fullstack/pre.yaml
+    roles:
+      - zuul: openstack-dev/devstack
+    description: |
+        Base job for fullstack tests
+    timeout: 1800
+    vars:
+      tox_envlist: fullstack
+      zuul_copy_output:
+        '{{ devstack_log_dir }}/fullstack-logs': 'logs'
+        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
+      extensions_to_txt:
+        log: True
+      devstack_localrc:
+        HOST_IP: 127.0.0.1
+        UNSTACK_KEEP_ODL: True
+      run_devstack: False
+
+- job:
+    name: networking-odl-functional-carbon
+    parent: networking-odl-functional-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *carbon
+
+- job:
+    name: networking-odl-functional-nitrogen
+    parent: networking-odl-functional-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *nitrogen
+
+- job:
+    name: networking-odl-functional-oxygen
+    parent: networking-odl-functional-base
+    voting: false
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *oxygen
+
+- job:
+    name: networking-odl-fullstack-carbon
+    parent: networking-odl-fullstack-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *carbon
+
+- job:
+    name: networking-odl-fullstack-nitrogen
+    parent: networking-odl-fullstack-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *nitrogen
+
+- job:
+    name: networking-odl-fullstack-oxygen
+    parent: networking-odl-fullstack-base
+    voting: false
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *oxygen
+
 # >>> LEGACY JOBS TO REPLACE
 
 - job:
@@ -239,77 +325,5 @@
       - openstack-infra/devstack-gate
       - openstack/networking-odl
       - openstack/rally
-
-- job:
-    name: networking-odl-fullstack-carbon
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-fullstack-carbon-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-fullstack-carbon-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-
-- job:
-    name: networking-odl-functional-carbon
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-functional-carbon-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-functional-carbon-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-
-- job:
-    name: networking-odl-fullstack-nitrogen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-fullstack-nitrogen-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-fullstack-nitrogen-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-
-- job:
-    name: networking-odl-functional-nitrogen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-functional-nitrogen-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-functional-nitrogen-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-
-- job:
-    name: networking-odl-fullstack-oxygen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-fullstack-oxygen-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-fullstack-oxygen-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-
-- job:
-    name: networking-odl-functional-oxygen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/dsvm-networking-odl-functional-oxygen-snapshot/run.yaml
-    post-run: playbooks/legacy/dsvm-networking-odl-functional-oxygen-snapshot/post.yaml
-    timeout: 7800
-    required-projects:
-      - openstack/networking-odl
-      - openstack/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
 
 # <<< LEGACY JOBS TO REPLACE

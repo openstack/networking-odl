@@ -1,0 +1,8 @@
+# This overrides the default fallback that can be located at:
+# http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/data/bindep-fallback.txt
+
+isc-dhcp-client [platform:ubuntu]
+netcat-openbsd [platform:ubuntu]
+iputils-arping [platform:ubuntu test]
+dhclient [platform:fedora]
+arping [platform:fedora test]

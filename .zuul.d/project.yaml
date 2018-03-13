@@ -56,44 +56,12 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-fullstack-carbon:
-            branches: ^(?!stable/(newton|ocata)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-carbon:
-            branches: ^(?!stable/newton).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-fullstack-nitrogen:
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-nitrogen:
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-fullstack-oxygen:
-            voting: false
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-oxygen:
-            voting: false
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
+        - networking-odl-functional-carbon
+        - networking-odl-fullstack-carbon
+        - networking-odl-functional-nitrogen
+        - networking-odl-fullstack-nitrogen
+        - networking-odl-functional-oxygen
+        - networking-odl-fullstack-oxygen
     gate:
       jobs:
         - networking-odl-rally-carbon:
@@ -108,27 +76,9 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-fullstack-carbon:
-            branches: ^(?!stable/(newton|ocata)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-carbon:
-            branches: ^(?!stable/newton).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-fullstack-nitrogen:
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-nitrogen:
-            branches: ^(?!stable/(newton|ocata|pike)).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
+        - networking-odl-functional-carbon
+        - networking-odl-fullstack-carbon
+        - networking-odl-functional-nitrogen
+        - networking-odl-fullstack-nitrogen
+        - networking-odl-functional-oxygen
+        - networking-odl-fullstack-oxygen
