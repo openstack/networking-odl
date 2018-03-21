@@ -30,10 +30,10 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
         super(OpenDaylightQosDriverTestCase, self).setUp()
         self.qos_driver = qos_driver.OpenDaylightQosDriver()
 
-    def _get_mock_context(self):
+    def _get_mock_context(self, session=None):
         current = {'tenant_id': 'tenant_id'}
         context = mock.Mock(current=current)
-        context.session = self.db_session
+        context.session = session
         return context
 
     def _get_mock_qos_operation_data(self):
@@ -50,12 +50,12 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
 
     def _call_operation_object(self, operation, object_type):
         qos_data = self._get_mock_qos_operation_data()
-        context = self._get_mock_context()
         method = getattr(self.qos_driver, '%s_%s' % (operation,
                                                      object_type))
 
         assert object_type.endswith("precommit")
-        with db_api.context_manager.writer.using(context):
+        with db_api.context_manager.writer.using(self.db_context):
+            context = self._get_mock_context(self.db_context.session)
             method(context, qos_data)
 
     def _test_qos_policy(self, operation):

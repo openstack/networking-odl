@@ -35,8 +35,8 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._mock_function = mock.MagicMock()
 
     def _update_row(self, row):
-        self.db_session.merge(row)
-        self.db_session.flush()
+        self.db_context.session.merge(row)
+        self.db_context.session.flush()
 
     def _test_validate_updates(self, first_entry, second_entry, expected_deps,
                                state=None):
@@ -87,33 +87,36 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._test_retry_wrapper(self._decorated_retry_if_session_inactive)
 
     def _test_update_row_state(self, from_state, to_state, dry_flush=False):
-        # add new pending row
-        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        with db_api.context_manager.writer.using(self.db_context):
+            # add new pending row
+            db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
-        mock_flush = mock.MagicMock(side_effect=self.db_session.flush)
+            mock_flush = mock.MagicMock(
+                side_effect=self.db_context.session.flush)
 
-        if dry_flush:
-            patch_flush = mock.patch.object(self.db_session, 'flush',
-                                            side_effect=mock_flush)
-
-        row = db.get_all_db_rows(self.db_context)[0]
-        for state in [from_state, to_state]:
             if dry_flush:
-                patch_flush.start()
+                patch_flush = mock.patch.object(self.db_context.session,
+                                                'flush',
+                                                side_effect=mock_flush)
 
-            try:
-                # update the row state
-                db.update_db_row_state(self.db_context, row, state,
-                                       flush=not dry_flush)
-            finally:
-                if dry_flush:
-                    patch_flush.stop()
-
-            # validate the new state
             row = db.get_all_db_rows(self.db_context)[0]
-            self.assertEqual(state, row.state)
+            for state in [from_state, to_state]:
+                if dry_flush:
+                    patch_flush.start()
 
-        return mock_flush
+                try:
+                    # update the row state
+                    db.update_db_row_state(self.db_context, row, state,
+                                           flush=not dry_flush)
+                finally:
+                    if dry_flush:
+                        patch_flush.stop()
+
+                # validate the new state
+                row = db.get_all_db_rows(self.db_context)[0]
+                self.assertEqual(state, row.state)
+
+            return mock_flush
 
     def test_updates_same_object_uuid(self):
         self._test_validate_updates(self.UPDATE_ROW, self.UPDATE_ROW, True)
@@ -209,37 +212,40 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                                         m)
 
     def _test_delete_row(self, by_row=False, by_row_id=False, dry_flush=False):
-        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
-        db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+        with db_api.context_manager.writer.using(self.db_context):
+            db.create_pending_row(self.db_context, *self.UPDATE_ROW)
+            db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
-        rows = db.get_all_db_rows(self.db_context)
-        self.assertEqual(len(rows), 2)
-        row = rows[-1]
+            rows = db.get_all_db_rows(self.db_context)
+            self.assertEqual(len(rows), 2)
+            row = rows[-1]
 
-        params = {'flush': not dry_flush}
-        if by_row:
-            params['row'] = row
-        elif by_row_id:
-            params['row_id'] = row.seqnum
+            params = {'flush': not dry_flush}
+            if by_row:
+                params['row'] = row
+            elif by_row_id:
+                params['row_id'] = row.seqnum
 
-        mock_flush = None
-        if dry_flush:
-            patch_flush = mock.patch.object(self.db_session, 'flush',
-                                            side_effect=self.db_session.flush)
-            mock_flush = patch_flush.start()
-
-        try:
-            db.delete_row(self.db_context, **params)
-        finally:
+            mock_flush = None
             if dry_flush:
-                patch_flush.stop()
-                self.db_session.flush()
+                patch_flush = mock.patch.object(
+                    self.db_context.session, 'flush',
+                    side_effect=self.db_context.session.flush
+                )
+                mock_flush = patch_flush.start()
 
-        rows = db.get_all_db_rows(self.db_context)
-        self.assertEqual(len(rows), 1)
-        self.assertNotEqual(row.seqnum, rows[0].seqnum)
+            try:
+                db.delete_row(self.db_context, **params)
+            finally:
+                if dry_flush:
+                    patch_flush.stop()
+                    self.db_context.session.flush()
 
-        return mock_flush
+            rows = db.get_all_db_rows(self.db_context)
+            self.assertEqual(len(rows), 1)
+            self.assertNotEqual(row.seqnum, rows[0].seqnum)
+
+            return mock_flush
 
     def test_delete_row_by_row(self):
         self._test_delete_row(by_row=True)
@@ -287,14 +293,20 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._test_delete_rows_by_state_and_time(10, 8, odl_const.PENDING, 1)
 
     def test_delete_completed_rows_individually(self):
-        self._test_delete_rows_by_state_and_time(6, 5, odl_const.COMPLETED, 1,
-                                                 True)
-        patch_delete = mock.patch.object(self.db_session, 'delete',
-                                         side_effect=self.db_session.delete)
-        mock_delete = patch_delete.start()
-        self.addCleanup(patch_delete.stop)
-        self._test_delete_rows_by_state_and_time(6, 5, odl_const.COMPLETED, 0)
-        self.assertEqual(mock_delete.call_count, 2)
+        with db_api.context_manager.writer.using(self.db_context):
+            self._test_delete_rows_by_state_and_time(
+                6, 5, odl_const.COMPLETED, 1, True
+            )
+            patch_delete = mock.patch.object(
+                self.db_context.session, 'delete',
+                side_effect=self.db_context.session.delete
+            )
+            mock_delete = patch_delete.start()
+            self.addCleanup(patch_delete.stop)
+            self._test_delete_rows_by_state_and_time(
+                6, 5, odl_const.COMPLETED, 0
+            )
+            self.assertEqual(mock_delete.call_count, 2)
 
     @mock.patch.object(db, 'delete_row', side_effect=db.delete_row)
     def test_delete_completed_rows_without_flush(self, mock_delete_row):
@@ -368,13 +380,13 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
                                         task='test_task'):
         row = models.OpenDaylightPeriodicTask(state=existing_state,
                                               task=task)
-        self.db_session.add(row)
-        self.db_session.flush()
+        self.db_context.session.add(row)
+        self.db_context.session.flush()
 
         self.assertEqual(expected_result, db_func(self.db_context,
                                                   task))
-        row = self.db_session.query(models.OpenDaylightPeriodicTask).filter_by(
-            task=task).one()
+        row = self.db_context.session.query(
+            models.OpenDaylightPeriodicTask).filter_by(task=task).one()
 
         self.assertEqual(expected_state, row['state'])
 
@@ -413,11 +425,12 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         for count, task in enumerate(tasks):
             row.append(models.OpenDaylightPeriodicTask(state=odl_const.PENDING,
                                                        task=task))
-            self.db_session.add(row[count])
+            self.db_context.session.add(row[count])
 
-        self.db_session.flush()
+        self.db_context.session.flush()
 
-        rows = self.db_session.query(models.OpenDaylightPeriodicTask).all()
+        rows = self.db_context.session.query(
+            models.OpenDaylightPeriodicTask).all()
         self.assertEqual(len(tasks), len(rows))
 
     def _perform_ops_on_all_rows(self, tasks, to_lock):
@@ -432,12 +445,12 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
         processed = []
         for task in tasks:
-            row = self.db_session.query(
+            row = self.db_context.session.query(
                 models.OpenDaylightPeriodicTask).filter_by(task=task).one()
 
             self.assertEqual(row['state'], curr_state)
             self.assertTrue(func(self.db_context, task))
-            rows = self.db_session.query(
+            rows = self.db_context.session.query(
                 models.OpenDaylightPeriodicTask).filter_by().all()
 
             processed.append(task)

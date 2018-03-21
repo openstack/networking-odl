@@ -246,7 +246,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             return_value=SECURITY_GROUP)
         _plugin.get_port = mock.Mock(return_value=current)
         _plugin.get_network = mock.Mock(return_value=_network)
-        _plugin_context_mock = {'session': self.db_session}
+        _plugin_context_mock = {'session': self.db_context.session}
         _network_context_mock = {'_network': _network}
         context = {'current': AttributeDict(current),
                    '_plugin': _plugin,
@@ -331,12 +331,12 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                     plugin_context.session.add(sg)
                     sg_dict = dict(sg)
                     sg_dict['security_group_rules'] = []
-                    with self.db_session.begin(subtransactions=True):
+                    with self.db_context.session.begin(subtransactions=True):
                         self.mech.sync_from_callback_precommit(
                             plugin_context, operation, res_type, res_id,
                             context_, security_group=sg_dict)
                 if operation == odl_const.ODL_DELETE:
-                    with self.db_session.begin(subtransactions=True):
+                    with self.db_context.session.begin(subtransactions=True):
                         self.mech.sync_from_callback_precommit(
                             plugin_context, operation, res_type, res_id,
                             context_,
@@ -345,19 +345,19 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                             security_group_rule_ids=[SG_RULE_FAKE_ID])
             elif (object_type == odl_const.ODL_SG_RULE and
                   operation == odl_const.ODL_DELETE):
-                with self.db_session.begin(subtransactions=True):
+                with self.db_context.session.begin(subtransactions=True):
                     self.mech.sync_from_callback_precommit(
                         plugin_context, operation, res_type, res_id,
                         context_, security_group_id=SG_FAKE_ID)
             else:
-                with self.db_session.begin(subtransactions=True):
+                with self.db_context.session.begin(subtransactions=True):
                     self.mech.sync_from_callback_precommit(
                         plugin_context, operation, res_type, res_id,
                         context_)
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
-            with self.db_session.begin(subtransactions=True):
+            with self.db_context.session.begin(subtransactions=True):
                 method(context)
 
     def _test_operation_object(self, operation, object_type):
@@ -515,7 +515,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         method = getattr(self.mech, 'create_port_precommit')
         method(context)
-        self.db_session.flush()
+        self.db_context.session.flush()
 
         # Verify that the Db row has a tenant
         rows = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
@@ -635,7 +635,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             sg.security_group_rules = [rule]
             kwargs = {'security_group': sg,
                       'security_group_rule_ids': [SG_RULE_FAKE_ID]}
-            with self.db_session.begin(subtransactions=True):
+            with self.db_context.session.begin(subtransactions=True):
                 self.mech.sync_from_callback_precommit(
                     self.db_context, odl_const.ODL_DELETE,
                     callback._RESOURCE_MAPPING[odl_const.ODL_SG],
@@ -660,7 +660,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             rule.security_group_id = SG_FAKE_ID
             kwargs = {'security_group_rule_id': SG_RULE_FAKE_ID,
                       'security_group_id': SG_FAKE_ID}
-            with self.db_session.begin(subtransactions=True):
+            with self.db_context.session.begin(subtransactions=True):
                 self.mech.sync_from_callback_precommit(
                     self.db_context, odl_const.ODL_DELETE,
                     callback._RESOURCE_MAPPING[odl_const.ODL_SG_RULE],

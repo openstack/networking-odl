@@ -52,7 +52,6 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
     def setUp(self):
         super(ODLBaseDbTestCase, self).setUp()
         self.db_context = neutron_context.get_admin_context()
-        self.db_session = self.db_context.session
         self.cfg = self.useFixture(config_fixture.Config())
         self.cfg.config(completed_rows_retention=-1, group='ml2_odl')
         self._setup_retry_tracker_table()
@@ -77,15 +76,15 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         self.retry_tracker = RetryTracker
 
     def _db_cleanup(self):
-        self.db_session.query(models.OpenDaylightJournal).delete()
-        self.db_session.query(models.OpenDaylightPeriodicTask).delete()
+        self.db_context.session.query(models.OpenDaylightJournal).delete()
+        self.db_context.session.query(models.OpenDaylightPeriodicTask).delete()
         row0 = models.OpenDaylightPeriodicTask(
             task='maintenance', state=constants.PENDING)
         row1 = models.OpenDaylightPeriodicTask(
             task='hostconfig', state=constants.PENDING)
-        self.db_session.merge(row0)
-        self.db_session.merge(row1)
-        self.db_session.flush()
+        self.db_context.session.merge(row0)
+        self.db_context.session.merge(row1)
+        self.db_context.session.flush()
 
     # NOTE(mpeterson): make retries faster so it doesn't take a lot.
     @mock.patch.multiple(db_api._retry_db_errors,
@@ -181,7 +180,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
                 retries
             )
 
-        with self.db_session.begin():
+        with self.db_context.session.begin():
             retries = self._test_db_exceptions_handled(
                 method, mock_object, False
             )

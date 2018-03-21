@@ -508,8 +508,8 @@ class JournalTest(base_v2.OpenDaylightTestCase):
                               *test_db.DbTestCase.UPDATE_ROW)
         entry = db.get_all_db_rows(self.db_context)[-1]
         entry.state = odl_const.PROCESSING
-        self.db_session.merge(entry)
-        self.db_session.flush()
+        self.db_context.session.merge(entry)
+        self.db_context.session.flush()
         entry = db.get_all_db_rows(self.db_context)[-1]
         self.assertEqual(entry.state, odl_const.PROCESSING)
         journal.entry_reset(self.db_context, entry)
