@@ -14,7 +14,7 @@
 # under the License.
 
 from oslo_log import log
-from six.moves.urllib import parse as urlparse
+from six.moves import urllib_parse as urlparse
 
 from ceilometer.network.statistics import driver
 from networking_odl.ceilometer.network.statistics.opendaylight_v2 import client
@@ -144,7 +144,10 @@ class OpenDaylightDriver(driver.Driver):
                                      None,
                                      None,
                                      None)
+        # TODO(mpeterson): remove when it's fixed in six
+        # pylint: disable=too-many-function-args
         endpoint = urlparse.urlunparse(parts)
+        # pylint: enable=too-many-function-args
 
         data = self._prepare_cache(endpoint, params, cache)
 

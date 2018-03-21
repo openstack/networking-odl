@@ -14,7 +14,7 @@
 #    under the License.
 
 from oslo_config import cfg
-import six.moves.urllib.parse as urlparse
+from six.moves import urllib_parse as urlparse
 
 from networking_odl.common import constants as odl_const
 
@@ -46,6 +46,8 @@ def neutronify(name):
 def get_odl_url(path=''):
     '''Make a URL for some ODL resource (path)'''
     purl = urlparse.urlsplit(cfg.CONF.ml2_odl.url)
+    # TODO(mpeterson): remove when it's fixed in six
+    # pylint: disable=too-many-function-args
     features_url = urlparse.urlunparse((
         purl.scheme, purl.netloc, path, '', '', ''))
     return features_url

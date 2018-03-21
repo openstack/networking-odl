@@ -26,7 +26,7 @@ from neutron.tests.unit import testlib_api
 
 from networking_odl.db import head
 
-FWAAS_TABLES = [
+FWAAS_TABLES = (
     'cisco_firewall_associations',
     'firewall_group_port_associations_v2',
     'firewall_groups_v2',
@@ -34,9 +34,9 @@ FWAAS_TABLES = [
     'firewall_policy_rule_associations_v2',
     'firewall_router_associations',
     'firewall_rules_v2',
-]
+)
 
-L2GW_TABLES = [
+L2GW_TABLES = (
     'l2gatewayconnections',
     'l2gatewaydevices',
     'l2gatewayinterfaces',
@@ -50,18 +50,27 @@ L2GW_TABLES = [
     'ucast_macs_locals',
     'ucast_macs_remotes',
     'vlan_bindings',
-]
+)
 
-BGPVPN_TABLES = [
+BGPVPN_TABLES = (
     'bgpvpns',
     'bgpvpn_network_associations',
     'bgpvpn_router_associations',
-]
+    'ml2_route_target_allocations',
+    'sfc_bagpipe_ppg_rtnn_associations',
+    'sfc_bagpipe_chain_hops',
+)
+
+# Tables from other repos that we depend on but do not manage.
+IGNORED_TABLES_MATCH = set(
+    FWAAS_TABLES +
+    L2GW_TABLES +
+    BGPVPN_TABLES
+)
 
 # EXTERNAL_TABLES should contain all names of tables that are not related to
 # current repo.
-EXTERNAL_TABLES = set(external.TABLES + FWAAS_TABLES +
-                      L2GW_TABLES + BGPVPN_TABLES)
+EXTERNAL_TABLES = set(external.TABLES)
 
 VERSION_TABLE = 'odl_alembic_version'
 
@@ -80,7 +89,8 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
     def include_object(self, object_, name, type_, reflected, compare_to):
         if type_ == 'table' and (name.startswith('alembic') or
                                  name == VERSION_TABLE or
-                                 name in EXTERNAL_TABLES):
+                                 name in EXTERNAL_TABLES or
+                                 name in IGNORED_TABLES_MATCH):
             return False
         if type_ == 'index' and reflected and name.startswith("idx_autoinc_"):
             return False
