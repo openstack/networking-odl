@@ -7,7 +7,7 @@ Vagrant
 Setup Proxy(Optional)
 ---------------------
 
-  If your network is behind a firwall, you can update SOCKS5_IP/SOCKS5_PORT and
+  If your network is behind a firewall, you can update SOCKS5_IP/SOCKS5_PORT and
   run ./setup_proxy.sh.
 
 Vagrant Setup
