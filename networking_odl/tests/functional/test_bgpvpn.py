@@ -86,8 +86,8 @@ class _TestBGPVPNBase(base.OdlTestsBase):
         with (self.network()) as net1, (
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             net_id = net1['network']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_net(id, net_id):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_net(bgpvpn_id, net_id):
                 self._assert_networks_associated([net_id], bgpvpn)
             self._assert_networks_associated([], bgpvpn)
 
@@ -96,8 +96,9 @@ class _TestBGPVPNBase(base.OdlTestsBase):
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             net_id1 = net1['network']['id']
             net_id2 = net2['network']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_net(id, net_id1), self.assoc_net(id, net_id2):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_net(bgpvpn_id, net_id1), \
+                    self.assoc_net(bgpvpn_id, net_id2):
                 self._assert_networks_associated([net_id1, net_id2], bgpvpn)
 
     def test_assoc_multiple_networks_dissoc_one(self):
@@ -105,9 +106,9 @@ class _TestBGPVPNBase(base.OdlTestsBase):
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             net_id1 = net1['network']['id']
             net_id2 = net2['network']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_net(id, net_id1):
-                with self.assoc_net(id, net_id2):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_net(bgpvpn_id, net_id1):
+                with self.assoc_net(bgpvpn_id, net_id2):
                     self._assert_networks_associated([net_id1, net_id2],
                                                      bgpvpn)
                 self._assert_networks_associated([net_id1], bgpvpn)
@@ -116,8 +117,8 @@ class _TestBGPVPNBase(base.OdlTestsBase):
         with (self.router(tenant_id=self._tenant_id)) as router, (
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             router_id = router['router']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_router(id, router_id):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_router(bgpvpn_id, router_id):
                 self._assert_routers_associated([router_id], bgpvpn)
             self._assert_routers_associated([], bgpvpn)
 
@@ -127,12 +128,12 @@ class _TestBGPVPNBase(base.OdlTestsBase):
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             router_id1 = r1['router']['id']
             router_id2 = r2['router']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_router(id, router_id1):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_router(bgpvpn_id, router_id1):
                 self._assert_routers_associated([router_id1], bgpvpn)
                 with testlib_api.ExpectedException(
                         webob.exc.HTTPClientError) as ctx_manager:
-                    with self.assoc_router(id, router_id2):
+                    with self.assoc_router(bgpvpn_id, router_id2):
                         pass
                 self.assertEqual(webob.exc.HTTPBadRequest.code,
                                  ctx_manager.exception.code)
@@ -156,8 +157,9 @@ class _TestBGPVPNBase(base.OdlTestsBase):
                 self.bgpvpn(route_distinguishers=self.rds)) as bgpvpn:
             router_id = router['router']['id']
             net_id = net1['network']['id']
-            id = bgpvpn['bgpvpn']['id']
-            with self.assoc_router(id, router_id), self.assoc_net(id, net_id):
+            bgpvpn_id = bgpvpn['bgpvpn']['id']
+            with self.assoc_router(bgpvpn_id, router_id), \
+                    self.assoc_net(bgpvpn_id, net_id):
                 response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
                 self.assertItemsEqual([router_id],
                                       response[odl_const.ODL_BGPVPN]
