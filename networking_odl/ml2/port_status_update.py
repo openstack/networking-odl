@@ -120,8 +120,8 @@ class OdlPortStatusUpdate(worker.BaseWorker):
             url=port_fetch_url)
 
         for port in ports:
-            id = port["id"]
-            response = client.get(id)
+            port_id = port["id"]
+            response = client.get(port_id)
             if response.status_code != 200:
                 LOG.warning("Non-200 response code %s", str(response))
                 continue
@@ -131,6 +131,6 @@ class OdlPortStatusUpdate(worker.BaseWorker):
                 # See https://bugs.launchpad.net/networking-odl/+bug/1686023
                 provisioning_blocks.provisioning_complete(
                     context.get_admin_context(),
-                    id, resources.PORT,
+                    port_id, resources.PORT,
                     provisioning_blocks.L2_AGENT_ENTITY)
         LOG.debug("done pulling pending statuses")
