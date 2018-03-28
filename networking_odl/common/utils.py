@@ -46,8 +46,6 @@ def neutronify(name):
 def get_odl_url(path=''):
     '''Make a URL for some ODL resource (path)'''
     purl = urlparse.urlsplit(cfg.CONF.ml2_odl.url)
-    # TODO(mpeterson): remove when it's fixed in six
-    # pylint: disable=too-many-function-args
     features_url = urlparse.urlunparse((
         purl.scheme, purl.netloc, path, '', '', ''))
     return features_url

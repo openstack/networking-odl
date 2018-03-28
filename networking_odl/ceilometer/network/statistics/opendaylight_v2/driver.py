@@ -144,10 +144,7 @@ class OpenDaylightDriver(driver.Driver):
                                      None,
                                      None,
                                      None)
-        # TODO(mpeterson): remove when it's fixed in six
-        # pylint: disable=too-many-function-args
         endpoint = urlparse.urlunparse(parts)
-        # pylint: enable=too-many-function-args
 
         data = self._prepare_cache(endpoint, params, cache)
 
