@@ -17,7 +17,6 @@
 from neutron_lib import constants as n_const
 from oslo_log import log as logging
 
-from neutron.db import api as db_api
 from neutron.plugins.common import utils as p_utils
 
 
@@ -31,7 +30,6 @@ class OdlDhcpDriverBase(object):
     # of enable_dhcp in case of subnet update event, instead validating on
     # port_id presence in DB by locking the session, this will enable user to
     # reissue the same command in case of failure.
-    @db_api.retry_db_errors
     def create_or_delete_dhcp_port(self, subnet_context):
         # NOTE:(Achuth) Fixes bug 1746715
         # DHCP port to be created for IPv4 subnets only, since ODL doesn't
@@ -53,7 +51,6 @@ class OdlDhcpDriverBase(object):
         if port_id and not subnet_context.current['enable_dhcp']:
             self._delete_port(plugin, subnet_context._plugin_context, port_id)
 
-    @db_api.retry_db_errors
     def _delete_port(self, plugin, context, port_id):
         LOG.debug("Deleting ODL DHCP port with id %s", port_id)
         plugin.delete_port(context, port_id)
@@ -72,7 +69,6 @@ class OdlDhcpDriverBase(object):
 
         return {'port': port_dict}
 
-    @db_api.retry_db_errors
     def get_dhcp_port_if_exists(self, subnet_context):
 
         plugin = subnet_context._plugin
