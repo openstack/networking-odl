@@ -57,12 +57,12 @@ class OpenDaylightBgpvpnDriver(driver_api.BGPVPNDriver):
         LOG.info("Initializing OpenDaylight BGPVPN v2 driver")
         super(OpenDaylightBgpvpnDriver, self).__init__(service_plugin)
         self.journal = journal.OpenDaylightJournalThread()
-        full_sync.register(bgpvpn_const.LABEL, BGPVPN_RESOURCES,
+        full_sync.register(bgpvpn_const.ALIAS, BGPVPN_RESOURCES,
                            self.get_resources)
 
     @staticmethod
     def get_resources(context, resource_type):
-        plugin = directory.get_plugin(bgpvpn_const.LABEL)
+        plugin = directory.get_plugin(bgpvpn_const.ALIAS)
         if resource_type == odl_const.ODL_BGPVPN:
             obj_getter = getattr(plugin,
                                  'get_%s' % BGPVPN_RESOURCES[resource_type])
