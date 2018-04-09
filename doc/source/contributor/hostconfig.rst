@@ -65,7 +65,7 @@ OVS configuration example::
             "vif_type": "ovs",
             "vif_details": "{}"
         }]
-        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "allowed_network_types": ["local", "flat", "gre", "vlan", "vxlan"]",
         "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
@@ -79,7 +79,7 @@ OVS SR-IOV Hardware Offload configuration example::
             "vif_type": "ovs",
             "vif_details": "{}"}
         }]
-        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "allowed_network_types": ["local", "flat", "gre", "vlan", "vxlan"]",
         "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
@@ -99,7 +99,7 @@ OVS_DPDK configuration example::
                 "vhostuser_mode": "client",
                 "vhostuser_socket": "/var/run/openvswitch/vhu$PORT_ID"}
         }]
-        "allowed_network_types": ["local", "gre", "vlan", "vxlan"]",
+        "allowed_network_types": ["local", "flat", "gre", "vlan", "vxlan"]",
         "bridge_mappings": {"physnet1":"br-ex"}
    }"
 
@@ -118,7 +118,7 @@ VPP configuration example::
              "vhostuser_mode": "server",
              "vhostuser_socket": "/tmp/socket_$PORT_ID"
          }}],
-        "allowed_network_types": ["local", "vlan", "vxlan", "gre"],
+        "allowed_network_types": ["local", "flat", "vlan", "vxlan", "gre"],
         "bridge_mappings": {"physnet1": "br-ex"}}}
 
 **Host Config URL**
@@ -150,7 +150,7 @@ Example for host configuration
             "vif_type": "ovs",
             "vif_details": {}
         }]
-        "allowed_network_types": ["local", "gre", "vlan", "vxlan"],
+        "allowed_network_types": ["local", "flat", "gre", "vlan", "vxlan"],
         "bridge_mappings": {"physnet1":"br-ex"}}"
       },
       {
