@@ -4,10 +4,14 @@
 # What release to use. Choices are:
 #
 #   latest-snapshot          (master latest snapshot)
-#   carbon-snapshot-0.6      (master latest carbon snapshot)
-#   carbon-snapshot-0.6.0    (master)
-#   boron-snapshot-0.5       (stable/boron latest boron snapshot)
-#   boron-snapshot-0.5.3     (stable/boron)
+#   carbon-snapshot-0.6      (stable/carbon latest carbon snapshot)
+#   carbon-snapshot-0.6.2    (stable/carbon)
+#   carbon-latest
+#   carbon-0.6.1-SR1
+#   carbon-0.6.0
+#   boron-latest
+#   boron-0.5.2-SR4
+#   boron-0.5.2-SR3
 #   boron-0.5.2-SR2
 #   boron-0.5.1-SR1
 #   boron-0.5.0
