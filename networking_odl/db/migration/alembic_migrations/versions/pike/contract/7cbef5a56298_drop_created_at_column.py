@@ -21,11 +21,11 @@ Create Date: 2017-08-16 05:49:53.964988
 
 """
 
+from alembic import op
+
 # revision identifiers, used by Alembic.
 revision = '7cbef5a56298'
 down_revision = 'eccd865b7d3a'
-
-from alembic import op
 
 
 def upgrade():

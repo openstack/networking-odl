@@ -14,7 +14,7 @@
 # under the License.
 
 from oslo_log import log
-from six.moves.urllib import parse as urlparse
+from six.moves import urllib_parse as urlparse
 
 from ceilometer.network.statistics import driver
 from networking_odl.ceilometer.network.statistics.opendaylight_v2 import client

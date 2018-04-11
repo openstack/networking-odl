@@ -14,7 +14,7 @@
 #    under the License.
 
 from oslo_config import cfg
-import six.moves.urllib.parse as urlparse
+from six.moves import urllib_parse as urlparse
 
 from networking_odl.common import constants as odl_const
 

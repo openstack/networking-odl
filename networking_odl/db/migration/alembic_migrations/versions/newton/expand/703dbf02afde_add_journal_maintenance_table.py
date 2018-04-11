@@ -21,15 +21,15 @@ Create Date: 2016-04-12 10:49:31.802663
 
 """
 
-# revision identifiers, used by Alembic.
-revision = '703dbf02afde'
-down_revision = '37e242787ae5'
-
 from alembic import op
 from oslo_utils import uuidutils
 import sqlalchemy as sa
 
 from networking_odl.common import constants as odl_const
+
+# revision identifiers, used by Alembic.
+revision = '703dbf02afde'
+down_revision = '37e242787ae5'
 
 
 def upgrade():
