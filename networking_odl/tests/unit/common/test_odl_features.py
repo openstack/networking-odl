@@ -40,7 +40,7 @@ class TestOdlFeatures(base.DietTestCase):
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_fetch_exception(self, mocked_client):
         mocked_client.side_effect = exceptions.ConnectionError()
-        self.assertTrue(None == odl_features._fetch_features())
+        self.assertIsNone(odl_features._fetch_features())
 
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_fetch_404(self, mocked_client):
@@ -55,7 +55,7 @@ class TestOdlFeatures(base.DietTestCase):
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_fetch_500(self, mocked_client):
         mocked_client.return_value = mock.MagicMock(status_code=500)
-        self.assertTrue(None == odl_features._fetch_features())
+        self.assertIsNone(odl_features._fetch_features())
 
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_init(self, mocked_client):

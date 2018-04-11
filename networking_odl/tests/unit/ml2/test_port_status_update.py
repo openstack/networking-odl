@@ -69,8 +69,8 @@ class TestOdlPortStatusUpdate(base.DietTestCase):
         updater = OdlPortStatusUpdate()
         updater._process_websocket_recv(self.WEBSOCK_NOTIFICATION, False)
         mocked_provisioning_complete.assert_called_once()
-        self.assertTrue(mocked_provisioning_complete.call_args[0][1]
-                        == 'd6e6335d-9568-4949-aef1-4107e34c5f28')
+        self.assertEqual(mocked_provisioning_complete.call_args[0][1],
+                         'd6e6335d-9568-4949-aef1-4107e34c5f28')
 
     @mock.patch.object(provisioning_blocks, 'provisioning_complete')
     @mock.patch.object(neutron_lib.context, 'get_admin_context')
