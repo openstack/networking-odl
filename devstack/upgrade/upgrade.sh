@@ -14,7 +14,8 @@ source $TARGET_DEVSTACK_DIR/inc/python
 
 NETWORKING_ODL_DIR="$TARGET_RELEASE_DIR/networking-odl"
 
-setup_develop $NETWORKING_ODL_DIR
+source $NETWORKING_ODL_DIR/devstack/entry_points
+install_networking_odl
 
 set +x
 set +o xtrace

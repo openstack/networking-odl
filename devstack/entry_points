@@ -255,6 +255,8 @@ function install_opendaylight {
 # install_networking_odl() - Install the ML2 driver and other plugins/drivers
 function install_networking_odl {
     echo "Installing the Networking-ODL driver for OpenDaylight"
+    # TODO(mpeterson): Remove the following line when ceilometer is published to pypi
+    pip_install -e "git+https://git.openstack.org/openstack/ceilometer@master#egg=ceilometer"
     setup_develop $NETWORKING_ODL_DIR
 }
 
