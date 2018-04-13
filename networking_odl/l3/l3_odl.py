@@ -67,7 +67,7 @@ class OpenDaylightL3RouterPlugin(
 
     def setup_rpc(self):
         self.topic = topics.L3PLUGIN
-        self.conn = n_rpc.create_connection()
+        self.conn = n_rpc.Connection()
         self.agent_notifiers.update(
             {q_const.AGENT_TYPE_L3: l3_rpc_agent_api.L3AgentNotifyAPI()})
         self.endpoints = [l3_rpc.L3RpcCallback()]
