@@ -92,7 +92,7 @@
       > in /etc/neutron/plugins/ml2/ml2_conf.ini
       extensions_drivers = qos, port_security
 
-    restart neutron service q-svc
+    restart neutron service neutron-api
 
 
 12. Note: legacy netvirt specific options
