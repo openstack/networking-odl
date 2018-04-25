@@ -50,7 +50,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
         super(JournalPeriodicProcessorTest, self).setUp()
         self.periodic_task_fixture = self.useFixture(
             base.OpenDaylightPeriodicTaskFixture())
-        self.cfg.config(sync_timeout=0, group='ml2_odl')
+        self.cfg.config(sync_timeout=0.1, group='ml2_odl')
 
     def _create_periodic_processor(self):
         periodic_processor = worker.JournalPeriodicProcessor()

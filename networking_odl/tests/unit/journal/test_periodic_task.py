@@ -27,7 +27,7 @@ from networking_odl.tests.unit import test_base_db
 
 
 TEST_TASK_NAME = 'test-maintenance'
-TEST_TASK_INTERVAL = 0
+TEST_TASK_INTERVAL = 0.1
 
 
 class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
