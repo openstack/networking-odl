@@ -74,8 +74,9 @@ class OpenDaylightFeaturesFixture(fixtures.Fixture):
             self.cfg.config(username='someuser', group='ml2_odl')
         if cfg.CONF.ml2_odl.password is None:
             self.cfg.config(password='somepass', group='ml2_odl')
-        # make sure init is not called, it'll block the main thread
-        self.cfg.config(odl_features='', group='ml2_odl')
+        # make sure _fetch_features is not called, it'll block the main thread
+        self.cfg.config(odl_features_json='{"features": {"feature": []}}',
+                        group='ml2_odl')
         odl_features.init()
         self.addCleanup(odl_features.deinit)
 

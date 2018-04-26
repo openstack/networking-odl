@@ -642,8 +642,10 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
     @mock.patch.object(provisioning_blocks, 'add_provisioning_component')
     def test_prepare_inital_port_status_with_websocket(
             self, mocked_add_provisioning_component):
-        self.cfg.config(odl_features=odl_features.OPERATIONAL_PORT_STATUS,
-                        group='ml2_odl')
+        feature_json = """{"features": {"feature":
+                            [{"service-provider-feature":
+                            "neutron-extensions:operational-port-status"}]}}"""
+        self.cfg.config(odl_features_json=feature_json, group='ml2_odl')
         self.addCleanup(odl_features.deinit)
         odl_features.init()
         port_ctx = self._fake_port_context(
