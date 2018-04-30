@@ -15,9 +15,8 @@
 
 
 from neutron_lib import constants as n_const
+from neutron_lib.plugins import utils as p_utils
 from oslo_log import log as logging
-
-from neutron.plugins.common import utils as p_utils
 
 
 LOG = logging.getLogger(__name__)
