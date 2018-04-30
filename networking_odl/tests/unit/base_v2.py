@@ -18,6 +18,7 @@ import mock
 from neutron.tests.unit.plugins.ml2 import test_plugin
 
 from networking_odl.common import client
+from networking_odl.journal import base_driver
 from networking_odl.journal import journal
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
@@ -33,6 +34,7 @@ class OpenDaylightConfigBase(test_plugin.Ml2PluginV2TestCase,
         self.useFixture(base.OpenDaylightFullSyncFixture())
         super(OpenDaylightConfigBase, self).setUp()
         self.thread = journal.OpenDaylightJournalThread()
+        self.addCleanup(base_driver.ALL_RESOURCES.clear)
 
     def run_journal_processing(self):
         """Cause the journal to process the first pending entry"""

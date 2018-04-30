@@ -28,6 +28,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import odl_features
 from networking_odl.common import postcommit
 from networking_odl.dhcp import odl_dhcp_driver as dhcp_driver
+from networking_odl.journal import base_driver
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.journal import worker
@@ -38,22 +39,23 @@ from networking_odl.trunk import trunk_driver_v2 as trunk_driver
 
 LOG = logging.getLogger(__name__)
 
-L2_RESOURCES = {
-    odl_const.ODL_SG: odl_const.ODL_SGS,
-    odl_const.ODL_SG_RULE: odl_const.ODL_SG_RULES,
-    odl_const.ODL_NETWORK: odl_const.ODL_NETWORKS,
-    odl_const.ODL_SUBNET: odl_const.ODL_SUBNETS,
-    odl_const.ODL_PORT: odl_const.ODL_PORTS
-}
-
 
 @postcommit.add_postcommit('network', 'subnet', 'port')
-class OpenDaylightMechanismDriver(api.MechanismDriver):
+class OpenDaylightMechanismDriver(api.MechanismDriver,
+                                  base_driver.ResourceBaseDriver):
     """OpenDaylight Python Driver for Neutron.
 
     This code is the backend implementation for the OpenDaylight ML2
     MechanismDriver for OpenStack Neutron.
     """
+    RESOURCES = {
+        odl_const.ODL_SG: odl_const.ODL_SGS,
+        odl_const.ODL_SG_RULE: odl_const.ODL_SG_RULES,
+        odl_const.ODL_NETWORK: odl_const.ODL_NETWORKS,
+        odl_const.ODL_SUBNET: odl_const.ODL_SUBNETS,
+        odl_const.ODL_PORT: odl_const.ODL_PORTS
+    }
+    plugin_type = nlib_const.CORE
 
     def initialize(self):
         LOG.debug("Initializing OpenDaylight ML2 driver")
@@ -69,7 +71,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
         if cfg.CONF.ml2_odl.enable_dhcp_service:
             self.dhcp_driver = dhcp_driver.OdlDhcpDriver()
 
-        full_sync.register(nlib_const.CORE, L2_RESOURCES)
+        full_sync.register(nlib_const.CORE, self.RESOURCES)
         odl_features.init()
 
     def get_workers(self):
