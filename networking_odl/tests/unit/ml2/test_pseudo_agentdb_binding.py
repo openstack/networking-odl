@@ -417,6 +417,7 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
         self.useFixture(OpenDaylightAgentDBFixture())
         super(TestPseudoAgentDBBindingController, self).setUp()
         self.useFixture(fixture.CallbackRegistryFixture())
+        self.cfg = self.useFixture(config_fixture.Config())
 
         self.mgr = pseudo_agentdb_binding.PseudoAgentDBBindingController()
 
@@ -632,7 +633,6 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
     @mock.patch.object(provisioning_blocks, 'add_provisioning_component')
     def test_prepare_inital_port_status_no_websocket(
             self, mocked_add_provisioning_component):
-        odl_features.feature_set = set()
         port_ctx = self._fake_port_context(
             fake_segments=[self.test_valid_segment])
         initial_port_status = self.mgr._prepare_initial_port_status(port_ctx)
@@ -642,7 +642,10 @@ class TestPseudoAgentDBBindingController(base.DietTestCase):
     @mock.patch.object(provisioning_blocks, 'add_provisioning_component')
     def test_prepare_inital_port_status_with_websocket(
             self, mocked_add_provisioning_component):
-        odl_features.feature_set.add(odl_features.OPERATIONAL_PORT_STATUS)
+        self.cfg.config(odl_features=odl_features.OPERATIONAL_PORT_STATUS,
+                        group='ml2_odl')
+        self.addCleanup(odl_features.deinit)
+        odl_features.init()
         port_ctx = self._fake_port_context(
             fake_segments=[self.test_valid_segment])
         initial_port_status = self.mgr._prepare_initial_port_status(port_ctx)

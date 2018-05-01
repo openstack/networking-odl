@@ -36,7 +36,6 @@ class TestOdlFeatures(base.DietTestCase):
         self.useFixture(self.features_fixture)
         self.cfg = self.useFixture(config_fixture.Config())
         super(TestOdlFeatures, self).setUp()
-        self.features_fixture.mock_odl_features_init.stop()
 
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_fetch_exception(self, mocked_client):
@@ -60,6 +59,7 @@ class TestOdlFeatures(base.DietTestCase):
 
     @mock.patch.object(OpenDaylightRestClient, 'request')
     def test_init(self, mocked_client):
+        self.cfg.config(odl_features=None, group='ml2_odl')
         response = mock.MagicMock()
         response.status_code = 200
         response.json = mock.MagicMock(
