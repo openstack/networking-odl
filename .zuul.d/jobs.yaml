@@ -184,6 +184,7 @@
     name: networking-odl-fullstack-base
     parent: networking-odl-devstack-base-tox
     pre-run: playbooks/fullstack/pre.yaml
+    post-run: playbooks/fullstack/post.yaml
     roles:
       - zuul: openstack-dev/devstack
     description: |
