@@ -1,3 +1,7 @@
+- name: Print information on "{{ item }}"
+  command: ovs-ofctl --protocols OpenFlow13 show "{{ item|quote }}"
+  become: true
+
 - name: Print statistics for network devices associated with "{{ item }}"
   command: ovs-ofctl --protocols OpenFlow13 dump-ports "{{ item|quote }}"
   become: true
