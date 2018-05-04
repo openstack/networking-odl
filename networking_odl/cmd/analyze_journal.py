@@ -22,7 +22,7 @@ By default the input is read through pipe, unless a log file is specified.
 
 Examples:
     Analyzing devstack's Neutron log:
-        journalctl -u devstack@q-svc | python analyze_journal.py
+        journalctl -u devstack@neutron-api | python analyze_journal.py
 
     Analyzing an arbitrary log file:
         python analyze_journal.py --file /path/to/file.log

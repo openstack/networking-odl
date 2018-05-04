@@ -231,6 +231,6 @@ opendaylight-with-openstack/openstack-with-ovsdb.html>`_ can be referred to.
 .. note::
 
    After setting config files, you have to restart the neutron server
-   if you are using screen then it can be directly started from q-svc
+   if you are using screen then it can be directly started from neutron-api
    window or you can use service neutron-server restart, latter may or
    may not work depending on OS you are using.
