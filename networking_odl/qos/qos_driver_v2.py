@@ -22,15 +22,21 @@ from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import odl_features
 from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.qos import qos_utils
 
 LOG = logging.getLogger(__name__)
 
-# TODO(manjeets) fetch these from Neutron NB
-# Only bandwidth limit is supported so far.
-SUPPORTED_RULES = {
+VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
+VNIC_TYPES = [portbindings.VNIC_NORMAL]
+
+QOS_RESOURCES = {
+    odl_const.ODL_QOS_POLICY: odl_const.ODL_QOS_POLICIES
+}
+
+DEFAULT_QOS_RULES = {
     qos_consts.RULE_TYPE_BANDWIDTH_LIMIT: {
         qos_consts.MAX_KBPS: {
             'type:range': [0, db_const.DB_INTEGER_MAX_VALUE]},
@@ -38,14 +44,10 @@ SUPPORTED_RULES = {
             'type:range': [0, db_const.DB_INTEGER_MAX_VALUE]},
         qos_consts.DIRECTION: {
             'type:values': [constants.EGRESS_DIRECTION]}
-    },
+    }
 }
-VIF_TYPES = [portbindings.VIF_TYPE_OVS, portbindings.VIF_TYPE_VHOST_USER]
-VNIC_TYPES = [portbindings.VNIC_NORMAL]
 
-QOS_RESOURCES = {
-    odl_const.ODL_QOS_POLICY: odl_const.ODL_QOS_POLICIES
-}
+QOS_RULES = 'qos-rules'
 
 
 class OpenDaylightQosDriver(base.DriverBase):
@@ -58,12 +60,17 @@ class OpenDaylightQosDriver(base.DriverBase):
 
     @staticmethod
     def create():
-        return OpenDaylightQosDriver()
+        try:
+            supported_rules = odl_features.get_config(QOS_RULES)
+        except KeyError:
+            supported_rules = DEFAULT_QOS_RULES
 
-    def __init__(self, name='OpenDaylightQosDriver',
+        return OpenDaylightQosDriver(supported_rules=supported_rules)
+
+    def __init__(self, supported_rules,
+                 name='OpenDaylightQosDriver',
                  vif_types=VIF_TYPES,
                  vnic_types=VNIC_TYPES,
-                 supported_rules=SUPPORTED_RULES,
                  requires_rpc_notifications=False):
         super(OpenDaylightQosDriver, self).__init__(
             name, vif_types, vnic_types, supported_rules,

@@ -66,13 +66,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
         self.journal = journal.OpenDaylightJournalThread()
         self.port_binding_controller = port_binding.PortBindingManager.create()
         self.trunk_driver = trunk_driver.OpenDaylightTrunkDriverV2.create()
-        if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
-            qos_driver.OpenDaylightQosDriver.create()
         if cfg.CONF.ml2_odl.enable_dhcp_service:
             self.dhcp_driver = dhcp_driver.OdlDhcpDriver()
 
         full_sync.register(nlib_const.CORE, self.RESOURCES)
         odl_features.init()
+
+        if odl_const.ODL_QOS in cfg.CONF.ml2.extension_drivers:
+            qos_driver.OpenDaylightQosDriver.create()
 
     def get_workers(self):
         workers = [port_status_update.OdlPortStatusUpdate(),
