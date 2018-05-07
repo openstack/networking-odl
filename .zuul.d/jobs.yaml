@@ -204,6 +204,7 @@
 - job:
     name: networking-odl-functional-carbon
     parent: networking-odl-functional-base
+    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *carbon
@@ -226,6 +227,7 @@
 - job:
     name: networking-odl-fullstack-carbon
     parent: networking-odl-fullstack-base
+    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *carbon
@@ -297,6 +299,7 @@
 - job:
     name: networking-odl-rally-carbon
     parent: legacy-dsvm-base
+    voting: false
     run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/run.yaml
     post-run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/post.yaml
     timeout: 7500
