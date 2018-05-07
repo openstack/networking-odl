@@ -203,7 +203,6 @@
 - job:
     name: networking-odl-functional-oxygen
     parent: networking-odl-functional-base
-    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *oxygen
@@ -218,7 +217,6 @@
 - job:
     name: networking-odl-fullstack-oxygen
     parent: networking-odl-fullstack-base
-    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *oxygen
