@@ -98,7 +98,7 @@ https://wiki.openstack.org/wiki/Testr
 
 .. _Testr: https://wiki.openstack.org/wiki/Testr
 .. _tox: http://tox.readthedocs.org/en/latest/
-.. _virtualenvs: https://pypi.python.org/pypi/virtualenv
+.. _virtualenvs: https://pypi.org/project/virtualenv/
 
 Tests written can also be debugged by adding pdb break points. Normally if you add
 a break point and just run the tests with normal flags they will end up in failing.
