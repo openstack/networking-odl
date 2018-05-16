@@ -19,17 +19,8 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-carbon
         - networking-odl-tempest-nitrogen
         - networking-odl-tempest-oxygen
-        - networking-odl-tempest-carbon-multinode:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
         - networking-odl-tempest-nitrogen-multinode:
             voting: false
             irrelevant-files:
@@ -46,12 +37,6 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-rally-carbon:
-            branches: ^(?!stable/newton).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
         - networking-odl-rally-nitrogen:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
@@ -65,8 +50,6 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-carbon
-        - networking-odl-fullstack-carbon
         - networking-odl-functional-nitrogen
         - networking-odl-fullstack-nitrogen
         - networking-odl-functional-oxygen
@@ -82,20 +65,12 @@
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-        - networking-odl-rally-carbon:
-            branches: ^(?!stable/newton).*$
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
         - networking-odl-rally-nitrogen:
             branches: ^(?!stable/(newton|ocata)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-carbon
-        - networking-odl-fullstack-carbon
         - networking-odl-functional-nitrogen
         - networking-odl-fullstack-nitrogen
         - networking-odl-functional-oxygen
