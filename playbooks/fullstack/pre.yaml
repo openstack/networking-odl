@@ -25,3 +25,6 @@
         executable: /bin/bash
         chdir: "{{ zuul.project.src_dir }}"
       become: yes
+
+    - include_role:
+        name: show-odl-info
