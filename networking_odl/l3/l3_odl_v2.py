@@ -18,6 +18,7 @@ from neutron_lib import constants as q_const
 from neutron_lib.plugins import constants as plugin_constants
 from oslo_log import log as logging
 
+from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
@@ -35,6 +36,13 @@ L3_RESOURCES = {
     odl_const.ODL_ROUTER: odl_const.ODL_ROUTERS,
     odl_const.ODL_FLOATINGIP: odl_const.ODL_FLOATINGIPS
 }
+
+
+@db_api.retry_if_session_inactive()
+def _record_in_journal(context, object_type, operation, object_id, data):
+    session = context.session
+    with db_api.autonested_transaction(session):
+        journal.record(context, object_type, object_id, operation, data)
 
 
 class OpenDaylightL3RouterPlugin(
@@ -70,8 +78,9 @@ class OpenDaylightL3RouterPlugin(
     def create_router(self, context, router):
         router_dict = super(
             OpenDaylightL3RouterPlugin, self).create_router(context, router)
-        journal.record(context, odl_const.ODL_ROUTER, router_dict['id'],
-                       odl_const.ODL_CREATE, router_dict)
+        _record_in_journal(
+            context, odl_const.ODL_ROUTER, odl_const.ODL_CREATE,
+            router_dict['id'], router_dict)
         return router_dict
 
     @journal.call_thread_on_end
@@ -79,8 +88,9 @@ class OpenDaylightL3RouterPlugin(
         router_dict = super(
             OpenDaylightL3RouterPlugin, self).update_router(
                 context, router_id, router)
-        journal.record(context, odl_const.ODL_ROUTER,
-                       router_id, odl_const.ODL_UPDATE, router_dict)
+        _record_in_journal(
+            context, odl_const.ODL_ROUTER, odl_const.ODL_UPDATE,
+            router_id, router_dict)
         return router_dict
 
     @journal.call_thread_on_end
@@ -89,8 +99,9 @@ class OpenDaylightL3RouterPlugin(
         dependency_list = [router_dict['gw_port_id']]
         super(OpenDaylightL3RouterPlugin, self).delete_router(context,
                                                               router_id)
-        journal.record(context, odl_const.ODL_ROUTER, router_id,
-                       odl_const.ODL_DELETE, dependency_list)
+        _record_in_journal(
+            context, odl_const.ODL_ROUTER, odl_const.ODL_DELETE,
+            router_id, dependency_list)
 
     @journal.call_thread_on_end
     def create_floatingip(self, context, floatingip,
@@ -101,8 +112,9 @@ class OpenDaylightL3RouterPlugin(
         fip_dict = super(
             OpenDaylightL3RouterPlugin, self).create_floatingip(
                 context, floatingip, initial_status)
-        journal.record(context, odl_const.ODL_FLOATINGIP, fip_dict['id'],
-                       odl_const.ODL_CREATE, fip_dict)
+        _record_in_journal(
+            context, odl_const.ODL_FLOATINGIP, odl_const.ODL_CREATE,
+            fip_dict['id'], fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
@@ -119,8 +131,9 @@ class OpenDaylightL3RouterPlugin(
         self.update_floatingip_status(context, floatingip_id,
                                       fip_dict['status'])
 
-        journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
-                       odl_const.ODL_UPDATE, fip_dict)
+        _record_in_journal(
+            context, odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE,
+            floatingip_id, fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
@@ -130,8 +143,9 @@ class OpenDaylightL3RouterPlugin(
                            floatingip_dict['floating_network_id']]
         super(OpenDaylightL3RouterPlugin, self).delete_floatingip(
             context, floatingip_id)
-        journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
-                       odl_const.ODL_DELETE, dependency_list)
+        _record_in_journal(
+            context, odl_const.ODL_FLOATINGIP, odl_const.ODL_DELETE,
+            floatingip_id, dependency_list)
 
     def disassociate_floatingips(self, context, port_id, do_notify=True):
         fip_dicts = self.get_floatingips(context,
@@ -144,8 +158,9 @@ class OpenDaylightL3RouterPlugin(
             fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
             self.update_floatingip_status(context, fip_dict['id'],
                                           fip_dict['status'])
-            journal.record(context, odl_const.ODL_FLOATINGIP,
-                           fip_dict['id'], odl_const.ODL_UPDATE, fip_dict)
+            _record_in_journal(
+                context, odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE,
+                fip_dict['id'], fip_dict)
         return router_ids
 
     @journal.call_thread_on_end

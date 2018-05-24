@@ -13,9 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import contextlib
+
 import mock
 import requests
 
+from neutron.db import l3_db
 from neutron.plugins.ml2 import plugin
 from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
@@ -33,6 +36,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.common import filters
 from networking_odl.db import db
 from networking_odl.journal import journal
+from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
 from networking_odl.tests.unit import test_base_db
@@ -270,36 +274,36 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
 
         self._db_cleanup()
 
-    def _test_object_db(self, object_type):
+    @contextlib.contextmanager
+    def _prepare_resource(self, resource_type):
         # Create network and subnet for testing.
         kwargs = {'arg_list': (external_net.EXTERNAL,),
                   external_net.EXTERNAL: True}
         with self.network(**kwargs) as network:
             with self.subnet(network=network):
-                object_dict = self._get_mock_operation_info(
-                    object_type, network, None)
+                yield self._get_mock_operation_info(
+                    resource_type, network, None)
 
-                # Add and test 'create' database entry.
-                method = getattr(self.driver,
-                                 odl_const.ODL_CREATE + '_' + object_type)
-                new_object_dict = method(self.db_context, object_dict)
-                object_id = new_object_dict['id']
-                self._test_db_results(object_id, odl_const.ODL_CREATE,
-                                      object_type)
+    def _test_object_db(self, object_type):
+        with self._prepare_resource(object_type) as object_dict:
+            # Add and test 'create' database entry.
+            method = getattr(self.driver,
+                             odl_const.ODL_CREATE + '_' + object_type)
+            new_object_dict = method(self.db_context, object_dict)
+            object_id = new_object_dict['id']
+            self._test_db_results(object_id, odl_const.ODL_CREATE, object_type)
 
-                # Add and test 'update' database entry.
-                method = getattr(self.driver,
-                                 odl_const.ODL_UPDATE + '_' + object_type)
-                method(self.db_context, object_id, object_dict)
-                self._test_db_results(object_id, odl_const.ODL_UPDATE,
-                                      object_type)
+            # Add and test 'update' database entry.
+            method = getattr(self.driver,
+                             odl_const.ODL_UPDATE + '_' + object_type)
+            method(self.db_context, object_id, object_dict)
+            self._test_db_results(object_id, odl_const.ODL_UPDATE, object_type)
 
-                # Add and test 'delete' database entry.
-                method = getattr(self.driver,
-                                 odl_const.ODL_DELETE + '_' + object_type)
-                method(self.db_context, object_id)
-                self._test_db_results(object_id, odl_const.ODL_DELETE,
-                                      object_type)
+            # Add and test 'delete' database entry.
+            method = getattr(self.driver,
+                             odl_const.ODL_DELETE + '_' + object_type)
+            method(self.db_context, object_id)
+            self._test_db_results(object_id, odl_const.ODL_DELETE, object_type)
 
     def _test_dependency_processing(
             self, test_operation, test_object, test_id, test_data,
@@ -413,3 +417,75 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             EMPTY_DEP,
             odl_const.ODL_UPDATE, odl_const.ODL_FLOATINGIP, FLOATINGIP_ID,
             {})
+
+    @mock.patch.object(journal, 'record')
+    def test__record_in_journal_retries(self, record_mock):
+        self._test_retry_exceptions(
+            l3_odl_v2._record_in_journal, record_mock, True)
+
+    def _assert_record_in_journal(self, record_in_journal, resource_type,
+                                  operation):
+        record_in_journal.assert_called_with(
+            mock.ANY, resource_type, operation, mock.ANY, mock.ANY)
+
+    def _call_and_assert_recorded_in_journal(
+            self, resource_type, operation, function, *args):
+        with mock.patch.object(l3_odl_v2,
+                               '_record_in_journal') as record_in_journal:
+            function(self.db_context, *args)
+
+        record_in_journal.assert_called_with(
+            mock.ANY, resource_type, operation, mock.ANY, mock.ANY)
+
+    def test_create_router_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_ROUTER) as router:
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_ROUTER, odl_const.ODL_CREATE,
+                self.driver.create_router, router)
+
+    def test_update_router_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_ROUTER) as router:
+            result = self.driver.create_router(self.db_context, router)
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_ROUTER, odl_const.ODL_UPDATE,
+                self.driver.update_router, result['id'], router)
+
+    def test_delete_router_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_ROUTER) as router:
+            result = self.driver.create_router(self.db_context, router)
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_ROUTER, odl_const.ODL_DELETE,
+                self.driver.delete_router, result['id'])
+
+    def test_create_fip_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_FLOATINGIP) as fip:
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_FLOATINGIP, odl_const.ODL_CREATE,
+                self.driver.create_floatingip, fip)
+
+    def test_update_fip_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_FLOATINGIP) as fip:
+            result = self.driver.create_floatingip(self.db_context, fip)
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE,
+                self.driver.update_floatingip, result['id'], fip)
+
+    def test_delete_fip_records_in_journal(self):
+        with self._prepare_resource(odl_const.ODL_FLOATINGIP) as fip:
+            result = self.driver.create_floatingip(self.db_context, fip)
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_FLOATINGIP, odl_const.ODL_DELETE,
+                self.driver.delete_floatingip, result['id'])
+
+    @mock.patch.object(l3_db.L3_NAT_dbonly_mixin, 'disassociate_floatingips')
+    @mock.patch.object(l3_odl_v2.OpenDaylightL3RouterPlugin, 'get_floatingips')
+    def test_disassociate_floatingips_records_in_journal(
+            self, get_fips, disassociate_floatingips):
+        with self._prepare_resource(odl_const.ODL_FLOATINGIP) as fip:
+            result = self.driver.create_floatingip(self.db_context, fip)
+            get_fips.return_value = [result]
+            self._call_and_assert_recorded_in_journal(
+                odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE,
+                self.driver.disassociate_floatingips, 'fake_id')
+
+        self.assertTrue(disassociate_floatingips.called)
