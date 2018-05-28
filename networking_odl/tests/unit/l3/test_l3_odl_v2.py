@@ -127,9 +127,6 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         self.plugin._network_is_external = mock.Mock(return_value=True)
         self.driver = directory.get_plugin(constants.L3)
         self.thread = journal.OpenDaylightJournalThread()
-        self.driver.get_floatingip = mock.Mock(
-            return_value={'router_id': ROUTER_ID,
-                          'floating_network_id': NETWORK_ID})
 
     @staticmethod
     def _get_mock_router_operation_info(network, subnet):
