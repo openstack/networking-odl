@@ -148,7 +148,7 @@ def _sgrule_scrub_icmpv6_name(sgrule):
         sgrule['protocol'] = n_const.PROTO_NAME_IPV6_ICMP_LEGACY
 
 
-# ODL boron neturon northbound knows the following protocol names.
+# ODL neturon northbound knows the following protocol names.
 # It's safe to pass those names
 _ODL_KNOWN_PROTOCOL_NAMES = (
     n_const.PROTO_NAME_TCP,

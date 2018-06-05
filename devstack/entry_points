@@ -31,18 +31,9 @@ function configure_opendaylight {
 
     # Add netvirt feature in Karaf, if it's not already there
     if ! (grep -w '^featuresBoot' $ODL_KARAF_CONFIG | grep $ODL_NETVIRT_KARAF_FEATURE); then
-        case "$ODL_RELEASE" in
-            boron*|carbon*)
-                sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
-                    $ODL_KARAF_CONFIG
-                ;;
-            *)
-                # Oxygen or later
-                # In Oxygen, the format has been modified again
-                sed -i "/^featuresBoot = / s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
-                    $ODL_KARAF_CONFIG
-                ;;
-        esac
+        # This format was introduced in oxygen
+        sed -i "/^featuresBoot = / s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
+            $ODL_KARAF_CONFIG
     fi
 
     # Move Jetty to $ODL_PORT
@@ -115,21 +106,10 @@ function configure_opendaylight {
     sudo chown $(id -un):$(id -gn) "$ODL_LOGDIR"
     sudo ln -sf $_LF "$ODL_LOGDIR/screen-karaf.log"
 
-    # Change the karaf logfile
-    # disable log rotation by setting file size large enough
-    case "$ODL_RELEASE" in
-        boron*|carbon*)
-        sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
-            -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
-            $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
-            ;;
-        *)
-        # oxygen or later
-        sed -i -e "/^log4j2\.appender\.rolling\.fileName/ s/.*/log4j2\.appender\.rolling\.fileName\ = $LF/" \
-            -e "/^log4j2\.appender\.rolling\.policies\.size\.size/ s/.*/log4j2\.appender\.rolling\.policies\.size\.size\ = 1024GB/" \
-            $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
-            ;;
-    esac
+    # This format was introduced in oxygen
+    sed -i -e "/^log4j2\.appender\.rolling\.fileName/ s/.*/log4j2\.appender\.rolling\.fileName\ = $LF/" \
+        -e "/^log4j2\.appender\.rolling\.policies\.size\.size/ s/.*/log4j2\.appender\.rolling\.policies\.size\.size\ = 1024GB/" \
+        $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
 
     # Configure DEBUG logs for network virtualization in odl, if the user wants it
     if [ "${ODL_NETVIRT_DEBUG_LOGS}" == "True" ]; then

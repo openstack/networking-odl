@@ -19,14 +19,6 @@ case "$ODL_RELEASE_BASE" in
     oxygen-snapshot)
         ODL_RELEASE=oxygen-snapshot-0.8
         ;;
-    carbon-snapshot)
-        ODL_RELEASE=carbon-snapshot-0.6
-        ;;
-    boron-snapshot)
-        # NOTE(yamahata): boron release ends by SR4. no more snapshot
-        # https://wiki.opendaylight.org/view/Simultaneous_Release:Boron_Release_Plan
-        ODL_RELEASE=boron-0.5.4-SR4
-        ;;
     *)
         echo "Unknown ODL release base: $ODL_RELEASE_BASE"
         exit 1
@@ -66,11 +58,6 @@ case "$ODL_GATE_SERVICE_PROVIDER" in
 esac
 
 ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
-case "$ODL_RELEASE_BASE" in
-    carbon-snapshot)
-        ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-hostconfig-ovs
-        ;;
-esac
 
 local localrc_file=$DEVSTACK_PATH/local.conf
 
