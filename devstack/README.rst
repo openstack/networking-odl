@@ -200,7 +200,8 @@
     Note: OVS offload support minimal version requirments -
         Linux kernel from version 4.12
         OVS from version 2.8.0
-        ODL from version Nitrogen
+        ODL from version Nitrogen (please note that Nitrogen is no longer
+        maintained)
 
 19. For development enviornment, if opendaylight installation is not required
     for stack.sh then a parameter ODL_INSTALL should be set to False. By

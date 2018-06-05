@@ -19,9 +19,6 @@ case "$ODL_RELEASE_BASE" in
     oxygen-snapshot)
         ODL_RELEASE=oxygen-snapshot-0.8
         ;;
-    nitrogen-snapshot)
-        ODL_RELEASE=nitrogen-snapshot-0.7
-        ;;
     carbon-snapshot)
         ODL_RELEASE=carbon-snapshot-0.6
         ;;
@@ -70,7 +67,7 @@ esac
 
 ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-logger
 case "$ODL_RELEASE_BASE" in
-    carbon-snapshot|nitrogen-snapshot)
+    carbon-snapshot)
         ODL_NETVIRT_KARAF_FEATURE=$ODL_NETVIRT_KARAF_FEATURE,odl-neutron-hostconfig-ovs
         ;;
 esac

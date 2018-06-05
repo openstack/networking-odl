@@ -36,11 +36,6 @@ function configure_opendaylight {
                 sed -i "/^featuresBoot=/ s/$/,$ODL_NETVIRT_KARAF_FEATURE/" \
                     $ODL_KARAF_CONFIG
                 ;;
-            nitrogen*)
-                # NOTE(yamahata): From Nitrogen, the format has been slightly changed
-                sed -i "/^featuresBoot = \\\\$/ s/\\\\$/$ODL_NETVIRT_KARAF_FEATURE, \\\\/" \
-                    $ODL_KARAF_CONFIG
-                ;;
             *)
                 # Oxygen or later
                 # In Oxygen, the format has been modified again
@@ -123,7 +118,7 @@ function configure_opendaylight {
     # Change the karaf logfile
     # disable log rotation by setting file size large enough
     case "$ODL_RELEASE" in
-        boron*|carbon*|nitrogen*)
+        boron*|carbon*)
         sed -i -e "/^log4j\.appender\.out\.file/ s/.*/log4j\.appender\.out\.file\=$LF/" \
             -e "/^log4j\.appender\.out\.maxFileSize/ s/.*/log4j\.appender\.out\.maxFileSize\=1024GB/" \
             $ODL_DIR/$ODL_NAME/etc/org.ops4j.pax.logging.cfg
