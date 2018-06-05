@@ -163,10 +163,10 @@
       manually install. Please follow the instructions in:
       https://wiki.opendaylight.org/view/Service_Function_Chaining:Main#Building_Open_vSwitch_with_VxLAN-GPE_and_NSH_support
 
-    - Carbon is the recommended and latest version of OpenDaylight to use,
+    - Fluorine is the recommended and latest version of OpenDaylight to use,
       you can specify it by adding the following to local.conf::
 
-        ODL_RELEASE=carbon-snapshot-0.6
+        ODL_RELEASE=fluorine-snapshot-0.9.0
 
     - To clarify, OpenDaylight doesn't have to be running/installed before
       stacking with networking-odl (and it shouldn't). The networking-odl
