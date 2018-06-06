@@ -27,6 +27,7 @@ from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
 from neutron_lib.api.definitions import provider_net as providernet
 from neutron_lib import constants as n_constants
+from neutron_lib.plugins import constants as plugin_const
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_config import fixture as config_fixture
@@ -178,7 +179,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.mech.initialize()
 
     def test_registered_plugin_type(self):
-        self.assertEqual(self.mech.plugin_type, n_constants.CORE)
+        self.assertEqual(self.mech.plugin_type, plugin_const.CORE)
 
     def test_registered_resources(self):
         for resource in self.mech.RESOURCES:
