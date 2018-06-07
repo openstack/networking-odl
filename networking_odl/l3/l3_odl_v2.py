@@ -18,7 +18,6 @@ from neutron_lib import constants as q_const
 from neutron_lib.plugins import constants as plugin_constants
 from oslo_log import log as logging
 
-from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
@@ -56,9 +55,6 @@ class OpenDaylightL3RouterPlugin(
 
     def __init__(self):
         super(OpenDaylightL3RouterPlugin, self).__init__()
-
-        # TODO(rcurran): Continue investigation into how many journal threads
-        # to run per neutron controller deployment.
         self.journal = journal.OpenDaylightJournalThread()
         full_sync.register(plugin_constants.L3, L3_RESOURCES)
 
@@ -72,36 +68,29 @@ class OpenDaylightL3RouterPlugin(
 
     @journal.call_thread_on_end
     def create_router(self, context, router):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            router_dict = super(
-                OpenDaylightL3RouterPlugin, self).create_router(context,
-                                                                router)
-            journal.record(context, odl_const.ODL_ROUTER, router_dict['id'],
-                           odl_const.ODL_CREATE, router_dict)
+        router_dict = super(
+            OpenDaylightL3RouterPlugin, self).create_router(context, router)
+        journal.record(context, odl_const.ODL_ROUTER, router_dict['id'],
+                       odl_const.ODL_CREATE, router_dict)
         return router_dict
 
     @journal.call_thread_on_end
     def update_router(self, context, router_id, router):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            router_dict = super(
-                OpenDaylightL3RouterPlugin, self).update_router(
-                    context, router_id, router)
-            journal.record(context, odl_const.ODL_ROUTER,
-                           router_id, odl_const.ODL_UPDATE, router_dict)
+        router_dict = super(
+            OpenDaylightL3RouterPlugin, self).update_router(
+                context, router_id, router)
+        journal.record(context, odl_const.ODL_ROUTER,
+                       router_id, odl_const.ODL_UPDATE, router_dict)
         return router_dict
 
     @journal.call_thread_on_end
     def delete_router(self, context, router_id):
-        session = db_api.get_writer_session()
         router_dict = self.get_router(context, router_id)
         dependency_list = [router_dict['gw_port_id']]
-        with session.begin(subtransactions=True):
-            super(OpenDaylightL3RouterPlugin, self).delete_router(context,
-                                                                  router_id)
-            journal.record(context, odl_const.ODL_ROUTER, router_id,
-                           odl_const.ODL_DELETE, dependency_list)
+        super(OpenDaylightL3RouterPlugin, self).delete_router(context,
+                                                              router_id)
+        journal.record(context, odl_const.ODL_ROUTER, router_id,
+                       odl_const.ODL_DELETE, dependency_list)
 
     @journal.call_thread_on_end
     def create_floatingip(self, context, floatingip,
@@ -109,81 +98,68 @@ class OpenDaylightL3RouterPlugin(
         fip = floatingip['floatingip']
         if fip.get('port_id') is None:
             initial_status = q_const.FLOATINGIP_STATUS_DOWN
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            fip_dict = super(
-                OpenDaylightL3RouterPlugin, self).create_floatingip(
-                    context, floatingip, initial_status)
-            journal.record(context, odl_const.ODL_FLOATINGIP, fip_dict['id'],
-                           odl_const.ODL_CREATE, fip_dict)
+        fip_dict = super(
+            OpenDaylightL3RouterPlugin, self).create_floatingip(
+                context, floatingip, initial_status)
+        journal.record(context, odl_const.ODL_FLOATINGIP, fip_dict['id'],
+                       odl_const.ODL_CREATE, fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
     def update_floatingip(self, context, floatingip_id, floatingip):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            fip_dict = super(
-                OpenDaylightL3RouterPlugin, self).update_floatingip(
-                    context, floatingip_id, floatingip)
+        fip_dict = super(
+            OpenDaylightL3RouterPlugin, self).update_floatingip(
+                context, floatingip_id, floatingip)
 
-            # Update status based on association
-            if fip_dict.get('port_id') is None:
-                fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
-            else:
-                fip_dict['status'] = q_const.FLOATINGIP_STATUS_ACTIVE
-            self.update_floatingip_status(context, floatingip_id,
-                                          fip_dict['status'])
+        # Update status based on association
+        if fip_dict.get('port_id') is None:
+            fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
+        else:
+            fip_dict['status'] = q_const.FLOATINGIP_STATUS_ACTIVE
+        self.update_floatingip_status(context, floatingip_id,
+                                      fip_dict['status'])
 
-            journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
-                           odl_const.ODL_UPDATE, fip_dict)
+        journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
+                       odl_const.ODL_UPDATE, fip_dict)
         return fip_dict
 
     @journal.call_thread_on_end
     def delete_floatingip(self, context, floatingip_id):
-        session = db_api.get_writer_session()
         floatingip_dict = self.get_floatingip(context, floatingip_id)
-        dependency_list = [floatingip_dict['router_id']]
-        dependency_list.append(floatingip_dict['floating_network_id'])
-        with session.begin(subtransactions=True):
-            super(OpenDaylightL3RouterPlugin, self).delete_floatingip(
-                context, floatingip_id)
-            journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
-                           odl_const.ODL_DELETE, dependency_list)
+        dependency_list = [floatingip_dict['router_id'],
+                           floatingip_dict['floating_network_id']]
+        super(OpenDaylightL3RouterPlugin, self).delete_floatingip(
+            context, floatingip_id)
+        journal.record(context, odl_const.ODL_FLOATINGIP, floatingip_id,
+                       odl_const.ODL_DELETE, dependency_list)
 
     def disassociate_floatingips(self, context, port_id, do_notify=True):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            fip_dicts = self.get_floatingips(context,
-                                             filters={'port_id': [port_id]})
-            router_ids = super(OpenDaylightL3RouterPlugin,
-                               self).disassociate_floatingips(context,
-                                                              port_id,
-                                                              do_notify)
-            for fip_dict in fip_dicts:
-                fip_dict = self.get_floatingip(context, fip_dict['id'])
-                fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
-                self.update_floatingip_status(context, fip_dict['id'],
-                                              fip_dict['status'])
-                journal.record(context, odl_const.ODL_FLOATINGIP,
-                               fip_dict['id'], odl_const.ODL_UPDATE, fip_dict)
+        fip_dicts = self.get_floatingips(context,
+                                         filters={'port_id': [port_id]})
+        router_ids = super(
+            OpenDaylightL3RouterPlugin, self).disassociate_floatingips(
+                context, port_id, do_notify)
+        for fip_dict in fip_dicts:
+            fip_dict = self.get_floatingip(context, fip_dict['id'])
+            fip_dict['status'] = q_const.FLOATINGIP_STATUS_DOWN
+            self.update_floatingip_status(context, fip_dict['id'],
+                                          fip_dict['status'])
+            journal.record(context, odl_const.ODL_FLOATINGIP,
+                           fip_dict['id'], odl_const.ODL_UPDATE, fip_dict)
         return router_ids
 
     @journal.call_thread_on_end
     def add_router_interface(self, context, router_id, interface_info):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            new_router = super(
-                OpenDaylightL3RouterPlugin, self).add_router_interface(
-                    context, router_id, interface_info)
+        new_router = super(
+            OpenDaylightL3RouterPlugin, self).add_router_interface(
+                context, router_id, interface_info)
         return new_router
 
     @journal.call_thread_on_end
     def remove_router_interface(self, context, router_id, interface_info):
-        session = db_api.get_writer_session()
-        with session.begin(subtransactions=True):
-            new_router = super(
-                OpenDaylightL3RouterPlugin, self).remove_router_interface(
-                    context, router_id, interface_info)
+        new_router = super(
+            OpenDaylightL3RouterPlugin, self).remove_router_interface(
+                context, router_id, interface_info)
         return new_router
 
     dvr_deletens_if_no_port_warned = False
