@@ -166,8 +166,7 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def _get_mock_request_response(cls, status_code):
         response = mock.Mock(status_code=status_code)
         response.raise_for_status = mock.Mock() if status_code < 400 else (
-            mock.Mock(side_effect=requests.exceptions.HTTPError(
-                cls._status_code_msgs[status_code])))
+            mock.Mock(side_effect=requests.exceptions.HTTPError(status_code)))
         return response
 
     def _test_operation(self, status_code, expected_calls, *args, **kwargs):
