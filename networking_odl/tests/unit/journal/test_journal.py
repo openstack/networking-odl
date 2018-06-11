@@ -382,8 +382,7 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
 
     def test_entry_reset_retries_exceptions(self):
         with mock.patch.object(db, 'update_db_row_state') as m:
-            self._test_retry_exceptions(
-                journal.entry_reset, m, True)
+            self._test_retry_exceptions(journal.entry_reset, m)
 
     @mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
                        mock.Mock(side_effect=Exception))
@@ -461,7 +460,7 @@ class JournalTest(base_v2.OpenDaylightTestCase):
 
     def test_entry_complete_retries_exceptions(self):
         with mock.patch.object(db, 'update_db_row_state') as m:
-            self._test_retry_exceptions(journal.entry_complete, m, True)
+            self._test_retry_exceptions(journal.entry_complete, m)
 
     def _test_entry_complete(self, retention, expected_length):
         self.cfg.config(completed_rows_retention=retention, group='ml2_odl')
@@ -500,7 +499,7 @@ class JournalTest(base_v2.OpenDaylightTestCase):
 
     def test_entry_reset_retries_exceptions(self):
         with mock.patch.object(db, 'update_db_row_state') as m:
-            self._test_retry_exceptions(journal.entry_reset, m, True)
+            self._test_retry_exceptions(journal.entry_reset, m)
 
     def test_entry_reset(self):
         db.create_pending_row(self.db_context,
@@ -521,7 +520,7 @@ class JournalTest(base_v2.OpenDaylightTestCase):
     def test_entry_set_retry_count_retries_exceptions(self):
         with mock.patch.object(db, 'update_pending_db_row_retry') as m:
             self._test_retry_exceptions(
-                journal.entry_update_state_by_retry_count, m, True)
+                journal.entry_update_state_by_retry_count, m)
 
     def test_entry_set_retry_count(self):
         db.create_pending_row(self.db_context,

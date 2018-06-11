@@ -65,15 +65,14 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual(expected_state, row.state)
         self.assertEqual(expected_retry_count, row.retry_count)
 
-    def _test_retry_wrapper(self, decorated_function, receives_context):
+    def _test_retry_wrapper(self, decorated_function):
         # NOTE(mpeterson): we want to make sure that it's configured
         # to MAX_RETRIES.
         self.assertEqual(db_api._retry_db_errors.max_retries,
                          db_api.MAX_RETRIES)
 
         self._test_retry_exceptions(decorated_function,
-                                    self._mock_function, receives_context,
-                                    False)
+                                    self._mock_function, False)
 
     # NOTE(mpeterson): The following function serves to workaround a
     # limitation in the discovery mechanism of pecan lib that does not allow
@@ -85,8 +84,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._mock_function()
 
     def test_retry_if_session_inactive(self):
-        self._test_retry_wrapper(self._decorated_retry_if_session_inactive,
-                                 True)
+        self._test_retry_wrapper(self._decorated_retry_if_session_inactive)
 
     def _test_update_row_state(self, from_state, to_state, dry_flush=False):
         # add new pending row
@@ -208,7 +206,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def test_get_oldest_pending_row_retries_exceptions(self):
         with mock.patch.object(db, 'aliased') as m:
             self._test_retry_exceptions(db.get_oldest_pending_db_row_with_lock,
-                                        m, True)
+                                        m)
 
     def _test_delete_row(self, by_row=False, by_row_id=False, dry_flush=False):
         db.create_pending_row(self.db_context, *self.UPDATE_ROW)

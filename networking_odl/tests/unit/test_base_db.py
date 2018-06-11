@@ -22,7 +22,7 @@ from pecan import util as p_util
 
 from neutron.db import api as db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
-from neutron_lib import context
+from neutron_lib import context as neutron_context
 from oslo_config import fixture as config_fixture
 from oslo_db import exception as db_exc
 import sqlalchemy
@@ -51,7 +51,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
 
     def setUp(self):
         super(ODLBaseDbTestCase, self).setUp()
-        self.db_context = context.get_admin_context()
+        self.db_context = neutron_context.get_admin_context()
         self.db_session = self.db_context.session
         self.addCleanup(self._db_cleanup)
         self.cfg = self.useFixture(config_fixture.Config())
@@ -92,8 +92,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
     @mock.patch.multiple(db_api._retry_db_errors,
                          retry_interval=RETRY_INTERVAL,
                          max_retries=RETRY_MAX)
-    def _test_db_exceptions_handled(self, method, mock_object,
-                                    receives_context, expect_retries):
+    def _test_db_exceptions_handled(self, method, mock_object, expect_retries):
         # NOTE(mpeterson): this test is very verbose, disabling logging
         logging.disable(logging.CRITICAL)
         self.addCleanup(logging.disable, logging.NOTSET)
@@ -114,14 +113,18 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         mock_arg.__lt__.return_value = True
         args = (mock_arg,) * args_number
 
-        def _assertRaises(exceptions, method, *args, **kwargs):
+        def _assertRaises(exceptions, method, context, *args, **kwargs):
             try:
-                method(*args, **kwargs)
+                method(context, *args, **kwargs)
             except Exception as e:
                 if not isinstance(e, exceptions):
                     raise e
 
-                session = args[0].session if receives_context else args[0]
+                # TODO(mpeterson): For now the check with session.is_active is
+                # accepted, but when the enginefacade is the only accepted
+                # pattern then it should be changed to check that a session is
+                # attached to the context
+                session = context.session
 
                 if session.is_active and isinstance(e, _InnerException):
                     self.assertTrue(getattr(e, '_RETRY_EXCEEDED', False))
@@ -139,7 +142,6 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
             _e = e
 
         expected_retries = RETRY_MAX if expect_retries else 0
-        db_object = self.db_context if receives_context else self.db_session
 
         # TODO(mpeterson): Make this an int when Py2 is no longer supported
         # and use the `nonlocal` directive
@@ -147,14 +149,13 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         for exception in exceptions:
             def increase_retry_counter_and_except(*args, **kwargs):
                 retry_counter[0] += 1
-                session = db_object.session if receives_context else db_object
-                session.add(self.retry_tracker())
-                session.flush()
+                self.db_context.session.add(self.retry_tracker())
+                self.db_context.session.flush()
                 raise exception(_e)
             mock_object.side_effect = increase_retry_counter_and_except
 
             _assertRaises((exception, _InnerException), method,
-                          db_object, *args)
+                          self.db_context, *args)
             self.assertEqual(expected_retries, mock_object.call_count - 1)
             mock_object.reset_mock()
 
@@ -165,10 +166,10 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
             self.db_context.session.query(self.retry_tracker).count()
         self.assertEqual(expected_count, actual_count)
 
-    def _test_retry_exceptions(self, method, mock_object, receives_context,
+    def _test_retry_exceptions(self, method, mock_object,
                                assert_transaction=True):
         retries = self._test_db_exceptions_handled(method, mock_object,
-                                                   receives_context, True)
+                                                   True)
 
         if assert_transaction:
             # It should be 0 as long as the retriable method creates save
@@ -181,12 +182,11 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
                 retries
             )
 
-        if receives_context:
-            with self.db_session.begin():
-                retries = self._test_db_exceptions_handled(
-                    method, mock_object, receives_context, False
-                )
-                if assert_transaction:
-                    self._assertRetryCount(0)
-                    # only once per exception when expect_retries=False
-                    self.assertEqual(len(RETRIABLE_EXCEPTIONS), retries)
+        with self.db_session.begin():
+            retries = self._test_db_exceptions_handled(
+                method, mock_object, False
+            )
+            if assert_transaction:
+                self._assertRetryCount(0)
+                # only once per exception when expect_retries=False
+                self.assertEqual(len(RETRIABLE_EXCEPTIONS), retries)

@@ -152,18 +152,15 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_set_operation_retries_exceptions(self):
         with mock.patch.object(db, 'update_periodic_task') as m:
-            self._test_retry_exceptions(self.thread._set_operation,
-                                        m, True)
+            self._test_retry_exceptions(self.thread._set_operation, m)
 
     def test_lock_task_retries_exceptions(self):
         with mock.patch.object(db, 'lock_periodic_task') as m:
-            self._test_retry_exceptions(self.thread._lock_task,
-                                        m, True)
+            self._test_retry_exceptions(self.thread._lock_task, m)
 
     def test_clear_and_unlock_task_retries_exceptions(self):
         with mock.patch.object(db, 'update_periodic_task') as m:
-            self._test_retry_exceptions(self.thread._clear_and_unlock_task,
-                                        m, True)
+            self._test_retry_exceptions(self.thread._clear_and_unlock_task, m)
 
     @mock.patch.object(db, "was_periodic_task_executed_recently",
                        return_value=False)

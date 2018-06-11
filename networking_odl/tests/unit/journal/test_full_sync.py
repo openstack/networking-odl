@@ -418,7 +418,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_full_sync_retries_exceptions(self):
         with mock.patch.object(full_sync, '_full_sync_needed') as m:
-            self._test_retry_exceptions(full_sync.full_sync, m, True)
+            self._test_retry_exceptions(full_sync.full_sync, m)
 
     def test_object_not_registered(self):
         self.assertRaises(exceptions.ResourceNotRegistered,
