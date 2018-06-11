@@ -35,8 +35,7 @@ LOG = logging.getLogger(__name__)
 
 @db_api.retry_if_session_inactive()
 def journal_recovery(context):
-    for row in db.get_all_db_rows_by_state(context.session,
-                                           odl_const.FAILED):
+    for row in db.get_all_db_rows_by_state(context, odl_const.FAILED):
         LOG.debug("Attempting recovery of journal entry %s.", row)
         try:
             odl_resource = _CLIENT.get_client().get_resource(
@@ -97,7 +96,7 @@ def _handle_existing_resource(context, row):
     if row.operation == odl_const.ODL_CREATE:
         journal.entry_complete(context, row)
     elif row.operation == odl_const.ODL_DELETE:
-        db.update_db_row_state(context.session, row, odl_const.PENDING)
+        db.update_db_row_state(context, row, odl_const.PENDING)
     else:
         _sync_resource_to_odl(context, row, odl_const.ODL_UPDATE, True)
 

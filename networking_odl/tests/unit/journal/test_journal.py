@@ -388,7 +388,7 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
     @mock.patch.object(client.OpenDaylightRestClient, 'sendjson',
                        mock.Mock(side_effect=Exception))
     def test__sync_entry_update_state_by_retry_count_on_exception(self):
-        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        entry = db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         self.journal._max_retry_count = 1
         self.assertEqual(entry.retry_count, 0)
         self.journal._sync_entry(self.db_context, entry)
@@ -399,7 +399,7 @@ class OpenDaylightJournalThreadTest(base_v2.OpenDaylightTestCase):
         self.assertEqual(entry.state, odl_const.FAILED)
 
     def _test__sync_entry_logs(self, log_type):
-        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        entry = db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         logger = self.useFixture(fixtures.FakeLogger())
 
         self.journal._sync_entry(self.db_context, entry)
@@ -465,11 +465,11 @@ class JournalTest(base_v2.OpenDaylightTestCase):
 
     def _test_entry_complete(self, retention, expected_length):
         self.cfg.config(completed_rows_retention=retention, group='ml2_odl')
-        db.create_pending_row(self.db_session,
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        entry = db.get_all_db_rows(self.db_session)[-1]
+        entry = db.get_all_db_rows(self.db_context)[-1]
         journal.entry_complete(self.db_context, entry)
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual(expected_length, len(rows))
         self.assertTrue(
             all(row.state == odl_const.COMPLETED for row in rows))
@@ -485,15 +485,15 @@ class JournalTest(base_v2.OpenDaylightTestCase):
 
     def test_entry_complete_with_retention_deletes_dependencies(self):
         self.cfg.config(completed_rows_retention=1, group='ml2_odl')
-        db.create_pending_row(self.db_session,
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        entry = db.get_all_db_rows(self.db_session)[-1]
-        db.create_pending_row(self.db_session,
+        entry = db.get_all_db_rows(self.db_context)[-1]
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW,
                               depending_on=[entry])
-        dependant = db.get_all_db_rows(self.db_session)[-1]
+        dependant = db.get_all_db_rows(self.db_context)[-1]
         journal.entry_complete(self.db_context, entry)
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertIn(entry, rows)
         self.assertEqual([], entry.dependencies)
         self.assertEqual([], dependant.depending_on)
@@ -503,18 +503,18 @@ class JournalTest(base_v2.OpenDaylightTestCase):
             self._test_retry_exceptions(journal.entry_reset, m, True)
 
     def test_entry_reset(self):
-        db.create_pending_row(self.db_session,
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        db.create_pending_row(self.db_session,
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        entry = db.get_all_db_rows(self.db_session)[-1]
+        entry = db.get_all_db_rows(self.db_context)[-1]
         entry.state = odl_const.PROCESSING
         self.db_session.merge(entry)
         self.db_session.flush()
-        entry = db.get_all_db_rows(self.db_session)[-1]
+        entry = db.get_all_db_rows(self.db_context)[-1]
         self.assertEqual(entry.state, odl_const.PROCESSING)
         journal.entry_reset(self.db_context, entry)
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual(2, len(rows))
         self.assertTrue(all(row.state == odl_const.PENDING for row in rows))
 
@@ -524,12 +524,12 @@ class JournalTest(base_v2.OpenDaylightTestCase):
                 journal.entry_update_state_by_retry_count, m, True)
 
     def test_entry_set_retry_count(self):
-        db.create_pending_row(self.db_session,
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        entry_baseline = db.get_all_db_rows(self.db_session)[-1]
-        db.create_pending_row(self.db_session,
+        entry_baseline = db.get_all_db_rows(self.db_context)[-1]
+        db.create_pending_row(self.db_context,
                               *test_db.DbTestCase.UPDATE_ROW)
-        entry_target = db.get_all_db_rows(self.db_session)[-1]
+        entry_target = db.get_all_db_rows(self.db_context)[-1]
         self.assertEqual(entry_target.retry_count, 0)
         self.assertEqual(entry_target.retry_count, entry_baseline.retry_count)
         self.assertEqual(entry_target.state, entry_baseline.state)
@@ -554,7 +554,7 @@ class JournalTest(base_v2.OpenDaylightTestCase):
             self.assertIn(arg, logger.output)
 
     def test_record_logs_dependencies(self):
-        entry = db.create_pending_row(self.db_session, *self.UPDATE_ROW)
+        entry = db.create_pending_row(self.db_context, *self.UPDATE_ROW)
 
         logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         journal.record(self.db_context, *self.UPDATE_ROW)

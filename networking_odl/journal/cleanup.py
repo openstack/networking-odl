@@ -37,7 +37,7 @@ def delete_completed_rows(context):
     LOG.debug("Deleting completed rows")
     with db_api.autonested_transaction(context.session):
         db.delete_rows_by_state_and_time(
-            context.session, odl_const.COMPLETED,
+            context, odl_const.COMPLETED,
             timedelta(seconds=rows_retention))
 
 
@@ -45,7 +45,7 @@ def delete_completed_rows(context):
 def cleanup_processing_rows(context):
     with db_api.autonested_transaction(context.session):
         row_count = db.reset_processing_rows(
-            context.session, cfg.CONF.ml2_odl.processing_timeout)
+            context, cfg.CONF.ml2_odl.processing_timeout)
     if row_count:
         LOG.info("Reset %(num)s orphaned rows back to pending",
                  {"num": row_count})

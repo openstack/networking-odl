@@ -85,7 +85,7 @@ def full_sync(context):
         if not _full_sync_needed(context):
             return
 
-        db.delete_pending_rows(context.session, _OPS_TO_DELETE_ON_SYNC)
+        db.delete_pending_rows(context, _OPS_TO_DELETE_ON_SYNC)
 
         for resource_type in _ORDERED_ODL_RESOURCES:
             handler = FULL_SYNC_RESOURCES.get(resource_type)
@@ -120,7 +120,7 @@ def _canary_network_missing_on_odl():
 
 def _canary_network_not_in_journal(context):
     return not db.get_pending_or_processing_ops(
-        context.session, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
+        context, _CANARY_NETWORK_ID, operation=odl_const.ODL_CREATE)
 
 
 def get_resources_require_id(plugin, context, get_resources_for_id,

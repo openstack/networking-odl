@@ -63,7 +63,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_no_full_sync_when_canary_exists(self):
         full_sync.full_sync(self.db_context)
-        self.assertEqual([], db.get_all_db_rows(self.db_session))
+        self.assertEqual([], db.get_all_db_rows(self.db_context))
 
     def _filter_out_canary(self, rows):
         return [row for row in rows if row['object_uuid'] !=
@@ -91,15 +91,15 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
     def _test_no_full_sync_when_canary_in_journal(self, state):
         self._mock_canary_missing()
         self._mock_l2_resources()
-        db.create_pending_row(self.db_session, odl_const.ODL_NETWORK,
+        db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
                               full_sync._CANARY_NETWORK_ID,
                               odl_const.ODL_CREATE, {})
-        row = db.get_all_db_rows(self.db_session)[0]
-        db.update_db_row_state(self.db_session, row, state)
+        row = db.get_all_db_rows(self.db_context)[0]
+        db.update_db_row_state(self.db_context, row, state)
 
         full_sync.full_sync(self.db_context)
 
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertEqual([], self._filter_out_canary(rows))
 
     def test_no_full_sync_when_canary_pending_creation(self):
@@ -167,7 +167,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         self._CLIENT.get.return_value = get_return
 
     def _assert_canary_created(self):
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         self.assertTrue(any(r['object_uuid'] == full_sync._CANARY_NETWORK_ID
                             for r in rows))
         return rows
@@ -186,7 +186,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                              row['object_uuid'])
 
     def test_full_sync_removes_pending_rows(self):
-        db.create_pending_row(self.db_session, odl_const.ODL_NETWORK, "uuid",
+        db.create_pending_row(self.db_context, odl_const.ODL_NETWORK, "uuid",
                               odl_const.ODL_CREATE, {'foo': 'bar'})
         self._test_full_sync_resources({})
 
@@ -425,7 +425,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                           full_sync.sync_resources,
                           self.db_context,
                           'test-object-type')
-        self.assertEqual([], db.get_all_db_rows(self.db_session))
+        self.assertEqual([], db.get_all_db_rows(self.db_context))
 
     def _register_resources(self):
         helper.TestDriver()
@@ -444,7 +444,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
                           full_sync.sync_resources,
                           self.db_context,
                           helper.TEST_RESOURCE1)
-        self.assertEqual([], db.get_all_db_rows(self.db_session))
+        self.assertEqual([], db.get_all_db_rows(self.db_context))
 
     def test_sync_resources(self):
         self._register_resources()
@@ -453,7 +453,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         resources = plugin.get_test_resource1s(self.db_context)
         full_sync.sync_resources(self.db_context,
                                  helper.TEST_RESOURCE1)
-        entries = [entry.data for entry in db.get_all_db_rows(self.db_session)]
+        entries = [entry.data for entry in db.get_all_db_rows(self.db_context)]
         for resource in resources:
             self.assertIn(resource, entries)
         self.assertEqual(len(resources), len(entries))
@@ -471,4 +471,4 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         mock_get_resources.assert_called_once_with(self.db_context,
                                                    resource_name)
 
-        self.assertEqual([], db.get_all_db_rows(self.db_session))
+        self.assertEqual([], db.get_all_db_rows(self.db_context))

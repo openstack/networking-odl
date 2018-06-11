@@ -364,7 +364,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self._call_operation_object(operation, object_type)
 
         context = self._get_mock_operation_context(object_type)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(operation, row['operation'])
         self.assertEqual(object_type, row['object_type'])
         self.assertEqual(context.current['id'], row['object_uuid'])
@@ -411,20 +411,20 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
     def _test_object_type(self, object_type, delete_expected_calls=1):
         # Add and process create request.
         self._test_thread_processing(odl_const.ODL_CREATE, object_type)
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.COMPLETED)
         self.assertEqual(1, len(rows))
 
         # Add and process update request. Adds to database.
         self._test_thread_processing(odl_const.ODL_UPDATE, object_type)
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.COMPLETED)
         self.assertEqual(2, len(rows))
 
         # Add and process update request. Adds to database.
         self._test_thread_processing(odl_const.ODL_DELETE, object_type,
                                      delete_expected_calls)
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.COMPLETED)
         self.assertEqual(2 + delete_expected_calls, len(rows))
 
@@ -439,7 +439,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                                      expected_calls=2)
 
         # Verify both rows are now marked as completed.
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.COMPLETED)
         self.assertEqual(2, len(rows))
 
@@ -461,8 +461,8 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         # Get pending row and mark as processing so that
         # this row will not be processed by journal thread.
-        row = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
-        db.update_db_row_state(self.db_session, row[0], odl_const.PROCESSING)
+        row = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
+        db.update_db_row_state(self.db_context, row[0], odl_const.PROCESSING)
 
         # Create the object_type database row and process.
         # Verify that object request is not processed because the
@@ -472,10 +472,10 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                                      expected_calls=0)
 
         # Verify that all rows are still in the database.
-        rows = db.get_all_db_rows_by_state(self.db_session,
+        rows = db.get_all_db_rows_by_state(self.db_context,
                                            odl_const.PROCESSING)
         self.assertEqual(1, len(rows))
-        rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
+        rows = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
         self.assertEqual(1, len(rows))
 
     def _test_parent_delete_pending_child_delete(self, parent, child):
@@ -489,17 +489,17 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         # Get pending row and mark as processing and update
         # the last_retried time
-        row = db.get_all_db_rows_by_state(self.db_session,
+        row = db.get_all_db_rows_by_state(self.db_context,
                                           odl_const.PENDING)[0]
         row.last_retried = last_retried
-        db.update_db_row_state(self.db_session, row, odl_const.PROCESSING)
+        db.update_db_row_state(self.db_context, row, odl_const.PROCESSING)
 
         # Test if the cleanup marks this in the desired state
         # based on the last_retried timestamp
         cleanup.cleanup_processing_rows(self.db_context)
 
         # Verify that the Db row is in the desired state
-        rows = db.get_all_db_rows_by_state(self.db_session, expected_state)
+        rows = db.get_all_db_rows_by_state(self.db_context, expected_state)
         self.assertEqual(1, len(rows))
 
     def test_driver(self):
@@ -518,7 +518,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         self.db_session.flush()
 
         # Verify that the Db row has a tenant
-        rows = db.get_all_db_rows_by_state(self.db_session, odl_const.PENDING)
+        rows = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
         self.assertEqual(1, len(rows))
         _network = self._get_mock_network_operation_context().current
         self.assertEqual(_network['tenant_id'], rows[0]['data']['tenant_id'])
@@ -674,7 +674,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
         alloc_pool = context.current['allocation_pools']
         self._call_operation_object(odl_const.ODL_UPDATE,
                                     odl_const.ODL_SUBNET)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(alloc_pool, row.data['allocation_pools'])
 
     def test_sync_multiple_updates(self):
@@ -684,12 +684,12 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                                         odl_const.ODL_NETWORK)
 
         # get the last update row
-        rows = db.get_all_db_rows(self.db_session)
+        rows = db.get_all_db_rows(self.db_context)
         rows.sort(key=operator.attrgetter("seqnum"))
         first_row = rows[0]
 
         # change the state to processing
-        db.update_db_row_state(self.db_session, first_row,
+        db.update_db_row_state(self.db_context, first_row,
                                odl_const.PROCESSING)
 
         # create 1 more operation to trigger the sync thread
@@ -700,9 +700,9 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
 
         # validate that all the pending rows stays in 'pending' state
         # first row should be 'processing' because it was not processed
-        processing = db.get_all_db_rows_by_state(self.db_session, 'processing')
+        processing = db.get_all_db_rows_by_state(self.db_context, 'processing')
         self.assertEqual(1, len(processing))
-        rows = db.get_all_db_rows_by_state(self.db_session, 'pending')
+        rows = db.get_all_db_rows_by_state(self.db_context, 'pending')
         self.assertEqual(2, len(rows))
 
     def test_update_port_filter(self):

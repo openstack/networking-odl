@@ -84,7 +84,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         if timing == 'precommit':
             self.db_session.flush()
 
-        row = db.get_oldest_pending_db_row_with_lock(self.db_session)
+        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
 
         if timing == 'precommit':
             self.assertEqual(operation, row['operation'])

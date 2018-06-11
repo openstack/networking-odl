@@ -127,12 +127,12 @@ def subnet_succeed_network_dep(net_op, subnet_op):
 class BaseDependencyValidationsTestCase(object):
     def test_dependency(self):
         db.create_pending_row(
-            self.db_session, self.first_type, self.first_id,
+            self.db_context, self.first_type, self.first_id,
             self.first_operation,
             get_data(self.first_type, self.first_operation))
         for data in get_data(self.second_type, self.second_operation):
             deps = dependency_validations.calculate(
-                self.db_session, self.second_operation, self.second_type,
+                self.db_context, self.second_operation, self.second_type,
                 self.second_id, data)
             self.assertEqual(self.expected, len(deps))
 

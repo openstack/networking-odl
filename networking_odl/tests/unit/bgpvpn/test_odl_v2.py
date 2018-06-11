@@ -55,7 +55,7 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
         return fake_net_assoc
 
     def _assert_op(self, operation, object_type, data, precommit=True):
-        rows = sorted(db.get_all_db_rows_by_state(self.db_session,
+        rows = sorted(db.get_all_db_rows_by_state(self.db_context,
                                                   odl_const.PENDING),
                       key=lambda x: x.seqnum)
         if precommit:

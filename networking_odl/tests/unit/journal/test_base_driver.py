@@ -64,7 +64,7 @@ class BaseDriverTestCase(test_base_db.ODLBaseDbTestCase):
                           self.db_context, helper.INVALID_RESOURCE)
 
     def test_get_resource(self):
-        row = db.create_pending_row(self.db_session, helper.TEST_RESOURCE1,
+        row = db.create_pending_row(self.db_context, helper.TEST_RESOURCE1,
                                     helper.TEST_UUID, constants.ODL_CREATE,
                                     {'id': helper.TEST_UUID})
         resource = self.test_driver.get_resource_for_recovery(self.db_context,
@@ -73,7 +73,7 @@ class BaseDriverTestCase(test_base_db.ODLBaseDbTestCase):
         self.assertEqual(resource['id'], helper.TEST_UUID)
 
     def test_get_unsupported_resource(self):
-        row = db.create_pending_row(self.db_session, helper.INVALID_RESOURCE,
+        row = db.create_pending_row(self.db_context, helper.INVALID_RESOURCE,
                                     helper.TEST_UUID, constants.ODL_CREATE,
                                     {'id': helper.TEST_UUID})
 

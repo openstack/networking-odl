@@ -48,9 +48,8 @@ class PeriodicTask(object):
 
     @db_api.retry_if_session_inactive()
     def _set_operation(self, context, operation):
-        session = context.session
-        with db_api.autonested_transaction(session):
-            db.update_periodic_task(session, task=self.task,
+        with db_api.autonested_transaction(context.session):
+            db.update_periodic_task(context, task=self.task,
                                     operation=operation)
 
     def _execute_op(self, operation, context):
@@ -70,21 +69,19 @@ class PeriodicTask(object):
 
     def task_already_executed_recently(self, context):
         return db.was_periodic_task_executed_recently(
-            context.session, self.task, self.interval)
+            context, self.task, self.interval)
 
     @db_api.retry_if_session_inactive()
     def _clear_and_unlock_task(self, context):
-        session = context.session
-        with db_api.autonested_transaction(session):
-            db.update_periodic_task(session, task=self.task,
+        with db_api.autonested_transaction(context.session):
+            db.update_periodic_task(context, task=self.task,
                                     operation=None)
-            db.unlock_periodic_task(session, self.task)
+            db.unlock_periodic_task(context, self.task)
 
     @db_api.retry_if_session_inactive()
     def _lock_task(self, context):
-        session = context.session
-        with db_api.autonested_transaction(session):
-            return db.lock_periodic_task(session, self.task)
+        with db_api.autonested_transaction(context.session):
+            return db.lock_periodic_task(context, self.task)
 
     def execute_ops(self, forced=False):
         LOG.info("Starting %s periodic task.", self.task)

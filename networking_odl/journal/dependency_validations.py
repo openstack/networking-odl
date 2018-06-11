@@ -18,7 +18,7 @@ from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 
 
-def _get_delete_dependencies(session, object_type, object_uuid):
+def _get_delete_dependencies(context, object_type, object_uuid):
     """Get dependent operations for a delete operation.
 
     Return any operations that pertain to the delete: Either create
@@ -27,7 +27,7 @@ def _get_delete_dependencies(session, object_type, object_uuid):
     """
     # Get any pending or processing create or update ops on the row itself
     deps = db.get_pending_or_processing_ops(
-        session, object_uuid, operation=(odl_const.ODL_UPDATE,
+        context, object_uuid, operation=(odl_const.ODL_UPDATE,
                                          odl_const.ODL_CREATE))
 
     # Get dependent operations of other dependent types
@@ -35,12 +35,12 @@ def _get_delete_dependencies(session, object_type, object_uuid):
     if dependent_resource_types is not None:
         for resource_type in dependent_resource_types:
             deps.extend(db.get_pending_delete_ops_with_parent(
-                session, resource_type, object_uuid))
+                context, resource_type, object_uuid))
 
     return deps
 
 
-def _get_older_operations(session, object_ids):
+def _get_older_operations(context, object_ids):
     """Get any older operations.
 
     Return any operations still in the queue for the given ID(s).
@@ -51,7 +51,7 @@ def _get_older_operations(session, object_ids):
     deps = []
     for object_id in object_ids:
         deps.extend(
-            db.get_pending_or_processing_ops(session, object_id))
+            db.get_pending_or_processing_ops(context, object_id))
 
     return deps
 
@@ -193,21 +193,21 @@ _DELETE_DEPENDENCIES = {
 }
 
 
-def calculate(session, operation, object_type, object_uuid, data):
+def calculate(context, operation, object_type, object_uuid, data):
     """Calculate resource deps in journaled operations.
 
     As a rule of thumb validation takes into consideration only operations in
     pending or processing state, other states are irrelevant.
-    :param session: db session
+    :param context: enginefacade context
     :param row: entry in journal entry to be validated
     """
     deps = []
     if operation == odl_const.ODL_DELETE:
-        return _get_delete_dependencies(session, object_type, object_uuid)
+        return _get_delete_dependencies(context, object_type, object_uuid)
     elif operation == odl_const.ODL_UPDATE:
         deps.extend(
             db.get_pending_or_processing_ops(
-                session, object_uuid,
+                context, object_uuid,
                 operation=(odl_const.ODL_CREATE, odl_const.ODL_UPDATE)))
     elif operation != odl_const.ODL_CREATE:
         raise ValueError(_("unsupported operation {}").format(operation))
@@ -217,6 +217,6 @@ def calculate(session, operation, object_type, object_uuid, data):
     if dep_generator is not None:
         object_ids = dep_generator(data)
         if object_ids is not None:
-            deps.extend(_get_older_operations(session, object_ids))
+            deps.extend(_get_older_operations(context, object_ids))
 
     return deps
