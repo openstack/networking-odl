@@ -15,14 +15,15 @@
 
 import mock
 
+from neutron.db import api as db_api
+from neutron.services.trunk import callbacks
+from neutron.services.trunk import constants as trunk_consts
+from neutron.services.trunk import models
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
 
-from neutron.services.trunk import callbacks
-from neutron.services.trunk import constants as trunk_consts
-from neutron.services.trunk import models
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -79,19 +80,20 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         method(mock.ANY, mock.ANY, mock.ANY, fake_payload)
 
     def _test_event(self, operation, timing):
-        fake_payload = self._fake_trunk_payload()
-        self._call_operation_object(operation, timing, fake_payload)
-        if timing == 'precommit':
-            self.db_session.flush()
+        with db_api.context_manager.writer.using(self.db_context):
+            fake_payload = self._fake_trunk_payload()
+            self._call_operation_object(operation, timing, fake_payload)
+            if timing == 'precommit':
+                self.db_context.session.flush()
 
-        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
+            row = db.get_oldest_pending_db_row_with_lock(self.db_context)
 
-        if timing == 'precommit':
-            self.assertEqual(operation, row['operation'])
-            self.assertEqual(odl_const.ODL_TRUNK, row['object_type'])
-            self.assertEqual(fake_payload.trunk_id, row['object_uuid'])
-        elif timing == 'after':
-            self.assertIsNone(row)
+            if timing == 'precommit':
+                self.assertEqual(operation, row['operation'])
+                self.assertEqual(odl_const.ODL_TRUNK, row['object_type'])
+                self.assertEqual(fake_payload.trunk_id, row['object_uuid'])
+            elif timing == 'after':
+                self.assertIsNone(row)
 
     def test_trunk_create_precommit(self):
         self._test_event("create", "precommit")

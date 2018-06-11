@@ -14,6 +14,8 @@
 #    under the License.
 from mock import patch
 
+from neutron.db import api as db_api
+
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
 from networking_odl.sfc.flowclassifier import sfc_flowclassifier_v2 as sfc_fc
@@ -37,7 +39,7 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
             '.FlowClassifierContext').start().return_value
 
         mocked_fc_context.current = sfc_const.FAKE_FLOW_CLASSIFIER
-        mocked_fc_context.session = self.db_session
+        mocked_fc_context.session = self.db_context.session
         mocked_fc_context._plugin_context = mocked_fc_context
         return mocked_fc_context
 
@@ -47,17 +49,18 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
         method(self._get_mock_context())
 
     def _test_event(self, operation, timing):
-        self._call_operation_object(operation, timing)
-        if timing == 'precommit':
-            self.db_session.flush()
-        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
+        with db_api.context_manager.writer.using(self.db_context):
+            self._call_operation_object(operation, timing)
+            if timing == 'precommit':
+                self.db_context.session.flush()
+            row = db.get_oldest_pending_db_row_with_lock(self.db_context)
 
-        if timing == 'precommit':
-            self.assertEqual(operation, row['operation'])
-            self.assertEqual(
-                odl_const.ODL_SFC_FLOW_CLASSIFIER, row['object_type'])
-        elif timing == 'after':
-            self.assertIsNone(row)
+            if timing == 'precommit':
+                self.assertEqual(operation, row['operation'])
+                self.assertEqual(
+                    odl_const.ODL_SFC_FLOW_CLASSIFIER, row['object_type'])
+            elif timing == 'after':
+                self.assertIsNone(row)
 
     # TODO(yamahata): utilize test scenarios
     def test_create_flow_classifier_precommit(self):

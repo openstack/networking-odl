@@ -75,7 +75,7 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
     def _assert_op(self, operation, object_type, data, precommit=True):
         row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         if precommit:
-            self.db_session.flush()
+            self.db_context.session.flush()
             self.assertEqual(operation, row['operation'])
             self.assertEqual(object_type, row['object_type'])
             self.assertEqual(data['id'], row['object_uuid'])

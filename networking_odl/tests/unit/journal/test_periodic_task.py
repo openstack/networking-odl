@@ -35,8 +35,8 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         super(PeriodicTaskThreadTestCase, self).setUp()
         row = models.OpenDaylightPeriodicTask(task=TEST_TASK_NAME,
                                               state=odl_const.PENDING)
-        self.db_session.add(row)
-        self.db_session.flush()
+        self.db_context.session.add(row)
+        self.db_context.session.flush()
 
         self.thread = periodic_task.PeriodicTask(TEST_TASK_NAME,
                                                  TEST_TASK_INTERVAL)
@@ -179,10 +179,11 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.thread.register_operation(wait_until_event)
 
         def task_locked():
-            row = (self.db_session.query(models.OpenDaylightPeriodicTask)
-                                  .filter_by(state=odl_const.PROCESSING,
-                                             task=TEST_TASK_NAME)
-                                  .one_or_none())
+            session = self.db_context.session
+            row = (session.query(models.OpenDaylightPeriodicTask)
+                          .filter_by(state=odl_const.PROCESSING,
+                                     task=TEST_TASK_NAME)
+                          .one_or_none())
             return (row is not None)
 
         self.thread.start()
