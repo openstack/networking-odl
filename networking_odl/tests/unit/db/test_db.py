@@ -303,7 +303,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         self._test_delete_rows_by_state_and_time(6, 5, odl_const.COMPLETED, 0)
         self.assertEqual({'flush': False}, mock_delete_row.call_args[1])
 
-    def _test_reset_processing_rows(self, session, last_retried, max_timedelta,
+    def _test_reset_processing_rows(self, last_retried, max_timedelta,
                                     quantity, dry_reset=False):
         db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         expected_state = odl_const.PROCESSING
@@ -326,16 +326,16 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
             self.assertEqual(row.state, expected_state)
 
     def test_reset_processing_rows(self):
-        self._test_reset_processing_rows(self.db_session, 6, 5, 1)
+        self._test_reset_processing_rows(6, 5, 1)
 
     def test_reset_processing_rows_no_new_rows(self):
-        self._test_reset_processing_rows(self.db_session, 0, 10, 0)
+        self._test_reset_processing_rows(0, 10, 0)
 
     @mock.patch.object(db, 'update_db_row_state',
                        side_effect=db.update_db_row_state)
     def test_reset_processing_rows_individually(self, mock_update_row):
-        self._test_reset_processing_rows(self.db_session, 6, 5, 1, True)
-        self._test_reset_processing_rows(self.db_session, 6, 5, 2)
+        self._test_reset_processing_rows(6, 5, 1, True)
+        self._test_reset_processing_rows(6, 5, 2)
         self.assertEqual(mock_update_row.call_count, 2)
         self.assertEqual(mock_update_row.call_args[1], {'flush': False})
 
