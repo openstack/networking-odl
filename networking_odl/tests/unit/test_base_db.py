@@ -53,7 +53,6 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         super(ODLBaseDbTestCase, self).setUp()
         self.db_context = neutron_context.get_admin_context()
         self.db_session = self.db_context.session
-        self.addCleanup(self._db_cleanup)
         self.cfg = self.useFixture(config_fixture.Config())
         self.cfg.config(completed_rows_retention=-1, group='ml2_odl')
         self._setup_retry_tracker_table()
