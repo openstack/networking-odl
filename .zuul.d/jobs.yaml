@@ -3,8 +3,8 @@
     description: Fake job to hold configuration settings for jobs
     vars:
       odl_version_map:
-        carbon: &carbon carbon-snapshot-0.6
-        nitrogen: &nitrogen nitrogen-snapshot-0.7
+        carbon: &carbon carbon-latest
+        nitrogen: &nitrogen nitrogen-latest
         oxygen: &oxygen oxygen-snapshot-0.8
       common_devstack_vars: &devstack_vars
         devstack_localrc:
