@@ -23,6 +23,7 @@ from pecan import util as p_util
 from neutron.db import api as db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import context as neutron_context
+from neutron_lib import fixture as lib_fixtures
 from oslo_config import fixture as config_fixture
 from oslo_db import exception as db_exc
 import sqlalchemy
@@ -86,11 +87,11 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
         self.db_context.session.merge(row1)
         self.db_context.session.flush()
 
-    # NOTE(mpeterson): make retries faster so it doesn't take a lot.
-    @mock.patch.multiple(db_api._retry_db_errors,
-                         retry_interval=RETRY_INTERVAL,
-                         max_retries=RETRY_MAX)
     def _test_db_exceptions_handled(self, method, mock_object, expect_retries):
+        # NOTE(mpeterson): make retries faster so it doesn't take a lot.
+        retry_fixture = lib_fixtures.DBRetryErrorsFixture(
+            max_retries=RETRY_MAX, retry_interval=RETRY_INTERVAL)
+        retry_fixture.setUp()
         # NOTE(mpeterson): this test is very verbose, disabling logging
         logging.disable(logging.CRITICAL)
         self.addCleanup(logging.disable, logging.NOTSET)
@@ -157,6 +158,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
             self.assertEqual(expected_retries, mock_object.call_count - 1)
             mock_object.reset_mock()
 
+        retry_fixture.cleanUp()
         return retry_counter[0]
 
     def _assertRetryCount(self, expected_count):
