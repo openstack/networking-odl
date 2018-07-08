@@ -75,14 +75,9 @@ class OpenDaylightFeaturesFixture(fixtures.Fixture):
         if cfg.CONF.ml2_odl.password is None:
             self.cfg.config(password='somepass', group='ml2_odl')
         # make sure init is not called, it'll block the main thread
-        self.mock_odl_features_init = mock.patch.object(
-            odl_features, 'init', side_effect=self.fake_init)
-        self.mock_odl_features_init.start()
+        self.cfg.config(odl_features='', group='ml2_odl')
+        odl_features.init()
         self.addCleanup(odl_features.deinit)
-
-    @staticmethod
-    def fake_init():
-        odl_features.feature_set = set()
 
 
 class OpenDaylightJournalThreadFixture(fixtures.Fixture):
