@@ -275,6 +275,12 @@ function configure_host_for_func_testing {
     _install_post_devstack
 }
 
+# This function has been added because it's called by the devstack scripts
+# but since functional/fullstack are not stacking devstack entirely this
+# this function is never imported. Thus, the creation of this no-op function
+function conductor_conf {
+    :
+}
 
 _init
 
