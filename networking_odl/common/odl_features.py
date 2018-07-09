@@ -13,11 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import itertools
 import time
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_serialization import jsonutils
 from requests import exceptions
 
 from networking_odl.common import client as odl_client
@@ -29,7 +31,9 @@ LOG = log.getLogger(__name__)
 
 OPERATIONAL_PORT_STATUS = 'operational-port-status'
 
-feature_set = set()
+EMPTY_FEATURES = {}
+
+feature_configs = copy.copy(EMPTY_FEATURES)
 
 
 def init():
@@ -39,43 +43,56 @@ def init():
     via rest call from ODL.
     '''
 
-    global feature_set
-    feature_set = None
+    global feature_configs
+    feature_configs = None
+
+    if cfg.CONF.ml2_odl.odl_features_json is not None:
+        json = jsonutils.loads(cfg.CONF.ml2_odl.odl_features_json)
+        feature_configs = _load_features(json)
+        return
 
     if cfg.CONF.ml2_odl.odl_features is not None:
-        feature_set = set(cfg.CONF.ml2_odl.odl_features)
+        feature_configs = {feature: '' for feature
+                           in cfg.CONF.ml2_odl.odl_features}
         return
 
     wait_interval = cfg.CONF.ml2_odl.odl_features_retry_interval
 
     for times_tried in itertools.count():
-        feature_set = _fetch_features()
-        if feature_set is not None:
+        feature_configs = _fetch_features()
+        if feature_configs is not None:
             break
         LOG.warning('Failed to retrieve ODL features, attempt %i', times_tried)
         time.sleep(wait_interval)
 
 
 def has(feature):
-    return feature in feature_set
+    return feature in feature_configs
+
+
+def get_config(feature):
+    return feature_configs[feature]
 
 
 def deinit():
     '''Set odl_features back to it's pre-initlialized '''
-    global feature_set
-    feature_set = set()
+    global feature_configs
+    feature_configs = copy.copy(EMPTY_FEATURES)
 
 
 def _load_features(json):
     """parse and save features from json"""
     features = json['features']
     if 'feature' not in features:
-        return None
+        return copy.copy(EMPTY_FEATURES)
 
+    # documentation on the JSON received can be found at:
+    # https://github.com/opendaylight/neutron/blob/master/model/src/main/yang/neutron-extensions.yang
     LOG.info('Retrieved ODL features %s', features)
-    response = set()
+    response = {}
     for feature in features['feature']:
-        response.add(feature['service-provider-feature'].split(':')[1])
+        cfg = feature.get('configuration', '')
+        response[feature['service-provider-feature'].split(':')[1]] = cfg
     return response
 
 
@@ -98,11 +115,11 @@ def _fetch_features():
 
     if response.status_code == 400:
         LOG.debug('ODL does not support feature negotiation')
-        return set()
+        return copy.copy(EMPTY_FEATURES)
 
     if response.status_code == 404:
         LOG.debug('No features configured')
-        return set()
+        return copy.copy(EMPTY_FEATURES)
 
     if response.status_code != 200:
         LOG.warning('error fetching features: %i',

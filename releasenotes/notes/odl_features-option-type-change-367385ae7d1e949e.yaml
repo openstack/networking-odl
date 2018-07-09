@@ -1,0 +1,14 @@
+---
+prelude: >
+    The config option odl_features_json has been added to allow specifying
+    features in the same format ODL returns during negotiation.
+features:
+  - |
+    The odl_features_json option accepts a JSON compatible with the JSON
+    response from ODL's API for retrieving features
+    ("/restconf/operational/neutron:neutron/features").
+
+    If this option is configured, networking_odl will not query ODL for
+    its feature support and will instead use the configured value. If
+    odl_features and odl_features_json are both specified, odl_features_json
+    will take precedence and odl_features will not be used at all.

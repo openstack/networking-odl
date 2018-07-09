@@ -67,8 +67,12 @@ odl_opts = [
     cfg.IntOpt('odl_features_retry_interval', default=5,
                help=_("Wait this many seconds before retrying the odl features"
                       " fetch")),
-    cfg.ListOpt('odl_features', item_type=str,
-                help='A list of features supported by ODL'),
+    cfg.ListOpt('odl_features',
+                help='A list of features supported by ODL.'),
+    cfg.StrOpt('odl_features_json',
+               help='Features supported by ODL, in the json format returned'
+               'by ODL. Note: This config option takes precedence over'
+               'odl_features.'),
     cfg.BoolOpt('enable_dhcp_service', default=False,
                 help=_('Enables the networking-odl driver to supply special'
                        ' neutron ports of "dhcp" type to OpenDaylight'
