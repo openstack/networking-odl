@@ -24,6 +24,7 @@ from oslo_log import log as logging
 from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.api.rpc.handlers import l3_rpc
 from neutron.common import rpc as n_rpc
+from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
@@ -125,7 +126,7 @@ class OpenDaylightL3RouterPlugin(
         return fip_dict
 
     def update_floatingip(self, context, id, floatingip):
-        with context.session.begin(subtransactions=True):
+        with db_api.context_manager.writer.savepoint.using(context):
             fip_dict = super(OpenDaylightL3RouterPlugin,
                              self).update_floatingip(context, id, floatingip)
             # Update status based on association

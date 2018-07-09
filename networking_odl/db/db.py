@@ -69,22 +69,22 @@ def get_all_db_rows_by_state(context, state):
 # might both succeed in changing the same row to pending, but at least one
 # of them will get a deadlock from Galera and will have to retry the operation.
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def get_oldest_pending_db_row_with_lock(context):
-    with db_api.autonested_transaction(context.session):
-        journal_dep = aliased(models.OpenDaylightJournal)
-        dep_query = context.session.query(journal_dep).filter(
-            models.OpenDaylightJournal.seqnum == journal_dep.seqnum
-        ).outerjoin(
-            journal_dep.depending_on, aliased=True).filter(
-            or_(models.OpenDaylightJournal.state == odl_const.PENDING,
-                models.OpenDaylightJournal.state == odl_const.PROCESSING))
-        row = context.session.query(models.OpenDaylightJournal).filter(
-            models.OpenDaylightJournal.state == odl_const.PENDING,
-            ~ dep_query.exists()
-        ).order_by(
-            asc(models.OpenDaylightJournal.last_retried)).first()
-        if row:
-            update_db_row_state(context, row, odl_const.PROCESSING)
+    journal_dep = aliased(models.OpenDaylightJournal)
+    dep_query = context.session.query(journal_dep).filter(
+        models.OpenDaylightJournal.seqnum == journal_dep.seqnum
+    ).outerjoin(
+        journal_dep.depending_on, aliased=True).filter(
+        or_(models.OpenDaylightJournal.state == odl_const.PENDING,
+            models.OpenDaylightJournal.state == odl_const.PROCESSING))
+    row = context.session.query(models.OpenDaylightJournal).filter(
+        models.OpenDaylightJournal.state == odl_const.PENDING,
+        ~ dep_query.exists()
+    ).order_by(
+        asc(models.OpenDaylightJournal.last_retried)).first()
+    if row:
+        update_db_row_state(context, row, odl_const.PROCESSING)
 
     return row
 
@@ -139,13 +139,13 @@ def create_pending_row(context, object_type, object_uuid,
     return row
 
 
+@db_api.context_manager.writer.savepoint
 def delete_pending_rows(context, operations_to_delete):
-    with db_api.autonested_transaction(context.session):
-        context.session.query(models.OpenDaylightJournal).filter(
-            models.OpenDaylightJournal.operation.in_(operations_to_delete),
-            models.OpenDaylightJournal.state == odl_const.PENDING).delete(
-            synchronize_session=False)
-        context.session.expire_all()
+    context.session.query(models.OpenDaylightJournal).filter(
+        models.OpenDaylightJournal.operation.in_(operations_to_delete),
+        models.OpenDaylightJournal.state == odl_const.PENDING).delete(
+        synchronize_session=False)
+    context.session.expire_all()
 
 
 def _update_periodic_task_state(context, expected_state, state, task):
@@ -196,31 +196,31 @@ def update_periodic_task(context, task, operation=None):
     row.processing_operation = op_text
 
 
+@db_api.context_manager.writer.savepoint
 def delete_rows_by_state_and_time(context, state, time_delta):
     # NOTE(mpeterson): The reason behind deleting one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing a DELETE. By
     # executing each operation indepently, we minimize exposures to DEADLOCKS.
-    with db_api.autonested_transaction(context.session):
-        now = context.session.execute(func.now()).scalar()
-        rows = context.session.query(models.OpenDaylightJournal).filter(
-            models.OpenDaylightJournal.state == state,
-            models.OpenDaylightJournal.last_retried < now - time_delta).all()
-        for row in rows:
-            delete_row(context, row, flush=False)
-        context.session.expire_all()
+    now = context.session.execute(func.now()).scalar()
+    rows = context.session.query(models.OpenDaylightJournal).filter(
+        models.OpenDaylightJournal.state == state,
+        models.OpenDaylightJournal.last_retried < now - time_delta).all()
+    for row in rows:
+        delete_row(context, row, flush=False)
+    context.session.expire_all()
 
 
+@db_api.context_manager.writer.savepoint
 def reset_processing_rows(context, max_timedelta):
     # NOTE(mpeterson): The reason behind updating one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing an UPDATE. By
     # executing each operation indepently, we minimize exposures to DEADLOCKS.
-    with db_api.autonested_transaction(context.session):
-        now = context.session.execute(func.now()).scalar()
-        max_timedelta = datetime.timedelta(seconds=max_timedelta)
-        rows = context.session.query(models.OpenDaylightJournal).filter(
-            models.OpenDaylightJournal.last_retried < now - max_timedelta,
-            models.OpenDaylightJournal.state == odl_const.PROCESSING).all()
-        for row in rows:
-            update_db_row_state(context, row, odl_const.PENDING, flush=False)
+    now = context.session.execute(func.now()).scalar()
+    max_timedelta = datetime.timedelta(seconds=max_timedelta)
+    rows = context.session.query(models.OpenDaylightJournal).filter(
+        models.OpenDaylightJournal.last_retried < now - max_timedelta,
+        models.OpenDaylightJournal.state == odl_const.PROCESSING).all()
+    for row in rows:
+        update_db_row_state(context, row, odl_const.PENDING, flush=False)
 
     return len(rows)

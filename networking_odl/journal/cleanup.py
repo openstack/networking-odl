@@ -28,6 +28,7 @@ LOG = logging.getLogger(__name__)
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def delete_completed_rows(context):
     """Journal maintenance operation for deleting completed rows."""
     rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
@@ -35,17 +36,16 @@ def delete_completed_rows(context):
         return
 
     LOG.debug("Deleting completed rows")
-    with db_api.autonested_transaction(context.session):
-        db.delete_rows_by_state_and_time(
-            context, odl_const.COMPLETED,
-            timedelta(seconds=rows_retention))
+    db.delete_rows_by_state_and_time(
+        context, odl_const.COMPLETED,
+        timedelta(seconds=rows_retention))
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def cleanup_processing_rows(context):
-    with db_api.autonested_transaction(context.session):
-        row_count = db.reset_processing_rows(
-            context, cfg.CONF.ml2_odl.processing_timeout)
+    row_count = db.reset_processing_rows(
+        context, cfg.CONF.ml2_odl.processing_timeout)
     if row_count:
         LOG.info("Reset %(num)s orphaned rows back to pending",
                  {"num": row_count})

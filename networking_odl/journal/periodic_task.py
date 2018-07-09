@@ -47,10 +47,10 @@ class PeriodicTask(object):
             pass
 
     @db_api.retry_if_session_inactive()
+    @db_api.context_manager.writer.savepoint
     def _set_operation(self, context, operation):
-        with db_api.autonested_transaction(context.session):
-            db.update_periodic_task(context, task=self.task,
-                                    operation=operation)
+        db.update_periodic_task(context, task=self.task,
+                                operation=operation)
 
     def _execute_op(self, operation, context):
         op_details = operation.__name__
@@ -72,16 +72,16 @@ class PeriodicTask(object):
             context, self.task, self.interval)
 
     @db_api.retry_if_session_inactive()
+    @db_api.context_manager.writer.savepoint
     def _clear_and_unlock_task(self, context):
-        with db_api.autonested_transaction(context.session):
-            db.update_periodic_task(context, task=self.task,
-                                    operation=None)
-            db.unlock_periodic_task(context, self.task)
+        db.update_periodic_task(context, task=self.task,
+                                operation=None)
+        db.unlock_periodic_task(context, self.task)
 
     @db_api.retry_if_session_inactive()
+    @db_api.context_manager.writer.savepoint
     def _lock_task(self, context):
-        with db_api.autonested_transaction(context.session):
-            return db.lock_periodic_task(context, self.task)
+        return db.lock_periodic_task(context, self.task)
 
     def execute_ops(self, forced=False):
         LOG.info("Starting %s periodic task.", self.task)

@@ -80,20 +80,20 @@ def register(driver, resources, handler=None):
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def full_sync(context):
-    with db_api.autonested_transaction(context.session):
-        if not _full_sync_needed(context):
-            return
+    if not _full_sync_needed(context):
+        return
 
-        db.delete_pending_rows(context, _OPS_TO_DELETE_ON_SYNC)
+    db.delete_pending_rows(context, _OPS_TO_DELETE_ON_SYNC)
 
-        for resource_type in _ORDERED_ODL_RESOURCES:
-            handler = FULL_SYNC_RESOURCES.get(resource_type)
-            if handler:
-                _sync_resources(context, resource_type, handler)
+    for resource_type in _ORDERED_ODL_RESOURCES:
+        handler = FULL_SYNC_RESOURCES.get(resource_type)
+        if handler:
+            _sync_resources(context, resource_type, handler)
 
-        journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
-                       odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
+    journal.record(context, odl_const.ODL_NETWORK, _CANARY_NETWORK_ID,
+                   odl_const.ODL_CREATE, _CANARY_NETWORK_DATA)
 
 
 def _full_sync_needed(context):
@@ -157,7 +157,7 @@ def _sync_resources(context, object_type, handler):
 def sync_resources(context, resource_type):
     driver = base_driver.get_driver(resource_type)
     resources = driver.get_resources_for_full_sync(context, resource_type)
-    with db_api.autonested_transaction(context.session):
+    with db_api.context_manager.writer.savepoint.using(context):
         for resource in resources:
             journal.record(context, resource_type, resource['id'],
                            odl_const.ODL_CREATE, resource)

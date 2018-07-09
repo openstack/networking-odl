@@ -28,6 +28,7 @@ from networking_odl.journal import recovery
 from networking_odl.l3 import l3_odl_v2
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base
+from networking_odl.tests.unit.db import test_db
 from networking_odl.tests.unit.journal import helper
 from networking_odl.tests.unit import test_base_db
 
@@ -108,12 +109,12 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
         recovery.journal_recovery(self.db_context)
         self.assertFalse(self._CLIENT.get_resource.called)
 
+    @test_db.in_session
     def _test_recovery(self, operation, odl_resource, expected_state):
         db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
                               'id', operation, {})
         created_row = db.get_all_db_rows(self.db_context)[0]
-        db.update_db_row_state(self.db_context, created_row,
-                               odl_const.FAILED)
+        db.update_db_row_state(self.db_context, created_row, odl_const.FAILED)
 
         self._CLIENT.get_resource.return_value = odl_resource
 

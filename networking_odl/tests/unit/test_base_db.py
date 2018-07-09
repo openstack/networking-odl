@@ -180,7 +180,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
                 retries
             )
 
-        with self.db_context.session.begin():
+        with db_api.context_manager.writer.using(self.db_context):
             retries = self._test_db_exceptions_handled(
                 method, mock_object, False
             )

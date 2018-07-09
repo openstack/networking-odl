@@ -130,25 +130,25 @@ def record(plugin_context, object_type, object_uuid, operation, data,
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def entry_complete(context, entry):
-    with db_api.autonested_transaction(context.session):
-        if cfg.CONF.ml2_odl.completed_rows_retention == 0:
-            db.delete_row(context, entry)
-        else:
-            db.update_db_row_state(context, entry, odl_const.COMPLETED)
-            db.delete_dependency(context, entry)
+    if cfg.CONF.ml2_odl.completed_rows_retention == 0:
+        db.delete_row(context, entry)
+    else:
+        db.update_db_row_state(context, entry, odl_const.COMPLETED)
+        db.delete_dependency(context, entry)
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def entry_reset(context, entry):
-    with db_api.autonested_transaction(context.session):
-        db.update_db_row_state(context, entry, odl_const.PENDING)
+    db.update_db_row_state(context, entry, odl_const.PENDING)
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def entry_update_state_by_retry_count(context, entry, retry_count):
-    with db_api.autonested_transaction(context.session):
-        db.update_pending_db_row_retry(context, entry, retry_count)
+    db.update_pending_db_row_retry(context, entry, retry_count)
 
 
 def _make_url(row):

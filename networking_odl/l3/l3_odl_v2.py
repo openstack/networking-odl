@@ -39,10 +39,9 @@ L3_RESOURCES = {
 
 
 @db_api.retry_if_session_inactive()
+@db_api.context_manager.writer.savepoint
 def _record_in_journal(context, object_type, operation, object_id, data):
-    session = context.session
-    with db_api.autonested_transaction(session):
-        journal.record(context, object_type, object_id, operation, data)
+    journal.record(context, object_type, object_id, operation, data)
 
 
 class OpenDaylightL3RouterPlugin(

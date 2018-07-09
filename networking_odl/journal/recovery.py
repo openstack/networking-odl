@@ -46,7 +46,7 @@ def journal_recovery(context):
         except Exception:
             LOG.exception("Failure while recovering journal entry %s.", row)
         else:
-            with db_api.autonested_transaction(context.session):
+            with db_api.context_manager.writer.savepoint.using(context):
                 if odl_resource is not None:
                     _handle_existing_resource(context, row)
                 else:
