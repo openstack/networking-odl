@@ -50,10 +50,6 @@ ODL_PASSWORD=${ODL_PASSWORD:-admin}
 # unset or empty string means default.
 ODL_TIMEOUT=${ODL_TIMEOUT:-""}
 
-# use v2 type driver
-# this requires post mitaka
-ODL_V2DRIVER=${ODL_V2DRIVER:-True}
-
 # use opendaylight dhcp server
 ODL_DHCP_SERVICE=${ODL_DHCP_SERVICE:-False}
 

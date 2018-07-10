@@ -1,0 +1,13 @@
+---
+prelude: >
+    The v1 drivers, which were deprecated in the Queens cycle, are removed.
+    All existing usages should be updated to use the v2 drivers.
+upgrade:
+  - |
+    If you've been using v1 drivers, update your configuration to use the
+    v2 drivers.
+    Otherwise, neutron won't boot properly if v1 drivers are still used.
+critical:
+  - |
+    The v1 drivers are removed. If you're still using v1 drivers, migrate to
+    use the v2 drivers.

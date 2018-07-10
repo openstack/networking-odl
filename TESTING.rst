@@ -122,10 +122,10 @@ the dot-separated path to the module you want as an argument to it.
 For executing a specific test case, specify the name of the test case
 class separating it from the module path with a colon.
 
-For example, the following would run only the Testodll3 tests from
-networking_odl/tests/unit/l3/test_odl_l3.py ::
+For example, the following would run only the TestUtils tests from
+networking_odl/tests/unit/common/test_utils.py ::
 
-    $ tox -e py27 networking_odl.tests.unit.l3.test_l3_odl.Testodll3
+    $ tox -e py27 networking_odl.tests.unit.common.test_utils.TestUtils
 
 Adding more tests
 ~~~~~~~~~~~~~~~~~

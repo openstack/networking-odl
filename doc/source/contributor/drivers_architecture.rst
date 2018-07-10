@@ -6,8 +6,12 @@ This document covers architectural concepts of the ODL drivers. Although
 implementation of APIs. Any mention of ML2 in this document is solely for
 reference purposes.
 
-V1 Driver Overview
-------------------
+V1 Driver Overview (Removed in Rocky)
+-------------------------------------
+
+Note: This arhitecture has been deprecated in Queens and removed in Rocky.
+The documentation is kept as a reference to understand the necessity of
+a diffrent architecture.
 
 The first driver version was a naive implementation which synchronously
 mirrored all calls to the ODL controller. For example, a create network request

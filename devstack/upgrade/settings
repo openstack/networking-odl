@@ -35,7 +35,6 @@ for w in base target; do
     devstack_localrc $w ODL_NETVIRT_KARAF_FEATURE=${ODL_NETVIRT_KARAF_FEATURE}
     devstack_localrc $w Q_PLUGIN=ml2
     devstack_localrc $w ODL_L3=True
-    devstack_localrc $w ODL_V2DRIVER=True
     devstack_localrc $w Q_USE_PUBLIC_VETH=False
     devstack_localrc $w PUBLIC_BRIDGE=br-ex
     devstack_localrc $w ODL_PROVIDER_MAPPINGS=public:br-ex

@@ -13,8 +13,6 @@
           ODL_NETVIRT_KARAF_FEATURE: odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger,odl-neutron-hostconfig-ovs
           # Switch to using the ODL's L3 implementation
           ODL_L3: True
-          # Switch to V2 Driver
-          ODL_V2DRIVER: True
           # public network connectivity
           ODL_PROVIDER_MAPPINGS: public:br-ex
           PUBLIC_PHYSICAL_NETWORK: public

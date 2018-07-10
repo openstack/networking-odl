@@ -43,7 +43,7 @@
      [[local|localrc]]
      enable_plugin neutron-lbaas http://git.openstack.org/openstack/neutron-lbaas
      enable_service q-lbaasv2
-     NEUTRON_LBAAS_SERVICE_PROVIDERV2="LOADBALANCERV2:opendaylight:networking_odl.lbaas.driver_v2.OpenDaylightLbaasDriverV2:default"
+     NEUTRON_LBAAS_SERVICE_PROVIDERV2="LOADBALANCERV2:opendaylight:networking_odl.lbaas.lbaasv2_driver_v2.OpenDaylightLbaasDriverV2:default"
 
 7. run ``stack.sh``
 

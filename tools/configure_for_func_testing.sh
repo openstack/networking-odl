@@ -186,7 +186,6 @@ function _install_opendaylight {
     touch /$Q_PLUGIN_CONF_FILE
 
     NETWORKING_ODL_DIR=${NETWORKING_ODL_DIR:-$REPO_BASE/networking-odl}
-    ODL_V2DRIVER=${ODL_V2DRIVER:-True}
     Q_USE_PUBLIC_VETH=False
     ODL_DONT_WAIT_OVS_BR=True
     # openstack service provider isn't needed, only ODL neutron northbound
