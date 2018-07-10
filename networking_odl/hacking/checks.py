@@ -34,6 +34,11 @@ _ND02_MSG = (
 
 _ND02_REGEXP_DIRECT = re.compile(r'cfg\.CONF\..* =')
 
+_ND03_MSG = (
+    "ND03: The import of %s has a redundant alias."
+)
+_ND03_REGEXP_REDUNDANT_IMPORT_ALIAS = re.compile(r'.*import (.+) as \1$')
+
 
 def check_opendaylight_lowercase(logical_line, filename, noqa):
     """ND01 - Enforce using OpenDaylight."""
@@ -119,6 +124,18 @@ def check_config_over_direct_override(logical_line, filename, noqa):
         yield (0, _ND02_MSG % "overriding it directly.")
 
 
+def check_redundant_import_alias(logical_line):
+    """ND03 - Checking no redundant import alias.
+
+    ND03: from neutron.plugins.ml2 import driver_context as driver_context
+    OK: from neutron.plugins.ml2 import driver_context
+    """
+
+    match = re.match(_ND03_REGEXP_REDUNDANT_IMPORT_ALIAS, logical_line)
+    if match:
+        yield (0, _ND03_MSG % match.group(1))
+
+
 def factory(register):
     checks.factory(register)
     register(check_opendaylight_lowercase)
@@ -127,3 +144,4 @@ def factory(register):
     register(check_opendaylight_lowercase_docstring)
     register(check_config_over_set_override)
     register(check_config_over_direct_override)
+    register(check_redundant_import_alias)
