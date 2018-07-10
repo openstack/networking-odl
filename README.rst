@@ -28,3 +28,6 @@ https://docs.openstack.org/networking-odl/latest/
 
 The OpenDaylight homepage:
 https://www.opendaylight.org/
+
+Release notes for the project can be found at:
+https://docs.openstack.org/releasenotes/networking-odl/
