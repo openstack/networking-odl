@@ -18,6 +18,7 @@ import threading
 
 import mock
 from neutron.common import utils
+from neutron_lib import context
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -65,7 +66,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         # and use the `nonlocal` directive
         count = [0]
 
-        def callback_op(**kwargs):
+        def callback_op(*args):
             count[0] += 1
 
             # The following should be true on the second call, so we're making
@@ -83,12 +84,12 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         exception_event = threading.Event()
         callback_event = threading.Event()
 
-        def exception_op(**kwargs):
+        def exception_op(*args):
             if not exception_event.is_set():
                 exception_event.set()
                 raise Exception()
 
-        def callback_op(**kwargs):
+        def callback_op(*args):
             callback_event.set()
 
         for op in [exception_op, callback_op]:
@@ -106,10 +107,10 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         callback_event1 = threading.Event()
         self.addCleanup(self.thread1.cleanup)
 
-        def callback_op(**kwargs):
+        def callback_op(*args):
             callback_event.set()
 
-        def callback_op1(**kwargs):
+        def callback_op1(*args):
             callback_event1.set()
 
         self.thread.register_operation(callback_op)
@@ -125,7 +126,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         callback_event = threading.Event()
         continue_event = threading.Event()
 
-        def callback_op(**kwargs):
+        def callback_op(*args):
             callback_event.set()
 
         return_value = True
@@ -212,3 +213,20 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         self.thread.execute_ops(forced=True)
 
         operation.assert_called()
+
+    @mock.patch.object(db, "was_periodic_task_executed_recently",
+                       return_value=True)
+    def test_context_is_passed_as_args(self, _):
+        operation = mock.MagicMock()
+        operation.__name__ = 'test'
+        self.thread.register_operation(operation)
+
+        self.thread.execute_ops(forced=True)
+
+        # This tests that only ONE args is passed, and no kwargs
+        operation.assert_called_with(mock.ANY)
+
+        # This tests that it's a context
+        kall = operation.call_args
+        args, kwargs = kall
+        self.assertIsInstance(args[0], context.Context)

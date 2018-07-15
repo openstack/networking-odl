@@ -62,7 +62,7 @@ class PeriodicTask(object):
             LOG.info("Starting %s phase of periodic task %s.",
                      op_details, self.task)
             self._set_operation(context, operation)
-            operation(context=context)
+            operation(context)
             LOG.info("Finished %s phase of %s task.", op_details, self.task)
         except Exception:
             LOG.exception("Failed during periodic task operation %s.",
