@@ -147,7 +147,7 @@ function configure_neutron_odl {
 
     # Addition of L3 service_plugin
     if ! is_neutron_legacy_enabled; then
-        neutron_service_plugin_class_add $ML2_L3_PLUGIN
+        neutron_service_plugin_class_add odl-router_v2
         # NOTE: workaround, mechanism driver is not being set to opendaylight_v2
         # by lib/neutron. It seems to be hardcoded at
         # https://github.com/openstack-dev/devstack/blob/master/lib/neutron#L184, fix it, if

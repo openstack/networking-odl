@@ -88,11 +88,6 @@ class _TestL3Base(test_l3.L3NatTestCaseMixin, base.OdlTestsBase):
             self.assertNotIn('port_id', updated_fip['floatingip'].keys())
 
 
-class TestL3PluginV1(_TestL3Base, test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['opendaylight']
-    l3_plugin = 'odl-router'
-
-
 class TestL3PluginV2(base.V2DriverAdjustment, _TestL3Base,
                      test_plugin.Ml2PluginV2TestCase):
     _mechanism_drivers = ['opendaylight_v2']

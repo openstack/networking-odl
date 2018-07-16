@@ -171,9 +171,7 @@ def _sgrule_scrub_unknown_protocol_name(protocol):
     return protocol
 
 
-# TODO(yamahata): used by mech_driver.
-#                 make this private when v1 mech_driver is removed
-def filter_security_group_rule(sg_rule):
+def _filter_security_group_rule(sg_rule):
     _sgrule_scrub_icmpv6_name(sg_rule)
     if sg_rule.get('protocol'):
         sg_rule['protocol'] = _sgrule_scrub_unknown_protocol_name(
@@ -188,8 +186,8 @@ _FILTER_MAP = {
     (odl_const.ODL_PORT, odl_const.ODL_CREATE): _filter_port_create,
     (odl_const.ODL_PORT, odl_const.ODL_UPDATE): _filter_port_update,
     (odl_const.ODL_ROUTER, odl_const.ODL_UPDATE): _filter_router_update,
-    (odl_const.ODL_SG_RULE, odl_const.ODL_CREATE): filter_security_group_rule,
-    (odl_const.ODL_SG_RULE, odl_const.ODL_UPDATE): filter_security_group_rule,
+    (odl_const.ODL_SG_RULE, odl_const.ODL_CREATE): _filter_security_group_rule,
+    (odl_const.ODL_SG_RULE, odl_const.ODL_UPDATE): _filter_security_group_rule,
     (odl_const.ODL_FLOATINGIP, odl_const.ODL_UPDATE): _filter_floatingip,
 }
 

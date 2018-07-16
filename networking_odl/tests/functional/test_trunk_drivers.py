@@ -103,13 +103,3 @@ class TestTrunkV2Driver(base.V2DriverAdjustment, _TrunkDriverTest,
         self.trunk_plugin = trunk_plugin.TrunkPlugin()
         self.trunk_plugin.add_segmentation_type(constants.VLAN,
                                                 utils.is_valid_vlan_tag)
-
-
-class TestTrunkV1Driver(_TrunkDriverTest, test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['opendaylight']
-
-    def setUp(self):
-        super(TestTrunkV1Driver, self).setUp()
-        self.trunk_plugin = trunk_plugin.TrunkPlugin()
-        self.trunk_plugin.add_segmentation_type(constants.VLAN,
-                                                utils.is_valid_vlan_tag)

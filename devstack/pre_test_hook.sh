@@ -25,18 +25,6 @@ case "$ODL_RELEASE_BASE" in
         ;;
 esac
 
-if [[ -z "$ODL_GATE_V2DRIVER" ]] && [[ -n "${RALLY_SCENARIO}" ]]; then
-    ODL_GATE_V2DRIVER=v2driver
-fi
-case "$ODL_GATE_V2DRIVER" in
-    v2driver)
-        ODL_V2DRIVER=True
-        ;;
-    v1driver|*)
-        ODL_V2DRIVER=False
-        ;;
-esac
-
 ODL_PORT_BINDING_CONTROLLER=pseudo-agentdb-binding
 
 ODL_GATE_SERVICE_PROVIDER=${ODL_GATE_SERVICE_PROVIDER%-}
@@ -65,9 +53,6 @@ localrc_set $localrc_file "IS_GATE" "True"
 
 # Set here the ODL release to use for the Gate job
 localrc_set $localrc_file "ODL_RELEASE" "${ODL_RELEASE}"
-
-# Set here which driver, v1 or v2 driver
-localrc_set $localrc_file "ODL_V2DRIVER" "${ODL_V2DRIVER}"
 
 # Set timeout in seconds for http client to ODL neutron northbound
 localrc_set $localrc_file "ODL_TIMEOUT" "60"

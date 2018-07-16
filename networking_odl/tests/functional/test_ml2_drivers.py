@@ -113,16 +113,6 @@ class _DriverSecGroupsTests(base.OdlTestsBase):
                 self.resource_delete_test(odl_const.ODL_SG_RULE, sg_rule)
 
 
-class TestV1Driver(_DriverTest, test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['opendaylight']
-
-
-class TestV1DriverSecGroups(_DriverSecGroupsTests,
-                            test_securitygroup.SecurityGroupsTestCase,
-                            test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['opendaylight']
-
-
 class TestV2Driver(base.V2DriverAdjustment, _DriverTest,
                    test_plugin.Ml2PluginV2TestCase):
     _mechanism_drivers = ['opendaylight_v2']

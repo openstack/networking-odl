@@ -165,13 +165,6 @@ class _TestL2GatewayBase(base.OdlTestsBase, L2GatewayTestCaseMixin):
                     odl_const.ODL_L2GATEWAY_CONNECTION, odl_l2gw_connection))
 
 
-class TestL2gatewayV1Driver(_TestL2GatewayBase,
-                            test_plugin.Ml2PluginV2TestCase):
-    _mechanism_drivers = ['opendaylight']
-    service_provider = ('L2GW:OpenDaylight:networking_odl.l2gateway.driver.'
-                        'OpenDaylightL2gwDriver:default')
-
-
 class TestL2gatewayV2Driver(base.V2DriverAdjustment, _TestL2GatewayBase,
                             test_plugin.Ml2PluginV2TestCase):
     _mechanism_drivers = ['opendaylight_v2']

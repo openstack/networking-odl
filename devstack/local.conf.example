@@ -2,9 +2,6 @@
 # This will fetch the latest ODL snapshot
 ODL_RELEASE=latest-snapshot
 
-# Default is V2 driver, uncomment below line to use V1
-#ODL_V2DRIVER=False
-
 # Default is psuedo-port-binding-controller
 #ODL_PORT_BINDING_CONTROLLER=
 

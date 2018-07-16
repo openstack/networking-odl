@@ -17,7 +17,6 @@ import logging
 
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
-from networking_odl.ml2.mech_driver import OpenDaylightDriver
 from networking_odl.tests import base
 
 import mock
@@ -25,11 +24,11 @@ from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
 import testtools
 
-
 FAKE_ID = 'fakeid'
 
 
 class ODLCallbackTestCase(testtools.TestCase):
+
     def setUp(self):
         self.useFixture(base.OpenDaylightRestClientFixture())
         super(ODLCallbackTestCase, self).setUp()
@@ -98,9 +97,8 @@ class ODLCallbackTestCase(testtools.TestCase):
         self._test_callback_postcommit_for_sg(
             events.AFTER_DELETE, odl_const.ODL_DELETE, None, FAKE_ID)
 
-    @mock.patch.object(OpenDaylightDriver, 'sync_from_callback')
     def _test_callback_precommit_for_sg_rules(
-            self, event, op, sg_rule, sg_rule_id, sfc):
+            self, event, op, sg_rule, sg_rule_id):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP_RULE: sg_rule}
                          if sg_rule is not None else None)
@@ -116,9 +114,8 @@ class ODLCallbackTestCase(testtools.TestCase):
             sg_rule_id, expected_dict, security_group_rule=sg_rule,
             security_group_rule_id=sg_rule_id)
 
-    @mock.patch.object(OpenDaylightDriver, 'sync_from_callback')
     def _test_callback_postcommit_for_sg_rules(
-            self, event, op, sg_rule, sg_rule_id, sfc):
+            self, event, op, sg_rule, sg_rule_id):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP_RULE: sg_rule}
                          if sg_rule is not None else None)
@@ -157,7 +154,9 @@ class ODLCallbackTestCase(testtools.TestCase):
             events.AFTER_DELETE, odl_const.ODL_DELETE, None, FAKE_ID)
 
     def test_callback_exception(self):
+
         class TestException(Exception):
+
             def __init__(self):
                 pass
 
