@@ -14,14 +14,13 @@
 #    under the License.
 import datetime
 
+from neutron.db import api as db_api
+from neutron_lib.db import api as lib_db_api
+from oslo_log import log as logging
 from sqlalchemy import asc
 from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
-
-from oslo_log import log as logging
-
-from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
@@ -68,7 +67,7 @@ def get_all_db_rows_by_state(context, state):
 # If two (or more) different threads call this method at the same time, they
 # might both succeed in changing the same row to pending, but at least one
 # of them will get a deadlock from Galera and will have to retry the operation.
-@db_api.retry_if_session_inactive()
+@lib_db_api.retry_if_session_inactive()
 @db_api.context_manager.writer.savepoint
 def get_oldest_pending_db_row_with_lock(context):
     journal_dep = aliased(models.OpenDaylightJournal)
