@@ -17,6 +17,7 @@ import mock
 from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
+from networking_odl.common import odl_features
 from networking_odl.db import db
 from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.tests import base
@@ -28,7 +29,33 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
     def setUp(self):
         self.useFixture(base.OpenDaylightJournalThreadFixture())
         super(OpenDaylightQosDriverTestCase, self).setUp()
-        self.qos_driver = qos_driver.OpenDaylightQosDriver()
+        self.qos_driver = qos_driver.OpenDaylightQosDriver({})
+        self.addCleanup(odl_features.deinit)
+
+    def test_qos_supported_rules_are_fetched_from_odl_feature(self):
+        feature_json = """{"features": {"feature":
+                                [{"service-provider-feature":
+                                "neutron-extensions:operational-port-status"},
+                                {"service-provider-feature":
+                                "neutron-extensions:qos-rules",
+                                "configuration": {"key": "value"}}]}}"""
+
+        self.cfg.config(odl_features_json=feature_json, group='ml2_odl')
+        odl_features.init()
+
+        qos_driver_object = qos_driver.OpenDaylightQosDriver.create()
+
+        self.assertDictEqual(qos_driver_object.supported_rules,
+                             {'key': 'value'})
+
+    def test_default_values_for_supported_rules(self):
+        self.cfg.config(odl_features='key', group='ml2_odl')
+        odl_features.init()
+
+        qos_driver_object = qos_driver.OpenDaylightQosDriver.create()
+
+        self.assertDictEqual(qos_driver_object.supported_rules,
+                             qos_driver.DEFAULT_QOS_RULES)
 
     def _get_mock_context(self, session=None):
         current = {'tenant_id': 'tenant_id'}
