@@ -101,7 +101,10 @@
       devstack_plugins:
         <<: *devstack_plugins
         neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
-      tempest_test_regex: tempest\.(api|scenario|thirdparty)|neutron_tempest_plugin
+      # Only scenario tests and some compute API tests actually verify ODL is working
+      # Any API networking tests don't bring up any VMs and just verify that stuff happened in the
+      # Neutron DB, so they don't actually fail even if ODL is not running at all.
+      tempest_test_regex: tempest\.(api.compute|scenario|thirdparty)|neutron_tempest_plugin.scenario
       tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
 
 - job:
