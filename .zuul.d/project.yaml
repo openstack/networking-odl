@@ -68,3 +68,4 @@
               - openstack/networking-bgpvpn
         - networking-odl-functional-oxygen
         - networking-odl-fullstack-oxygen
+        - networking-odl-functional-fluorine

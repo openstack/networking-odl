@@ -205,7 +205,6 @@
 - job:
     name: networking-odl-functional-fluorine
     parent: networking-odl-functional-base
-    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *fluorine
