@@ -89,7 +89,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     # us to create a generic function that decorates on the fly. It needs to
     # be decorated through the decorator directive and not via function
     # composition
-    @db_api.retry_if_session_inactive()
+    @lib_db_api.retry_if_session_inactive()
     def _decorated_retry_if_session_inactive(self, context):
         self._mock_function()
 
