@@ -19,6 +19,9 @@ from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from neutron_lib.callbacks import resources
 from oslo_log import log as logging
+from oslo_utils import excutils
+
+from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 
@@ -38,6 +41,17 @@ _OPERATION_MAPPING = {
     events.AFTER_UPDATE: odl_const.ODL_UPDATE,
     events.AFTER_DELETE: odl_const.ODL_DELETE,
 }
+
+LOG_TEMPLATE = ("(%(msg)s) with ODL_OPS (%(op)s) ODL_RES_TYPE (%(res_type)s) "
+                "ODL_RES_ID (%(res_id)s)) ODL_RES_DICT (%(res_dict)s) "
+                "DATA (%(data)s)")
+
+
+def _log_on_callback(lvl, msg, op, res_type, res_id, res_dict, data):
+    LOG.log(lvl, LOG_TEMPLATE,
+            {'msg': msg, 'op': op, 'res_type': res_type, 'res_id': res_id,
+             'res_dict': res_dict, 'data': data,
+             'exc_info': True if lvl >= logging.ERROR else False})
 
 
 class OdlSecurityGroupsHandler(object):
@@ -79,17 +93,23 @@ class OdlSecurityGroupsHandler(object):
         odl_ops = _OPERATION_MAPPING[event]
         odl_res_dict = None if res is None else {odl_res_type.singular: res}
 
-        LOG.debug("Calling sync_from_callback with ODL_OPS (%(odl_ops)s) "
-                  "ODL_RES_TYPE (%(odl_res_type)s) RES_ID (%(res_id)s) "
-                  "ODL_RES_DICT (%(odl_res_dict)s) KWARGS (%(kwargs)s)",
-                  {'odl_ops': odl_ops, 'odl_res_type': odl_res_type,
-                   'res_id': res_id, 'odl_res_dict': odl_res_dict,
-                   'kwargs': kwargs})
-
         copy_kwargs = kwargs.copy()
         copy_kwargs.pop('context')
-        callback(context, odl_ops, odl_res_type, res_id, odl_res_dict,
-                 **copy_kwargs)
+
+        _log_on_callback(logging.DEBUG, "Calling callback", odl_ops,
+                         odl_res_type, res_id, odl_res_dict, copy_kwargs)
+        try:
+            callback(context, odl_ops, odl_res_type, res_id, odl_res_dict,
+                     **copy_kwargs)
+        except Exception as e:
+            # In case of precommit, neutron registry notification caller
+            # doesn't log its exception. In networking-odl case, we don't
+            # normally throw exception. So log it here for debug
+            with excutils.save_and_reraise_exception():
+                if not db_api.is_retriable(e):
+                    _log_on_callback(logging.ERROR, "Exception from callback",
+                                     odl_ops, odl_res_type, res_id,
+                                     odl_res_dict, copy_kwargs)
 
     def sg_callback_precommit(self, resource, event, trigger, **kwargs):
         self._sg_callback(self._precommit, resource, event, trigger, **kwargs)
