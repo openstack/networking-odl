@@ -83,7 +83,6 @@ if [[ -z "$NETWORK_API_EXTENSIONS" ]]; then
     NETWORK_API_EXTENSIONS+=,allowed-address-pairs
     NETWORK_API_EXTENSIONS+=,binding
     NETWORK_API_EXTENSIONS+=,dhcp_agent_scheduler
-    NETWORK_API_EXTENSIONS+=,dns-integration
     NETWORK_API_EXTENSIONS+=,dvr
     NETWORK_API_EXTENSIONS+=,ext-gw-mode
     NETWORK_API_EXTENSIONS+=,external-net
