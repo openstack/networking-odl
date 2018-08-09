@@ -105,11 +105,8 @@
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - networking-odl-functional-carbon
-        - networking-odl-fullstack-carbon
         - networking-odl-functional-nitrogen
-        - networking-odl-fullstack-nitrogen
         - networking-odl-functional-oxygen
-        - networking-odl-fullstack-oxygen
     gate:
       jobs:
         - networking-odl-rally-carbon:
@@ -166,11 +163,8 @@
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - networking-odl-functional-carbon
-        - networking-odl-fullstack-carbon
         - networking-odl-functional-nitrogen
-        - networking-odl-fullstack-nitrogen
         - networking-odl-functional-oxygen
-        - networking-odl-fullstack-oxygen
     post:
       jobs:
         - publish-openstack-python-branch-tarball:

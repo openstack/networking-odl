@@ -193,10 +193,6 @@ function _install_opendaylight {
     # is necessary for functional test
     ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-neutron-logger
     ODL_BOOT_WAIT_URL=controller/nb/v2/neutron/networks
-    if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
-        ODL_BOOT_WAIT_URL=restconf/operational/network-topology:network-topology/topology/netvirt:1
-        export ODL_NETVIRT_KARAF_FEATURE=odl-neutron-service,odl-restconf-all,odl-aaa-authn,odl-dlux-core,odl-mdsal-apidocs,odl-netvirt-openstack,odl-neutron-logger
-    fi
     source $NETWORKING_ODL_DIR/devstack/settings.odl
 
     local ODL_NEUTRON_NETWORK_WAIT_URL=controller/nb/v2/neutron/networks
@@ -212,12 +208,6 @@ function _install_opendaylight {
     fi
 
     enable_service odl-server
-    if [[ "$VENV" =~ "fullstack" ]]; then
-        enable_service odl-compute
-        # They are needed by configure_opendaylight_l3
-        FLOATING_RANGE=172.24.5.0/24
-        PUBLIC_NETWORK_GATEWAY=172.24.5.1
-    fi
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
 
@@ -227,15 +217,7 @@ function _install_opendaylight {
 
 function _install_post_devstack {
     echo_summary "Performing post-devstack installation"
-
-    if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
-        # NOTE(yamahata):
-        # fullstack can use sqlite. not db server is needed in theory.
-        # _install_databases nopg
-        echo "don't install databases"
-    else
-        _install_databases
-    fi
+    _install_databases
 
     # networkign-odl devstack plugin requires infra
     _install_infra
@@ -244,22 +226,11 @@ function _install_post_devstack {
     if is_ubuntu; then
         install_package isc-dhcp-client
         install_package netcat-openbsd
-        install_package iputils-arping  # needed fullstack arping test
     elif is_fedora; then
         install_package dhclient
-        install_package arping  # needed fullstack arping test
     else
         exit_distro_not_supported "installing dhclient package"
     fi
-}
-
-
-function _configure_iptables_rules {
-    # For linuxbridge agent fullstack tests we need to add special rules to
-    # iptables for connection of agents to rabbitmq:
-    CHAIN_NAME="openstack-INPUT"
-    sudo iptables -n --list $CHAIN_NAME 1> /dev/null 2>&1 || CHAIN_NAME="INPUT"
-    sudo iptables -I $CHAIN_NAME -s 240.0.0.0/8 -p tcp -m tcp -d 240.0.0.0/8 --dport 5672 -j ACCEPT
 }
 
 
@@ -275,6 +246,12 @@ function configure_host_for_func_testing {
     _install_post_devstack
 }
 
+# This function has been added because it's called by the devstack scripts
+# but since functional is not stacking devstack entirely this
+# this function is never imported. Thus, the creation of this no-op function
+function conductor_conf {
+    :
+}
 
 _init
 
@@ -285,8 +262,4 @@ if [[ "$IS_GATE" != "True" ]]; then
     else
         configure_host_for_func_testing
     fi
-fi
-
-if [[ "$VENV" =~ "dsvm-fullstack" ]]; then
-    _configure_iptables_rules
 fi
