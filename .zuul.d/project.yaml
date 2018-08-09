@@ -59,9 +59,7 @@
               - ^doc/.*$
               - ^releasenotes/.*$
         - networking-odl-functional-oxygen
-        - networking-odl-fullstack-oxygen
         - networking-odl-functional-fluorine
-        - networking-odl-fullstack-fluorine
         - openstack-tox-pep8:
             required-projects:
               - openstack/ceilometer

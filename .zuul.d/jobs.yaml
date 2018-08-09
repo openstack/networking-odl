@@ -174,28 +174,6 @@
       run_devstack: False
 
 - job:
-    name: networking-odl-fullstack-base
-    parent: networking-odl-devstack-base-tox
-    pre-run: playbooks/fullstack/pre.yaml
-    post-run: playbooks/fullstack/post.yaml
-    roles:
-      - zuul: openstack-dev/devstack
-    description: |
-        Base job for fullstack tests
-    timeout: 1800
-    vars:
-      tox_envlist: fullstack
-      zuul_copy_output:
-        '{{ devstack_log_dir }}/fullstack-logs': 'logs'
-        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
-      extensions_to_txt:
-        log: True
-      devstack_localrc:
-        HOST_IP: 127.0.0.1
-        UNSTACK_KEEP_ODL: True
-      run_devstack: False
-
-- job:
     name: networking-odl-functional-oxygen
     parent: networking-odl-functional-base
     vars:
@@ -205,22 +183,6 @@
 - job:
     name: networking-odl-functional-fluorine
     parent: networking-odl-functional-base
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *fluorine
-
-- job:
-    name: networking-odl-fullstack-oxygen
-    parent: networking-odl-fullstack-base
-    voting: false
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *oxygen
-
-- job:
-    name: networking-odl-fullstack-fluorine
-    parent: networking-odl-fullstack-base
-    voting: false
     vars:
       devstack_localrc:
         ODL_RELEASE: *fluorine
