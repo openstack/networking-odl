@@ -52,7 +52,11 @@ class _Base(base.BaseTestCase):
         self.addCleanup(mock.patch.stopall)
         conf = service.prepare_service([], [])
         self.driver = driver.OpenDaylightDriver(conf)
-
+        ks_client = mock.Mock(auth_token='fake_token')
+        ks_client.projects.find.return_value = mock.Mock(name='admin',
+                                                         id=ADMIN_ID)
+        self.ks_client = mock.patch('ceilometer.keystone_client.get_client',
+                                    return_value=ks_client).start()
         self.get_statistics = mock.patch(
             'networking_odl.ceilometer.network.statistics.opendaylight_v2.'
             'client.SwitchStatisticsAPIClient.get_statistics',
@@ -138,7 +142,6 @@ class TestOpenDayLightDriverSimple(_Base):
             "packet_out_messages_sent": 300,
             "ports": 1,
             "flow_datapath_id": 55120148545607,
-            "tenant_id": ADMIN_ID,
             "switch_port_counters": [{
                 "bytes_received": 0,
                 "bytes_sent": 0,
@@ -357,7 +360,6 @@ class TestOpenDayLightDriverComplex(_Base):
                 "packets_received_error": 0,
                 "packets_sent": 0,
                 "port_id": 3,
-                "tenant_id": ADMIN_ID
             }, {
                 "bytes_received": 9800,
                 "bytes_sent": 6540,
@@ -392,7 +394,6 @@ class TestOpenDayLightDriverComplex(_Base):
                 "flow_count": 80,
                 "table_id": 20
             }],
-            "tenant_id": ADMIN_ID
         }, {
             "packet_in_messages_received": 0,
             "packet_out_messages_sent": 0,
@@ -405,7 +406,6 @@ class TestOpenDayLightDriverComplex(_Base):
                 "flow_count": 3,
                 "table_id": 20
             }],
-            "tenant_id": ADMIN_ID
         }]
     }
 
