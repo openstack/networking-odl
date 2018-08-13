@@ -18,29 +18,41 @@ from neutron.db import api as db_api
 from neutron_lib.db import api as lib_db_api
 from oslo_log import log as logging
 from sqlalchemy import asc
+from sqlalchemy import bindparam
+from sqlalchemy.ext import baked
 from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
+
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
 
 LOG = logging.getLogger(__name__)
 
+bakery = baked.bakery()
+
 
 def get_pending_or_processing_ops(context, object_uuid, operation=None):
-    q = context.session.query(models.OpenDaylightJournal).filter(
+    # NOTE (sai): For performance reasons, we expect this method to use baked
+    # query (http://docs.sqlalchemy.org/en/latest/orm/extensions/baked.html)
+    baked_query = bakery(lambda s: s.query(
+        models.OpenDaylightJournal))
+    baked_query += lambda q: q.filter(
         or_(models.OpenDaylightJournal.state == odl_const.PENDING,
             models.OpenDaylightJournal.state == odl_const.PROCESSING),
-        models.OpenDaylightJournal.object_uuid == object_uuid)
-
+        models.OpenDaylightJournal.object_uuid == bindparam('uuid'))
     if operation:
         if isinstance(operation, (list, tuple)):
-            q = q.filter(models.OpenDaylightJournal.operation.in_(operation))
+            baked_query += lambda q: q.filter(
+                models.OpenDaylightJournal.operation.in_(bindparam('op',
+                                                         expanding=True)))
         else:
-            q = q.filter(models.OpenDaylightJournal.operation == operation)
+            baked_query += lambda q: q.filter(
+                models.OpenDaylightJournal.operation == bindparam('op'))
 
-    return q.all()
+    return baked_query(context.session).params(
+        uuid=object_uuid, op=operation).all()
 
 
 def get_pending_delete_ops_with_parent(context, object_type, parent_id):
@@ -70,18 +82,24 @@ def get_all_db_rows_by_state(context, state):
 @lib_db_api.retry_if_session_inactive()
 @db_api.context_manager.writer.savepoint
 def get_oldest_pending_db_row_with_lock(context):
+    # NOTE (sai): For performance reasons, we expect this method to use baked
+    # query (http://docs.sqlalchemy.org/en/latest/orm/extensions/baked.html)
     journal_dep = aliased(models.OpenDaylightJournal)
-    dep_query = context.session.query(journal_dep).filter(
-        models.OpenDaylightJournal.seqnum == journal_dep.seqnum
-    ).outerjoin(
-        journal_dep.depending_on, aliased=True).filter(
+    dep_query = bakery(lambda s1: s1.query(journal_dep))
+    dep_query += lambda q: q.filter(
+        models.OpenDaylightJournal.seqnum == journal_dep.seqnum)
+    dep_query += lambda q: q.outerjoin(
+        journal_dep.depending_on, aliased=True)
+    dep_query += lambda q: q.filter(
         or_(models.OpenDaylightJournal.state == odl_const.PENDING,
             models.OpenDaylightJournal.state == odl_const.PROCESSING))
-    row = context.session.query(models.OpenDaylightJournal).filter(
+    row = bakery(lambda s2: s2.query(models.OpenDaylightJournal))
+    row += lambda q: q.filter(
         models.OpenDaylightJournal.state == odl_const.PENDING,
-        ~ dep_query.exists()
-    ).order_by(
-        asc(models.OpenDaylightJournal.last_retried)).first()
+        ~ (dep_query._as_query(q.session)).exists())
+    row += lambda q: q.order_by(
+        asc(models.OpenDaylightJournal.last_retried))
+    row = row(context.session).first()
     if row:
         update_db_row_state(context, row, odl_const.PROCESSING)
 
