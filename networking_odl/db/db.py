@@ -15,6 +15,8 @@
 import datetime
 
 from sqlalchemy import asc
+from sqlalchemy import bindparam
+from sqlalchemy.ext import baked
 from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
@@ -28,20 +30,29 @@ from networking_odl.db import models
 
 LOG = logging.getLogger(__name__)
 
+bakery = baked.bakery()
+
 
 def get_pending_or_processing_ops(session, object_uuid, operation=None):
-    q = session.query(models.OpenDaylightJournal).filter(
+    # NOTE (sai): For performance reasons, we expect this method to use baked
+    # query (http://docs.sqlalchemy.org/en/latest/orm/extensions/baked.html)
+    baked_query = bakery(lambda s: s.query(
+        models.OpenDaylightJournal))
+    baked_query += lambda q: q.filter(
         or_(models.OpenDaylightJournal.state == odl_const.PENDING,
             models.OpenDaylightJournal.state == odl_const.PROCESSING),
-        models.OpenDaylightJournal.object_uuid == object_uuid)
-
+        models.OpenDaylightJournal.object_uuid == bindparam('uuid'))
     if operation:
         if isinstance(operation, (list, tuple)):
-            q = q.filter(models.OpenDaylightJournal.operation.in_(operation))
+            baked_query += lambda q: q.filter(
+                models.OpenDaylightJournal.operation.in_(bindparam('op',
+                                                         expanding=True)))
         else:
-            q = q.filter(models.OpenDaylightJournal.operation == operation)
+            baked_query += lambda q: q.filter(
+                models.OpenDaylightJournal.operation == bindparam('op'))
 
-    return q.all()
+    return baked_query(session).params(
+        uuid=object_uuid, op=operation).all()
 
 
 def get_pending_delete_ops_with_parent(session, object_type, parent_id):
@@ -70,19 +81,25 @@ def get_all_db_rows_by_state(session, state):
 # of them will get a deadlock from Galera and will have to retry the operation.
 @db_api.retry_db_errors
 def get_oldest_pending_db_row_with_lock(session):
+    # NOTE (sai): For performance reasons, we expect this method to use baked
+    # query (http://docs.sqlalchemy.org/en/latest/orm/extensions/baked.html)
     with db_api.autonested_transaction(session):
         journal_dep = aliased(models.OpenDaylightJournal)
-        dep_query = session.query(journal_dep).filter(
-            models.OpenDaylightJournal.seqnum == journal_dep.seqnum
-        ).outerjoin(
-            journal_dep.depending_on, aliased=True).filter(
+        dep_query = bakery(lambda s1: s1.query(journal_dep))
+        dep_query += lambda q: q.filter(
+            models.OpenDaylightJournal.seqnum == journal_dep.seqnum)
+        dep_query += lambda q: q.outerjoin(
+            journal_dep.depending_on, aliased=True)
+        dep_query += lambda q: q.filter(
             or_(models.OpenDaylightJournal.state == odl_const.PENDING,
                 models.OpenDaylightJournal.state == odl_const.PROCESSING))
-        row = session.query(models.OpenDaylightJournal).filter(
+        row = bakery(lambda s2: s2.query(models.OpenDaylightJournal))
+        row += lambda q: q.filter(
             models.OpenDaylightJournal.state == odl_const.PENDING,
-            ~ dep_query.exists()
-        ).order_by(
-            asc(models.OpenDaylightJournal.last_retried)).first()
+            ~ (dep_query._as_query(q.session)).exists())
+        row += lambda q: q.order_by(
+            asc(models.OpenDaylightJournal.last_retried))
+        row = row(session).first()
         if row:
             update_db_row_state(session, row, odl_const.PROCESSING)
 
