@@ -22,7 +22,6 @@ from oslo_utils import excutils
 import requests
 from requests import sessions
 
-from networking_odl.common import constants as odl_const
 from networking_odl.common import utils
 
 LOG = log.getLogger(__name__)
@@ -75,12 +74,6 @@ class OpenDaylightRestClient(object):
     def get(self, urlpath='', data=None):
         return self.request('get', urlpath, data)
 
-    def put(self, urlpath='', data=None):
-        return self.request('put', urlpath, data)
-
-    def delete(self, urlpath='', data=None):
-        return self.request('delete', urlpath, data)
-
     def request(self, method, urlpath='', data=None):
         headers = {'Content-Type': 'application/json'}
         url = '/'.join([self.url, urlpath])
@@ -104,32 +97,6 @@ class OpenDaylightRestClient(object):
                           {'method': method,
                            'urlpath': urlpath,
                            'body': obj})
-
-    def send_request(self, operation, service_type, object_type, data):
-        """Wrapper method for sendjson()"""
-        obj_id = data['id']
-        base_path = service_type + '/' + object_type + 's'
-        if operation == odl_const.ODL_DELETE:
-            urlpath = base_path + '/' + obj_id
-            self.try_delete(urlpath)
-            return
-        elif operation == odl_const.ODL_CREATE:
-            urlpath = base_path
-            method = 'post'
-        elif operation == odl_const.ODL_UPDATE:
-            urlpath = base_path + '/' + obj_id
-            method = 'put'
-        self.sendjson(method, urlpath, {object_type: data})
-
-    def try_delete(self, urlpath):
-        response = self.delete(urlpath)
-        if response.status_code == requests.codes.not_found:
-            # The resource is already removed. ignore 404 gracefully
-            LOG.debug("%(urlpath)s doesn't exist", {'urlpath': urlpath})
-            return False
-
-        self._check_response(response)
-        return True
 
     def _check_response(self, response):
         try:
