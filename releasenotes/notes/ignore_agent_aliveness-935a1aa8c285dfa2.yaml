@@ -1,0 +1,16 @@
+---
+prelude: >
+    Agent aliveness will be ignored during port binding.
+other:
+  - |
+    During scale tests we saw that neutron agent aliveness mechanism is not
+    working properly and was marking agents as down and thus failing on port
+    binding. We assessed that aliveness in our context is not actually
+    interesting, as we only use the agentdb mechanism to store the information
+    we need for port binding.
+
+    As a result of this assessment we decided to remove the aliveness
+    awareness from the code and try to bind the port disregarding that. The
+    consequence of this is that a "neutron agent-list" call might show the
+    agent as dead or alive but that's not information we should depend on to
+    understand if we are binding to that node.
