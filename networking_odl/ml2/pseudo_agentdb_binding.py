@@ -374,16 +374,6 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
             return
 
         for raw_hconfig in agentdb:
-            # TODO(yamahata): don't poll hostconfig and update aliveness
-            # on hostconfig change of ODL. it's also necessary for
-            # scalability regarding to the number of compute nodes.
-            if not raw_hconfig['alive']:
-                LOG.warning(
-                    "Refusing to bind port %(pid)s to dead pseudo agent: "
-                    "%(agent)s",
-                    {'pid': port_context.current['id'], 'agent': raw_hconfig})
-                continue
-
             # do any $identifier substitution
             hconfig = self._substitute_hconfig_tmpl(port_context, raw_hconfig)
 
