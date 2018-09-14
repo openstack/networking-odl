@@ -1,0 +1,12 @@
+---
+prelude: >
+    Ceilometer becomes an optional dependency
+features:
+  - |
+    If a user wants to utilize the ceilometer driver when installing
+    networking-odl, the user should install networking-odl with the following
+    syntax ==> networking-odl[ceilometer]
+    In case, that driver is not needed, then only networking-odl should be
+    used
+    This makes sense because ceilometer driver is only loaded when neutron
+    cfg requires network.statistics.driver and not by default
