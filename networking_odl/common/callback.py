@@ -18,10 +18,9 @@ import collections
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from neutron_lib.callbacks import resources
+from neutron_lib.db import api as db_api
 from oslo_log import log as logging
 from oslo_utils import excutils
-
-from neutron.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 
