@@ -16,6 +16,7 @@
 from oslo_log import log
 from six.moves.urllib import parse as urlparse
 
+from ceilometer import keystone_client
 from ceilometer.network.statistics import driver
 from networking_odl.ceilometer.network.statistics.opendaylight_v2 import client
 
@@ -87,6 +88,8 @@ class OpenDaylightDriver(driver.Driver):
 
     """
 
+    admin_project_id = None
+
     @staticmethod
     def _get_int_sample(key, statistic, resource_id,
                         resource_meta, tenant_id):
@@ -113,12 +116,26 @@ class OpenDaylightDriver(driver.Driver):
             odl_params['password'] = params['password'][0]
         cs = client.Client(self.conf, endpoint, odl_params)
 
+        if not self.admin_project_id:
+            try:
+                ks_client = keystone_client.get_client(self.conf)
+                project = ks_client.projects.find(name='admin')
+                if project:
+                    self.admin_project_id = project.id
+            except Exception:
+                LOG.exception('Unable to fetch admin tenant id')
+                cache['network.statistics.opendaylight_v2'] = data
+                return data
+
         try:
             # get switch statistics
             data['switch'] = cs.switch_statistics.get_statistics()
+            data['admin_tenant_id'] = self.admin_project_id
+        except client.OpenDaylightRESTAPIFailed:
+            LOG.exception('OpenDaylight REST API Failed. ')
         except Exception:
-            LOG.exception('Request failed to connect to OpenDaylight'
-                          ' with NorthBound REST API')
+            LOG.exception('Failed to connect to OpenDaylight'
+                          ' REST API')
 
         cache['network.statistics.opendaylight_v2'] = data
 
@@ -178,8 +195,9 @@ class OpenDaylightDriver(driver.Driver):
     @staticmethod
     def _iter_switch(extractor, data):
         for switch in data['switch']['flow_capable_switches']:
-            yield (extractor(switch, str(switch['flow_datapath_id']),
-                             {}, switch['tenant_id']))
+            yield (extractor(switch, str(switch['flow_datapath_id']), {},
+                             (switch.get('tenant_id') or
+                              data['admin_tenant_id'])))
 
     @staticmethod
     def _switch(statistic, resource_id,
@@ -198,7 +216,8 @@ class OpenDaylightDriver(driver.Driver):
         for switch in data['switch']['flow_capable_switches']:
             if 'switch_port_counters' in switch:
                 switch_id = str(switch['flow_datapath_id'])
-                tenant_id = switch['tenant_id']
+                tenant_id = (switch.get('tenant_id') or
+                             data['admin_tenant_id'])
                 for port_statistic in switch['switch_port_counters']:
                     port_id = port_statistic['port_id']
                     resource_id = '%s:%d' % (switch_id, port_id)
@@ -218,9 +237,10 @@ class OpenDaylightDriver(driver.Driver):
                 for port_statistic in switch['switch_port_counters']:
                     if 'uuid' in port_statistic:
                         resource_id = port_statistic['uuid']
-                        yield extractor(port_statistic,
-                                        resource_id, resource_meta,
-                                        port_statistic['tenant_id'])
+                        tenant_id = port_statistic.get('tenant_id')
+                        yield extractor(
+                            port_statistic, resource_id, resource_meta,
+                            tenant_id or data['admin_tenant_id'])
 
     @staticmethod
     def _port(statistic, resource_id, resource_meta, tenant_id):
@@ -280,7 +300,8 @@ class OpenDaylightDriver(driver.Driver):
         for switch_statistic in data['switch']['flow_capable_switches']:
             if 'table_counters' in switch_statistic:
                 switch_id = str(switch_statistic['flow_datapath_id'])
-                tenant_id = switch_statistic['tenant_id']
+                tenant_id = (switch_statistic.get('tenant_id') or
+                             data['admin_tenant_id'])
                 for table_statistic in switch_statistic['table_counters']:
                     resource_meta = {'switch': switch_id}
                     resource_id = ("%s:table:%d" %
