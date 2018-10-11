@@ -23,8 +23,7 @@
   become: true
   register: ovs_bridges
 
-# TODO(mpeterson): move to include_tasks when Zuul uses ansible 2.4
-- include: ovs_flows.yaml
+- include_tasks: ovs_flows.yaml
   with_items: "{{ ovs_bridges.stdout_lines }}"
 
 - name: Print openstack information
