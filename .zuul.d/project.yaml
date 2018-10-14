@@ -225,16 +225,6 @@
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-    periodic:
-      jobs:
-        - openstack-tox-py35-with-neutron-lib-master:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - openstack/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
     periodic-stable:
       jobs:
         - build-openstack-sphinx-docs:
