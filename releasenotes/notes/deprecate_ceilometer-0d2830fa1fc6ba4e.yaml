@@ -1,0 +1,10 @@
+---
+prelude: >
+    Ceilometer is marked as deprecated beginning with Stein cycle to be removed
+    in release T
+deprecations:
+  - |
+    Ceilometer driver should not be part of networking-odl because it forces a
+    hard dependency with ceilometer into the project which does not really make
+    sense. As such, it was decided the driver will be marked as deprecated
+    beginning with Stein cycle and removed in the beginning of release T

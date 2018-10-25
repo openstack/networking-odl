@@ -13,8 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
 import abc
 
+from debtcollector import removals
 from oslo_log import log
 import requests
 from requests import auth
@@ -45,6 +47,9 @@ class OpenDaylightRESTAPIFailed(Exception):
     pass
 
 
+@removals.removed_class(
+    'SwitchStatisticsAPIClient', version='Stein', removal_version='release T',
+    message="Ceilometer driver is deprecated and will get removed from n-odl")
 class SwitchStatisticsAPIClient(_Base):
     """OpenDaylight Switch Statistics REST API Client
 
@@ -55,6 +60,9 @@ class SwitchStatisticsAPIClient(_Base):
     base_url = '/flow-capable-switches'
 
 
+@removals.removed_class(
+    'Client', version='Stein', removal_version='release T',
+    message="Ceilometer driver is deprecated and will get removed from n-odl")
 class Client(object):
 
     def __init__(self, conf, endpoint, params):

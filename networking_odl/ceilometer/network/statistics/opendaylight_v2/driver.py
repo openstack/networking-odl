@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from debtcollector import removals
+
 from oslo_log import log
 from six.moves import urllib_parse as urlparse
 
@@ -25,6 +27,9 @@ LOG = log.getLogger(__name__)
 INT64_MAX_VALUE = (2 ** 64 / 2 - 1)
 
 
+@removals.removed_class(
+    'OpenDaylightDriver', version='Stein', removal_version='release T',
+    message="Ceilometer driver is deprecated and will get removed from n-odl")
 class OpenDaylightDriver(driver.Driver):
     """Driver of network info collector from OpenDaylight.
 
