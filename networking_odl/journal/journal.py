@@ -18,10 +18,9 @@ from datetime import datetime
 import threading
 import time
 
-from neutron.db import api as db_api
 from neutron_lib.callbacks import registry
 from neutron_lib import context as nl_context
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from neutron_lib.plugins import directory
 from oslo_config import cfg
 from oslo_db import exception
@@ -129,8 +128,8 @@ def record(plugin_context, object_type, object_uuid, operation, data,
                'depending_on': [d.seqnum for d in depending_on]})
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def entry_complete(context, entry):
     if cfg.CONF.ml2_odl.completed_rows_retention == 0:
         db.delete_row(context, entry)
@@ -139,14 +138,14 @@ def entry_complete(context, entry):
         db.delete_dependency(context, entry)
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def entry_reset(context, entry):
     db.update_db_row_state(context, entry, odl_const.PENDING)
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def entry_update_state_by_retry_count(context, entry, retry_count):
     db.update_pending_db_row_retry(context, entry, retry_count)
 

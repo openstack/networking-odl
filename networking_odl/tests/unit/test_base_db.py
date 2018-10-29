@@ -20,9 +20,9 @@ import logging
 import mock
 from pecan import util as p_util
 
-from neutron.db import api as db_api
 from neutron.tests.unit.testlib_api import SqlTestCaseLight
 from neutron_lib import context as neutron_context
+from neutron_lib.db import api as db_api
 from neutron_lib import fixture as lib_fixtures
 from oslo_config import fixture as config_fixture
 from oslo_db import exception as db_exc
@@ -182,7 +182,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
                 retries
             )
 
-        with db_api.context_manager.writer.using(self.db_context):
+        with db_api.CONTEXT_WRITER.using(self.db_context):
             retries = self._test_db_exceptions_handled(
                 method, mock_object, False
             )

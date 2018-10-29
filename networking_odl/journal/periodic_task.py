@@ -14,9 +14,8 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
 from neutron_lib import context as neutron_context
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from oslo_log import log as logging
 from oslo_service import loopingcall
 
@@ -47,8 +46,8 @@ class PeriodicTask(object):
             # some tests call this cleanup without calling start
             pass
 
-    @lib_db_api.retry_if_session_inactive()
-    @db_api.context_manager.writer.savepoint
+    @db_api.retry_if_session_inactive()
+    @db_api.CONTEXT_WRITER.savepoint
     def _set_operation(self, context, operation):
         db.update_periodic_task(context, task=self.task,
                                 operation=operation)
@@ -72,15 +71,15 @@ class PeriodicTask(object):
         return db.was_periodic_task_executed_recently(
             context, self.task, self.interval)
 
-    @lib_db_api.retry_if_session_inactive()
-    @db_api.context_manager.writer.savepoint
+    @db_api.retry_if_session_inactive()
+    @db_api.CONTEXT_WRITER.savepoint
     def _clear_and_unlock_task(self, context):
         db.update_periodic_task(context, task=self.task,
                                 operation=None)
         db.unlock_periodic_task(context, self.task)
 
-    @lib_db_api.retry_if_session_inactive()
-    @db_api.context_manager.writer.savepoint
+    @db_api.retry_if_session_inactive()
+    @db_api.CONTEXT_WRITER.savepoint
     def _lock_task(self, context):
         return db.lock_periodic_task(context, self.task)
 
