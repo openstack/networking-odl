@@ -197,13 +197,13 @@
       [[local|localrc]]
       ODL_OVS_HOSTCONFIGS_OPTIONS="--noovs_dpdk --debug --ovs_sriov_offload"
 
-    Note: OVS offload support minimal version requirments -
+    Note: OVS offload support minimal version requirements -
         Linux kernel from version 4.12
         OVS from version 2.8.0
         ODL from version Nitrogen (please note that Nitrogen is no longer
         maintained)
 
-19. For development enviornment, if opendaylight installation is not required
+19. For development environment, if opendaylight installation is not required
     for stack.sh then a parameter ODL_INSTALL should be set to False. By
     default it is set to True therefore it is backward compatible with
     gate and already existing scripts::
