@@ -19,8 +19,7 @@ import functools
 
 import mock
 
-from neutron.db import api as db_api
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -31,7 +30,7 @@ from networking_odl.tests.unit import test_base_db
 def in_session(fn):
     @functools.wraps(fn)
     def wrapper(self, *args, **kwargs):
-        with db_api.context_manager.writer.using(self.db_context):
+        with db_api.CONTEXT_WRITER.using(self.db_context):
             return fn(self, *args, **kwargs)
     return wrapper
 
@@ -78,8 +77,8 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def _test_retry_wrapper(self, decorated_function):
         # NOTE(mpeterson): we want to make sure that it's configured
         # to MAX_RETRIES.
-        self.assertEqual(lib_db_api._retry_db_errors.max_retries,
-                         lib_db_api.MAX_RETRIES)
+        self.assertEqual(db_api._retry_db_errors.max_retries,
+                         db_api.MAX_RETRIES)
 
         self._test_retry_exceptions(decorated_function,
                                     self._mock_function, False)
@@ -89,7 +88,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     # us to create a generic function that decorates on the fly. It needs to
     # be decorated through the decorator directive and not via function
     # composition
-    @lib_db_api.retry_if_session_inactive()
+    @db_api.retry_if_session_inactive()
     def _decorated_retry_if_session_inactive(self, context):
         self._mock_function()
 

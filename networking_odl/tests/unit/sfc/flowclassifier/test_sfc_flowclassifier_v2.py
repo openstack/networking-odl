@@ -14,7 +14,7 @@
 #    under the License.
 from mock import patch
 
-from neutron.db import api as db_api
+from neutron_lib.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -49,7 +49,7 @@ class TestOpenDaylightSFCFlowClassifierDriverV2(
         method(self._get_mock_context())
 
     def _test_event(self, operation, timing):
-        with db_api.context_manager.writer.using(self.db_context):
+        with db_api.CONTEXT_WRITER.using(self.db_context):
             self._call_operation_object(operation, timing)
             if timing == 'precommit':
                 self.db_context.session.flush()

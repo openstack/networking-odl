@@ -14,8 +14,7 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import directory
 from oslo_log import log as logging
@@ -33,7 +32,7 @@ _CLIENT = client.OpenDaylightRestClientGlobal()
 LOG = logging.getLogger(__name__)
 
 
-@lib_db_api.retry_if_session_inactive()
+@db_api.retry_if_session_inactive()
 def journal_recovery(context):
     for row in db.get_all_db_rows_by_state(context, odl_const.FAILED):
         LOG.debug("Attempting recovery of journal entry %s.", row)
@@ -46,7 +45,7 @@ def journal_recovery(context):
         except Exception:
             LOG.exception("Failure while recovering journal entry %s.", row)
         else:
-            with db_api.context_manager.writer.savepoint.using(context):
+            with db_api.CONTEXT_WRITER.savepoint.using(context):
                 if odl_resource is not None:
                     _handle_existing_resource(context, row)
                 else:

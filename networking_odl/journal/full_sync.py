@@ -14,8 +14,7 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from neutron_lib.plugins import directory
 import requests
 
@@ -78,8 +77,8 @@ def register(driver, resources, handler=None):
         FULL_SYNC_RESOURCES[resource] = handler
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def full_sync(context):
     if not _full_sync_needed(context):
         return
@@ -149,14 +148,14 @@ def _sync_resources(context, object_type, handler):
                        odl_const.ODL_CREATE, resource)
 
 
-@lib_db_api.retry_if_session_inactive()
+@db_api.retry_if_session_inactive()
 # TODO(rajivk): Change name from sync_resource to _sync_resources
 # once, we are completely moved to new sync mechanism to plug new syncing
 # mechanism.
 def sync_resources(context, resource_type):
     driver = base_driver.get_driver(resource_type)
     resources = driver.get_resources_for_full_sync(context, resource_type)
-    with db_api.context_manager.writer.savepoint.using(context):
+    with db_api.CONTEXT_WRITER.savepoint.using(context):
         for resource in resources:
             journal.record(context, resource_type, resource['id'],
                            odl_const.ODL_CREATE, resource)

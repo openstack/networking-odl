@@ -16,8 +16,7 @@
 
 from datetime import timedelta
 
-from neutron.db import api as db_api
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -27,8 +26,8 @@ from networking_odl.db import db
 LOG = logging.getLogger(__name__)
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def delete_completed_rows(context):
     """Journal maintenance operation for deleting completed rows."""
     rows_retention = cfg.CONF.ml2_odl.completed_rows_retention
@@ -41,8 +40,8 @@ def delete_completed_rows(context):
         timedelta(seconds=rows_retention))
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def cleanup_processing_rows(context):
     row_count = db.reset_processing_rows(
         context, cfg.CONF.ml2_odl.processing_timeout)

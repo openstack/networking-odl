@@ -14,14 +14,13 @@
 #  under the License.
 #
 
-from neutron.db import api as db_api
 from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
 from neutron.db import l3_gwmode_db
 from neutron_lib import constants as q_const
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from neutron_lib.plugins import constants as plugin_constants
 from oslo_log import log as logging
 
@@ -39,8 +38,8 @@ L3_RESOURCES = {
 }
 
 
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def _record_in_journal(context, object_type, operation, object_id, data):
     journal.record(context, object_type, object_id, operation, data)
 

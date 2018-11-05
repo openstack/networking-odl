@@ -14,8 +14,7 @@
 #    under the License.
 import datetime
 
-from neutron.db import api as db_api
-from neutron_lib.db import api as lib_db_api
+from neutron_lib.db import api as db_api
 from oslo_log import log as logging
 from sqlalchemy import asc
 from sqlalchemy import bindparam
@@ -79,8 +78,8 @@ def get_all_db_rows_by_state(context, state):
 # If two (or more) different threads call this method at the same time, they
 # might both succeed in changing the same row to pending, but at least one
 # of them will get a deadlock from Galera and will have to retry the operation.
-@lib_db_api.retry_if_session_inactive()
-@db_api.context_manager.writer.savepoint
+@db_api.retry_if_session_inactive()
+@db_api.CONTEXT_WRITER.savepoint
 def get_oldest_pending_db_row_with_lock(context):
     # NOTE (sai): For performance reasons, we expect this method to use baked
     # query (http://docs.sqlalchemy.org/en/latest/orm/extensions/baked.html)
@@ -156,7 +155,7 @@ def create_pending_row(context, object_type, object_uuid,
     return row
 
 
-@db_api.context_manager.writer.savepoint
+@db_api.CONTEXT_WRITER.savepoint
 def delete_pending_rows(context, operations_to_delete):
     context.session.query(models.OpenDaylightJournal).filter(
         models.OpenDaylightJournal.operation.in_(operations_to_delete),
@@ -213,7 +212,7 @@ def update_periodic_task(context, task, operation=None):
     row.processing_operation = op_text
 
 
-@db_api.context_manager.writer.savepoint
+@db_api.CONTEXT_WRITER.savepoint
 def delete_rows_by_state_and_time(context, state, time_delta):
     # NOTE(mpeterson): The reason behind deleting one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing a DELETE. By
@@ -227,7 +226,7 @@ def delete_rows_by_state_and_time(context, state, time_delta):
     context.session.expire_all()
 
 
-@db_api.context_manager.writer.savepoint
+@db_api.CONTEXT_WRITER.savepoint
 def reset_processing_rows(context, max_timedelta):
     # NOTE(mpeterson): The reason behind updating one-by-one is that InnoDB
     # ignores the WHERE clause to issue a LOCK when executing an UPDATE. By

@@ -14,7 +14,7 @@
 #    under the License.
 from mock import patch
 
-from neutron.db import api as db_api
+from neutron_lib.db import api as db_api
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -72,7 +72,7 @@ class TestOpenDaylightSFCDriverV2(base_v2.OpenDaylightConfigBase):
 
     def _test_event(self, operation, timing, resource_str,
                     object_type):
-        with db_api.context_manager.writer.using(self.db_context):
+        with db_api.CONTEXT_WRITER.using(self.db_context):
             context = self._get_mock_operation_context(object_type)
             self._call_operation_object(operation, timing,
                                         resource_str, context)

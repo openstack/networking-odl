@@ -15,13 +15,13 @@
 
 import mock
 
-from neutron.db import api as db_api
 from neutron.services.trunk import callbacks
 from neutron.services.trunk import constants as trunk_consts
 from neutron.services.trunk import models
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
+from neutron_lib.db import api as db_api
 from neutron_lib.plugins import directory
 
 
@@ -80,7 +80,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         method(mock.ANY, mock.ANY, mock.ANY, fake_payload)
 
     def _test_event(self, operation, timing):
-        with db_api.context_manager.writer.using(self.db_context):
+        with db_api.CONTEXT_WRITER.using(self.db_context):
             fake_payload = self._fake_trunk_payload()
             self._call_operation_object(operation, timing, fake_payload)
             if timing == 'precommit':
