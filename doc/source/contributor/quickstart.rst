@@ -63,9 +63,9 @@ Verifying Successful Installation
 ==================================
 
 There are some checks you can run quickly to verify that networking-odl
-has been installed sucessfully.
+has been installed successfully.
 
-#. Neutron agents must be in runing state, if you are using pseudo-agent
+#. Neutron agents must be in running state, if you are using pseudo-agent
    for port binding then output of **openstack network agent list** should
    be something like::
 

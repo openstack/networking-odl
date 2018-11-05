@@ -132,7 +132,7 @@ Openstack DB.
 
 Alternative 2
 -------------
-The OpenDaylight Neutron DHCP Port creation/deletion is invoked asyncronously
+The OpenDaylight Neutron DHCP Port creation/deletion is invoked asynchronously
 driven by a journal entry callback for any Subnet resource state changes as
 part of create/update/delete. A generic journal callback mechanism to be
 implemented. Initial consumer of this callback would be the OpenDaylight
