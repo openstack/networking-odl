@@ -336,6 +336,9 @@ function bind_opendaylight_controller {
             other_config:provider_mappings=$ODL_PROVIDER_MAPPINGS
     fi
     sudo ovs-vsctl set Open_vSwitch $ovstbl other_config:local_ip=$ODL_LOCAL_IP
+    if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",odl-netvirt-sfc," ]]; then
+        sudo ovs-vsctl set Open_vSwitch $ovstbl external_ids:of-tunnel=true
+    fi
     # for pseudo agent port binding
     if [ "$ODL_PORT_BINDING_CONTROLLER" == "pseudo-agentdb-binding" ]; then
         ODL_OVS_HOSTCONFIGS_OPTIONS=${ODL_OVS_HOSTCONFIGS_OPTIONS:---debug --noovs_dpdk}
