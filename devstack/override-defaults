@@ -14,8 +14,12 @@ Q_L3_ENABLED=${Q_L3_ENABLED:-True}
 
 # TODO(rajivk) Both are to be supported for now therefore disabled explicitly
 # both of them. Can be removed once moved to lib/neutron
-disable_service neutron-agent
-disable_service q-agt
+if is_service_enabled "neutron-agent"; then
+    disable_service neutron-agent
+fi
+if is_service_enabled "q-agt"; then
+    disable_service q-agt
+fi
 
 # If ODL_L3 is enabled, then we don't need the L3 agent and OpenDaylight
 # is going to act as the ML2's L3 service plugin.
@@ -23,8 +27,12 @@ disable_service q-agt
 if [[ ",$ODL_NETVIRT_KARAF_FEATURE," =~ ",$ODL_NETVIRT_KARAF_FEATURE_VPNSERVICE," ]] || [ "$ODL_L3" == "True" ]; then
     # TODO(rajivk) Both are to be supported for now therefore disabled explicitly
     # both of them. Can be removed once moved to lib/neutron
-    disable_service neutron-l3
-    disable_service q-l3
+    if is_service_enabled "neutron-l3"; then
+        disable_service neutron-l3
+    fi
+    if is_service_enabled "q-l3"; then
+        disable_service q-l3
+    fi
 fi
 
 # bug work around
