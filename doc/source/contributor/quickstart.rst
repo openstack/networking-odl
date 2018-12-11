@@ -63,9 +63,9 @@ Verifying Successful Installation
 ==================================
 
 There are some checks you can run quickly to verify that networking-odl
-has been installed sucessfully.
+has been installed successfully.
 
-#. Neutron agents must be in runing state, if you are using pseudo-agent
+#. Neutron agents must be in running state, if you are using pseudo-agent
    for port binding then output of **openstack network agent list** should
    be something like::
 
@@ -181,7 +181,7 @@ Useful Commands
         uninstall    Uninstalls a feature with the specified name and version.
         version-list Lists all versions of a feature available from the currently available repositories.
 
-   There are other helpfull commands, for example, log:tail, log:set, shutdown
+   There are other helpful commands, for example, log:tail, log:set, shutdown
    to get tail of logs, set log levels and shutdown.
 
    For checking neutron bundle is installed::
