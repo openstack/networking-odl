@@ -31,7 +31,7 @@ are:
 These entries will be left in the journal table forever which is a bit wasteful
 since they take up some space on the DB storage and also affect the performance
 of the journal table.
-Albeit each entry has a negligble effect on it's own, the impact of a large
+Albeit each entry has a negligible effect on it's own, the impact of a large
 number of such entries can become quite significant.
 
 Proposed Change
@@ -122,7 +122,7 @@ Since most operations here involve I/O then CPU probably won't be impacted.
 
 Network traffic would be impacted slightly since we will attempt to fetch the
 resource each time from ODL and we might attempt to fetch it's parent.
-This is however negligble as we do this only for failed entries, which are
+This is however negligible as we do this only for failed entries, which are
 expected to appear rarely.
 
 

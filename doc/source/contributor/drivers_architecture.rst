@@ -9,7 +9,7 @@ reference purposes.
 V1 Driver Overview (Removed in Rocky)
 -------------------------------------
 
-Note: This arhitecture has been deprecated in Queens and removed in Rocky.
+Note: This architecture has been deprecated in Queens and removed in Rocky.
 The documentation is kept as a reference to understand the necessity of
 a different architecture.
 
@@ -52,7 +52,7 @@ Additionally the thread is triggered in the postcommit hook of the operation
 
 If we take the example of create network again, after it gets stored in the
 Neutron DB by the ML2 plugin, the ODL driver stores a "journal entry"
-representing that operation and triggers the journalling thread to take care of
+representing that operation and triggers the journaling thread to take care of
 the entry.
 
 The journal entry is recorded in the pre-commit phase (whenever applicable) so
