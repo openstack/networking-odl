@@ -167,7 +167,7 @@ restructuredtext-lint==1.1.3
 rfc3986==1.1.0
 rjsmin==1.0.12
 Routes==2.4.1
-ryu==4.23
+ryu==4.24
 semantic-version==2.6.0
 seqdiag==0.9.5
 setproctitle==1.1.10
