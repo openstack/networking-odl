@@ -23,11 +23,11 @@ from ceilometer import service
 from networking_odl.ceilometer.network.statistics.opendaylight_v2 import driver
 from oslo_utils import uuidutils
 
-ADMIN_ID = uuidutils.generate_uuid()
-PORT_1_TENANT_ID = uuidutils.generate_uuid()
-PORT_2_TENANT_ID = uuidutils.generate_uuid()
-PORT_1_ID = uuidutils.generate_uuid()
-PORT_2_ID = uuidutils.generate_uuid()
+ADMIN_ID = str(uuidutils.generate_uuid())
+PORT_1_TENANT_ID = str(uuidutils.generate_uuid())
+PORT_2_TENANT_ID = str(uuidutils.generate_uuid())
+PORT_1_ID = str(uuidutils.generate_uuid())
+PORT_2_ID = str(uuidutils.generate_uuid())
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -138,27 +138,27 @@ class TestOpenDayLightDriverSimple(_Base):
 
     switch_data = {
         "flow_capable_switches": [{
-            "packet_in_messages_received": 501,
-            "packet_out_messages_sent": 300,
-            "ports": 1,
-            "flow_datapath_id": 55120148545607,
+            "packet_in_messages_received": "501",
+            "packet_out_messages_sent": "300",
+            "ports": "1",
+            "flow_datapath_id": "55120148545607",
             "switch_port_counters": [{
-                "bytes_received": 0,
-                "bytes_sent": 0,
-                "duration": 600,
-                "packets_internal_received": 444,
-                "packets_internal_sent": 0,
-                "packets_received": 0,
-                "packets_received_drop": 0,
-                "packets_received_error": 0,
-                "packets_sent": 0,
-                "port_id": 4,
+                "bytes_received": "0",
+                "bytes_sent": "0",
+                "duration": "600",
+                "packets_internal_received": "444",
+                "packets_internal_sent": "0",
+                "packets_received": "0",
+                "packets_received_drop": "0",
+                "packets_received_error": "0",
+                "packets_sent": "0",
+                "port_id": "4",
                 "tenant_id": PORT_1_TENANT_ID,
                 "uuid": PORT_1_ID
             }],
             "table_counters": [{
-                "flow_count": 90,
-                "table_id": 0
+                "flow_count": "90",
+                "table_id": "0"
             }]
         }]
     }
@@ -269,7 +269,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port(self):
         expected_data = [
-            (1, str(PORT_1_ID),
+            (1, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -277,7 +277,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_uptime(self):
         expected_data = [
-            (600, str(PORT_1_ID),
+            (600, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -285,7 +285,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_receive_packets(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -293,7 +293,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_transmit_packets(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -301,7 +301,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_receive_bytes(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -309,7 +309,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_transmit_bytes(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -317,7 +317,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_receive_drops(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -325,7 +325,7 @@ class TestOpenDayLightDriverSimple(_Base):
 
     def test_meter_port_receive_errors(self):
         expected_data = [
-            (0, str(PORT_1_ID),
+            (0, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -345,66 +345,66 @@ class TestOpenDayLightDriverComplex(_Base):
 
     switch_data = {
         "flow_capable_switches": [{
-            "packet_in_messages_received": 501,
-            "packet_out_messages_sent": 300,
-            "ports": 3,
-            "flow_datapath_id": 55120148545607,
+            "packet_in_messages_received": "501",
+            "packet_out_messages_sent": "300",
+            "ports": "3",
+            "flow_datapath_id": "55120148545607",
             "switch_port_counters": [{
-                "bytes_received": 0,
-                "bytes_sent": 512,
-                "duration": 200,
-                "packets_internal_received": 444,
-                "packets_internal_sent": 0,
-                "packets_received": 10,
-                "packets_received_drop": 0,
-                "packets_received_error": 0,
-                "packets_sent": 0,
-                "port_id": 3,
+                "bytes_received": "0",
+                "bytes_sent": "512",
+                "duration": "200",
+                "packets_internal_received": "444",
+                "packets_internal_sent": "0",
+                "packets_received": "10",
+                "packets_received_drop": "0",
+                "packets_received_error": "0",
+                "packets_sent": "0",
+                "port_id": "3",
             }, {
-                "bytes_received": 9800,
-                "bytes_sent": 6540,
-                "duration": 150,
-                "packets_internal_received": 0,
-                "packets_internal_sent": 7650,
-                "packets_received": 20,
-                "packets_received_drop": 0,
-                "packets_received_error": 0,
-                "packets_sent": 0,
-                "port_id": 2,
+                "bytes_received": "9800",
+                "bytes_sent": "6540",
+                "duration": "150",
+                "packets_internal_received": "0",
+                "packets_internal_sent": "7650",
+                "packets_received": "20",
+                "packets_received_drop": "0",
+                "packets_received_error": "0",
+                "packets_sent": "0",
+                "port_id": "2",
                 "tenant_id": PORT_2_TENANT_ID,
                 "uuid": PORT_2_ID
             }, {
-                "bytes_received": 100,
-                "bytes_sent": 840,
-                "duration": 100,
-                "packets_internal_received": 984,
-                "packets_internal_sent": 7950,
-                "packets_received": 9900,
-                "packets_received_drop": 1500,
-                "packets_received_error": 1000,
-                "packets_sent": 7890,
-                "port_id": 1,
+                "bytes_received": "100",
+                "bytes_sent": "840",
+                "duration": "100",
+                "packets_internal_received": "984",
+                "packets_internal_sent": "7950",
+                "packets_received": "9900",
+                "packets_received_drop": "1500",
+                "packets_received_error": "1000",
+                "packets_sent": "7890",
+                "port_id": "1",
                 "tenant_id": PORT_1_TENANT_ID,
                 "uuid": PORT_1_ID
             }],
             "table_counters": [{
-                "flow_count": 90,
-                "table_id": 10
+                "flow_count": "90",
+                "table_id": "10"
             }, {
-                "flow_count": 80,
-                "table_id": 20
+                "flow_count": "80",
+                "table_id": "20"
             }],
         }, {
-            "packet_in_messages_received": 0,
-            "packet_out_messages_sent": 0,
-            "ports": 0,
-            "flow_datapath_id": 55120148545555,
+            "packet_in_messages_received": "0",
+            "packet_out_messages_sent": "0",
+            "ports": "0",
+            "flow_datapath_id": "55120148545555",
             "table_counters": [{
-                "flow_count": 5,
-                "table_id": 10
+                "flow_count": "5",
+                "table_id": "10"
             }, {
-                "flow_count": 3,
-                "table_id": 20
+                "flow_count": "3",
+                "table_id": "20"
             }],
         }]
     }
@@ -611,10 +611,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port(self):
         expected_data = [
-            (1, str(PORT_2_ID),
+            (1, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (1, str(PORT_1_ID),
+            (1, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -622,10 +622,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_uptime(self):
         expected_data = [
-            (150, str(PORT_2_ID),
+            (150, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (100, str(PORT_1_ID),
+            (100, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -633,10 +633,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_receive_packets(self):
         expected_data = [
-            (20, str(PORT_2_ID),
+            (20, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (9900, str(PORT_1_ID),
+            (9900, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -644,10 +644,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_transmit_packets(self):
         expected_data = [
-            (0, str(PORT_2_ID),
+            (0, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (7890, str(PORT_1_ID),
+            (7890, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -655,10 +655,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_receive_bytes(self):
         expected_data = [
-            (9800, str(PORT_2_ID),
+            (9800, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (100, str(PORT_1_ID),
+            (100, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -666,10 +666,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_transmit_bytes(self):
         expected_data = [
-            (6540, str(PORT_2_ID),
+            (6540, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (840, str(PORT_1_ID),
+            (840, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -677,10 +677,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_receive_drops(self):
         expected_data = [
-            (0, str(PORT_2_ID),
+            (0, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (1500, str(PORT_1_ID),
+            (1500, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
@@ -688,10 +688,10 @@ class TestOpenDayLightDriverComplex(_Base):
 
     def test_meter_port_receive_errors(self):
         expected_data = [
-            (0, str(PORT_2_ID),
+            (0, PORT_2_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_2_TENANT_ID),
-            (1000, str(PORT_1_ID),
+            (1000, PORT_1_ID,
              {'controller': 'OpenDaylight_V2'},
              PORT_1_TENANT_ID),
         ]
