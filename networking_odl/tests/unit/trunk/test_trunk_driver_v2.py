@@ -15,7 +15,6 @@
 
 from unittest import mock
 
-from neutron.services.trunk import callbacks
 from neutron.services.trunk import models
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
@@ -63,15 +62,14 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
                         OpenDaylightTrunkHandlerV2())
 
     def _fake_trunk_payload(self):
-        payload = callbacks.TrunkPayload(
-            self.db_context, 'fake_id',
-            mock.Mock(return_value=FAKE_TRUNK),
-            mock.Mock(return_value=FAKE_TRUNK),
-            mock.Mock(return_value=FAKE_TRUNK['sub_ports']))
-        payload.current_trunk.status = trunk_consts.TRUNK_DOWN_STATUS
-        payload.current_trunk.to_dict = mock.Mock(return_value=FAKE_TRUNK)
-        payload.original_trunk.status = trunk_consts.TRUNK_DOWN_STATUS
-        payload.original_trunk.to_dict = mock.Mock(return_value=FAKE_TRUNK)
+        payload = events.DBEventPayload(
+            self.db_context, resource_id='fake_id',
+            states=(mock.Mock(return_value=FAKE_TRUNK),
+                    mock.Mock(return_value=FAKE_TRUNK),))
+        payload.latest_state.status = trunk_consts.TRUNK_DOWN_STATUS
+        payload.latest_state.to_dict = mock.Mock(return_value=FAKE_TRUNK)
+        payload.states[0].status = trunk_consts.TRUNK_DOWN_STATUS
+        payload.states[0].to_dict = mock.Mock(return_value=FAKE_TRUNK)
         return payload
 
     def _call_operation_object(self, operation, timing, fake_payload):
@@ -90,7 +88,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
             if timing == 'precommit':
                 self.assertEqual(operation, row['operation'])
                 self.assertEqual(odl_const.ODL_TRUNK, row['object_type'])
-                self.assertEqual(fake_payload.trunk_id, row['object_uuid'])
+                self.assertEqual(fake_payload.resource_id, row['object_uuid'])
             elif timing == 'after':
                 self.assertIsNone(row)
 
