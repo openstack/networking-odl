@@ -14,7 +14,6 @@
 #  under the License.
 #
 
-from neutron.db import common_db_mixin
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_dvr_db
@@ -45,7 +44,6 @@ def _record_in_journal(context, object_type, operation, object_id, data):
 
 
 class OpenDaylightL3RouterPlugin(
-        common_db_mixin.CommonDbMixin,
         extraroute_db.ExtraRoute_db_mixin,
         l3_dvr_db.L3_NAT_with_dvr_db_mixin,
         l3_gwmode_db.L3_NAT_db_mixin,
