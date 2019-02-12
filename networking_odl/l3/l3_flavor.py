@@ -81,11 +81,11 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
     @registry.receives(resources.ROUTER_CONTROLLER,
                        [events.PRECOMMIT_ADD_ASSOCIATION])
     @log_helpers.log_method_call
-    def _router_add_association(self, resource, event, trigger, **kwargs):
-        context = kwargs['context']
-        router_dict = kwargs['router']
-        router_dict['gw_port_id'] = kwargs['router_db'].gw_port_id
-        router_id = kwargs['router_id']
+    def _router_add_association(self, resource, event, trigger, payload=None):
+        context = payload.context
+        router_dict = payload.request_body
+        router_dict['gw_port_id'] = payload.latest_state.gw_port_id
+        router_id = payload.resource_id
         if not self._validate_l3_flavor(context, router_id):
             return
         journal.record(context, odl_const.ODL_ROUTER, router_dict['id'],
@@ -120,13 +120,13 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
     @registry.receives(resources.ROUTER_CONTROLLER,
                        [events.PRECOMMIT_DELETE_ASSOCIATIONS])
     @log_helpers.log_method_call
-    def _router_del_association(self, resource, event, trigger, **kwargs):
-        router_id = kwargs['router_db'].id
-        context = kwargs['context']
+    def _router_del_association(self, resource, event, trigger, payload=None):
+        router_id = payload.latest_state.id
+        context = payload.context
         if not self._validate_l3_flavor(context, router_id):
             return
         # TODO(yamahata): process floating ip etc. or just raise error?
-        dependency_list = [kwargs['router_db'].gw_port_id]
+        dependency_list = [payload.latest_state.gw_port_id]
         journal.record(context, odl_const.ODL_ROUTER, router_id,
                        odl_const.ODL_DELETE, dependency_list)
 
