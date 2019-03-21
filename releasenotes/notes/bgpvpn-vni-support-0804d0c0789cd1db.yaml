@@ -1,0 +1,15 @@
+---
+prelude: >
+    Support for bgpvpn-vni.
+features:
+  - |
+    BGPVPN OpenDaylight v2 driver will be enhanced to support
+    bgpvpn-vni extension. Bgpvpn VNI resource represents the VNI to
+    use on VXLAN encapsulated packets transferred to or from ODL
+    managed computes themselves or for traffic from ODL-managed
+    computers towards the DC-Gateway. Acceptance and realisation
+    of the vni attribute in a bgpvpn is available in OpenDaylight(ODL)
+    controller from Neon release of ODL
+other:
+  - OpenDaylight changes are available at
+    https://git.opendaylight.org/gerrit/#/c/63405/

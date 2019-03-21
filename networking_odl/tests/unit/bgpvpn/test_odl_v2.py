@@ -18,8 +18,10 @@ import mock
 
 from networking_odl.bgpvpn import odl_v2 as driverv2
 from networking_odl.common import constants as odl_const
+from networking_odl.common import odl_features
 from networking_odl.db import db
 from networking_odl.tests.unit import base_v2
+from neutron_lib.api.definitions import bgpvpn_vni as bgpvpn_vni_def
 
 
 class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
@@ -155,3 +157,31 @@ class OpenDaylightBgpvpnDriverTestCase(base_v2.OpenDaylightConfigBase):
             self._assert_op(odl_const.ODL_UPDATE,
                             odl_const.ODL_BGPVPN,
                             fake_bgpvpn_data, False)
+
+    def _get_bgpvpn_driver_with_vni(self):
+        feature_json = """{"features": {"feature":
+                                        [{"service-provider-feature":
+                                        "neutron-extensions:operational-port-status"},
+                                        {"service-provider-feature":
+                                        "neutron-extensions:bgpvpn-vni"}]}}"""
+
+        self.cfg.config(odl_features_json=feature_json, group='ml2_odl')
+        odl_features.init()
+        bgpvpn_driver = driverv2.OpenDaylightBgpvpnDriver(service_plugin=None)
+        return bgpvpn_driver
+
+    def test_bgpvpn_vni_feature(self):
+        bgpvpn_driver = self._get_bgpvpn_driver_with_vni()
+        self.assertIn(bgpvpn_vni_def.ALIAS,
+                      bgpvpn_driver.more_supported_extension_aliases)
+
+    def test_bgpvpn_vni_create_with_vni(self):
+        bgpvpn_driver = self._get_bgpvpn_driver_with_vni()
+        fake_data = self._get_fake_bgpvpn()
+        fake_data['vni'] = 100
+        bgpvpn_driver.create_bgpvpn_precommit(self.db_context, fake_data)
+        self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_BGPVPN,
+                        fake_data)
+        self.run_journal_processing()
+        self._assert_op(odl_const.ODL_CREATE, odl_const.ODL_BGPVPN,
+                        fake_data, False)
