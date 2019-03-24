@@ -62,8 +62,8 @@
           q-svc: False
           rabbit: True
         devstack_plugins: &devstack_plugins
-          networking-odl: git://git.openstack.org/openstack/networking-odl
-          neutron: git://git.openstack.org/openstack/neutron
+          networking-odl: https://git.openstack.org/openstack/networking-odl
+          neutron: https://git.openstack.org/openstack/neutron
 
 - job:
     name: networking-odl-tempest-base
@@ -100,7 +100,7 @@
         ini: True
       devstack_plugins:
         <<: *devstack_plugins
-        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
       # Only scenario tests and some compute API tests actually verify ODL is working
       # Any API networking tests don't bring up any VMs and just verify that stuff happened in the
       # Neutron DB, so they don't actually fail even if ODL is not running at all.
