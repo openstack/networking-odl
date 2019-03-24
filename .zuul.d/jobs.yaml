@@ -65,8 +65,8 @@
           q-svc: False
           rabbit: True
         devstack_plugins: &devstack_plugins
-          networking-odl: git://git.openstack.org/openstack/networking-odl
-          neutron: git://git.openstack.org/openstack/neutron
+          networking-odl: https://git.openstack.org/openstack/networking-odl
+          neutron: https://git.openstack.org/openstack/neutron
 
 - job:
     name: networking-odl-tempest-base
@@ -102,7 +102,7 @@
         log: True
       devstack_plugins:
         <<: *devstack_plugins
-        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
       tempest_test_regex: |
         (?x)      # Ignore comments and whitespaces
         # \\\\ BEGIN LIST OF EXCLUSIONS
