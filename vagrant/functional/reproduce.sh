@@ -21,7 +21,7 @@ declare -x DEVSTACK_GATE_TEMPEST_ALL_PLUGINS="0"
 declare -x ZUUL_PROJECT="openstack/networking-odl"
 declare -x DEVSTACK_GATE_IRONIC_BUILD_RAMDISK="1"
 declare -x DEVSTACK_GATE_SAHARA="0"
-declare -x DEVSTACK_LOCAL_CONFIG="enable_plugin networking-odl git://git.openstack.org/openstack/networking-odl
+declare -x DEVSTACK_LOCAL_CONFIG="enable_plugin networking-odl https://git.openstack.org/openstack/networking-odl
 HOST_IP=127.0.0.1
 UNSTACK_KEEP_ODL=True"
 declare -x DEVSTACK_GATE_TEMPEST_NOTESTS="0"
@@ -115,7 +115,7 @@ clonemap:
     dest: devstack-gate
 IEOF
 
-/usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git git://git.openstack.org openstack-infra/devstack-gate
+/usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git https://git.openstack.org openstack-infra/devstack-gate
 
 cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
 ./safe-devstack-vm-gate-wrap.sh
