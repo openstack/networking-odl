@@ -17,7 +17,7 @@ case "$ODL_RELEASE_BASE" in
         ODL_RELEASE=fluorine-snapshot-0.9
         ;;
     oxygen-snapshot)
-        ODL_RELEASE=oxygen-snapshot-0.8
+        ODL_RELEASE=oxygen-latest
         ;;
     *)
         echo "Unknown ODL release base: $ODL_RELEASE_BASE"
