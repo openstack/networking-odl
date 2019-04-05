@@ -20,11 +20,11 @@ from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
 from neutron_lib import context
 from neutron_lib.plugins import directory
+from neutron_lib.services.trunk import constants as t_consts
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
 
-from neutron.services.trunk import constants as t_consts
 from neutron.services.trunk.drivers import base as trunk_base
 
 from networking_odl.common import config as odl_conf
@@ -45,7 +45,7 @@ class OpenDaylightTrunkHandlerV2(object):
     def __init__(self):
         cfg.CONF.register_opts(odl_conf.odl_opts, "ml2_odl")
         self.journal = journal.OpenDaylightJournalThread()
-        full_sync.register(t_consts.TRUNK, TRUNK_RESOURCES)
+        full_sync.register(resources.TRUNK, TRUNK_RESOURCES)
         LOG.info('initialized trunk driver for OpendayLight')
 
     @staticmethod
@@ -57,7 +57,7 @@ class OpenDaylightTrunkHandlerV2(object):
     @log_helpers.log_method_call
     def trunk_create_precommit(self, resource, event, trunk_plugin, payload):
         data = payload.current_trunk.to_dict()
-        data['status'] = t_consts.ACTIVE_STATUS
+        data['status'] = t_consts.TRUNK_ACTIVE_STATUS
         self._record_in_journal(payload.context, payload.trunk_id,
                                 odl_const.ODL_CREATE, data)
 
@@ -66,11 +66,11 @@ class OpenDaylightTrunkHandlerV2(object):
                                trunk_plugin, payload=None):
         if isinstance(payload, events.EventPayload):
             # TODO(boden): remove shim once all callbacks use lib paylaods
-            payload.desired_state.update(status=t_consts.ACTIVE_STATUS)
+            payload.desired_state.update(status=t_consts.TRUNK_ACTIVE_STATUS)
             data = payload.desired_state.to_dict()
             trunk_id = payload.resource_id
         else:
-            payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
+            payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
             data = payload.current_trunk.to_dict()
             trunk_id = payload.trunk_id
 
@@ -88,12 +88,12 @@ class OpenDaylightTrunkHandlerV2(object):
 
     @log_helpers.log_method_call
     def trunk_create_postcommit(self, resource, event, trunk_plugin, payload):
-        payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
+        payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
     def trunk_update_postcommit(self, resource, event, trunk_plugin, payload):
-        payload.current_trunk.update(status=t_consts.ACTIVE_STATUS)
+        payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
@@ -153,35 +153,35 @@ class OpenDaylightTrunkDriverV2(trunk_base.DriverBase):
         except cfg.NoSuchOptError:
             return False
 
-    @registry.receives(t_consts.TRUNK_PLUGIN, [events.AFTER_INIT])
+    @registry.receives(resources.TRUNK_PLUGIN, [events.AFTER_INIT])
     def register(self, resource, event, trigger, payload=None):
         super(OpenDaylightTrunkDriverV2, self).register(
             resource, event, trigger, payload=payload)
         self._handler = OpenDaylightTrunkHandlerV2()
         registry.subscribe(self._handler.trunk_create_precommit,
-                           t_consts.TRUNK, events.PRECOMMIT_CREATE)
+                           resources.TRUNK, events.PRECOMMIT_CREATE)
         registry.subscribe(self._handler.trunk_create_postcommit,
-                           t_consts.TRUNK, events.AFTER_CREATE)
+                           resources.TRUNK, events.AFTER_CREATE)
         registry.subscribe(self._handler.trunk_update_precommit,
-                           t_consts.TRUNK, events.PRECOMMIT_UPDATE)
+                           resources.TRUNK, events.PRECOMMIT_UPDATE)
         registry.subscribe(self._handler.trunk_update_postcommit,
-                           t_consts.TRUNK, events.AFTER_UPDATE)
+                           resources.TRUNK, events.AFTER_UPDATE)
         registry.subscribe(self._handler.trunk_delete_precommit,
-                           t_consts.TRUNK, events.PRECOMMIT_DELETE)
+                           resources.TRUNK, events.PRECOMMIT_DELETE)
         registry.subscribe(self._handler.trunk_delete_postcommit,
-                           t_consts.TRUNK, events.AFTER_DELETE)
+                           resources.TRUNK, events.AFTER_DELETE)
         for event_ in (events.PRECOMMIT_CREATE, events.PRECOMMIT_DELETE):
             registry.subscribe(self._handler.trunk_update_precommit,
-                               t_consts.SUBPORTS, event_)
+                               resources.SUBPORTS, event_)
         for event_ in (events.AFTER_CREATE, events.AFTER_DELETE):
             registry.subscribe(self._handler.trunk_update_postcommit,
-                               t_consts.SUBPORTS, event_)
+                               resources.SUBPORTS, event_)
             # Upon subport creation/deletion we need to set the right port
             # status:
             # 1. Set it to parent status when it is attached to the trunk
             # 2. Set it to down when is removed from the trunk
             registry.subscribe(self._handler.trunk_subports_set_status,
-                               t_consts.SUBPORTS, event_)
+                               resources.SUBPORTS, event_)
         # NOTE(ltomasbo): if the status of the parent port changes, the
         # subports need to update their status too
         registry.subscribe(self._handler.trunk_subports_update_status,

@@ -18,10 +18,10 @@ import contextlib
 
 from networking_odl.common import constants as odl_const
 from networking_odl.tests.functional import base
-from neutron.services.trunk import constants
 from neutron.services.trunk import plugin as trunk_plugin
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from neutron_lib.plugins import utils
+from neutron_lib.services.trunk import constants
 
 from oslo_utils import uuidutils
 
@@ -101,5 +101,5 @@ class TestTrunkV2Driver(base.V2DriverAdjustment, _TrunkDriverTest,
     def setUp(self):
         super(TestTrunkV2Driver, self).setUp()
         self.trunk_plugin = trunk_plugin.TrunkPlugin()
-        self.trunk_plugin.add_segmentation_type(constants.VLAN,
-                                                utils.is_valid_vlan_tag)
+        self.trunk_plugin.add_segmentation_type(
+            constants.SEGMENTATION_TYPE_VLAN, utils.is_valid_vlan_tag)

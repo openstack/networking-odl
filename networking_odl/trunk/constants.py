@@ -14,8 +14,7 @@
 #  under the License.
 #
 from neutron_lib.api.definitions import portbindings
-
-from neutron.services.trunk import constants as t_consts
+from neutron_lib.services.trunk import constants as t_consts
 
 
 SUPPORTED_INTERFACES = (
@@ -24,5 +23,5 @@ SUPPORTED_INTERFACES = (
 )
 
 SUPPORTED_SEGMENTATION_TYPES = (
-    t_consts.VLAN,
+    t_consts.SEGMENTATION_TYPE_VLAN,
 )

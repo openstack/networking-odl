@@ -16,14 +16,13 @@
 import mock
 
 from neutron.services.trunk import callbacks
-from neutron.services.trunk import constants as trunk_consts
 from neutron.services.trunk import models
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
 from neutron_lib import constants as n_const
 from neutron_lib.db import api as db_api
 from neutron_lib.plugins import directory
-
+from neutron_lib.services.trunk import constants as trunk_consts
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import db
@@ -69,9 +68,9 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
             mock.Mock(return_value=FAKE_TRUNK),
             mock.Mock(return_value=FAKE_TRUNK),
             mock.Mock(return_value=FAKE_TRUNK['sub_ports']))
-        payload.current_trunk.status = trunk_consts.DOWN_STATUS
+        payload.current_trunk.status = trunk_consts.TRUNK_DOWN_STATUS
         payload.current_trunk.to_dict = mock.Mock(return_value=FAKE_TRUNK)
-        payload.original_trunk.status = trunk_consts.DOWN_STATUS
+        payload.original_trunk.status = trunk_consts.TRUNK_DOWN_STATUS
         payload.original_trunk.to_dict = mock.Mock(return_value=FAKE_TRUNK)
         return payload
 
@@ -117,7 +116,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
                        '_set_subport_status')
     def test_trunk_subports_set_status_create_parent_active(
             self, mock_set_subport_status):
-        resource = trunk_consts.SUBPORTS
+        resource = resources.SUBPORTS
         event_type = events.AFTER_CREATE
         fake_payload = self._fake_trunk_payload()
         core_plugin = directory.get_plugin()
@@ -140,7 +139,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
                        '_set_subport_status')
     def test_trunk_subports_set_status_create_parent_down(
             self, mock_set_subport_status):
-        resource = trunk_consts.SUBPORTS
+        resource = resources.SUBPORTS
         event_type = events.AFTER_CREATE
         fake_payload = self._fake_trunk_payload()
         core_plugin = directory.get_plugin()
@@ -163,7 +162,7 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
     @mock.patch.object(trunk_driver.OpenDaylightTrunkHandlerV2,
                        '_set_subport_status')
     def test_trunk_subports_set_status_delete(self, mock_set_subport_status):
-        resource = trunk_consts.SUBPORTS
+        resource = resources.SUBPORTS
         event_type = events.AFTER_DELETE
         fake_payload = self._fake_trunk_payload()
 

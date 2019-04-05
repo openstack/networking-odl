@@ -20,8 +20,8 @@ import requests
 from networking_l2gw.services.l2gateway.common import constants as l2gw_const
 from networking_sfc.extensions import flowclassifier as fc_const
 from networking_sfc.extensions import sfc as sfc_const
-from neutron.services.trunk import constants as t_consts
 from neutron_lib.api.definitions import bgpvpn as bgpvpn_const
+from neutron_lib.callbacks import resources
 from neutron_lib.plugins import constants
 from neutron_lib.plugins import directory
 
@@ -124,7 +124,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             (odl_const.ODL_MEMBER, constants.LOADBALANCERV2),
             (odl_const.ODL_HEALTHMONITOR, constants.LOADBALANCERV2),
             (odl_const.ODL_QOS_POLICY, constants.QOS),
-            (odl_const.ODL_TRUNK, t_consts.TRUNK),
+            (odl_const.ODL_TRUNK, resources.TRUNK),
             (odl_const.ODL_BGPVPN, bgpvpn_const.ALIAS),
             (odl_const.ODL_BGPVPN_NETWORK_ASSOCIATION, bgpvpn_const.ALIAS),
             (odl_const.ODL_BGPVPN_ROUTER_ASSOCIATION, bgpvpn_const.ALIAS),
@@ -340,8 +340,8 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             constants.L3: (mock.Mock(), l3_odl_v2.OpenDaylightL3RouterPlugin),
             constants.LOADBALANCERV2: (mock.Mock(),
                                        lbaas_driver.OpenDaylightManager),
-            t_consts.TRUNK: (mock.Mock(),
-                             trunk_driver.OpenDaylightTrunkHandlerV2),
+            resources.TRUNK: (mock.Mock(),
+                              trunk_driver.OpenDaylightTrunkHandlerV2),
             constants.QOS: (mock.Mock(), qos_driver.OpenDaylightQosDriver),
             sfc_const.SFC_EXT: (mock.Mock(),
                                 sfc_driver.OpenDaylightSFCDriverV2),
