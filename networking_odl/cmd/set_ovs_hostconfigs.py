@@ -63,6 +63,7 @@ import sys
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+import six
 
 from networking_odl._i18n import _
 
@@ -417,7 +418,7 @@ class OvsVsctl(object):
             userspace_datapath_types = tuple(
                 datapath_type
                 for datapath_type in USERSPACE_DATAPATH_TYPES
-                if datapath_types.find(datapath_type) >= 0)
+                if datapath_type in datapath_types)
             self._userspace_datapath_types = userspace_datapath_types
         return userspace_datapath_types
 
@@ -457,7 +458,12 @@ class OvsVsctl(object):
         command_line = (self.COMMAND,) + args
         LOG.info(
             "SET-HOSTCONFIGS: Executing cmd: %s", ' '.join(command_line))
-        return subprocess.check_output(command_line).strip()  # nosec
+        res = subprocess.check_output(command_line).strip()  # nosec
+        # Note(lajoskatona): on py3 subprocess.check_output returns back binary
+        # to make that consumable we have to decode that.
+        if isinstance(res, six.binary_type):
+            return res.decode()
+        return res
 
 
 def setup_logging(conf):
