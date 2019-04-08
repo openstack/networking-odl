@@ -30,7 +30,7 @@ ODL_L3=True
 
 # Set Host IP here. It is externally reachable network, set
 # below param to use ip from a different network
-HOST_IP=$(ip route get 8.8.8.8 | awk '{print $NF; exit}')
+HOST_IP=$(hostname -I | awk '{print $1}')
 
 # public network connectivity
 Q_USE_PUBLIC_VETH=True
