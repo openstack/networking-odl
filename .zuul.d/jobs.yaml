@@ -7,8 +7,8 @@
     post-run: playbooks/legacy/grenade-dsvm-networking-odl/post.yaml
     timeout: 9000
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/networking-odl
 
 - job:
@@ -18,7 +18,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-boron-snapshot-v2driver/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
 
@@ -29,7 +29,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-carbon-snapshot-vpnservice-v2driver/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
 
@@ -40,7 +40,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-nitrogen-snapshot-vpnservice-v2driver/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
 
@@ -51,7 +51,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
@@ -63,7 +63,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-nitrogen-snapshot/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
@@ -75,7 +75,7 @@
     post-run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/post.yaml
     timeout: 7500
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - {"name": "openstack/rally", "override-checkout": "0.12.1"}
 
@@ -86,7 +86,7 @@
     post-run: playbooks/legacy/rally-dsvm-networking-odl-nitrogen-snapshot/post.yaml
     timeout: 7500
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - {"name": "openstack/rally", "override-checkout": "0.12.1"}
 
