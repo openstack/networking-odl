@@ -1,5 +1,5 @@
 # This is taken from https://github.com/openstack/tempest/blob/7541031d1742f31b467134816202485d5a630e05/playbooks/devstack-tempest.yaml
-# TODO(mpeterson): Ideally we want to use their run playbook but until https://review.openstack.org/#/c/530642/ is resolved.
+# TODO(mpeterson): Ideally we want to use their run playbook but until https://review.opendev.org/#/c/530642/ is resolved.
 
 # Changes that run through devstack-tempest are likely to have an impact on
 # the devstack part of the job, so we keep devstack in the main play to
