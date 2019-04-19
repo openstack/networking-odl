@@ -65,8 +65,8 @@
           q-svc: False
           rabbit: True
         devstack_plugins: &devstack_plugins
-          networking-odl: https://git.openstack.org/openstack/networking-odl
-          neutron: https://git.openstack.org/openstack/neutron
+          networking-odl: https://opendev.org/openstack/networking-odl
+          neutron: https://opendev.org/openstack/neutron
 
 - job:
     name: networking-odl-tempest-base
@@ -87,7 +87,7 @@
       - openstack/neutron-lbaas
       - openstack/neutron-tempest-plugin
     roles:
-      - zuul: openstack-dev/devstack
+      - zuul: openstack/devstack
     timeout: 9000
     irrelevant-files: &irrelevant_files
       - ^.*\.rst$
@@ -102,7 +102,7 @@
         log: True
       devstack_plugins:
         <<: *devstack_plugins
-        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       tempest_test_regex: |
         (?x)      # Ignore comments and whitespaces
         # \\\\ BEGIN LIST OF EXCLUSIONS
@@ -207,7 +207,7 @@
       - openstack/neutron-fwaas
       - openstack/neutron-lbaas
     roles:
-      - zuul: openstack-dev/devstack
+      - zuul: openstack/devstack
     timeout: 9000
     irrelevant-files: *irrelevant_files
     vars:
@@ -231,7 +231,7 @@
         Base job for functional tests
     timeout: 1800
     roles:
-      - zuul: openstack-dev/devstack
+      - zuul: openstack/devstack
     vars:
       tox_envlist: functional
       zuul_copy_output:
@@ -275,8 +275,8 @@
     post-run: playbooks/legacy/grenade-dsvm-networking-odl/post.yaml
     timeout: 9000
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/networking-odl
 
 - job:
@@ -286,7 +286,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-carbon-snapshot/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
@@ -298,7 +298,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-nitrogen-snapshot/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
@@ -310,7 +310,7 @@
     post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-oxygen-snapshot/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
@@ -322,7 +322,7 @@
     post-run: playbooks/legacy/rally-dsvm-networking-odl-carbon-snapshot/post.yaml
     timeout: 7500
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - {"name": "openstack/rally", "override-checkout": "0.12.1"}
 
@@ -333,7 +333,7 @@
     post-run: playbooks/legacy/rally-dsvm-networking-odl-nitrogen-snapshot/post.yaml
     timeout: 7500
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - {"name": "openstack/rally", "override-checkout": "0.12.1"}
 
@@ -344,7 +344,7 @@
     post-run: playbooks/legacy/rally-dsvm-networking-odl-oxygen-snapshot/post.yaml
     timeout: 7500
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/rally
 
