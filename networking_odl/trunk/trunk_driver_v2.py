@@ -53,7 +53,7 @@ class OpenDaylightTrunkHandlerV2(object):
         journal.record(context, odl_const.ODL_TRUNK, trunk_id, operation, data)
 
     # TODO(vthapar) Revisit status updates once websockets are fully
-    # implemented - https://review.openstack.org/#/c/421127/
+    # implemented - https://review.opendev.org/#/c/421127/
     @log_helpers.log_method_call
     def trunk_create_precommit(self, resource, event, trunk_plugin, payload):
         data = payload.current_trunk.to_dict()

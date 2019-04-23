@@ -439,7 +439,7 @@ class OvsVsctl(object):
 
     def _set_external_ids(self, name, value):
         # Refer below for ovs ext-id strings
-        # https://review.openstack.org/#/c/309630/
+        # https://review.opendev.org/#/c/309630/
         value = 'external_ids:{}={}'.format(name, value)
         self._set(record=self.uuid(), value=value)
 

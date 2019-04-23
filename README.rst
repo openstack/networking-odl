@@ -33,4 +33,4 @@ Release notes for the project can be found at:
 https://docs.openstack.org/releasenotes/networking-odl/
 
 The project source code repository is located at:
-https://git.openstack.org/cgit/openstack/networking-odl
+https://opendev.org/openstack/networking-odl

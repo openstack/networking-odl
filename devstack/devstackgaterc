@@ -16,7 +16,7 @@
 # This script is executed in the OpenStack CI job that runs DevStack + tempest.
 # You can find the CI job configuration here:
 #
-# http://git.openstack.org/cgit/openstack-infra/project-config/tree/jenkins/jobs/networking-odl.yaml
+# https://opendev.org/openstack/project-config/src/branch/master/grafana/networking-odl.yaml
 #
 
 # TODO(mkolesni): Remove in case we need more timeout.

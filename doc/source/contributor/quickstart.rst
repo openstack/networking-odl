@@ -52,7 +52,7 @@ Networking-odl source code should be pulled directly from git::
 
     # from your home or source directory
     cd ~
-    git clone https://git.openstack.org/openstack/networking-odl
+    git clone https://opendev.org/openstack/networking-odl
     cd networking-odl
 
 

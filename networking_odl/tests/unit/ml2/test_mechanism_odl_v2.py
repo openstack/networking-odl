@@ -323,7 +323,7 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             if (object_type == odl_const.ODL_SG and
                     operation in [odl_const.ODL_CREATE, odl_const.ODL_DELETE]):
                 # TODO(yamahata): remove this work around once
-                # https://review.openstack.org/#/c/281693/
+                # https://review.opendev.org/#/c/281693/
                 # is merged.
                 if operation == odl_const.ODL_CREATE:
                     sg = securitygroup.SecurityGroup(

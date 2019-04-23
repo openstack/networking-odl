@@ -92,7 +92,7 @@ function _install_base_deps {
     PACKAGES=$(get_packages general)
     # for gethostip command
     if ! is_plugin_enabled networking-odl; then
-        enable_plugin networking-odl https://git.openstack.org/openstack/networking-odl
+        enable_plugin networking-odl https://opendev.org/openstack/networking-odl
     fi
     PACKAGES="$PACKAGES $(get_plugin_packages)"
     # Do not install 'python-' prefixed packages other than

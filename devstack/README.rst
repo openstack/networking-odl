@@ -14,7 +14,7 @@
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
+     enable_plugin networking-odl http://opendev.org/openstack/networking-odl
 
 4. Optionally, to enable support for OpenDaylight L3 router functionality,
    add the below::
@@ -44,7 +44,7 @@
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
+     enable_plugin networking-odl http://opendev.org/openstack/networking-odl
      ODL_MODE=compute
 
 9. Note: In a node using a release of Open vSwitch provided from another source
@@ -57,8 +57,8 @@
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin networking-ovs-dpdk http://git.openstack.org/openstack/networking-ovs-dpdk
-     enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl
+     enable_plugin networking-ovs-dpdk http://opendev.org/openstack/networking-ovs-dpdk
+     enable_plugin networking-odl http://opendev.org/openstack/networking-odl
      SKIP_OVS_INSTALL=True
 
 10. Note: Optionally, to use the new netvirt implementation
@@ -121,7 +121,7 @@
 
   So include in your localrc (or local.conf) the following::
 
-    enable_plugin networking-l2gw http://git.openstack.org/openstack/networking-l2gw
+    enable_plugin networking-l2gw http://opendev.org/openstack/networking-l2gw
     enable_service l2gw-plugin
     NETWORKING_L2GW_SERVICE_DRIVER=L2GW:OpenDaylight:networking_odl.l2gateway.driver_v2.OpenDaylightL2gwDriver:default
 
@@ -169,7 +169,7 @@
 16. To enable BGPVPN driver to use with OpenDaylight controller
     Include the following lines in your localrc (or local.conf)::
 
-      enable_plugin networking-bgpvpn https://git.openstack.org/openstack/networking-bgpvpn.git
+      enable_plugin networking-bgpvpn https://opendev.org/openstack/networking-bgpvpn.git
 
       [[post-config|$NETWORKING_BGPVPN_CONF]]
       [service_providers]
