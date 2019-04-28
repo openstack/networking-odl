@@ -3,7 +3,7 @@
     description: Fake job to hold configuration settings for jobs
     vars:
       odl_version_map:
-        oxygen: &oxygen oxygen-snapshot-0.8
+        oxygen: &oxygen oxygen-latest
         fluorine: &fluorine fluorine-snapshot-0.9
       common_devstack_vars: &devstack_vars
         devstack_localrc:
