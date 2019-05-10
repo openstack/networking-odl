@@ -1,0 +1,7 @@
+---
+
+deprecations:
+  - |
+    Neutron-lbaas is retired in Train cycle, so all the related dependencies
+    must be removed from networking-odl, for details see:
+    http://lists.openstack.org/pipermail/openstack-discuss/2019-May/006158.html

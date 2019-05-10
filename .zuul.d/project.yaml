@@ -13,7 +13,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -22,7 +21,6 @@
               - openstack/ceilometer
               - openstack/neutron
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -30,7 +28,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -38,7 +35,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -46,7 +42,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -54,58 +49,9 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-
-    gate:
-      jobs:
-        - openstack-tox-pep8:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-docs:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-py27:
-            vars:
-              ensure_pip_from_packages_with_python2: yes
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-py35:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-py36:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-
-    experimental:
-      jobs:
         - networking-odl-grenade:
             voting: false
             branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
@@ -115,6 +61,8 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
+        - networking-odl-tempest-oxygen
+        - networking-odl-tempest-fluorine
         - networking-odl-tempest-oxygen-multinode:
             voting: false
             irrelevant-files:
@@ -145,9 +93,40 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-oxygen:
-            voting: false
-        - networking-odl-functional-fluorine:
-            voting: false
-        - networking-odl-tempest-oxygen
-        - networking-odl-tempest-fluorine
+    gate:
+      jobs:
+        - openstack-tox-pep8:
+            required-projects:
+              - openstack/ceilometer
+              - openstack/neutron-fwaas
+              - x/networking-l2gw
+              - openstack/networking-sfc
+              - openstack/networking-bgpvpn
+        - openstack-tox-docs:
+            required-projects:
+              - openstack/ceilometer
+              - openstack/neutron-fwaas
+              - x/networking-l2gw
+              - openstack/networking-sfc
+              - openstack/networking-bgpvpn
+        - openstack-tox-py27:
+            required-projects:
+              - openstack/ceilometer
+              - openstack/neutron-fwaas
+              - x/networking-l2gw
+              - openstack/networking-sfc
+              - openstack/networking-bgpvpn
+        - openstack-tox-py35:
+            required-projects:
+              - openstack/ceilometer
+              - openstack/neutron-fwaas
+              - x/networking-l2gw
+              - openstack/networking-sfc
+              - openstack/networking-bgpvpn
+        - openstack-tox-py36:
+            required-projects:
+              - openstack/ceilometer
+              - openstack/neutron-fwaas
+              - x/networking-l2gw
+              - openstack/networking-sfc
+              - openstack/networking-bgpvpn

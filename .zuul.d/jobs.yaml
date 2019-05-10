@@ -81,7 +81,6 @@
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
-      - openstack/neutron-lbaas
       - openstack/neutron-tempest-plugin
     roles:
       - zuul: openstack/devstack
@@ -134,7 +133,6 @@
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
-      - openstack/neutron-lbaas
     roles:
       - zuul: openstack/devstack
     timeout: 9000
