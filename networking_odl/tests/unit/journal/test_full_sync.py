@@ -34,7 +34,6 @@ from networking_odl.journal import full_sync
 from networking_odl.journal import journal
 from networking_odl.l2gateway import driver_v2 as l2gw_driver
 from networking_odl.l3 import l3_odl_v2
-from networking_odl.lbaas import lbaasv2_driver_v2 as lbaas_driver
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.qos import qos_driver_v2 as qos_driver
 from networking_odl.sfc.flowclassifier import sfc_flowclassifier_v2
@@ -118,11 +117,6 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             (odl_const.ODL_ROUTER, constants.L3),
             (odl_const.ODL_PORT, constants.CORE),
             (odl_const.ODL_FLOATINGIP, constants.L3),
-            (odl_const.ODL_LOADBALANCER, constants.LOADBALANCERV2),
-            (odl_const.ODL_LISTENER, constants.LOADBALANCERV2),
-            (odl_const.ODL_POOL, constants.LOADBALANCERV2),
-            (odl_const.ODL_MEMBER, constants.LOADBALANCERV2),
-            (odl_const.ODL_HEALTHMONITOR, constants.LOADBALANCERV2),
             (odl_const.ODL_QOS_POLICY, constants.QOS),
             (odl_const.ODL_TRUNK, resources.TRUNK),
             (odl_const.ODL_BGPVPN, bgpvpn_const.ALIAS),
@@ -338,8 +332,6 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
             constants.CORE: (mock.Mock(),
                              mech_driver_v2.OpenDaylightMechanismDriver),
             constants.L3: (mock.Mock(), l3_odl_v2.OpenDaylightL3RouterPlugin),
-            constants.LOADBALANCERV2: (mock.Mock(),
-                                       lbaas_driver.OpenDaylightManager),
             resources.TRUNK: (mock.Mock(),
                               trunk_driver.OpenDaylightTrunkHandlerV2),
             constants.QOS: (mock.Mock(), qos_driver.OpenDaylightQosDriver),

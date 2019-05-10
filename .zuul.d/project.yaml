@@ -13,7 +13,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -22,7 +21,6 @@
               - openstack/ceilometer
               - openstack/neutron
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -30,7 +28,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -39,7 +36,6 @@
               - openstack/ceilometer
               - openstack/neutron
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -47,7 +43,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -55,7 +50,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -63,7 +57,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -116,7 +109,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -124,7 +116,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -133,7 +124,6 @@
               - openstack/ceilometer
               - openstack/neutron
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -141,7 +131,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -149,7 +138,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
@@ -157,7 +145,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron-fwaas
-              - openstack/neutron-lbaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn

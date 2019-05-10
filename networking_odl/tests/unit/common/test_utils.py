@@ -36,9 +36,6 @@ class TestUtils(base.DietTestCase):
 
     @staticmethod
     def _get_resources():
-        # TODO(rajivk): Load balancer resources are not specified because
-        # urls builder is registered explictly. Add load balancer resources
-        # here, once lbaas url creation is directed through this method
         return {odl_const.ODL_SG: 'security-groups',
                 odl_const.ODL_SG_RULE: 'security-group-rules',
                 odl_const.ODL_NETWORK: 'networks',
