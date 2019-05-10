@@ -37,14 +37,6 @@
      ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-br-ex:eth2}    # for old netvirt (ovsdb based)
      ODL_PROVIDER_MAPPINGS=${ODL_PROVIDER_MAPPINGS:-physnet1:eth2} # for new netvirt (vpnservice based)
 
-6. Optionally, to enable support for OpenDaylight with LBaaS V2, add this::
-
-     > cat local.conf
-     [[local|localrc]]
-     enable_plugin neutron-lbaas http://git.openstack.org/openstack/neutron-lbaas
-     enable_service q-lbaasv2
-     NEUTRON_LBAAS_SERVICE_PROVIDERV2="LOADBALANCERV2:opendaylight:networking_odl.lbaas.lbaasv2_driver_v2.OpenDaylightLbaasDriverV2:default"
-
 7. run ``stack.sh``
 
 8. Note: In a multi-node devstack environment, for each compute node you will

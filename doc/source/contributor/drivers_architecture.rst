@@ -62,17 +62,11 @@ original operation, and there's nothing extra needed.
 The *get_resources_for_full_sync* method is defined in the ResourceBaseDriver
 class, it fetches all the resources needed for full sync, based on resource
 type. To override the default behaviour of *get_resources_for_full_sync*
-define it in driver class, For example
-
-  #. L2 gateway driver needs to provide customized method for filtering of
-     fetched gateway connection information from database. Neutron
-     defines *l2_gateway_id* for a l2 gateway connection but ODL expects
-     *gateway_id*, these kind of pre or post processing can be done in this
-     method.
-  #. For lbaas driver, as per default resource fetching mechanism, it looks for
-     *get_member* instead the lbaas plugin defines *get_pool_member*, by
-     overriding the *get_resources* method, it is possible to solve this
-     inconsistency.
+define it in driver class, For example L2 gateway driver needs to provide
+customized method for filtering of fetched gateway connection information
+from database. Neutron defines *l2_gateway_id* for a l2 gateway connection
+but ODL expects *gateway_id*, these kind of pre or post processing can be
+done in this method.
 
 Journal Entry Lifecycle
 -----------------------
