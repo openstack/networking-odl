@@ -52,7 +52,7 @@ KEY_MATCHER = re.compile(r'\%\((\S+)\)s')
 LOG_KEYS = KEY_MATCHER.findall(journal.LOG_ENTRY_TEMPLATE)
 KEY_TEMP_PATTERN = 'KEYPATTERN'
 LOG_MATCHER = re.compile(
-    re.sub(KEY_TEMP_PATTERN, r'(\S+)', re.escape(
+    re.sub(KEY_TEMP_PATTERN, r'(\\S+)', re.escape(
         KEY_MATCHER.sub(KEY_TEMP_PATTERN, journal.LOG_ENTRY_TEMPLATE))))
 ENTRY_LOG_TEMPLATE = ' * Entry id: %s, processing time: %.3fs; %s %s %s'
 
