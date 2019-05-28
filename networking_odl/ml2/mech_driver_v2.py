@@ -25,6 +25,7 @@ from oslo_log import log as logging
 from networking_odl.common import callback
 from networking_odl.common import config as odl_conf
 from networking_odl.common import constants as odl_const
+from networking_odl.common import exceptions
 from networking_odl.common import odl_features
 from networking_odl.common import postcommit
 from networking_odl.dhcp import odl_dhcp_driver as dhcp_driver
@@ -86,10 +87,22 @@ class OpenDaylightMechanismDriver(api.MechanismDriver):
                        context.current['id'], operation, data,
                        ml2_context=context)
 
+    @staticmethod
+    def _check_record_state_in_journal(context, object_uuid):
+        return journal.record_state(context._plugin_context, object_uuid)
+
     @log_helpers.log_method_call
     def create_network_precommit(self, context):
         OpenDaylightMechanismDriver._record_in_journal(
             context, odl_const.ODL_NETWORK, odl_const.ODL_CREATE)
+
+    @log_helpers.log_method_call
+    def create_network_postcommit(self, context):
+        # import pdb;pdb.set_trace()
+        state = OpenDaylightMechanismDriver._check_record_state_in_journal(
+            context, context.current['id'])
+        if state == odl_const.FAILED:
+            raise exceptions.NetworkingODLResourceError(resource=odl_const.ODL_NETWORK)
 
     @log_helpers.log_method_call
     def create_subnet_precommit(self, context):

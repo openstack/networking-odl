@@ -24,6 +24,7 @@ from sqlalchemy.orm import aliased
 from oslo_log import log as logging
 
 from neutron.db import api as db_api
+from neutron.db import models_v2 as neutron_models_v2
 
 from networking_odl.common import constants as odl_const
 from networking_odl.db import models
@@ -31,6 +32,12 @@ from networking_odl.db import models
 LOG = logging.getLogger(__name__)
 
 bakery = baked.bakery()
+
+NEUTRON_RESOURCES = {
+    'network': 'Network',
+    'port': 'Port',
+    'router': 'Router'
+}
 
 
 def get_pending_or_processing_ops(session, object_uuid, operation=None):
@@ -73,6 +80,11 @@ def get_all_db_rows(session):
 def get_all_db_rows_by_state(session, state):
     return session.query(models.OpenDaylightJournal).filter_by(
         state=state).all()
+
+
+def get_db_row_state_by_object_uuid(session, object_uuid):
+    return session.query(models.OpenDaylightJournal).filter_by(
+        object_uuid=object_uuid).first().state
 
 
 # Retry deadlock exception for Galera DB.
@@ -122,9 +134,26 @@ def update_db_row_state(session, row, state, flush=True):
         session.flush()
 
 
+def sync_neutron_db_row_status(session, odl_row, status, flush=True):
+    """Sync object status to neutron db by object uuid"""
+    if odl_row.object_type in NEUTRON_RESOURCES:
+        model_getter = getattr(neutron_models_v2, NEUTRON_RESOURCES[odl_row.object_type])
+        neutron_row = session.query(model_getter).filter_by(
+            id=odl_row.object_uuid).one()
+        neutron_row.status = status
+        session.merge(neutron_row)
+        if flush:
+            session.flush()
+
+
 def update_pending_db_row_retry(session, row, retry_count):
     if row.retry_count >= retry_count:
-        update_db_row_state(session, row, odl_const.FAILED)
+        # when retry reach to max_retry_count, delete the row
+        # directly, also need to sync to neutron db.
+        # update_db_row_state(session, row, odl_const.FAILED)
+        delete_row(session, row)
+        sync_neutron_db_row_status(session, row, odl_const.NEUTRON_ERR)
+        LOG.info("Synced object: %s status: %s to Neutron DB.", row.object_type, odl_const.NEUTRON_ERR)
     else:
         row.retry_count += 1
         update_db_row_state(session, row, odl_const.PENDING)

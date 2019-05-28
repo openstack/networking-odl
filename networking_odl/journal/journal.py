@@ -129,6 +129,15 @@ def record(plugin_context, object_type, object_uuid, operation, data,
                'depending_on': [d.seqnum for d in depending_on]})
 
 
+def record_state(plugin_context, object_uuid):
+     try:
+         state = db.get_db_row_state_by_object_uuid(
+             plugin_context.session, object_uuid)
+         return state
+     except exception.DBReferenceError as e:
+         raise exception.RetryRequest(e)
+
+
 @db_api.retry_if_session_inactive()
 def entry_complete(context, entry):
     session = context.session

@@ -33,6 +33,11 @@ class UnsupportedResourceType(NetworkingODLException):
     message = _("unsupported resource type: %(resource)s")
 
 
+class NetworkingODLResourceError(NetworkingODLException):
+    """An exception for Networking-ODL resource."""
+    message = _("Networking-ODL resource error: %(resource)s")
+
+
 class PluginMethodNotFound(NetworkingODLException, AttributeError):
     """An exception indicating plugin method was not found.
 
