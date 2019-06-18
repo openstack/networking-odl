@@ -169,6 +169,7 @@
       devstack_localrc:
         HOST_IP: 127.0.0.1
         UNSTACK_KEEP_ODL: True
+        USE_PYTHON3: True
       run_devstack: False
 
 - job:
