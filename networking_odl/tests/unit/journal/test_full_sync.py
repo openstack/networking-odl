@@ -347,10 +347,8 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     @staticmethod
     def _get_name(resource_type):
-        MEMBERS = 'pool_members'
         mapping = {
             odl_const.ODL_QOS_POLICY: odl_const.ODL_QOS_POLICIES,
-            odl_const.ODL_MEMBER: MEMBERS,
             odl_const.ODL_SFC_PORT_PAIR:
                 odl_const.NETWORKING_SFC_FLOW_CLASSIFIERS,
             odl_const.ODL_SFC_PORT_PAIR:
@@ -380,8 +378,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
         plugins = self._get_all_plugins()
         driver = plugins[plugin_type][1]
         args = [mock.Mock()]
-        if object_type in [odl_const.ODL_MEMBER,
-                           odl_const.ODL_BGPVPN_ROUTER_ASSOCIATION,
+        if object_type in [odl_const.ODL_BGPVPN_ROUTER_ASSOCIATION,
                            odl_const.ODL_BGPVPN_NETWORK_ASSOCIATION]:
             args.append(mock.Mock())
 
