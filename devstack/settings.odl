@@ -8,11 +8,11 @@
 #
 #   latest-snapshot          (master latest snapshot)
 #   latest-release
+#   sodium-latest            (master)
+#   neon-latest
 #   fluorine-latest
-#   fluorine-snapshot-0.0    (master latest fluorine snapshot)
-#   fluorine-snapshot-0.9.0  (master)
-#   oxygen-snapshot-0.8      (stable/oxygen latest oxygen snapshot)
-#   oxygen-snapshot-0.8.0    (stable/oxygen)
+#   fluorine-snapshot-0.9.3
+#   fluorine-snapshot-0.9.4
 
 ODL_RELEASE=${ODL_RELEASE:-latest-snapshot}
 

@@ -5,6 +5,8 @@
       odl_version_map:
         oxygen: &oxygen oxygen-latest
         fluorine: &fluorine fluorine-snapshot-0.9
+        neon: &neon neon-snapshot-0.10
+        sodium: &sodium sodium-snapshot-0.11
       common_devstack_vars: &devstack_vars
         devstack_localrc:
           ODL_TIMEOUT: 60
@@ -184,6 +186,58 @@
       devstack_localrc:
         ODL_RELEASE: *fluorine
 
+- job:
+    name: networking-odl-rally-neon
+    parent: rally-task-at-devstack
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *neon
+      devstack_plugins:
+        rally-openstack: https://opendev.org/openstack/rally-openstack
+        networking-odl: https://opendev.org/openstack/networking-odl
+      rally_task: rally-jobs/odl.yaml
+    timeout: 7500
+    required-projects:
+      - openstack/devstack
+      - openstack/devstack-gate
+      - openstack/networking-odl
+      - openstack/rally
+      - openstack/rally-openstack
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^releasenotes/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+
+- job:
+    name: networking-odl-rally-sodium
+    parent: rally-task-at-devstack
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *sodium
+      devstack_plugins:
+        rally-openstack: https://opendev.org/openstack/rally-openstack
+        networking-odl: https://opendev.org/openstack/networking-odl
+      rally_task: rally-jobs/odl.yaml
+    timeout: 7500
+    required-projects:
+      - openstack/devstack
+      - openstack/devstack-gate
+      - openstack/networking-odl
+      - openstack/rally
+      - openstack/rally-openstack
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^releasenotes/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+
 # >>> LEGACY JOBS TO REPLACE
 
 - job:
@@ -220,27 +274,5 @@
       - openstack/networking-odl
       - openstack/tempest
     nodeset: legacy-ubuntu-xenial-2-node
-
-- job:
-    name: networking-odl-rally-oxygen
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/rally-dsvm-networking-odl-oxygen-snapshot/run.yaml
-    post-run: playbooks/legacy/rally-dsvm-networking-odl-oxygen-snapshot/post.yaml
-    timeout: 7500
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-odl
-      - openstack/rally
-
-- job:
-    name: networking-odl-rally-fluorine
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/rally-dsvm-networking-odl-fluorine-snapshot/run.yaml
-    post-run: playbooks/legacy/rally-dsvm-networking-odl-fluorine-snapshot/post.yaml
-    timeout: 7500
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-odl
-      - openstack/rally
 
 # <<< LEGACY JOBS TO REPLACE
