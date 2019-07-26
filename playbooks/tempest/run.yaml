@@ -17,12 +17,6 @@
         devstack_base_dir: /opt/stack
       when: devstack_base_dir is not defined
 
-    - name: Print karaf feature list
-      shell:
-        cmd: "{{devstack_base_dir}}/opendaylight/*karaf-*/bin/client 'feature:list -i'"
-        executable: /bin/bash
-        chdir: "{{ zuul.project.src_dir }}"
-
 # We run tests only on one node, regardless how many nodes are in the system
 - hosts: tempest
   roles:

@@ -65,7 +65,6 @@
           rabbit: True
         devstack_plugins: &devstack_plugins
           networking-odl: https://opendev.org/openstack/networking-odl
-          neutron: https://opendev.org/openstack/neutron
 
 - job:
     name: networking-odl-tempest-base
@@ -76,16 +75,20 @@
     run: playbooks/tempest/run.yaml
     post-run: playbooks/tempest/post.yaml
     voting: false
-    required-projects:
+    required-projects: &required-projects
+      - openstack/ceilometer
       - openstack/networking-odl
       - openstack/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
+      - openstack/devstack-gate
+      - openstack/neutron
+      - openstack/tempest
       - openstack/neutron-tempest-plugin
     roles:
       - zuul: openstack/devstack
-    timeout: 9000
+    timeout: 10800
     irrelevant-files: &irrelevant_files
       - ^.*\.rst$
       - ^doc/.*$
@@ -95,6 +98,8 @@
       tox_envlist: all-plugin
       zuul_copy_output:
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
+      devstack_services:
+        q-svc: true
       extensions_to_txt:
         log: True
         ini: True
@@ -108,18 +113,47 @@
       tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
 
 - job:
-    name: networking-odl-tempest-oxygen
-    parent: networking-odl-tempest-base
+    name: networking-odl-tempest-multinode-base
+    parent: tempest-multinode-full-py3
+    required-projects: *required-projects
+    roles:
+      - zuul: zuul/zuul-jobs
+      - zuul: openstack/neutron-tempest-plugin
+    timeout: 10800
+    pre-run: playbooks/multinode-setup.yaml
+    irrelevant-files: *irrelevant_files
     vars:
-      devstack_localrc:
-        ODL_RELEASE: *oxygen
+      <<: *devstack_vars
+      tox_envlist: all-plugin
+      zuul_copy_output:
+        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
+      devstack_services:
+        q-svc: true
+      extensions_to_txt:
+          log: True
+          ini: True
+      devstack_plugins:
+        <<: *devstack_plugins
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+      # Only scenario tests and some compute API tests actually verify ODL is working
+      # Any API networking tests don't bring up any VMs and just verify that stuff happened in the
+      # Neutron DB, so they don't actually fail even if ODL is not running at all.
+      tempest_test_regex: tempest\.(api.compute|scenario|thirdparty)|neutron_tempest_plugin.scenario
+      tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
 
 - job:
-    name: networking-odl-tempest-fluorine
+    name: networking-odl-tempest-neon
     parent: networking-odl-tempest-base
     vars:
       devstack_localrc:
-        ODL_RELEASE: *fluorine
+        ODL_RELEASE: *neon
+
+- job:
+    name: networking-odl-tempest-sodium
+    parent: networking-odl-tempest-base
+    vars:
+      devstack_localrc:
+        ODL_RELEASE: *sodium
 
 - job:
     name: networking-odl-devstack-base
@@ -128,6 +162,7 @@
         Base job for devstack-based tests
     pre-run: playbooks/devstack/pre.yaml
     required-projects:
+      - openstack/ceilometer
       - openstack/networking-odl
       - openstack/networking-l2gw
       - openstack/networking-sfc
@@ -184,6 +219,14 @@
     vars:
       devstack_localrc:
         ODL_RELEASE: *sodium
+
+- job:
+    name: networking-odl-tempest-neon-multinode
+    parent: networking-odl-tempest-multinode-base
+
+- job:
+    name: networking-odl-tempest-sodium-multinode
+    parent: networking-odl-tempest-multinode-base
 
 - job:
     name: networking-odl-rally-neon
@@ -249,29 +292,5 @@
       - openstack/grenade
       - openstack/devstack-gate
       - openstack/networking-odl
-
-- job:
-    name: networking-odl-tempest-oxygen-multinode
-    parent: legacy-dsvm-base-multinode
-    run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-oxygen-snapshot/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-oxygen-snapshot/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
-    nodeset: legacy-ubuntu-xenial-2-node
-
-- job:
-    name: networking-odl-tempest-fluorine-multinode
-    parent: legacy-dsvm-base-multinode
-    run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-fluorine-snapshot/run.yaml
-    post-run: playbooks/legacy/tempest-dsvm-networking-odl-multinode-fluorine-snapshot/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/networking-odl
-      - openstack/tempest
-    nodeset: legacy-ubuntu-xenial-2-node
 
 # <<< LEGACY JOBS TO REPLACE

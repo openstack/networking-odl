@@ -35,7 +35,7 @@ ODL_OVS_MANAGERS=${ODL_OVS_MANAGERS:-$ODL_MGR_HOST}
 # The default ODL port for Jetty to use
 # NOTE: We make this configurable because by default, ODL uses port 8080 for
 # Jetty, and this conflicts with swift which also uses port 8080.
-ODL_PORT=${ODL_PORT:-8087}
+ODL_PORT=${ODL_PORT:-8181}
 
 # The ODL endpoint URL
 ODL_ENDPOINT=${ODL_ENDPOINT:-http://${ODL_MGR_HOST}:${ODL_PORT}/controller/nb/v2/neutron}

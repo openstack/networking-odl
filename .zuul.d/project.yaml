@@ -52,24 +52,12 @@
               - ^doc/.*$
               - ^releasenotes/.*$
               - ^setup.cfg$
-        - networking-odl-tempest-oxygen
-        - networking-odl-tempest-fluorine
-        - networking-odl-tempest-oxygen-multinode:
+        - networking-odl-tempest-neon
+        - networking-odl-tempest-sodium
+        - networking-odl-tempest-neon-multinode:
             voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-fluorine-multinode:
+        - networking-odl-tempest-sodium-multinode:
             voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
         - networking-odl-rally-neon:
             voting: false
             irrelevant-files:

@@ -46,7 +46,7 @@
   ignore_errors: true
 
 - name: Print ODL configuration
-  command: curl --silent --user admin:admin "http://{{ inventory_hostname }}:8087/restconf/{{ item }}?prettyPrint=true"
+  command: curl --silent --user admin:admin "http://{{ inventory_hostname }}:8181/restconf/{{ item }}?prettyPrint=true"
   with_items:
     - config/neutron:neutron
     - config/opendaylight-inventory:nodes

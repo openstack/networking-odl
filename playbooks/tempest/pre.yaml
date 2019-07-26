@@ -15,3 +15,4 @@
           purge_and_recreate_initial_networks "{{devstack_base_dir}}/devstack"
         executable: /bin/bash
         chdir: "{{ zuul.project.src_dir }}"
+      become: yes
