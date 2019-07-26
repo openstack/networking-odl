@@ -209,8 +209,6 @@ function _install_opendaylight {
     enable_service odl-server
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack install
     source $NETWORKING_ODL_DIR/devstack/plugin.sh stack post-config
-
-    $ODL_DIR/*karaf-*/bin/client "feature:list -i"
 }
 
 

@@ -173,18 +173,18 @@
       run_devstack: False
 
 - job:
-    name: networking-odl-functional-oxygen
+    name: networking-odl-functional-neon
     parent: networking-odl-functional-base
     vars:
       devstack_localrc:
-        ODL_RELEASE: *oxygen
+        ODL_RELEASE: *neon
 
 - job:
-    name: networking-odl-functional-fluorine
+    name: networking-odl-functional-sodium
     parent: networking-odl-functional-base
     vars:
       devstack_localrc:
-        ODL_RELEASE: *fluorine
+        ODL_RELEASE: *sodium
 
 - job:
     name: networking-odl-rally-neon

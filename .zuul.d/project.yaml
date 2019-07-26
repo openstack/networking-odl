@@ -93,8 +93,8 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-oxygen
-        - networking-odl-functional-fluorine
+        - networking-odl-functional-neon
+        - networking-odl-functional-sodium
     gate:
       jobs:
         - openstack-tox-pep8:
@@ -133,5 +133,5 @@
               - openstack/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-        - networking-odl-functional-oxygen
-        - networking-odl-functional-fluorine
+        - networking-odl-functional-neon
+        - networking-odl-functional-sodium
