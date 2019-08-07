@@ -75,7 +75,6 @@
     post-run: playbooks/tempest/post.yaml
     voting: false
     required-projects:
-      - openstack/ceilometer
       - openstack/networking-odl
       - openstack/networking-l2gw
       - openstack/networking-sfc
@@ -127,7 +126,6 @@
         Base job for devstack-based tests
     pre-run: playbooks/devstack/pre.yaml
     required-projects:
-      - openstack/ceilometer
       - openstack/networking-odl
       - openstack/networking-l2gw
       - openstack/networking-sfc
