@@ -9,7 +9,7 @@ neutron's devref can be checked:
 https://docs.openstack.org/neutron/latest/contributor/index.html
 
 For details regarding OpenStack Neutron's Api:
-https://developer.openstack.org/api-ref/networking/
+https://docs.openstack.org/api-ref/network/
 
 Contributor's Reference
 -----------------------
