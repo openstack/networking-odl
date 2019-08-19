@@ -141,7 +141,7 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
         return True
 
     def filter_metadata_diff(self, diff):
-        return filter(self._filter_mysql_server_func_now, diff)
+        return list(filter(self._filter_mysql_server_func_now, diff))
 
 
 class TestModelsMigrationsMysql(testlib_api.MySQLTestCaseMixin,
