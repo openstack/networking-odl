@@ -25,7 +25,7 @@ if [[ "$_odl_release" =~ -snapshot ]]; then
         # every time networking-odl/devstack/plugin.sh is called by devstack
         # latest-snapshot -> latest-snapshot-<N>.<N>.<N>
         ODL_RELEASE=${ODL_RELEASE}-${_odl_version}
-    elif [[ "${_odl_version}" =~ ^[[:digit:]]\.[[:digit:]]$ ]]; then
+    elif [[ "${_odl_version}" =~ ^[[:digit:]]+\.[[:digit:]]+$ ]]; then
         # get latest revision of given major.minor
         # <major>.<minor> -> <major>.<minor>.<revision>
         _odl_version=$(odl_snapshot_full_version $ODL_DIR $ODL_URL_PREFIX $_odl_version $OFFLINE)
