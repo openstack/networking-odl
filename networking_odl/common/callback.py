@@ -50,7 +50,7 @@ def _log_on_callback(lvl, msg, op, res_type, res_id, res_dict, data):
     LOG.log(lvl, LOG_TEMPLATE,
             {'msg': msg, 'op': op, 'res_type': res_type, 'res_id': res_id,
              'res_dict': res_dict, 'data': data,
-             'exc_info': True if lvl >= logging.ERROR else False})
+             'exc_info': lvl >= logging.ERROR})
 
 
 class OdlSecurityGroupsHandler(object):
