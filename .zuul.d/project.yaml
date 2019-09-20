@@ -54,7 +54,6 @@
               - openstack/networking-bgpvpn
         - networking-odl-grenade:
             voting: false
-            branches: ^(?!(driverfixes|stable/(mitaka|newton))).*$
             irrelevant-files:
               - ^(test-|)requirements.txt$
               - ^.*\.rst$
@@ -81,14 +80,12 @@
               - ^setup.cfg$
         - networking-odl-rally-neon:
             voting: false
-            branches: ^(?!stable/(ocata|pike|queens)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
         - networking-odl-rally-sodium:
             voting: false
-            branches: ^(?!stable/(ocata|pike|queens|rocky)).*$
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
