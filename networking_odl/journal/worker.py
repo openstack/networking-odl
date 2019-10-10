@@ -64,9 +64,8 @@ class JournalPeriodicProcessor(worker.BaseWorker):
 
         # NOTE(mpeterson): We want self._running to be None before the first
         # run so atexit is only registered once and not several times.
-        # TODO(mpeterson): Once we drop support for PY2 we need to change
-        # the logic to use atexit.unregister at stop.
         if self._running is None:
+            atexit.unregister(self._delete_pidfile)
             atexit.register(self._delete_pidfile)
 
         self.pidfile.write(os.getpid())

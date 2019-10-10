@@ -142,12 +142,11 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
 
         expected_retries = RETRY_MAX if expect_retries else 0
 
-        # TODO(mpeterson): Make this an int when Py2 is no longer supported
-        # and use the `nonlocal` directive
-        retry_counter = [0]
+        retry_counter = 0
         for exception in exceptions:
             def increase_retry_counter_and_except(*args, **kwargs):
-                retry_counter[0] += 1
+                nonlocal retry_counter
+                retry_counter += 1
                 self.db_context.session.add(self.retry_tracker())
                 self.db_context.session.flush()
                 raise exception(_e)
@@ -159,7 +158,7 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
             mock_object.reset_mock()
 
         retry_fixture.cleanUp()
-        return retry_counter[0]
+        return retry_counter
 
     def _assertRetryCount(self, expected_count):
         actual_count = \

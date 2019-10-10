@@ -1,6 +1,5 @@
 - project:
     templates:
-      - openstack-python-jobs-neutron
       - openstack-python3-ussuri-jobs-neutron
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
@@ -34,13 +33,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron
-              - openstack/neutron-fwaas
-              - openstack/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-py27:
-            required-projects:
-              - openstack/ceilometer
               - openstack/neutron-fwaas
               - openstack/networking-l2gw
               - openstack/networking-sfc
@@ -112,13 +104,6 @@
             required-projects:
               - openstack/ceilometer
               - openstack/neutron
-              - openstack/neutron-fwaas
-              - openstack/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-py27:
-            required-projects:
-              - openstack/ceilometer
               - openstack/neutron-fwaas
               - openstack/networking-l2gw
               - openstack/networking-sfc

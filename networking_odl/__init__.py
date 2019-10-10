@@ -15,11 +15,4 @@
 
 import gettext
 
-import six
-
-params = {}
-
-if six.PY2:
-    params = {'unicode': 1}
-
-gettext.install('networking_odl', **params)
+gettext.install('networking_odl')

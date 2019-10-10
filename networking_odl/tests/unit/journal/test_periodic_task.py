@@ -62,16 +62,15 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
 
     def test_thread_works(self):
         callback_event = threading.Event()
-        # TODO(mpeterson): Make this an int when Py2 is no longer supported
-        # and use the `nonlocal` directive
-        count = [0]
+        count = 0
 
         def callback_op(*args):
-            count[0] += 1
+            nonlocal count
+            count += 1
 
             # The following should be true on the second call, so we're making
             # sure that the thread runs more than once.
-            if count[0] > 1:
+            if count > 1:
                 callback_event.set()
 
         self.thread.register_operation(callback_op)
@@ -168,14 +167,13 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
     def test_no_multiple_executions_simultaneously(self, mock_exec_recently):
         continue_event = threading.Event()
         trigger_event = threading.Event()
-        # TODO(mpeterson): Make this an int when Py2 is no longer supported
-        # and use the `nonlocal` directive
-        count = [0]
+        count = 0
 
         def wait_until_event(context):
+            nonlocal count
             trigger_event.set()
             if continue_event.wait(2):
-                count[0] += 1
+                count += 1
 
         self.thread.register_operation(wait_until_event)
 
@@ -189,11 +187,11 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
 
         self.thread.start()
         utils.wait_until_true(trigger_event.is_set, 5, 0.01)
-        self.assertEqual(count[0], 0)
+        self.assertEqual(count, 0)
         self.assertTrue(task_locked())
 
         self.thread.execute_ops()
-        self.assertEqual(count[0], 0)
+        self.assertEqual(count, 0)
         self.assertTrue(task_locked())
 
         continue_event.set()
@@ -201,7 +199,7 @@ class PeriodicTaskThreadTestCase(test_base_db.ODLBaseDbTestCase):
         utils.wait_until_true(trigger_event.is_set, 5, 0.01)
         self.thread.cleanup()
         self.assertFalse(task_locked())
-        self.assertGreaterEqual(count[0], 1)
+        self.assertGreaterEqual(count, 1)
 
     @mock.patch.object(db, "was_periodic_task_executed_recently",
                        return_value=True)
