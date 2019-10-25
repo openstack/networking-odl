@@ -1,7 +1,7 @@
 - project:
     templates:
       - openstack-python-jobs-neutron
-      - openstack-python3-train-jobs-neutron
+      - openstack-python3-ussuri-jobs-neutron
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
       - publish-openstack-docs-pti
