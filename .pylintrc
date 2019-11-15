@@ -64,7 +64,16 @@ disable=
  too-many-locals,
  too-many-public-methods,
  too-many-return-statements,
- too-many-statements
+ too-many-statements,
+ # new for python3 version of pylint
+ chained-comparison,
+ consider-using-dict-comprehension,
+ consider-using-in,
+ consider-using-set-comprehension,
+ unnecessary-pass,
+ useless-object-inheritance,
+ self-cls-assignment,
+ no-else-return,
 
 [BASIC]
 # Variable names can be 1 to 31 characters long, with lowercase and underscores
