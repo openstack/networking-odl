@@ -42,12 +42,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
                 odl_const.ODL_SUBNETS: {},
                 odl_const.ODL_PORTS: {},
                 odl_const.ODL_SGS: {},
-                odl_const.ODL_SG_RULES: {},
-                odl_const.ODL_LOADBALANCERS: {},
-                odl_const.ODL_LISTENERS: {},
-                odl_const.ODL_POOLS: {},
-                odl_const.ODL_MEMBERS: {},
-                odl_const.ODL_HEALTHMONITORS: {}}
+                odl_const.ODL_SG_RULES: {}}
 
     @classmethod
     def _make_response(cls, status_code=OK, content=None):
