@@ -143,6 +143,7 @@ class TestOdlFeaturesNoFixture(base.DietTestCase):
         self.addCleanup(odl_features.deinit)
 
     def test_feature_configs_does_not_mutate_default_features(self):
+        odl_features.deinit()
         self.assertEqual(odl_features.EMPTY_FEATURES,
                          odl_features.feature_configs)
         odl_features.feature_configs['test'] = True
