@@ -125,7 +125,7 @@ class separating it from the module path with a colon.
 For example, the following would run only the TestUtils tests from
 networking_odl/tests/unit/common/test_utils.py ::
 
-    $ tox -e py27 networking_odl.tests.unit.common.test_utils.TestUtils
+    $ tox -e py37 networking_odl.tests.unit.common.test_utils.TestUtils
 
 Adding more tests
 ~~~~~~~~~~~~~~~~~
