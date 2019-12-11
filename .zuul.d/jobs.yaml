@@ -169,7 +169,6 @@
       devstack_localrc:
         HOST_IP: 127.0.0.1
         UNSTACK_KEEP_ODL: True
-        USE_PYTHON3: True
       run_devstack: False
 
 - job:
@@ -192,7 +191,6 @@
     vars:
       devstack_localrc:
         ODL_RELEASE: *neon
-        USE_PYTHON3: True
       devstack_plugins:
         rally-openstack: https://opendev.org/openstack/rally-openstack
         networking-odl: https://opendev.org/openstack/networking-odl
@@ -219,7 +217,6 @@
     vars:
       devstack_localrc:
         ODL_RELEASE: *sodium
-        USE_PYTHON3: True
       devstack_plugins:
         rally-openstack: https://opendev.org/openstack/rally-openstack
         networking-odl: https://opendev.org/openstack/networking-odl

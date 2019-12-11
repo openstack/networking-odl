@@ -44,7 +44,6 @@
           export PYTHONUNBUFFERED=true
           export DEVSTACK_GATE_NEUTRON=1
           export DEVSTACK_GATE_NEUTRON_DVR=1
-          export DEVSTACK_GATE_USE_PYTHON3=True
           # Make sure tempest is installed, but run it out of the post_test_hooks.sh
           # script from the networking-odl repository.
           export DEVSTACK_GATE_TEMPEST=1
