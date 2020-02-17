@@ -160,7 +160,6 @@ semantic-version==2.6.0
 seqdiag==0.9.5
 setproctitle==1.1.10
 simplejson==3.13.2
-six==1.11.0
 smmap2==2.0.3
 snowballstemmer==1.2.1
 SQLAlchemy==1.2.5

@@ -13,8 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+
 from oslo_config import cfg
-from six.moves import urllib_parse as urlparse
 
 from networking_odl.common import constants as odl_const
 
@@ -45,7 +46,7 @@ def neutronify(name):
 
 def get_odl_url(path=''):
     '''Make a URL for some ODL resource (path)'''
-    purl = urlparse.urlsplit(cfg.CONF.ml2_odl.url)
-    features_url = urlparse.urlunparse((
+    purl = urllib.parse.urlsplit(cfg.CONF.ml2_odl.url)
+    features_url = urllib.parse.urlunparse((
         purl.scheme, purl.netloc, path, '', '', ''))
     return features_url

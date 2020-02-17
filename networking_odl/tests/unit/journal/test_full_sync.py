@@ -190,9 +190,9 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     @staticmethod
     def _get_mocked_security_groups(context):
-        return [{'description': u'description',
+        return [{'description': 'description',
                  'security_group_rules': ['security_grp_rules'],
-                 'id': 'test_uuid', 'name': u'default'}]
+                 'id': 'test_uuid', 'name': 'default'}]
 
     @staticmethod
     def _get_mocked_security_group_rules(context):
@@ -202,26 +202,26 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     @staticmethod
     def _get_mocked_networks(context):
-        return [{'id': 'test_uuid', 'project_id': u'project_id',
-                 'status': u'ACTIVE', 'subnets': [], 'description': u'',
-                 'name': u'network0'}]
+        return [{'id': 'test_uuid', 'project_id': 'project_id',
+                 'status': 'ACTIVE', 'subnets': [], 'description': '',
+                 'name': 'network0'}]
 
     @staticmethod
     def _get_mocked_subnets(context):
-        return [{'description': u'', 'cidr': u'test-cidr', 'id': 'test_uuid',
-                 'name': u'test-subnet', 'network_id': 'test_uuid',
-                 'gateway_ip': u'gateway_ip'}]
+        return [{'description': '', 'cidr': 'test-cidr', 'id': 'test_uuid',
+                 'name': 'test-subnet', 'network_id': 'test_uuid',
+                 'gateway_ip': 'gateway_ip'}]
 
     @staticmethod
     def _get_mocked_routers(context):
-        return [{'status': u'ACTIVE', 'description': u'', 'name': u'router1',
+        return [{'status': 'ACTIVE', 'description': '', 'name': 'router1',
                  'id': 'test_uuid'}]
 
     @staticmethod
     def _get_mocked_ports(context):
-        return [{'status': u'DOWN', 'description': None, 'id': 'test_uuid',
-                 'name': u'loadbalancer-27', 'network_id': 'test_uuid',
-                 'mac_address': u'fa:16:3e:69:4e:33'}]
+        return [{'status': 'DOWN', 'description': None, 'id': 'test_uuid',
+                 'name': 'loadbalancer-27', 'network_id': 'test_uuid',
+                 'mac_address': 'fa:16:3e:69:4e:33'}]
 
     @staticmethod
     def _get_mocked_loadbalancers(context):
@@ -237,12 +237,12 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     @staticmethod
     def _get_mocked_trunks(context):
-        return [{'routers': [], 'id': 'test_uuid', 'name': u'',
-                 'tenant_id': u'project_id', 'networks': [], 'route_targets': [
-                     u'64512:1'], 'project_id': u'project_id', 'type': 'l3'},
-                {'routers': [], 'id': 'test_uuid', 'name': u'',
-                 'tenant_id': u'tenant_id', 'networks': [], 'route_targets': [
-                 u'64512:1'], 'project_id': u'project_id', 'type': 'l3'}]
+        return [{'routers': [], 'id': 'test_uuid', 'name': '',
+                 'tenant_id': 'project_id', 'networks': [], 'route_targets': [
+                     '64512:1'], 'project_id': 'project_id', 'type': 'l3'},
+                {'routers': [], 'id': 'test_uuid', 'name': '',
+                 'tenant_id': 'tenant_id', 'networks': [], 'route_targets': [
+                 '64512:1'], 'project_id': 'project_id', 'type': 'l3'}]
 
     @staticmethod
     def _get_mocked_bgpvpns(context):
@@ -251,10 +251,10 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
     @staticmethod
     def _get_mocked_l2_gateways(context):
-        return [{'tenant_id': u'test_tenant_id', 'id': 'test_uuid',
-                 'devices': [{'interfaces': [{'name': u'eth3'}],
-                              'id': 'test_uuid', 'device_name': u'vtep0'}],
-                 'name': u'test-gateway'}]
+        return [{'tenant_id': 'test_tenant_id', 'id': 'test_uuid',
+                 'devices': [{'interfaces': [{'name': 'eth3'}],
+                              'id': 'test_uuid', 'device_name': 'vtep0'}],
+                 'name': 'test-gateway'}]
 
     @staticmethod
     def _get_mocked_l2_gateway_connections(context):

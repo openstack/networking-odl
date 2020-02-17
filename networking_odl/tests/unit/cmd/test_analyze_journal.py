@@ -14,13 +14,12 @@
 #    under the License.
 
 import contextlib
+import io
 import random
 import string
 from unittest import mock
 
 import fixtures
-
-from six import StringIO
 
 from networking_odl.cmd import analyze_journal
 from networking_odl.journal import journal
@@ -50,7 +49,7 @@ def _generate_log_entry(log_type=None, entry_id=None):
 class TestAnalyzeJournal(base.DietTestCase):
     def setUp(self):
         super(TestAnalyzeJournal, self).setUp()
-        self.output = StringIO()
+        self.output = io.StringIO()
 
     def _assert_nothing_printed(self):
         self.assertEqual('', self.output.getvalue())

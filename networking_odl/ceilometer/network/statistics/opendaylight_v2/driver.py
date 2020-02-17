@@ -13,10 +13,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import urllib
+
 from debtcollector import removals
 
 from oslo_log import log
-from six.moves import urllib_parse as urlparse
 
 from ceilometer import keystone_client
 from ceilometer.network.statistics import driver
@@ -160,13 +161,13 @@ class OpenDaylightDriver(driver.Driver):
             # OpenDaylight REST API has not api to getting meter.
             return None
 
-        parts = urlparse.ParseResult(params.get('scheme', ['http'])[0],
-                                     parse_url.netloc,
-                                     parse_url.path,
-                                     None,
-                                     None,
-                                     None)
-        endpoint = urlparse.urlunparse(parts)
+        parts = urllib.parse.ParseResult(params.get('scheme', ['http'])[0],
+                                         parse_url.netloc,
+                                         parse_url.path,
+                                         None,
+                                         None,
+                                         None)
+        endpoint = urllib.parse.urlunparse(parts)
 
         data = self._prepare_cache(endpoint, params, cache)
 

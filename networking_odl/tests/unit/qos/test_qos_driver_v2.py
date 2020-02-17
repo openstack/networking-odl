@@ -64,12 +64,12 @@ class OpenDaylightQosDriverTestCase(base_v2.OpenDaylightConfigBase):
         return context
 
     def _get_mock_qos_operation_data(self):
-        data = {'description': u"qos_policy",
+        data = {'description': 'qos_policy',
                 'rules': [],
                 'tenant_id': 'test-tenant',
                 'shared': False,
                 'id': 'qos-policy1',
-                'name': u"policy1"}
+                'name': 'policy1'}
         qos_data = mock.Mock()
         to_dict = mock.Mock(return_value=data)
         qos_data.to_dict = to_dict

@@ -14,10 +14,9 @@
 # under the License.
 import abc
 from unittest import mock
+import urllib
 
 from oslotest import base
-import six
-from six.moves.urllib import parse as url_parse
 
 from ceilometer import service
 from networking_odl.ceilometer.network.statistics.opendaylight_v2 import driver
@@ -30,22 +29,21 @@ PORT_1_ID = str(uuidutils.generate_uuid())
 PORT_2_ID = str(uuidutils.generate_uuid())
 
 
-@six.add_metaclass(abc.ABCMeta)
-class _Base(base.BaseTestCase):
+class _Base(base.BaseTestCase, metaclass=abc.ABCMeta):
 
-    @abc.abstractproperty
+    @abc.abstractmethod
     def switch_data(self):
         pass
 
-    fake_odl_url = url_parse.ParseResult('opendaylight.v2',
-                                         'localhost:8080',
-                                         'controller/statistics',
-                                         None,
-                                         None,
-                                         None)
+    fake_odl_url = urllib.parse.ParseResult('opendaylight.v2',
+                                            'localhost:8080',
+                                            'controller/statistics',
+                                            None,
+                                            None,
+                                            None)
 
-    fake_params = url_parse.parse_qs('user=admin&password=admin&scheme=http&'
-                                     'auth=basic')
+    fake_params = urllib.parse.parse_qs(
+        'user=admin&password=admin&scheme=http&auth=basic')
 
     def setUp(self):
         super(_Base, self).setUp()

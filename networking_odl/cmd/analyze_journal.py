@@ -32,8 +32,6 @@ import collections
 import re
 import sys
 
-import six
-
 from oslo_config import cfg
 
 from networking_odl._i18n import _
@@ -64,7 +62,7 @@ def setup_conf(output, args):
     """setup cmdline options."""
 
     if any(flag in args for flag in ('-h', '--help')):
-        six.print_(__doc__, file=output)
+        print(__doc__, file=output)
 
     conf = cfg.ConfigOpts()
     conf.register_cli_opts(COMMAND_LINE_OPTIONS)
@@ -117,15 +115,14 @@ def print_stats(output, slowest, entries_stats):
     timings = [entry_stats.time for entry_stats in entries_stats]
     avg = sum(timings) / len(timings)
 
-    six.print_('Average processing time: %ss' % avg, file=output)
-    six.print_('90th percentile: %ss' % _percentile(timings, 90), file=output)
-    six.print_('99th percentile: %ss' % _percentile(timings, 99), file=output)
-    six.print_('99.9th percentile: %ss' % _percentile(timings, 99.9),
-               file=output)
-    six.print_('%s slowest entries:' % slowest, file=output)
+    print('Average processing time: %ss' % avg, file=output)
+    print('90th percentile: %ss' % _percentile(timings, 90), file=output)
+    print('99th percentile: %ss' % _percentile(timings, 99), file=output)
+    print('99.9th percentile: %ss' % _percentile(timings, 99.9), file=output)
+    print('%s slowest entries:' % slowest, file=output)
     slowest = entries_stats[:-(slowest + 1):-1]
     for entry_stats in slowest:
-        six.print_(ENTRY_LOG_TEMPLATE % entry_stats, file=output)
+        print(ENTRY_LOG_TEMPLATE % entry_stats, file=output)
 
 
 def get_content(file_name):
@@ -140,7 +137,7 @@ def main(output=sys.stdout):
     entries_stats = analyze_entries(entries)
 
     if not entries_stats:
-        six.print_('No entry statistics found.', file=output)
+        print('No entry statistics found.', file=output)
         return 1
 
     print_stats(output, conf.slowest, entries_stats)
