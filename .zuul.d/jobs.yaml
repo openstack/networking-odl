@@ -5,7 +5,7 @@
       odl_version_map:
         oxygen: &oxygen oxygen-latest
         fluorine: &fluorine fluorine-snapshot-0.9
-        neon: &neon neon-snapshot-0.10
+        neon: &neon neon-latest
         sodium: &sodium sodium-snapshot-0.11
       common_devstack_vars: &devstack_vars
         devstack_localrc:
