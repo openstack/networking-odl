@@ -66,7 +66,7 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
 
     @mock.patch.object(directory, 'get_plugin')
     def test__get_latest_resource_l2(self, plugin_mock):
-        for resource_type in(
+        for resource_type in (
                 mech_driver_v2.OpenDaylightMechanismDriver.RESOURCES):
 
             plugin = plugin_mock.return_value

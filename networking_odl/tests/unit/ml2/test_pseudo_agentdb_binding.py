@@ -104,7 +104,7 @@ class TestPseudoAgentDBBindingTaskBase(base.DietTestCase):
         with mock.patch.object(self.task.odl_rest_client,
                                'get', return_value=self.
                                _get_raised_response({}, 404)):
-                self.assertEqual(self.task._rest_get_hostconfigs(), [])
+            self.assertEqual(self.task._rest_get_hostconfigs(), [])
 
 
 class TestPseudoAgentDBBindingPrePopulate(base.DietTestCase):

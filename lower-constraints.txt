@@ -3,7 +3,6 @@ alembic==0.9.8
 amqp==2.2.2
 appdirs==1.4.3
 asn1crypto==0.24.0
-astroid==1.6.2
 Babel==2.5.3
 bandit==1.4.0
 bashate==0.5.1
@@ -38,15 +37,12 @@ exabgp==4.0.5
 extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
-flake8==2.6.2
-flake8-import-order==0.17.1
 funcparserlib==0.3.6
 future==0.16.0
 futurist==1.6.0
 gitdb2==2.0.3
 GitPython==2.1.8
 greenlet==0.4.13
-hacking==1.1.0
 horizon==17.1.0
 httplib2==0.10.3
 idna==2.6
@@ -116,7 +112,6 @@ Paste==2.0.3
 PasteDeploy==1.5.2
 pbr==4.0.0
 pecan==1.3.2
-pep8==1.5.7
 pika==0.10.0
 pika-pool==0.1.3
 Pillow==5.0.0
@@ -127,10 +122,8 @@ psutil==5.4.3
 pyasn1==0.4.2
 pyasn1-modules==0.2.1
 pycadf==2.7.0
-pycodestyle==2.4.0
 pycparser==2.18
 pycryptodomex==3.5.1
-pyflakes==0.8.1
 Pygments==2.2.0
 pyinotify==0.9.6
 pylint==1.8.3

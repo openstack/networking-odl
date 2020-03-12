@@ -19,10 +19,8 @@ import re
 import tokenize
 
 from hacking.checks import docstrings
+from hacking import core
 
-# TODO(yamahata): enable neutron checking
-# from neutron.hacking import checks
-from neutron_lib.hacking import checks
 
 _ND01_MSG = (
     "ND01: use OpenDaylight (capital D) instead of Opendaylight")  # noqa
@@ -40,6 +38,7 @@ _ND03_MSG = (
 _ND03_REGEXP_REDUNDANT_IMPORT_ALIAS = re.compile(r'.*import (.+) as \1$')
 
 
+@core.flake8ext
 def check_opendaylight_lowercase(logical_line, filename, noqa):
     """ND01 - Enforce using OpenDaylight."""
     if noqa:
@@ -64,6 +63,7 @@ def _check_opendaylight_lowercase(logical_line, tokens, noqa, token_type):
                 yield (start_index[1] + pos, msg)
 
 
+@core.flake8ext
 def check_opendaylight_lowercase_comment(logical_line, tokens, noqa):
     """ND01 - Enforce using OpenDaylight in comment."""
 
@@ -72,6 +72,7 @@ def check_opendaylight_lowercase_comment(logical_line, tokens, noqa):
         yield res
 
 
+@core.flake8ext
 def check_opendaylight_lowercase_string(logical_line, tokens, noqa):
     """ND01 - Enforce using OpenDaylight in string."""
 
@@ -80,6 +81,7 @@ def check_opendaylight_lowercase_string(logical_line, tokens, noqa):
         yield res
 
 
+@core.flake8ext
 def check_opendaylight_lowercase_docstring(
         physical_line, previous_logical, tokens):
     """ND01 - Enforce using OpenDaylight in docstring."""
@@ -90,6 +92,7 @@ def check_opendaylight_lowercase_docstring(
     return None
 
 
+@core.flake8ext
 def check_config_over_set_override(logical_line, filename, noqa):
     """ND02 - Enforcement of config fixture
 
@@ -107,6 +110,7 @@ def check_config_over_set_override(logical_line, filename, noqa):
         yield (0, _ND02_MSG % "using cfg.CONF.set_override()")
 
 
+@core.flake8ext
 def check_config_over_direct_override(logical_line, filename, noqa):
     """ND02 - Enforcement of config fixture
 
@@ -124,6 +128,7 @@ def check_config_over_direct_override(logical_line, filename, noqa):
         yield (0, _ND02_MSG % "overriding it directly.")
 
 
+@core.flake8ext
 def check_redundant_import_alias(logical_line):
     """ND03 - Checking no redundant import alias.
 
@@ -134,14 +139,3 @@ def check_redundant_import_alias(logical_line):
     match = re.match(_ND03_REGEXP_REDUNDANT_IMPORT_ALIAS, logical_line)
     if match:
         yield (0, _ND03_MSG % match.group(1))
-
-
-def factory(register):
-    checks.factory(register)
-    register(check_opendaylight_lowercase)
-    register(check_opendaylight_lowercase_comment)
-    register(check_opendaylight_lowercase_string)
-    register(check_opendaylight_lowercase_docstring)
-    register(check_config_over_set_override)
-    register(check_config_over_direct_override)
-    register(check_redundant_import_alias)

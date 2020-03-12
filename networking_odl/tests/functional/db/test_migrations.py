@@ -63,9 +63,7 @@ BGPVPN_TABLES = (
 
 # Tables from other repos that we depend on but do not manage.
 IGNORED_TABLES_MATCH = set(
-    FWAAS_TABLES +
-    L2GW_TABLES +
-    BGPVPN_TABLES
+    FWAAS_TABLES + L2GW_TABLES + BGPVPN_TABLES
 )
 
 # EXTERNAL_TABLES should contain all names of tables that are not related to
@@ -133,8 +131,8 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
                 meta_def.reflected and
                 meta_def.arg.text == u'CURRENT_TIMESTAMP' and
                 isinstance(rendered_meta_def, schema.DefaultClause) and
-                isinstance(rendered_meta_def.arg, sql.functions.now) and
-                not rendered_meta_def.reflected and
+                isinstance(rendered_meta_def.arg, sql.functions.now) and not
+                rendered_meta_def.reflected and
                 meta_def.for_update == rendered_meta_def.for_update):
             return False
 

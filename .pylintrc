@@ -48,6 +48,7 @@ disable=
  bad-continuation,
  invalid-name,
  missing-docstring,
+ multiple-statements,
  superfluous-parens,
 # "R" Refactor recommendations
  abstract-class-little-used,
