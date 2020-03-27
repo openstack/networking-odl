@@ -40,8 +40,9 @@ class OpenDaylightJournal(model_base.BASEV2):
     object_uuid = sa.Column(sa.String(36), nullable=False)
     operation = sa.Column(sa.String(36), nullable=False)
     data = sa.Column(sa.PickleType, nullable=True)
-    state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.FAILED,
-                              odl_const.PROCESSING, odl_const.COMPLETED),
+    state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING,
+                              odl_const.FAILED, odl_const.COMPLETED,
+                              name='state'),
                       nullable=False, default=odl_const.PENDING)
     retry_count = sa.Column(sa.Integer, default=0)
     last_retried = sa.Column(sa.TIMESTAMP, server_default=sa.func.now(),
@@ -62,7 +63,8 @@ class OpenDaylightJournal(model_base.BASEV2):
 class OpenDaylightPeriodicTask(model_base.BASEV2):
     __tablename__ = 'opendaylight_periodic_task'
 
-    state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING),
+    state = sa.Column(sa.Enum(odl_const.PENDING, odl_const.PROCESSING,
+                              name='state'),
                       nullable=False)
     processing_operation = sa.Column(sa.String(70))
     task = sa.Column(sa.String(70), primary_key=True)
