@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 from networking_odl.ml2 import legacy_port_binding
 from networking_odl.ml2 import port_binding

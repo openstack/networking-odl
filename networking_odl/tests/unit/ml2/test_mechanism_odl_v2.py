@@ -15,8 +15,8 @@
 import copy
 import datetime
 import operator
+from unittest import mock
 
-import mock
 import requests
 import testscenarios
 

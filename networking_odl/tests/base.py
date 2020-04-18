@@ -14,8 +14,9 @@
 #    under the License.
 
 
+from unittest import mock
+
 import fixtures
-import mock
 
 from neutron.tests import base
 from neutron_lib.callbacks import registry
@@ -131,7 +132,7 @@ class OpenDaylightPseudoAgentPrePopulateFixture(
     # with tearDown method
     def _restore(self):
         registry._CALLBACK_MANAGER = self._orig_manager
-        if mock.mock._is_started(self.patcher):
+        if mock._is_started(self.patcher):
             # this may cause RuntimeError('stop called on unstarted patcher')
             # due to stop_all called by base test cases
             self.patcher.stop()

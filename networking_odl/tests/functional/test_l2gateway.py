@@ -16,8 +16,8 @@
 
 import contextlib
 import copy
+from unittest import mock
 
-import mock
 import webob.exc
 
 from neutron.api import extensions as api_extensions

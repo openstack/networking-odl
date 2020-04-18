@@ -14,8 +14,8 @@
 #    under the License.
 
 import copy
+from unittest import mock
 
-import mock
 from neutron.tests import base
 from neutron_lib import constants as n_const
 

@@ -15,8 +15,8 @@
 #
 
 import threading
+from unittest import mock
 
-import mock
 from neutron.common import utils
 from neutron_lib import context
 

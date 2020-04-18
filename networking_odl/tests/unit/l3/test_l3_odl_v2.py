@@ -14,8 +14,8 @@
 #    under the License.
 
 import contextlib
+from unittest import mock
 
-import mock
 import requests
 
 from neutron.db import l3_db

@@ -14,12 +14,12 @@
 #    under the License.
 
 import logging
+from unittest import mock
 
 from networking_odl.common import callback
 from networking_odl.common import constants as odl_const
 from networking_odl.tests import base
 
-import mock
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
 import testtools

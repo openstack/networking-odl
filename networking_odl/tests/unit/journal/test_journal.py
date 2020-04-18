@@ -15,9 +15,9 @@
 
 import os
 import signal
+from unittest import mock
 
 import fixtures
-import mock
 
 from neutron.common import utils
 from oslo_db import exception

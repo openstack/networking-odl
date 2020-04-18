@@ -16,9 +16,9 @@
 import contextlib
 import random
 import string
+from unittest import mock
 
 import fixtures
-import mock
 
 from six import StringIO
 

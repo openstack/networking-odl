@@ -15,8 +15,8 @@
 
 import re
 import threading
+from unittest import mock
 
-import mock
 
 from networking_odl.common.client import OpenDaylightRestClient
 from networking_odl.common import websocket_client as odl_ws_client

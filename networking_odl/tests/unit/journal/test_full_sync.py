@@ -14,7 +14,8 @@
 #  under the License.
 #
 
-import mock
+from unittest import mock
+
 import requests
 
 from networking_l2gw.services.l2gateway.common import constants as l2gw_const

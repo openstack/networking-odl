@@ -16,8 +16,8 @@
 
 from datetime import timedelta
 import functools
+from unittest import mock
 
-import mock
 
 from neutron_lib.db import api as db_api
 

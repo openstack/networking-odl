@@ -16,8 +16,8 @@
 #    under the License.
 
 import logging
+from unittest import mock
 
-import mock
 from pecan import util as p_util
 
 from neutron.tests.unit.testlib_api import SqlTestCaseLight

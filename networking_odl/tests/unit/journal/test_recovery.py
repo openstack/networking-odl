@@ -14,7 +14,7 @@
 #  under the License.
 #
 
-import mock
+from unittest import mock
 
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import constants as plugin_constants

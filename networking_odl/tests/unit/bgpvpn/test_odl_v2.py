@@ -14,7 +14,7 @@
 #  under the License.
 #
 
-import mock
+from unittest import mock
 
 from networking_odl.bgpvpn import odl_v2 as driverv2
 from networking_odl.common import constants as odl_const

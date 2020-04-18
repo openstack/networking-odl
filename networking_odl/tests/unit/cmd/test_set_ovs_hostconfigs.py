@@ -20,8 +20,8 @@ from contextlib import contextmanager
 import os
 import sys
 import tempfile
+from unittest import mock
 
-import mock
 from oslo_serialization import jsonutils
 import six
 

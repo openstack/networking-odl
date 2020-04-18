@@ -14,7 +14,7 @@
 #  under the License.
 #
 
-import mock
+from unittest import mock
 
 from networking_odl.db import db
 from networking_odl.journal import cleanup

@@ -16,9 +16,9 @@
 from copy import deepcopy
 from os import path as os_path
 from string import Template
+from unittest import mock
 
 import fixtures
-import mock
 from oslo_serialization import jsonutils
 from requests.exceptions import HTTPError
 
