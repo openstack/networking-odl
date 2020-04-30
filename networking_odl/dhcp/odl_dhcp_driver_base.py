@@ -18,9 +18,9 @@ from neutron_lib import constants as n_const
 from neutron_lib.plugins import utils as p_utils
 from oslo_log import log as logging
 
+from networking_odl.common import constants
 
 LOG = logging.getLogger(__name__)
-OPENDAYLIGHT_DEVICE_ID = 'OpenDaylight'
 
 
 class OdlDhcpDriverBase(object):
@@ -60,7 +60,7 @@ class OdlDhcpDriverBase(object):
         port_dict = dict(
             name='',
             admin_state_up=True,
-            device_id=OPENDAYLIGHT_DEVICE_ID + '-' + subnet_id,
+            device_id=constants.ODL_DEVICE_ID_START + '-' + subnet_id,
             device_owner=n_const.DEVICE_OWNER_DHCP,
             network_id=subnet_context.current['network_id'],
             fixed_ips=[dict(subnet_id=subnet_id)],
@@ -74,7 +74,7 @@ class OdlDhcpDriverBase(object):
         plugin_context = subnet_context._plugin_context
         network_id = subnet_context._subnet['network_id']
         subnet_id = subnet_context.current['id']
-        device_id = OPENDAYLIGHT_DEVICE_ID + '-' + subnet_id
+        device_id = constants.ODL_DEVICE_ID_START + '-' + subnet_id
         LOG.debug("Retrieving ODL DHCP port for subnet %s", subnet_id)
         filters = {
             'network_id': [network_id],
