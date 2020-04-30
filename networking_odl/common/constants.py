@@ -68,6 +68,8 @@ ODL_BGPVPN_ROUTER_ASSOCIATIONS = 'bgpvpn_router_associations'
 
 ODL_ML2_MECH_DRIVER_V2 = "opendaylight_v2"
 
+ODL_DEVICE_ID_START = 'OpenDaylight'
+
 ODL_CREATE = 'create'
 ODL_UPDATE = 'update'
 ODL_DELETE = 'delete'
@@ -80,6 +82,7 @@ COMPLETED = 'completed'
 
 # Journal Callback events
 BEFORE_COMPLETE = 'before_complete'
+AFTER_DELETE = 'after_delete'
 
 # dict to store url mappings
 RESOURCE_URL_MAPPINGS = {

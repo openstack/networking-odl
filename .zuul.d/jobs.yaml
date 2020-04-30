@@ -162,6 +162,8 @@
         Base job for devstack-based tests
     pre-run: playbooks/devstack/pre.yaml
     required-projects:
+      - openstack/neutron
+      - openstack/neutron-lib
       - openstack/ceilometer
       - openstack/networking-odl
       - openstack/networking-l2gw

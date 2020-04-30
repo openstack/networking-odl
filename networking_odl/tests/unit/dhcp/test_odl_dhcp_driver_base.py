@@ -17,6 +17,7 @@ import testscenarios
 from neutron_lib import constants as n_const
 from neutron_lib.plugins import directory
 
+from networking_odl.common import constants as odl_const
 from networking_odl.dhcp import odl_dhcp_driver_base as driver_base
 from networking_odl.ml2 import mech_driver_v2
 from networking_odl.tests import base as odl_base
@@ -129,7 +130,7 @@ class OdlDhcpDriverTestBase(base_v2.OpenDaylightConfigBase):
 
     def get_port_id(self, plugin, plugin_context, network_id, subnet_id):
 
-        device_id = driver_base.OPENDAYLIGHT_DEVICE_ID + '-' + subnet_id
+        device_id = odl_const.ODL_DEVICE_ID_START + '-' + subnet_id
         filters = {
             'network_id': [network_id],
             'device_id': [device_id],

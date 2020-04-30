@@ -19,7 +19,6 @@ from neutron_lib.plugins import directory
 from oslo_config import fixture as config_fixture
 
 from networking_odl.common import constants as odl_const
-from networking_odl.dhcp import odl_dhcp_driver_base as driver_base
 from networking_odl.tests.functional import base
 
 
@@ -34,7 +33,7 @@ class TestOdlDhcpDriver(base.V2DriverAdjustment, base.OdlTestsBase,
 
     def get_port_data(self, network, subnet):
         plugin = self.get_plugin()
-        device_id = driver_base.OPENDAYLIGHT_DEVICE_ID + \
+        device_id = odl_const.ODL_DEVICE_ID_START + \
             '-' + subnet[odl_const.ODL_SUBNET]['id']
         filters = {
             'network_id': [network[odl_const.ODL_NETWORK]['id']],
