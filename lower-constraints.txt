@@ -85,7 +85,6 @@ networking-sfc==10.0.0.0b1
 networking-bgpvpn==12.0.0b1
 neutron==16.0.0.0b1
 neutron-lib==2.0.0
-openstackdocstheme==1.30.0
 openstacksdk==0.31.2
 os-client-config==1.29.0
 os-service-types==1.7.0
@@ -158,7 +157,6 @@ python-swiftclient==3.5.0
 pytz==2018.3
 PyYAML==3.12
 rcssmin==1.0.6
-reno==2.7.0
 repoze.lru==0.7
 requests==2.18.4
 requestsexceptions==1.4.0
@@ -173,10 +171,6 @@ simplejson==3.13.2
 six==1.11.0
 smmap2==2.0.3
 snowballstemmer==1.2.1
-Sphinx==1.6.5
-sphinxcontrib-blockdiag==1.5.5
-sphinxcontrib-seqdiag==0.8.5
-sphinxcontrib-websupport==1.0.1
 SQLAlchemy==1.2.5
 sqlalchemy-migrate==0.11.0
 sqlparse==0.2.4
