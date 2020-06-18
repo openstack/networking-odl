@@ -157,6 +157,7 @@
 - job:
     name: networking-odl-devstack-base
     parent: devstack
+    nodeset: openstack-single-node-focal
     description: |
         Base job for devstack-based tests
     pre-run: playbooks/devstack/pre.yaml
@@ -231,6 +232,7 @@
 - job:
     name: networking-odl-rally-neon
     parent: rally-task-at-devstack
+    nodeset: openstack-single-node-focal
     vars:
       devstack_localrc:
         ODL_RELEASE: *neon
@@ -257,6 +259,7 @@
 - job:
     name: networking-odl-rally-sodium
     parent: rally-task-at-devstack
+    nodeset: openstack-single-node-focal
     vars:
       devstack_localrc:
         ODL_RELEASE: *sodium

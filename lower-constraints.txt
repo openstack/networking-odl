@@ -11,7 +11,7 @@ blockdiag==1.5.3
 cachetools==2.0.1
 certifi==2018.1.18
 ceilometer==11.0.0
-cffi==1.11.5
+cffi==1.12.2
 chardet==3.0.4
 cliff==2.11.0
 cmd2==0.8.1
