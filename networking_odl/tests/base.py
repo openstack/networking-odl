@@ -132,10 +132,12 @@ class OpenDaylightPseudoAgentPrePopulateFixture(
     # with tearDown method
     def _restore(self):
         registry._CALLBACK_MANAGER = self._orig_manager
-        if mock._is_started(self.patcher):
-            # this may cause RuntimeError('stop called on unstarted patcher')
-            # due to stop_all called by base test cases
+        # this may cause RuntimeError('stop called on unstarted patcher')
+        # due to stop_all called by base test cases
+        try:
             self.patcher.stop()
+        except RuntimeError:
+            pass
 
 
 class OpenDaylightFullSyncFixture(fixtures.Fixture):
