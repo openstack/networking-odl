@@ -20,6 +20,7 @@
           DEVSTACK_PATH=$GATE_DEST/devstack
           NETWORKING_ODL_DIR=$GATE_DEST/networking-odl
           IS_GATE=True
+          PYTHON3_VERSION=${PYTHON3_VERSION:-3}
           source ./tools/configure_for_func_testing.sh
           configure_host_for_func_testing
         executable: /bin/bash
