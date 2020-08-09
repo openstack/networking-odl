@@ -81,7 +81,6 @@
       - openstack/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
-      - openstack/devstack-gate
       - openstack/neutron
       - openstack/tempest
       - openstack/neutron-tempest-plugin
@@ -241,7 +240,6 @@
     timeout: 7500
     required-projects:
       - openstack/devstack
-      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/rally
       - openstack/rally-openstack
@@ -267,7 +265,6 @@
     timeout: 7500
     required-projects:
       - openstack/devstack
-      - openstack/devstack-gate
       - openstack/networking-odl
       - openstack/rally
       - openstack/rally-openstack
