@@ -65,28 +65,28 @@ class OpenDaylightDriver(driver.Driver):
     Example JSON response from OpenDaylight
     {
         flow_capable_switches: [{
-            packet_in_messages_received: 501,
-            packet_out_messages_sent: 300,
-            ports: 1,
-            flow_datapath_id: 55120148545607,
-            tenant_id: ADMIN_ID,
-            switch_port_counters: [{
-                bytes_received: 1000,
-                bytes_sent: 1000,
-                duration: 600,
-                packets_internal_received: 100,
-                packets_internal_sent: 200,
-                packets_received: 100,
-                packets_received_drop: 0,
-                packets_received_error: 0,
-                packets_sent: 100,
-                port_id: 4,
-                tenant_id: PORT_1_TENANT_ID,
-                uuid: PORT_1_ID
+            "packet_in_messages_received": "501",
+            "packet_out_messages_sent": "300",
+            "ports": "1",
+            "flow_datapath_id": "55120148545607",
+            "tenant_id": ADMIN_ID,
+            "switch_port_counters": [{
+                "bytes_received": "1000",
+                "bytes_sent": "1000",
+                "duration": "600",
+                "packets_internal_received": "100",
+                "packets_internal_sent": "200",
+                "packets_received": "100",
+                "packets_received_drop": "0",
+                "packets_received_error": "0",
+                "packets_sent": "100",
+                "port_id": "4",
+                "tenant_id": PORT_1_TENANT_ID,
+                "uuid": PORT_1_ID
             }],
-            table_counters: [{
-                flow_count: 90,
-                table_id: 0
+            "table_counters": [{
+                "flow_count": "90",
+                "table_id": "0"
             }]
         }]
     }
@@ -201,7 +201,7 @@ class OpenDaylightDriver(driver.Driver):
     @staticmethod
     def _iter_switch(extractor, data):
         for switch in data['switch']['flow_capable_switches']:
-            yield (extractor(switch, str(switch['flow_datapath_id']), {},
+            yield (extractor(switch, switch['flow_datapath_id'], {},
                              (switch.get('tenant_id') or
                               data['admin_tenant_id'])))
 
@@ -221,11 +221,11 @@ class OpenDaylightDriver(driver.Driver):
     def _iter_switch_port(extractor, data):
         for switch in data['switch']['flow_capable_switches']:
             if 'switch_port_counters' in switch:
-                switch_id = str(switch['flow_datapath_id'])
+                switch_id = switch['flow_datapath_id']
                 tenant_id = (switch.get('tenant_id') or
                              data['admin_tenant_id'])
                 for port_statistic in switch['switch_port_counters']:
-                    port_id = port_statistic['port_id']
+                    port_id = int(port_statistic['port_id'])
                     resource_id = '%s:%d' % (switch_id, port_id)
                     resource_meta = {'switch': switch_id,
                                      'port_number_on_switch': port_id}
@@ -305,13 +305,14 @@ class OpenDaylightDriver(driver.Driver):
     def _iter_table(extractor, data):
         for switch_statistic in data['switch']['flow_capable_switches']:
             if 'table_counters' in switch_statistic:
-                switch_id = str(switch_statistic['flow_datapath_id'])
+                switch_id = switch_statistic['flow_datapath_id']
                 tenant_id = (switch_statistic.get('tenant_id') or
                              data['admin_tenant_id'])
                 for table_statistic in switch_statistic['table_counters']:
                     resource_meta = {'switch': switch_id}
                     resource_id = ("%s:table:%d" %
-                                   (switch_id, table_statistic['table_id']))
+                                   (switch_id,
+                                    int(table_statistic['table_id'])))
                     yield extractor(table_statistic, resource_id,
                                     resource_meta, tenant_id)
 
