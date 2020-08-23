@@ -282,17 +282,48 @@
       - ^tools/.*$
       - ^tox.ini$
 
-# >>> LEGACY JOBS TO REPLACE
-
 - job:
     name: networking-odl-grenade
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/grenade-dsvm-networking-odl/run.yaml
-    post-run: playbooks/legacy/grenade-dsvm-networking-odl/post.yaml
+    parent: grenade-multinode
     timeout: 9000
+    irrelevant-files: *irrelevant_files
+    roles:
+      - zuul: openstack/neutron-tempest-plugin
     required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/networking-odl
-
-# <<< LEGACY JOBS TO REPLACE
+      - opendev.org/openstack/grenade
+      - opendev.org/openstack/networking-odl
+      - opendev.org/openstack/neutron
+      - opendev.org/openstack/ceilometer
+      - opendev.org/x/networking-l2gw
+      - opendev.org/openstack/networking-sfc
+      - opendev.org/openstack/networking-bgpvpn
+      - opendev.org/openstack/neutron-tempest-plugin
+    vars:
+      <<: *devstack_vars
+      tox_envlist: all
+      devstack_plugins:
+        neutron: https://opendev.org/openstack/neutron
+        networking-odl: https://opendev.org/openstack/networking-odl
+      tempest_test_regex: tempest\.(api.compute|scenario|thirdparty)
+      tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
+      devstack_services:
+        c-bak: false
+        etcd: false
+        ovs-vswitchd: true
+        ovsdb-server: true
+        placement-api: true
+        q-svc: true
+        q-agt: false
+        q-dhcp: true
+        q-l3: false
+        q-meta: true
+        q-metering: false
+        # When running python3 Swift should be disabled for now
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        tls-proxy: false
+      grenade_devstack_localrc:
+        shared:
+          ODL_RELEASE: *sodium
