@@ -10,33 +10,33 @@
         - openstack-tox-pep8:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-cover:
             required-projects:
               - openstack/ceilometer
               - openstack/neutron
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-docs:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-lower-constraints:
             required-projects:
               - openstack/ceilometer
               - openstack/neutron
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-py36:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - networking-odl-grenade:
@@ -72,26 +72,26 @@
         - openstack-tox-pep8:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-docs:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-lower-constraints:
             required-projects:
               - openstack/ceilometer
               - openstack/neutron
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-py36:
             required-projects:
               - openstack/ceilometer
-              - openstack/networking-l2gw
+              - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - networking-odl-functional-neon

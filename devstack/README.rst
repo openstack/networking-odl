@@ -121,7 +121,7 @@
 
   So include in your localrc (or local.conf) the following::
 
-    enable_plugin networking-l2gw http://opendev.org/openstack/networking-l2gw
+    enable_plugin networking-l2gw http://opendev.org/x/networking-l2gw
     enable_service l2gw-plugin
     NETWORKING_L2GW_SERVICE_DRIVER=L2GW:OpenDaylight:networking_odl.l2gateway.driver_v2.OpenDaylightL2gwDriver:default
 
