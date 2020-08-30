@@ -13,7 +13,7 @@
 #    under the License.
 
 import compiler
-import imp
+import importlib.util
 import os.path
 import sys
 
@@ -112,11 +112,20 @@ def check_i18n(input_file, i18n_msg_predicates, msg_format_checkers, debug):
     return v.error
 
 
+def load_module(name, path):
+    module_spec = importlib.util.spec_from_file_location(
+        name, path
+    )
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module
+
+
 if __name__ == '__main__':
     input_path = sys.argv[1]
     cfg_path = sys.argv[2]
     try:
-        cfg_mod = imp.load_source('', cfg_path)
+        cfg_mod = load_module('', cfg_path)
     except Exception:
         print("Load cfg module failed", file=sys.stderr)
         sys.exit(1)
