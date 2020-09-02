@@ -360,6 +360,7 @@ class PseudoAgentDBBindingController(port_binding.PortBindingController):
                 }
                 # Substitute identifiers and Convert JSON string to dict
                 hconfig_conf_json = Template(jsonutils.dumps(details))
+                # pylint: disable=too-many-function-args
                 substituted_str = hconfig_conf_json.safe_substitute(subs_ids)
                 vnic['vif_details'] = jsonutils.loads(substituted_str)
         return hconfig

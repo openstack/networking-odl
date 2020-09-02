@@ -71,7 +71,7 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
             # Skip ps header
             f.readline()
 
-            processes = (l.strip().split()[:3] for l in f)
+            processes = (line.strip().split()[:3] for line in f)
 
             return next(((c, s) for p, s, c in processes if int(p) == pid),
                         (None, None))
@@ -81,9 +81,9 @@ class JournalPeriodicProcessorTest(base_v2.OpenDaylightConfigBase,
             os.kill(pid, signal.SIGKILL)
 
     def mock_object_with_ipc(self, target, attribute, pre_hook=None):
-            patcher = mock.patch.object(target, attribute, autospec=True)
-            c2p_read = self.create_ipc_for_mock(patcher, pre_hook)
-            return c2p_read
+        patcher = mock.patch.object(target, attribute, autospec=True)
+        c2p_read = self.create_ipc_for_mock(patcher, pre_hook)
+        return c2p_read
 
     def create_ipc_for_mock(self, patcher, pre_hook=None):
         # NOTE(mpeterson): The following pipe is being used because this is

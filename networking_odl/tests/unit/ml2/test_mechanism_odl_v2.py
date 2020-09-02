@@ -321,7 +321,9 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                         if operation != odl_const.ODL_DELETE else None)
             plugin_context = self.db_context
             if (object_type == odl_const.ODL_SG and
-                    operation in [odl_const.ODL_CREATE, odl_const.ODL_DELETE]):
+                    operation in [
+                        odl_const.ODL_CREATE,
+                        odl_const.ODL_DELETE]):
                 # TODO(yamahata): remove this work around once
                 # https://review.opendev.org/#/c/281693/
                 # is merged.

@@ -113,7 +113,7 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
         if not self._validate_l3_flavor(context, router_id):
             return
         if 'gw_port_id' not in router_dict:
-                router_dict['gw_port_id'] = gw_port_id
+            router_dict['gw_port_id'] = gw_port_id
         journal.record(context, odl_const.ODL_ROUTER,
                        router_id, odl_const.ODL_UPDATE, router_dict)
 
