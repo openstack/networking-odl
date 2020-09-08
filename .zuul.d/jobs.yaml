@@ -93,7 +93,8 @@
       - ^releasenotes/.*$
     vars:
       <<: *devstack_vars
-      tox_envlist: all-plugin
+      tox_envlist: all
+      tox_extra_args: --sitepackages
       zuul_copy_output:
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       devstack_services:
@@ -122,7 +123,8 @@
     irrelevant-files: *irrelevant_files
     vars:
       <<: *devstack_vars
-      tox_envlist: all-plugin
+      tox_envlist: all
+      tox_extra_args: --sitepackages
       zuul_copy_output:
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       devstack_services:
