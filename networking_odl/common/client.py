@@ -45,6 +45,7 @@ class OpenDaylightRestClient(object):
                       "returning a OpenDaylightLwtClient instance")
 
             # Have to import at here, otherwise we create a dependency loop
+            # pylint: disable=import-outside-toplevel
             from networking_odl.common import lightweight_testing as lwt
             cls = lwt.OpenDaylightLwtClient
 

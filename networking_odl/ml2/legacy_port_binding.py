@@ -27,8 +27,8 @@ LOG = log.getLogger(__name__)
 class LegacyPortBindingManager(port_binding.PortBindingController):
 
     def __init__(self):
-        self.vif_details = {portbindings.CAP_PORT_FILTER: True}
         self.supported_vnic_types = [portbindings.VNIC_NORMAL]
+        self.vif_details = {portbindings.CAP_PORT_FILTER: True}
 
     def bind_port(self, port_context):
         """Set binding for all valid segments

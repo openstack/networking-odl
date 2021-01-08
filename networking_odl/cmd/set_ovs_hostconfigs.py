@@ -320,6 +320,7 @@ def _vif_type_from_conf(conf, userspace_datapath_types):
             return 'ovs'
 
     # take vif_type from ovs_dpdk -----------------------------------------
+    # pylint: disable=no-else-raise
     if conf.ovs_dpdk is True:
         if userspace_datapath_types:
             return 'vhostuser'
@@ -502,4 +503,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())

@@ -134,14 +134,14 @@ class OpenDaylightWebsocketClient(object):
                 # websocket-client lib.
                 if message and 'timed out' in message:
                     continue
-                else:
-                    LOG.error("SSL websocket unexpected exception, "
-                              "closing and restarting...", exc_info=True)
-                    # TODO(rsood): Websocket reconnect can cause race
-                    # conditions
-                    self._close_ws(ws)
-                    ws = None
-                    continue
+
+                LOG.error("SSL websocket unexpected exception, "
+                          "closing and restarting...", exc_info=True)
+                # TODO(rsood): Websocket reconnect can cause race
+                # conditions
+                self._close_ws(ws)
+                ws = None
+                continue
             except websocket.WebSocketConnectionClosedException:
                 # per websocket-client, "If remote host closed the connection
                 # or some network error happened"
@@ -205,10 +205,10 @@ class OpenDaylightWebsocketClient(object):
                 LOG.debug("response code bad_request (400)"
                           "check path for websocket connection")
                 raise ValueError(_("bad_request (http400),check path."))
-            else:
-                LOG.warning("websocket connection failed",
-                            exc_info=True)
-                return None
+
+            LOG.warning("websocket connection failed",
+                        exc_info=True)
+            return None
         except Exception:
             LOG.error("websocket subscription failed", exc_info=True)
             return None
@@ -235,9 +235,9 @@ class OpenDaylightWebsocketClient(object):
                 LOG.debug("response code not_found (404)"
                           "unable to websocket connection url")
                 raise ValueError(_("bad_request (http400),check path"))
-            else:
-                LOG.warning("websocket connection failed")
-                return None
+
+            LOG.warning("websocket connection failed")
+            return None
         except ValueError:
             with excutils.save_and_reraise_exception():
                 LOG.error("websocket subscribe got invalid stream name")

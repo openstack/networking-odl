@@ -131,10 +131,10 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
                 LOG.debug("%s %s does not exist", resource_type, resource_id)
                 response = cls._make_response(NOT_FOUND)
                 raise requests.exceptions.HTTPError(response=response)
-            else:
-                # When getting single resource, return value is a dict
-                r_list = {resource_type[:-1]: deepcopy(resource)}
-                return cls._make_response(OK, r_list)
+
+            # When getting single resource, return value is a dict
+            r_list = {resource_type[:-1]: deepcopy(resource)}
+            return cls._make_response(OK, r_list)
 
         r_list = [{resource_type[:-1]: deepcopy(res)}
                   for res in resource_dict.values()]
