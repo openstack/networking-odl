@@ -6,7 +6,7 @@
         oxygen: &oxygen oxygen-latest
         fluorine: &fluorine fluorine-snapshot-0.9
         neon: &neon neon-latest
-        sodium: &sodium sodium-snapshot-0.11
+        sodium: &sodium sodium-latest
       common_devstack_vars: &devstack_vars
         devstack_localrc:
           ODL_TIMEOUT: 60
