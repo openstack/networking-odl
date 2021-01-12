@@ -77,7 +77,7 @@
     required-projects:
       - openstack/ceilometer
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
@@ -130,7 +130,7 @@
     required-projects:
       - openstack/ceilometer
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
       - openstack/neutron-fwaas
@@ -162,6 +162,7 @@
     roles:
       - zuul: openstack/devstack
     vars:
+      ensure_pip_from_packages_with_python2: yes
       tox_envlist: functional
       zuul_copy_output:
         '{{ devstack_log_dir }}/functional-logs': 'logs'
