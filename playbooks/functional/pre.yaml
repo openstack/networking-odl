@@ -12,6 +12,13 @@
         state: directory
         owner: zuul
       become: yes
+    - name: Install Python 2 pip
+      package:
+        name:
+          - python-setuptools
+          - python-pip
+          - python-wheel
+      become: yes
     - name: Configure the environment for functional testing
       shell:
         cmd: |

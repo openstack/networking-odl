@@ -75,6 +75,9 @@ function _init {
     TOP_DIR=$DEVSTACK_PATH
 
     source $DEVSTACK_PATH/inc/meta-config
+    if [ -f $DEVSTACK_PATH/local.conf ]; then
+        source $DEVSTACK_PATH/local.conf 2> /dev/null || true
+    fi
     extract_localrc_section $TOP_DIR/local.conf $TOP_DIR/localrc $TOP_DIR/.localrc.auto
     source $DEVSTACK_PATH/stackrc
 
@@ -82,6 +85,10 @@ function _init {
     DEST=${GATE_DEST:-$DEST}
     STACK_USER=${GATE_STACK_USER:-$STACK_USER}
     REQUIREMENTS_DIR=$DEST/requirements
+
+    GetDistro
+    source $DEVSTACK_PATH/tools/fixup_stuff.sh
+    fixup_ubuntu
 }
 
 
@@ -166,7 +173,7 @@ EOF
 function _install_infra {
     echo_summary "Installing infra"
 
-    pip_install -U virtualenv
+    # pip_install -U virtualenv
     source $DEVSTACK_PATH/lib/infra
     install_infra
 }
