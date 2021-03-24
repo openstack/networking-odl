@@ -1,6 +1,6 @@
 - project:
     templates:
-      - openstack-python3-wallaby-jobs-neutron
+      - openstack-python3-xena-jobs-neutron
       - release-notes-jobs-python3
       - periodic-stable-jobs-neutron
       - publish-openstack-docs-pti
