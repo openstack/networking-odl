@@ -15,7 +15,6 @@
 
 import abc
 
-import six
 import stevedore
 
 from oslo_config import cfg
@@ -26,8 +25,7 @@ from oslo_utils import excutils
 LOG = log.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class PortBindingController(object):
+class PortBindingController(object, metaclass=abc.ABCMeta):
 
     def get_workers(self):
         return []

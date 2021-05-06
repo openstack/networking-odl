@@ -51,8 +51,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Networking OpenDaylight Release Notes'
-copyright = u'2016, networking-odl developers'
+project = 'Networking OpenDaylight Release Notes'
+copyright = '2016, networking-odl developers'
 
 # Release notes are version independent.
 # The full version, including alpha/beta/rc tags.
@@ -197,8 +197,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'NetworkingOpenDaylightReleaseNotes.tex', u'Networking OpenDaylight Release Notes Documentation',
-   u'networking-odl developers', 'manual'),
+  ('index', 'NetworkingOpenDaylightReleaseNotes.tex', 'Networking OpenDaylight Release Notes Documentation',
+   'networking-odl developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -227,8 +227,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'networkingopendaylightreleasenotes', u'Networking OpenDaylight Release Notes Documentation',
-     [u'networking-odl developers'], 1)
+    ('index', 'networkingopendaylightreleasenotes', 'Networking OpenDaylight Release Notes Documentation',
+     ['networking-odl developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -241,8 +241,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'NetworkingOpenDaylightReleaseNotes', u'Networking OpenDaylight Release Notes Documentation',
-   u'networking-odl developers', 'NetworkingOpenDaylightReleaseNotes', 'One line description of project.',
+  ('index', 'NetworkingOpenDaylightReleaseNotes', 'Networking OpenDaylight Release Notes Documentation',
+   'networking-odl developers', 'NetworkingOpenDaylightReleaseNotes', 'One line description of project.',
    'Miscellaneous'),
 ]
 

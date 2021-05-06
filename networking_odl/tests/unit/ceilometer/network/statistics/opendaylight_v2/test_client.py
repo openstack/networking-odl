@@ -13,12 +13,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from unittest import mock
+import urllib
 
 from oslo_config import fixture as config_fixture
 from oslotest import base
 from requests import auth as req_auth
-import six
-from six.moves.urllib import parse as urlparse
 
 from ceilometer.i18n import _
 from ceilometer import service as ceilometer_service
@@ -34,16 +33,16 @@ class TestClientHTTPBasicAuth(base.BaseTestCase):
         super(TestClientHTTPBasicAuth, self).setUp()
         conf = ceilometer_service.prepare_service(argv=[], config_files=[])
         self.CONF = self.useFixture(config_fixture.Config(conf)).conf
-        self.parsed_url = urlparse.urlparse(
+        self.parsed_url = urllib.parse.urlparse(
             'http://127.0.0.1:8080/controller/statistics?'
             'auth=%s&user=admin&password=admin_pass&'
             'scheme=%s' % (self.auth_way, self.scheme))
-        self.params = urlparse.parse_qs(self.parsed_url.query)
-        self.endpoint = urlparse.urlunparse(
-            urlparse.ParseResult(self.scheme,
-                                 self.parsed_url.netloc,
-                                 self.parsed_url.path,
-                                 None, None, None))
+        self.params = urllib.parse.parse_qs(self.parsed_url.query)
+        self.endpoint = urllib.parse.urlunparse(
+            urllib.parse.ParseResult(self.scheme,
+                                     self.parsed_url.netloc,
+                                     self.parsed_url.path,
+                                     None, None, None))
         odl_params = {'auth': self.params.get('auth')[0],
                       'user': self.params.get('user')[0],
                       'password': self.params.get('password')[0]}
@@ -104,7 +103,7 @@ class TestClientHTTPBasicAuth(base.BaseTestCase):
                 _('OpenDaylight API returned %(status)s %(reason)s') %
                 {'status': self.resp.status_code,
                  'reason': self.resp.reason},
-                six.text_type(e))
+                str(e))
 
     def test_other_error(self):
 

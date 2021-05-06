@@ -14,9 +14,9 @@
 #    under the License.
 
 from copy import deepcopy
+import io
 
 import requests
-import six
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
@@ -50,8 +50,7 @@ class OpenDaylightLwtClient(client.OpenDaylightRestClient):
         response = requests.models.Response()
         response.status_code = status_code
         if content:
-            response.raw = six.BytesIO(
-                jsonutils.dumps(content).encode('utf-8'))
+            response.raw = io.BytesIO(jsonutils.dumps(content).encode('utf-8'))
 
         return response
 

@@ -117,7 +117,7 @@ class TestFilters(base.DietTestCase):
         self.assertIsNot(type(port['other_param']), str)
 
     def test_convert_value_to_string_unicode(self):
-        port = {"binding:profile": {u"capabilities": [u"switchdev"]}}
+        port = {"binding:profile": {"capabilities": ["switchdev"]}}
         filters._convert_value_to_str(port, "binding:profile")
         self.assertEqual(port["binding:profile"], PROFILE_STR)
 

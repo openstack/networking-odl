@@ -17,13 +17,13 @@
 
 
 from contextlib import contextmanager
+import io
 import os
 import sys
 import tempfile
 from unittest import mock
 
 from oslo_serialization import jsonutils
-import six
 
 from networking_odl.cmd import set_ovs_hostconfigs
 from networking_odl.tests import base
@@ -35,7 +35,7 @@ LOGGING_PERMISSION_REQUIRED = "permissions are required to configure ovsdb"
 
 @contextmanager
 def capture(command, args):
-    out, sys.stdout = sys.stdout, six.StringIO()
+    out, sys.stdout = sys.stdout, io.StringIO()
     try:
         command(args)
         sys.stdout.seek(0)
@@ -135,7 +135,7 @@ class TestSetOvsHostconfigs(base.DietTestCase):
         file_descriptor, file_path = tempfile.mkstemp()
 
         try:
-            os.write(file_descriptor, six.b("# dummy neutron config file\n"))
+            os.write(file_descriptor, b"# dummy neutron config file\n")
             os.close(file_descriptor)
             self._test_given_args(['--config-file={}'.format(file_path)])
 

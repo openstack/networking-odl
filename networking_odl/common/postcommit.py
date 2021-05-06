@@ -13,10 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import types
-
 from oslo_log import helpers as log_helpers
-import six
 
 
 def _build_func(client_method):
@@ -29,13 +26,8 @@ def _build_func(client_method):
 
 
 def _unboundmethod(func, cls):
-    if six.PY3:
-        # python 3.x doesn't have unbound methods
-        func.__qualname__ = cls.__qualname__ + '.' + func.__name__  # PEP 3155
-        return func
-
-    # python 2.x
-    return types.MethodType(func, None, cls)
+    func.__qualname__ = cls.__qualname__ + '.' + func.__name__  # PEP 3155
+    return func
 
 
 def _get_method_name(op, resource):

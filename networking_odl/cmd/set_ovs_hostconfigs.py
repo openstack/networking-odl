@@ -63,7 +63,6 @@ import sys
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-import six
 
 from networking_odl._i18n import _
 
@@ -462,7 +461,7 @@ class OvsVsctl(object):
         res = subprocess.check_output(command_line).strip()  # nosec
         # Note(lajoskatona): on py3 subprocess.check_output returns back binary
         # to make that consumable we have to decode that.
-        if isinstance(res, six.binary_type):
+        if isinstance(res, bytes):
             return res.decode()
         return res
 

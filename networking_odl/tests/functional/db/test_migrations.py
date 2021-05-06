@@ -129,7 +129,7 @@ class _TestModelsMigrationsODL(test_migrations._TestModelsMigrations):
                 isinstance(meta_def, schema.DefaultClause) and
                 isinstance(meta_def.arg, sql.elements.TextClause) and
                 meta_def.reflected and
-                meta_def.arg.text == u'CURRENT_TIMESTAMP' and
+                meta_def.arg.text == 'CURRENT_TIMESTAMP' and
                 isinstance(rendered_meta_def, schema.DefaultClause) and
                 isinstance(rendered_meta_def.arg, sql.functions.now) and not
                 rendered_meta_def.reflected and
