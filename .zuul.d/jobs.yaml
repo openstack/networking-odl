@@ -20,6 +20,7 @@
           PUBLIC_PHYSICAL_NETWORK: public
           PUBLIC_BRIDGE: br-ex
           Q_USE_PUBLIC_VETH: False
+          Q_ML2_PLUGIN_MECHANISM_DRIVERS: logger,opendaylight_v2
           # Enable debug logs for odl ovsdb
           ODL_NETVIRT_DEBUG_LOGS: True
           # Database
@@ -49,19 +50,14 @@
           n-obj: True
           n-sch: True
           neutron: True
-          neutron-agent: False
-          neutron-api: True
-          neutron-dhcp: True
-          neutron-l3: False
-          neutron-metadata-agent: True
-          neutron-qos: True
           placement-api: True
           placement-client: False
           q-agt: False
-          q-dhcp: False
+          q-dhcp: True
           q-l3: False
-          q-meta: False
-          q-svc: False
+          q-meta: True
+          q-svc: True
+          q-qos: True
           rabbit: True
         devstack_plugins: &devstack_plugins
           networking-odl: https://opendev.org/openstack/networking-odl
