@@ -174,7 +174,7 @@ class FullSyncTestCase(test_base_db.ODLBaseDbTestCase):
 
         rows = self._assert_canary_created()
         rows = self._filter_out_canary(rows)
-        self.assertItemsEqual(expected_journal.keys(),
+        self.assertCountEqual(expected_journal.keys(),
                               [row['object_type'] for row in rows])
         for row in rows:
             self.assertEqual(expected_journal[row['object_type']],

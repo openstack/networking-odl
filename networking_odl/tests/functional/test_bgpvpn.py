@@ -57,12 +57,12 @@ class _TestBGPVPNBase(base.OdlTestsBase):
 
     def _assert_networks_associated(self, net_ids, bgpvpn):
         response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
-        self.assertItemsEqual(net_ids,
+        self.assertCountEqual(net_ids,
                               response[odl_const.ODL_BGPVPN]['networks'])
 
     def _assert_routers_associated(self, router_ids, bgpvpn):
         response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
-        self.assertItemsEqual(router_ids,
+        self.assertCountEqual(router_ids,
                               response[odl_const.ODL_BGPVPN]['routers'])
 
     def test_bgpvpn_create(self):
@@ -72,7 +72,7 @@ class _TestBGPVPNBase(base.OdlTestsBase):
     def test_bgpvpn_create_with_rds(self):
         with self.bgpvpn(route_distinguishers=self.rds) as bgpvpn:
             response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
-            self.assertItemsEqual(self.rds,
+            self.assertCountEqual(self.rds,
                                   response[odl_const.ODL_BGPVPN]
                                   ['route_distinguishers'])
 
@@ -161,10 +161,10 @@ class _TestBGPVPNBase(base.OdlTestsBase):
             with self.assoc_router(bgpvpn_id, router_id), \
                     self.assoc_net(bgpvpn_id, net_id):
                 response = self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn)
-                self.assertItemsEqual([router_id],
+                self.assertCountEqual([router_id],
                                       response[odl_const.ODL_BGPVPN]
                                       ['routers'])
-                self.assertItemsEqual([net_id],
+                self.assertCountEqual([net_id],
                                       response[odl_const.ODL_BGPVPN]
                                       ['networks'])
 
