@@ -308,8 +308,7 @@ class PseudoAgentDBBindingWorker(worker.BaseWorker):
         try:
             filters = {'agent_type': [host_type],
                        'host': [host_id]}
-            # TODO(rsood): get_agent can be used here
-            agent = self.agents_db.get_agents_db(
+            agent = self.agents_db.get_agent_objects(
                 context.get_admin_context(), filters=filters)
             if not agent:
                 return
