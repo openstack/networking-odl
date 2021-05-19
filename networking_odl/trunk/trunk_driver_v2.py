@@ -55,61 +55,61 @@ class OpenDaylightTrunkHandlerV2(object):
     # TODO(vthapar) Revisit status updates once websockets are fully
     # implemented - https://review.opendev.org/#/c/421127/
     @log_helpers.log_method_call
-    def trunk_create_precommit(self, resource, event, trunk_plugin, payload):
-        data = payload.current_trunk.to_dict()
+    def trunk_create_precommit(self, resource, event,
+                               trunk_plugin, payload=None):
+        data = payload.latest_state.to_dict()
         data['status'] = t_consts.TRUNK_ACTIVE_STATUS
-        self._record_in_journal(payload.context, payload.trunk_id,
+        self._record_in_journal(payload.context, payload.resource_id,
                                 odl_const.ODL_CREATE, data)
 
     @log_helpers.log_method_call
     def trunk_update_precommit(self, resource, event,
                                trunk_plugin, payload=None):
-        if isinstance(payload, events.EventPayload):
-            # TODO(boden): remove shim once all callbacks use lib paylaods
-            payload.desired_state.update(status=t_consts.TRUNK_ACTIVE_STATUS)
-            data = payload.desired_state.to_dict()
-            trunk_id = payload.resource_id
-        else:
-            payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
-            data = payload.current_trunk.to_dict()
-            trunk_id = payload.trunk_id
+        trunk_payload = payload.desired_state or payload.latest_state
+        trunk_payload.update(status=t_consts.TRUNK_ACTIVE_STATUS)
+        data = trunk_payload.to_dict()
+        trunk_id = payload.resource_id
 
         self._record_in_journal(payload.context, trunk_id,
                                 odl_const.ODL_UPDATE, data)
 
     @log_helpers.log_method_call
-    def trunk_delete_precommit(self, resource, event, trunk_plugin, payload):
+    def trunk_delete_precommit(self, resource, event,
+                               trunk_plugin, payload=None):
         # fill in data with parent ids, will be used in parent validations
-        trunk_dict = payload.original_trunk.to_dict()
+        trunk_dict = payload.states[0].to_dict()
         data = [subport['port_id'] for subport in trunk_dict['sub_ports']]
         data.append(trunk_dict['port_id'])
-        self._record_in_journal(payload.context, payload.trunk_id,
+        self._record_in_journal(payload.context, payload.resource_id,
                                 odl_const.ODL_DELETE, data)
 
     @log_helpers.log_method_call
-    def trunk_create_postcommit(self, resource, event, trunk_plugin, payload):
-        payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
+    def trunk_create_postcommit(self, resource, event,
+                                trunk_plugin, payload=None):
+        payload.latest_state.update(status=t_consts.TRUNK_ACTIVE_STATUS)
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
-    def trunk_update_postcommit(self, resource, event, trunk_plugin, payload):
-        payload.current_trunk.update(status=t_consts.TRUNK_ACTIVE_STATUS)
+    def trunk_update_postcommit(self, resource, event,
+                                trunk_plugin, payload=None):
+        payload.latest_state.update(status=t_consts.TRUNK_ACTIVE_STATUS)
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
-    def trunk_delete_postcommit(self, resource, event, trunk_plugin, payload):
+    def trunk_delete_postcommit(self, resource, event,
+                                trunk_plugin, payload=None):
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
     def trunk_subports_set_status(self, resource, event, trunk_plugin,
-                                  payload):
+                                  payload=None):
         core_plugin = directory.get_plugin()
         admin_context = context.get_admin_context()
 
         if event == events.AFTER_DELETE:
             status = n_const.PORT_STATUS_DOWN
         else:
-            parent_id = payload.current_trunk.port_id
+            parent_id = payload.latest_state.port_id
             parent_port = core_plugin._get_port(admin_context, parent_id)
             status = parent_port['status']
 
