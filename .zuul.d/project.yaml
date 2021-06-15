@@ -46,48 +46,6 @@
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-        - networking-odl-grenade:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-oxygen
-        - networking-odl-tempest-fluorine
-        - networking-odl-tempest-oxygen-multinode:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-fluorine-multinode:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-rally-neon:
-            voting: false
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-rally-sodium:
-            voting: false
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-        - networking-odl-functional-neon:
-            voting: false
-        - networking-odl-functional-sodium:
-            voting: false
     gate:
       jobs:
         - openstack-tox-pep8:
@@ -120,7 +78,48 @@
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
+
+    experimental:
+      jobs:
+        - networking-odl-grenade:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+        - networking-odl-tempest-oxygen-multinode:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+        - networking-odl-tempest-fluorine-multinode:
+            voting: false
+            irrelevant-files:
+              - ^(test-|)requirements.txt$
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+              - ^setup.cfg$
+        - networking-odl-rally-neon:
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - networking-odl-rally-sodium:
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
         - networking-odl-functional-neon:
             voting: false
         - networking-odl-functional-sodium:
             voting: false
+        - networking-odl-tempest-oxygen
+        - networking-odl-tempest-fluorine
