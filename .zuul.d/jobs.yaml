@@ -98,7 +98,7 @@
     timeout: 7800
     required-projects:
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
 
@@ -110,7 +110,7 @@
     timeout: 7800
     required-projects:
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
 
@@ -122,7 +122,7 @@
     timeout: 7800
     required-projects:
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
 
@@ -134,7 +134,7 @@
     timeout: 7800
     required-projects:
       - openstack/networking-odl
-      - openstack/networking-l2gw
+      - x/networking-l2gw
       - openstack/networking-sfc
       - openstack/networking-bgpvpn
 

@@ -18,6 +18,7 @@ disable=
  access-member-before-definition,
  no-member,
  no-method-argument,
+ no-name-in-module,
  no-self-argument,
 # "W" Warnings for stylistic problems or minor programming issues
  abstract-method,
