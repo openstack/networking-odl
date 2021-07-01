@@ -24,6 +24,15 @@ neutron_installed=$(echo "import ${MOD}" | python 2>/dev/null ; echo $?)
 BRANCH_NAME=stable/queens
 NEUTRON_DIR=$HOME/${PROJ}
 
+case "$PROJ" in
+    networking-l2gw)
+        NAMESPACE=x
+        ;;
+    *)
+        NAMESPACE=openstack
+        ;;
+esac
+
 set -e
 set -x
 
@@ -63,13 +72,13 @@ elif [ -x "$ZUUL_CLONER" ]; then
         /opt/git \
         --branch ${BRANCH_NAME} \
         https://git.openstack.org \
-        openstack/${PROJ}
-    cd openstack/${PROJ}
+        ${NAMESPACE}/${PROJ}
+    cd ${NAMESPACE}/${PROJ}
     $install_cmd -e .
     popd
 else
     echo "PIP HARDCODE" > /tmp/tox_install-${PROJ}.txt
-    GIT_REPO="https://git.openstack.org/openstack/${PROJ}"
+    GIT_REPO="https://git.openstack.org/${NAMESPACE}/${PROJ}"
     SRC_DIR="$VIRTUAL_ENV/src/${PROJ}"
     git clone --depth 1 --branch $BRANCH_NAME $GIT_REPO $SRC_DIR
     $install_cmd -U -e $SRC_DIR
