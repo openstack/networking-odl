@@ -26,6 +26,7 @@ from neutron.plugins.ml2 import plugin
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import multiprovidernet as mpnet_apidef
 from neutron_lib.api.definitions import provider_net as providernet
+from neutron_lib.callbacks import events
 from neutron_lib import constants as n_constants
 from neutron_lib.db import api as db_api
 from neutron_lib.plugins import constants as plugin_const
@@ -338,26 +339,38 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
                     with db_api.CONTEXT_WRITER.using(plugin_context):
                         self.mech.sync_from_callback_precommit(
                             plugin_context, operation, res_type, res_id,
-                            context_, security_group=sg_dict)
+                            context_,
+                            payload=events.DBEventPayload(plugin_context,
+                                                          metadata=sg_dict))
                 if operation == odl_const.ODL_DELETE:
+                    payload = events.DBEventPayload(
+                        context=plugin_context,
+                        metadata={
+                            'security_group_rule_ids': [SG_RULE_FAKE_ID]},
+                        request_body={
+                            'security_group_rules': {'id': SG_RULE_FAKE_ID}})
                     with db_api.CONTEXT_WRITER.using(plugin_context):
                         self.mech.sync_from_callback_precommit(
                             plugin_context, operation, res_type, res_id,
-                            context_,
-                            security_group={'security_group_rules':
-                                            {'id': SG_RULE_FAKE_ID}},
-                            security_group_rule_ids=[SG_RULE_FAKE_ID])
+                            context_, payload=payload)
             elif (object_type == odl_const.ODL_SG_RULE and
                   operation == odl_const.ODL_DELETE):
                 with db_api.CONTEXT_WRITER.using(plugin_context):
                     self.mech.sync_from_callback_precommit(
                         plugin_context, operation, res_type, res_id,
-                        context_, security_group_id=SG_FAKE_ID)
+                        context_,
+                        payload=events.DBEventPayload(
+                            plugin_context,
+                            resource_id=SG_FAKE_ID,
+                            metadata={'security_group_id': SG_FAKE_ID}))
             else:
                 with db_api.CONTEXT_WRITER.using(plugin_context):
                     self.mech.sync_from_callback_precommit(
                         plugin_context, operation, res_type, res_id,
-                        context_)
+                        context_,
+                        payload=events.DBEventPayload(
+                            plugin_context,
+                            metadata={'security_group_id': [SG_FAKE_ID]}))
         else:
             method = getattr(self.mech, '%s_%s_precommit' % (operation,
                                                              object_type))
@@ -637,13 +650,15 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             sg = mock.Mock()
             sg.id = SG_FAKE_ID
             sg.security_group_rules = [rule]
-            kwargs = {'security_group': sg,
-                      'security_group_rule_ids': [SG_RULE_FAKE_ID]}
+            payload = events.DBEventPayload(
+                self.db_context,
+                metadata={'security_group_rule_ids': [SG_RULE_FAKE_ID]}
+            )
             with db_api.CONTEXT_WRITER.using(self.db_context):
                 self.mech.sync_from_callback_precommit(
                     self.db_context, odl_const.ODL_DELETE,
                     callback._RESOURCE_MAPPING[odl_const.ODL_SG],
-                    res_id, context, **kwargs)
+                    res_id, context, payload=payload)
             record.assert_has_calls(
                 [mock.call(mock.ANY, 'security_group_rule',
                            SG_RULE_FAKE_ID, 'delete', [SG_FAKE_ID]),
@@ -662,13 +677,14 @@ class OpenDaylightMechanismDriverTestCase(base_v2.OpenDaylightConfigBase):
             rule = mock.Mock()
             rule.id = SG_RULE_FAKE_ID
             rule.security_group_id = SG_FAKE_ID
-            kwargs = {'security_group_rule_id': SG_RULE_FAKE_ID,
-                      'security_group_id': SG_FAKE_ID}
             with db_api.CONTEXT_WRITER.using(self.db_context):
+                payload = events.DBEventPayload(
+                    self.db_context,
+                    metadata={'security_group_id': SG_FAKE_ID})
                 self.mech.sync_from_callback_precommit(
                     self.db_context, odl_const.ODL_DELETE,
                     callback._RESOURCE_MAPPING[odl_const.ODL_SG_RULE],
-                    res_id, context, **kwargs)
+                    res_id, context, payload=payload)
             record.assert_has_calls(
                 [mock.call(mock.ANY, 'security_group_rule',
                            SG_RULE_FAKE_ID, 'delete', [SG_FAKE_ID])])

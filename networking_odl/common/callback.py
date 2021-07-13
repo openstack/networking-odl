@@ -85,7 +85,7 @@ class OdlSecurityGroupsHandler(object):
         if 'payload' in kwargs:
             # TODO(boden): remove shim once all callbacks use payloads
             context = kwargs['payload'].context
-            res = kwargs['payload'].desired_state
+            res = kwargs['payload'].latest_state
             res_id = kwargs['payload'].resource_id
             copy_kwargs = kwargs
         else:
@@ -103,7 +103,9 @@ class OdlSecurityGroupsHandler(object):
         odl_res_dict = None if res is None else {odl_res_type.singular: res}
 
         _log_on_callback(logging.DEBUG, "Calling callback", odl_ops,
-                         odl_res_type, res_id, odl_res_dict, copy_kwargs)
+                         odl_res_type, res_id, odl_res_dict,
+                         {'security_group_rule': res,
+                          'security_group_rule_id': res_id})
         try:
             callback(context, odl_ops, odl_res_type, res_id, odl_res_dict,
                      **copy_kwargs)
@@ -113,9 +115,11 @@ class OdlSecurityGroupsHandler(object):
             # normally throw exception. So log it here for debug
             with excutils.save_and_reraise_exception():
                 if not db_api.is_retriable(e):
-                    _log_on_callback(logging.ERROR, "Exception from callback",
-                                     odl_ops, odl_res_type, res_id,
-                                     odl_res_dict, copy_kwargs)
+                    _log_on_callback(
+                        logging.ERROR, "Exception from callback",
+                        odl_ops, odl_res_type, res_id, odl_res_dict,
+                        {'security_group_rule': res,
+                         'security_group_rule_id': res_id})
 
     def sg_callback_precommit(self, resource, event, trigger, **kwargs):
         self._sg_callback(self._precommit, resource, event, trigger, **kwargs)

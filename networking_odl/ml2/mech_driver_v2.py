@@ -148,7 +148,6 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
 
     def _sync_security_group_create_precommit(
             self, context, operation, object_type, res_id, sg_dict):
-
         journal.record(context, object_type, sg_dict['id'], operation, sg_dict)
 
         # NOTE(yamahata): when security group is created, default rules
@@ -160,6 +159,12 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
     @log_helpers.log_method_call
     def sync_from_callback_precommit(self, context, operation, res_type,
                                      res_id, resource_dict, **kwargs):
+        # TODO(lajoskatona): remove this when everything runs with payload
+        if 'payload' in kwargs:
+            ids = kwargs['payload'].metadata
+            context = kwargs['payload'].context
+        else:
+            ids = kwargs
         object_type = res_type.singular
         if resource_dict is not None:
             resource_dict = resource_dict[object_type]
@@ -180,7 +185,7 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
             # be deleted. At NeutronDB layer rules are auto deleted with
             # cascade='all,delete'.
             if (object_type == odl_const.ODL_SG):
-                for rule_id in kwargs['security_group_rule_ids']:
+                for rule_id in ids['security_group_rule_ids']:
                     journal.record(context, odl_const.ODL_SG_RULE,
                                    rule_id, odl_const.ODL_DELETE,
                                    [object_uuid])
@@ -188,14 +193,14 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
                 # Set the parent security group id so that dependencies
                 # to this security rule deletion can be properly found
                 # in the journal.
-                data = [kwargs['security_group_id']]
+                data = [ids['security_group_id']]
 
         assert object_uuid is not None
         journal.record(context, object_type, object_uuid,
                        operation, data)
 
     def sync_from_callback_postcommit(self, context, operation, res_type,
-                                      res_id, resource_dict, **kwargs):
+                                      res_id, resource_dict, payload):
         self._postcommit(context)
 
     def _postcommit(self, context):

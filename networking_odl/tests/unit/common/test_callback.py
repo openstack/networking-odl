@@ -41,32 +41,29 @@ class ODLCallbackTestCase(testtools.TestCase):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP: sg}
                          if sg is not None else None)
+
+        payload = events.DBEventPayload(
+            plugin_context_mock, resource_id=sg_id, desired_state=sg)
         self.sgh.sg_callback_precommit(resources.SECURITY_GROUP,
-                                       event,
-                                       None,
-                                       context=plugin_context_mock,
-                                       security_group=sg,
-                                       security_group_id=sg_id)
+                                       event, None, payload=payload)
         self._precommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP], sg_id,
-            expected_dict, security_group=sg, security_group_id=sg_id)
+            expected_dict, payload=payload)
 
     def _test_callback_postcommit_for_sg(self, event, op, sg, sg_id):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP: sg}
                          if sg is not None else None)
+        payload = events.DBEventPayload(
+            plugin_context_mock, resource_id=sg_id, desired_state=sg)
         self.sgh.sg_callback_postcommit(resources.SECURITY_GROUP,
-                                        event,
-                                        None,
-                                        context=plugin_context_mock,
-                                        security_group=sg,
-                                        security_group_id=sg_id)
+                                        event, None, payload=payload)
 
         self._postcommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP], sg_id,
-            expected_dict, security_group=sg, security_group_id=sg_id)
+            expected_dict, payload=payload)
 
     def test_callback_precommit_sg_create(self):
         sg = mock.Mock()
@@ -102,36 +99,35 @@ class ODLCallbackTestCase(testtools.TestCase):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP_RULE: sg_rule}
                          if sg_rule is not None else None)
+        payload = events.DBEventPayload(
+            plugin_context_mock,
+            resource_id=sg_rule_id,
+            desired_state=sg_rule
+        )
         self.sgh.sg_callback_precommit(resources.SECURITY_GROUP_RULE,
-                                       event,
-                                       None,
-                                       context=plugin_context_mock,
-                                       security_group_rule=sg_rule,
-                                       security_group_rule_id=sg_rule_id)
+                                       event, None, payload=payload)
         self._precommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE],
-            sg_rule_id, expected_dict, security_group_rule=sg_rule,
-            security_group_rule_id=sg_rule_id)
+            sg_rule_id, expected_dict, payload=payload)
 
     def _test_callback_postcommit_for_sg_rules(
             self, event, op, sg_rule, sg_rule_id):
         plugin_context_mock = mock.Mock()
         expected_dict = ({resources.SECURITY_GROUP_RULE: sg_rule}
                          if sg_rule is not None else None)
+        payload = events.DBEventPayload(
+            plugin_context_mock,
+            resource_id=sg_rule_id,
+            desired_state=sg_rule
+        )
         self.sgh.sg_callback_postcommit(resources.SECURITY_GROUP_RULE,
-                                        event,
-                                        None,
-                                        context=plugin_context_mock,
-                                        security_group_rule=sg_rule,
-                                        security_group_rule_id=sg_rule_id)
+                                        event, None, payload=payload)
 
         self._postcommit.assert_called_with(
             plugin_context_mock, op,
             callback._RESOURCE_MAPPING[resources.SECURITY_GROUP_RULE],
-            sg_rule_id, expected_dict,
-            security_group_rule=sg_rule, security_group_rule_id=sg_rule_id,
-        )
+            sg_rule_id, expected_dict, payload=payload)
 
     def test_callback_precommit_sg_rules_create(self):
         rule = mock.Mock()

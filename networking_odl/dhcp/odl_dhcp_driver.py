@@ -56,7 +56,12 @@ class OdlDhcpDriver(driver_base.OdlDhcpDriverBase):
     def handle_subnet_delete_event(self, resource, event, trigger,
                                    context=None, operation=None, row=None,
                                    **kwargs):
-        subnet = kwargs['subnet']
+        # TODO(lajoskatona): remove this when everything runs with payload
+        if 'payload' in kwargs:
+            subnet = kwargs['payload'].states[0]
+            context = kwargs['payload'].context
+        else:
+            subnet = kwargs['subnet']
         if event == constants.AFTER_DELETE:
             try:
                 plugin = directory.get_plugin()

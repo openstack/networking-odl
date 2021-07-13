@@ -118,11 +118,11 @@ class OpenDaylightTrunkHandlerV2(object):
                                      subport.port_id, status)
 
     @log_helpers.log_method_call
-    def trunk_subports_update_status(self, resource, event, trigger, **kwargs):
+    def trunk_subports_update_status(self, resource, event, trigger, payload):
         core_plugin = directory.get_plugin()
         admin_context = context.get_admin_context()
-        port = kwargs['port']
-        original_port = kwargs['original_port']
+        port = payload.latest_state
+        original_port = payload.states[0]
         if port['status'] == original_port['status']:
             return
         for subport_id in self._get_subports_ids(port['id']):

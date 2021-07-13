@@ -186,12 +186,13 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         port = FAKE_PARENT.copy()
         original_port = FAKE_PARENT.copy()
         original_port['status'] = n_const.PORT_STATUS_DOWN
-        port_kwargs = {'port': port, 'original_port': original_port}
+        payload = events.DBEventPayload(None, None, None,
+                                        states=(original_port, port))
 
         mock_get_subports_ids.return_value = ['fake_port_id']
 
         self.handler.trunk_subports_update_status(resource, event_type,
-                                                  mock.ANY, **port_kwargs)
+                                                  mock.ANY, payload)
 
         mock_set_subport_status.assert_called_once_with(
             core_plugin, mock.ANY, 'fake_port_id', n_const.PORT_STATUS_ACTIVE)
@@ -208,12 +209,13 @@ class TestTrunkHandler(base_v2.OpenDaylightConfigBase):
         port = FAKE_PARENT.copy()
         original_port = FAKE_PARENT.copy()
         port['status'] = n_const.PORT_STATUS_DOWN
-        port_kwargs = {'port': port, 'original_port': original_port}
+        payload = events.DBEventPayload(None, None, None,
+                                        states=(original_port, port))
 
         mock_get_subports_ids.return_value = ['fake_port_id']
 
         self.handler.trunk_subports_update_status(resource, event_type,
-                                                  mock.ANY, **port_kwargs)
+                                                  mock.ANY, payload)
 
         mock_set_subport_status.assert_called_once_with(
             core_plugin, mock.ANY, 'fake_port_id', n_const.PORT_STATUS_DOWN)
