@@ -52,7 +52,7 @@ class OpenDaylightL3FlavorTestCase(base_v2.OpenDaylightConfigBase):
                          'floatingip': {'project_id': str(projectid),
                                         'floating_ip_address': '172.24.5.4',
                                         'port_id': None,
-                                        'id': fip_db.id,
+                                        'id': fipid,
                                         'router_id': None,
                                         'status': 'DOWN',
                                         'floating_network_id': str(fipid)
@@ -77,7 +77,17 @@ class OpenDaylightL3FlavorTestCase(base_v2.OpenDaylightConfigBase):
     def _test_fip_operation(self, event, operation, fip, ops=True):
         method = getattr(self.flavor_driver,
                          '_floatingip_%s_%s' % (operation, event))
-        method(odl_const.ODL_FLOATINGIP, mock.ANY, mock.ANY, **fip)
+        state_0 = None
+        if 'floatingip' in fip:
+            state_0 = fip['floatingip']
+        elif 'port' in fip:
+            state_0 = fip['port']
+        payload = events.DBEventPayload(
+            context=self.context, resource_id=fip['floatingip_id'],
+            states=(state_0, ),
+            metadata={'floatingip_db': fip.get('floatingip_db')},
+            desired_state=fip.get('floatingip_db'))
+        method(odl_const.ODL_FLOATINGIP, event, mock.ANY, payload)
         row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         if ops:
             if operation != odl_const.ODL_DELETE:

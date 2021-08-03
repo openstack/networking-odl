@@ -132,27 +132,27 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
 
     @registry.receives(resources.FLOATING_IP, [events.PRECOMMIT_CREATE])
     @log_helpers.log_method_call
-    def _floatingip_create_precommit(self, resource, event, trigger, **kwargs):
-        context = kwargs['context']
-        fip_dict = copy.deepcopy(kwargs['floatingip'])
-        router_id = kwargs['floatingip_db'].router_id
+    def _floatingip_create_precommit(self, resource, event, trigger, payload):
+        context = payload.context
+        fip_dict = copy.deepcopy(payload.states[0])
+        router_id = payload.desired_state.router_id
         if not self._validate_l3_flavor(context, router_id):
             return
-        fip_dict['id'] = kwargs['floatingip_id']
+        fip_dict['id'] = payload.resource_id
         self._update_floatingip_status(context, fip_dict)
         if fip_dict['floating_ip_address'] is None:
             fip_dict['floating_ip_address'] = \
-                kwargs['floatingip_db'].floating_ip_address
+                payload.desired_state.floating_ip_address
         journal.record(context, odl_const.ODL_FLOATINGIP, fip_dict['id'],
                        odl_const.ODL_CREATE, fip_dict)
 
     @registry.receives(resources.FLOATING_IP, [events.PRECOMMIT_UPDATE])
     @log_helpers.log_method_call
-    def _floatingip_update_precommit(self, resource, event, trigger, **kwargs):
-        context = kwargs['context']
-        fip_dict = kwargs['floatingip']
-        router_id = kwargs['floatingip_db'].router_id
-        fip_dict['id'] = kwargs['floatingip_db'].id
+    def _floatingip_update_precommit(self, resource, event, trigger, payload):
+        context = payload.context
+        fip_dict = payload.states[0]
+        router_id = payload.desired_state.router_id
+        fip_dict['id'] = payload.desired_state.id
         if not self._validate_l3_flavor(context, router_id):
             return
         self._update_floatingip_status(context, fip_dict)
@@ -161,11 +161,12 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
 
     @registry.receives(resources.FLOATING_IP, [events.PRECOMMIT_DELETE])
     @log_helpers.log_method_call
-    def _floatingip_delete_precommit(self, resource, event, trigger, **kwargs):
-        context = kwargs['context']
+    def _floatingip_delete_precommit(self, resource, event, trigger, payload):
+        context = payload.context
+        floating_port_id = payload.resource_id
         fip_data = l3_obj.FloatingIP.get_objects(
             context,
-            floating_port_id=kwargs['port']['id'])[0]
+            floating_port_id=floating_port_id)[0]
         if not self._validate_l3_flavor(context, fip_data.router_id):
             return
         dependency_list = [fip_data.router_id, fip_data.floating_network_id]
@@ -179,5 +180,5 @@ class ODLL3ServiceProvider(base.L3ServiceProvider):
                                           events.AFTER_UPDATE,
                                           events.AFTER_DELETE])
     @log_helpers.log_method_call
-    def _l3_postcommit(self, resource, event, trigger, **kwargs):
+    def _l3_postcommit(self, resource, event, trigger, payload):
         self.journal.set_sync_event()
