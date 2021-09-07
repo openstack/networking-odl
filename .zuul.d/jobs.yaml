@@ -319,7 +319,6 @@
         s-container: false
         s-object: false
         s-proxy: false
-        tls-proxy: false
       grenade_devstack_localrc:
         shared:
           ODL_RELEASE: *sodium
