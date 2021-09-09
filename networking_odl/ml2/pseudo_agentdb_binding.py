@@ -108,14 +108,14 @@ class PseudoAgentDBBindingTaskBase(object):
 class PseudoAgentDBBindingPrePopulate(PseudoAgentDBBindingTaskBase):
     @registry.receives(resources.PORT,
                        [events.BEFORE_CREATE, events.BEFORE_UPDATE])
-    def before_port_binding(self, resource, event, trigger, **kwargs):
+    def before_port_binding(self, resource, event, trigger, payload):
         LOG.debug("before_port resource %s event %s %s",
-                  resource, event, kwargs)
+                  resource, event, payload)
         assert resource == resources.PORT
         assert event in [events.BEFORE_CREATE, events.BEFORE_UPDATE]
         ml2_plugin = trigger
-        context = kwargs['context']
-        port = kwargs['port']
+        context = payload.context
+        port = payload.latest_state
 
         host = nl_const.ATTR_NOT_SPECIFIED
         if port and portbindings.HOST_ID in port:

@@ -31,8 +31,10 @@ LOG = logging.getLogger(__name__)
 class OdlDhcpDriver(driver_base.OdlDhcpDriverBase):
 
     @registry.receives(constants.ODL_SUBNET, [constants.BEFORE_COMPLETE])
-    def handle_subnet_event(self, resource, event, trigger, context=None,
-                            operation=None, row=None, **kwargs):
+    def handle_subnet_event(self, resource, event, trigger, payload):
+        context = payload.context
+        operation = payload.metadata['operation']
+        row = payload.metadata['row']
         if (operation == constants.ODL_CREATE or
                 operation == constants.ODL_UPDATE):
             try:
@@ -54,14 +56,11 @@ class OdlDhcpDriver(driver_base.OdlDhcpDriverBase):
     # [0]: https://review.opendev.org/713045
     @registry.receives(constants.ODL_SUBNET, [constants.AFTER_DELETE])
     def handle_subnet_delete_event(self, resource, event, trigger,
-                                   context=None, operation=None, row=None,
-                                   **kwargs):
-        # TODO(lajoskatona): remove this when everything runs with payload
-        if 'payload' in kwargs:
-            subnet = kwargs['payload'].states[0]
-            context = kwargs['payload'].context
-        else:
-            subnet = kwargs['subnet']
+                                   payload):
+        subnet = payload.latest_state
+        context = payload.context
+        operation = payload.metadata.get('operation')
+
         if event == constants.AFTER_DELETE:
             try:
                 plugin = directory.get_plugin()
@@ -91,8 +90,10 @@ class OdlDhcpDriver(driver_base.OdlDhcpDriverBase):
 
     @registry.receives(constants.ODL_PORT, [constants.BEFORE_COMPLETE])
     def handle_port_update_event(self, resource, event, trigger,
-                                 context=None, operation=None,
-                                 row=None, **kwargs):
+                                 payload):
+        context = payload.context
+        operation = payload.metadata['operation']
+        row = payload.metadata['row']
 
         if operation == constants.ODL_UPDATE:
             try:

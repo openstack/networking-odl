@@ -18,6 +18,7 @@ from datetime import datetime
 import threading
 import time
 
+from neutron_lib.callbacks import events
 from neutron_lib.callbacks import registry
 from neutron_lib import context as nl_context
 from neutron_lib.db import api as db_api
@@ -278,9 +279,12 @@ class OpenDaylightJournalThread(object):
         # TODO(mkolesni): This logic is weirdly written, need to refactor it.
         try:
             self.client.sendjson(method, urlpath, to_send)
-            registry.notify(entry.object_type, odl_const.BEFORE_COMPLETE,
-                            self, context=context, operation=entry.operation,
-                            row=entry)
+            registry.publish(entry.object_type, odl_const.BEFORE_COMPLETE,
+                             self,
+                             payload=events.DBEventPayload(
+                                 context,
+                                 metadata={'operation': entry.operation,
+                                           'row': entry}))
             entry_complete(context, entry)
             self._retry_reset()
             _log_entry(LOG_COMPLETED, entry)

@@ -127,14 +127,10 @@ class TestPseudoAgentDBBindingPrePopulate(base.DietTestCase):
                             PseudoAgentDBBindingPrePopulate(self.worker))
 
     def _call_before_port_binding(self, host):
-        kwargs = {
-            'context': mock.Mock(),
-            'port': {
-                portbindings.HOST_ID: host
-            }
-        }
-        registry.notify(resources.PORT, events.BEFORE_CREATE, self.ml2_plugin,
-                        **kwargs)
+        registry.publish(resources.PORT, events.BEFORE_CREATE, self.ml2_plugin,
+                         payload=events.DBEventPayload(
+                             mock.Mock(),
+                             states=({portbindings.HOST_ID: host},)))
 
     def test_unspecified(self):
         self._call_before_port_binding(n_const.ATTR_NOT_SPECIFIED)
