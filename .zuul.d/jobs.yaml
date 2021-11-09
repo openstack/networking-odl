@@ -21,6 +21,8 @@
           PUBLIC_BRIDGE: br-ex
           Q_USE_PUBLIC_VETH: False
           Q_ML2_PLUGIN_MECHANISM_DRIVERS: logger,opendaylight_v2
+          # Note there's no odl agent, but workaround that ovn is the default
+          Q_AGENT: odl
           # Enable debug logs for odl ovsdb
           ODL_NETVIRT_DEBUG_LOGS: True
           # Database
@@ -94,6 +96,15 @@
       zuul_copy_output:
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services which we need for ODL
         q-svc: true
       extensions_to_txt:
         log: True
@@ -124,6 +135,15 @@
       zuul_copy_output:
         '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
       devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services which we need for ODL
         q-svc: true
       extensions_to_txt:
           log: True
@@ -231,8 +251,22 @@
     parent: rally-task-at-devstack
     nodeset: openstack-single-node-focal
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services which we need for ODL
+        q-svc: true
       devstack_localrc:
         ODL_RELEASE: *neon
+        # Note there's no odl agent, but workaround that ovn is the default
+        Q_AGENT: odl
+        KEYSTONE_ADMIN_ENDPOINT: true
       devstack_plugins:
         rally-openstack: https://opendev.org/openstack/rally-openstack
         networking-odl: https://opendev.org/openstack/networking-odl
@@ -257,8 +291,23 @@
     parent: rally-task-at-devstack
     nodeset: openstack-single-node-focal
     vars:
+      <<: *devstack_vars
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services which we need for ODL
+        q-svc: true
       devstack_localrc:
         ODL_RELEASE: *sodium
+        # Note there's no odl agent, but workaround that ovn is the default
+        Q_AGENT: odl
+        KEYSTONE_ADMIN_ENDPOINT: true
       devstack_plugins:
         rally-openstack: https://opendev.org/openstack/rally-openstack
         networking-odl: https://opendev.org/openstack/networking-odl
