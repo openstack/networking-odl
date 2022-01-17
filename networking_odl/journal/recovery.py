@@ -56,7 +56,8 @@ def get_latest_resource(context, row):
     try:
         driver = base_driver.get_driver(row.object_type)
     except exceptions.ResourceNotRegistered:
-        raise exceptions.UnsupportedResourceType(resource=row.object_type)
+        raise exceptions.UnsupportedResourceType(
+            resource=row.object_type) from None
 
     return driver.get_resource_for_recovery(context, row)
 

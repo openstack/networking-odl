@@ -207,11 +207,11 @@ class OpenDaylightMechanismDriver(api.MechanismDriver,
         self.journal.set_sync_event()
 
     @log_helpers.log_method_call
-    def bind_port(self, port_context):
+    def bind_port(self, context):
         """Set binding for a valid segments
 
         """
-        return self.port_binding_controller.bind_port(port_context)
+        return self.port_binding_controller.bind_port(port_context=context)
 
     def check_vlan_transparency(self, context):
         """Check VLAN transparency

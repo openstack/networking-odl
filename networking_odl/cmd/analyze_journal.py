@@ -126,7 +126,7 @@ def print_stats(output, slowest, entries_stats):
 
 
 def get_content(file_name):
-    return open(file_name) if file_name else sys.stdin
+    return open(file_name, encoding="utf8") if file_name else sys.stdin
 
 
 def main(output=sys.stdout):

@@ -27,7 +27,8 @@ def get_driver(resource_type):
     try:
         return ALL_RESOURCES[resource_type]
     except KeyError:
-        raise exceptions.ResourceNotRegistered(resource_type=resource_type)
+        raise exceptions.ResourceNotRegistered(
+            resource_type=resource_type) from None
 
 
 class ResourceBaseDriver(object):
@@ -59,8 +60,9 @@ class ResourceBaseDriver(object):
         try:
             return getattr(self.plugin, method_name)
         except AttributeError:
-            raise exceptions.PluginMethodNotFound(plugin=self.plugin_type,
-                                                  method=method_name)
+            raise exceptions.PluginMethodNotFound(
+                plugin=self.plugin_type,
+                method=method_name) from None
 
     def get_resources_for_full_sync(self, context, resource_type):
         """Provide all resources of type resource_type """

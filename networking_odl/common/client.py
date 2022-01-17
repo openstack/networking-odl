@@ -98,6 +98,7 @@ class OpenDaylightRestClient(object):
                           {'method': method,
                            'urlpath': urlpath,
                            'body': obj})
+                return None
 
     def _check_response(self, response):
         try:
@@ -106,6 +107,7 @@ class OpenDaylightRestClient(object):
             with excutils.save_and_reraise_exception():
                 LOG.debug("Exception from ODL: %(e)s %(text)s",
                           {'e': error, 'text': response.text}, exc_info=1)
+                return None
         else:
             LOG.debug("Got response:\n"
                       "(%(response)s)", {'response': response.text})

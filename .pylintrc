@@ -46,6 +46,7 @@ disable=
  unused-variable,
 # "C" Coding convention violations
  bad-continuation,
+ consider-using-f-string,
  invalid-name,
  missing-docstring,
  multiple-statements,
@@ -74,6 +75,7 @@ disable=
  unnecessary-pass,
  useless-object-inheritance,
  self-cls-assignment,
+ super-with-arguments,
  no-else-return,
 
 [BASIC]

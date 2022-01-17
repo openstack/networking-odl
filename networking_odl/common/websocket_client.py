@@ -204,7 +204,8 @@ class OpenDaylightWebsocketClient(object):
             if e.response.status_code == codes.bad_request:
                 LOG.debug("response code bad_request (400)"
                           "check path for websocket connection")
-                raise ValueError(_("bad_request (http400),check path."))
+                raise ValueError(
+                    _("bad_request (http400),check path.")) from e
 
             LOG.warning("websocket connection failed",
                         exc_info=True)
@@ -234,16 +235,19 @@ class OpenDaylightWebsocketClient(object):
             if e.response.status_code == codes.not_found:
                 LOG.debug("response code not_found (404)"
                           "unable to websocket connection url")
-                raise ValueError(_("bad_request (http400),check path"))
+                raise ValueError(
+                    _("bad_request (http400),check path")) from e
 
             LOG.warning("websocket connection failed")
             return None
         except ValueError:
             with excutils.save_and_reraise_exception():
                 LOG.error("websocket subscribe got invalid stream name")
+                return None
         except KeyError:
             LOG.error("websocket subscribe got bad stream data")
-            raise ValueError(_("websocket subscribe bad stream data"))
+            raise ValueError(
+                _("websocket subscribe bad stream data")) from None
         except Exception:
             LOG.error("websocket subscription failed", exc_info=True)
             return None

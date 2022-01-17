@@ -54,7 +54,7 @@ def include_object(object, name, type_, reflected, compare_to):
 def run_migrations_offline():
     set_mysql_engine()
 
-    kwargs = dict()
+    kwargs = {}
     if neutron_config.database.connection:
         kwargs['url'] = neutron_config.database.connection
     else:

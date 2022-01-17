@@ -85,16 +85,16 @@ class OpenDaylightQosDriver(base.DriverBase):
                        data['id'], op_const, data)
 
     @log_helpers.log_method_call
-    def create_policy_precommit(self, context, qos_policy):
-        self._record_in_journal(context, odl_const.ODL_CREATE, qos_policy)
+    def create_policy_precommit(self, context, policy):
+        self._record_in_journal(context, odl_const.ODL_CREATE, policy)
 
     @log_helpers.log_method_call
-    def update_policy_precommit(self, context, qos_policy):
-        self._record_in_journal(context, odl_const.ODL_UPDATE, qos_policy)
+    def update_policy_precommit(self, context, policy):
+        self._record_in_journal(context, odl_const.ODL_UPDATE, policy)
 
     @log_helpers.log_method_call
-    def delete_policy_precommit(self, context, qos_policy):
-        self._record_in_journal(context, odl_const.ODL_DELETE, qos_policy)
+    def delete_policy_precommit(self, context, policy):
+        self._record_in_journal(context, odl_const.ODL_DELETE, policy)
 
     @log_helpers.log_method_call
     def create_policy(self, context, policy):
