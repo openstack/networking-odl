@@ -90,3 +90,7 @@
               - openstack/networking-bgpvpn
         - networking-odl-functional-neon
         - networking-odl-functional-sodium
+    periodic-weekly:
+      jobs:
+        - openstack-tox-py39
+        - networking-odl-functional-sodium
