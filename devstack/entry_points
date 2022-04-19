@@ -230,6 +230,7 @@ function install_opendaylight {
 # install_networking_odl() - Install the ML2 driver and other plugins/drivers
 function install_networking_odl {
     echo "Installing the Networking-ODL driver for OpenDaylight"
+    sudo git config --system --add safe.directory $NETWORKING_ODL_DIR
     setup_develop $NETWORKING_ODL_DIR
 }
 
