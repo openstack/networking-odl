@@ -26,14 +26,6 @@
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
-        - openstack-tox-lower-constraints:
-            voting: false
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
         - openstack-tox-py38:
             required-projects:
               - openstack/ceilometer
