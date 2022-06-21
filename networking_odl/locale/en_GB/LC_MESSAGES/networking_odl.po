@@ -1,13 +1,14 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
+# Andi Chandler <andi@gowling.com>, 2022. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: networking-odl VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-03-07 20:20+0000\n"
+"POT-Creation-Date: 2022-05-26 16:20+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2017-12-12 09:16+0000\n"
+"PO-Revision-Date: 2022-06-13 07:52+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -320,31 +321,13 @@ msgstr ""
 "            Default: --vhostuser_socket_dir=vhu\n"
 "            "
 
-msgid "(V2 driver) Journal maintenance operations interval in seconds."
-msgstr "(V2 driver) Journal maintenance operations interval in seconds."
+#, python-format
+msgid "%(method)s not found in %(plugin)s"
+msgstr "%(method)s not found in %(plugin)s"
 
-msgid "(V2 driver) Number of times to retry a row before failing."
-msgstr "(V2 driver) Number of times to retry a row before failing."
-
-msgid ""
-"(V2 driver) Time in seconds to wait before a processing row is marked back "
-"to pending."
-msgstr ""
-"(V2 driver) Time in seconds to wait before a processing row is marked back "
-"to pending."
-
-msgid ""
-"(V2 driver) Time to keep completed rows (in seconds).For performance reasons "
-"it's not recommended to change this from the default value (0) which "
-"indicates completed rows aren't kept.This value will be checked every "
-"maintenance_interval by the cleanup thread. To keep completed rows "
-"indefinitely, set the value to -1"
-msgstr ""
-"(V2 driver) Time to keep completed rows (in seconds). For performance "
-"reasons it's not recommended to change this from the default value (0) which "
-"indicates completed rows aren't kept. This value will be checked every "
-"maintenance_interval by the cleanup thread. To keep completed rows "
-"indefinitely, set the value to -1"
+#, python-format
+msgid "%(resource_type)s resource is not registered for maintenance"
+msgstr "%(resource_type)s resource is not registered for maintenance"
 
 msgid ""
 "--ovs_dpdk option was specified but the 'netdev' datapath_type was not "
@@ -378,8 +361,17 @@ msgstr "HTTP username for authentication."
 msgid "Invalid ODL URL"
 msgstr "Invalid ODL URL"
 
+msgid "Journal maintenance operations interval in seconds."
+msgstr "Journal maintenance operations interval in seconds."
+
+msgid "Log file to analyze."
+msgstr "Log file to analyse."
+
 msgid "Name of the controller to be used for port binding."
 msgstr "Name of the controller to be used for port binding."
+
+msgid "Number of times to retry a row before failing."
+msgstr "Number of times to retry a row before failing."
 
 #, python-format
 msgid "OpenDaylight API returned %(status)s %(reason)s"
@@ -391,8 +383,43 @@ msgstr "Path for ODL host configuration REST interface"
 msgid "Poll interval in seconds for getting ODL hostconfig"
 msgstr "Poll interval in seconds for getting ODL hostconfig"
 
+#, python-format
+msgid ""
+"Port binding controller '%(name)s (%(controller)r)' doesn't implement "
+"PortBindingController interface."
+msgstr ""
+"Port binding controller '%(name)s (%(controller)r)' doesn't implement "
+"PortBindingController interface."
+
+msgid "Prints the N slowest entries (10 by default)."
+msgstr "Prints the N slowest entries (10 by default)."
+
+msgid "Sync thread timeout in seconds or fraction."
+msgstr "Sync thread timeout in seconds or fraction."
+
 msgid "Test without real ODL."
 msgstr "Test without real ODL."
+
+msgid "Thread has to be stopped before started again"
+msgstr "Thread has to be stopped before started again"
+
+msgid ""
+"Time in seconds to wait before a processing row is marked back to pending."
+msgstr ""
+"Time in seconds to wait before a processing row is marked back to pending."
+
+msgid ""
+"Time to keep completed rows (in seconds).For performance reasons it's not "
+"recommended to change this from the default value (0) which indicates "
+"completed rows aren't kept.This value will be checked every "
+"maintenance_interval by the cleanup thread. To keep completed rows "
+"indefinitely, set the value to -1"
+msgstr ""
+"Time to keep completed rows (in seconds).For performance reasons, it's not "
+"recommended to change this from the default value (0) which indicates "
+"completed rows aren't kept. This value will be checked every "
+"maintenance_interval by the cleanup thread. To keep completed rows "
+"indefinitely, set the value to -1"
 
 msgid "Tomcat session timeout in minutes."
 msgstr "Tomcat session timeout in minutes."
@@ -411,6 +438,14 @@ msgstr "resource_list can not be None"
 
 msgid "unsupported operation {}"
 msgstr "unsupported operation {}"
+
+#, python-format
+msgid "unsupported resource type: %(resource)s"
+msgstr "unsupported resource type: %(resource)s"
+
+#, python-format
+msgid "vif type: '%s' not supported"
+msgstr "vif type: '%s' not supported"
 
 msgid "websocket subscribe bad stream data"
 msgstr "websocket subscribe bad stream data"
