@@ -21,3 +21,7 @@ isort==4.3.21 # MIT
 
 # To test ceilometer client
 ceilometer>=11.0.0
+
+# This is necessary as pecan dropped this dependency
+# see https://review.opendev.org/c/openstack/neutron/+/848706
+WebTest>=2.0.27 # MIT
