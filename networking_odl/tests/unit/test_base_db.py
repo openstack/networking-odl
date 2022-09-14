@@ -125,7 +125,8 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
                 # attached to the context
                 session = context.session
 
-                if session.is_active and isinstance(e, _InnerException):
+                is_active = db_api.is_session_active(session)
+                if is_active and isinstance(e, _InnerException):
                     self.assertTrue(getattr(e, '_RETRY_EXCEEDED', False))
                 return
 
@@ -167,8 +168,10 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
 
     def _test_retry_exceptions(self, method, mock_object,
                                assert_transaction=True):
-        retries = self._test_db_exceptions_handled(method, mock_object,
-                                                   True)
+        with mock.patch.object(db_api, 'is_session_active') as sa:
+            sa.return_value = False
+            retries = self._test_db_exceptions_handled(method, mock_object,
+                                                       True)
 
         if assert_transaction:
             # It should be 0 as long as the retriable method creates save
@@ -182,10 +185,12 @@ class ODLBaseDbTestCase(SqlTestCaseLight):
             )
 
         with db_api.CONTEXT_WRITER.using(self.db_context):
-            retries = self._test_db_exceptions_handled(
-                method, mock_object, False
-            )
-            if assert_transaction:
-                self._assertRetryCount(0)
-                # only once per exception when expect_retries=False
-                self.assertEqual(len(RETRIABLE_EXCEPTIONS), retries)
+            with mock.patch.object(db_api, 'is_session_active') as sa:
+                sa.return_value = True
+                retries = self._test_db_exceptions_handled(
+                    method, mock_object, False
+                )
+                if assert_transaction:
+                    self._assertRetryCount(0)
+                    # only once per exception when expect_retries=False
+                    self.assertEqual(len(RETRIABLE_EXCEPTIONS), retries)

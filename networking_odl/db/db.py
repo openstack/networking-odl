@@ -69,6 +69,7 @@ def get_all_db_rows(context):
     return context.session.query(models.OpenDaylightJournal).all()
 
 
+@db_api.CONTEXT_READER
 def get_all_db_rows_by_state(context, state):
     return context.session.query(models.OpenDaylightJournal).filter_by(
         state=state).all()

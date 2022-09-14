@@ -22,6 +22,7 @@ import webob.exc
 
 from neutron.api import extensions as api_extensions
 from neutron.db import servicetype_db as sdb
+from neutron.tests import base as test_base
 from neutron.tests.unit.plugins.ml2 import test_plugin
 from oslo_utils import uuidutils
 
@@ -136,18 +137,22 @@ class _TestL2GatewayBase(base.OdlTestsBase, L2GatewayTestCaseMixin):
         service_plugin = {'l2gw_plugin': l2gw_plugin_str}
         return service_plugin
 
+    @test_base.unstable_test('bug/1989718')
     def test_l2gateway_create(self):
         with self.l2gateway(name='mygateway') as l2gateway:
             self.assert_resource_created(odl_const.ODL_L2GATEWAY, l2gateway)
 
+    @test_base.unstable_test('bug/1989718')
     def test_l2gateway_update(self):
         with self.l2gateway(name='gateway1') as l2gateway:
             self.resource_update_test(odl_const.ODL_L2GATEWAY, l2gateway)
 
+    @test_base.unstable_test('bug/1989718')
     def test_l2gateway_delete(self):
         with self.l2gateway(do_delete=False) as l2gateway:
             self.resource_delete_test(odl_const.ODL_L2GATEWAY, l2gateway)
 
+    @test_base.unstable_test('bug/1989718')
     def test_l2gateway_connection_create_delete(self):
         odl_l2gw_connection = {}
         with self.network() as network:

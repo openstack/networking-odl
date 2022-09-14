@@ -169,6 +169,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
     def test_get_oldest_pending_row_none_when_row_completed(self):
         self._test_get_oldest_pending_row_none(odl_const.COMPLETED)
 
+    @in_session
     def test_get_oldest_pending_row(self):
         db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         row = db.get_oldest_pending_db_row_with_lock(self.db_context)
@@ -186,6 +187,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(older_row, row)
 
+    @in_session
     def _test_get_oldest_pending_row_with_dep(self, dep_state):
         db.create_pending_row(self.db_context, *self.UPDATE_ROW)
         parent_row = db.get_all_db_rows(self.db_context)[0]
@@ -198,6 +200,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
 
         return row
 
+    @in_session
     def test_get_oldest_pending_row_when_dep_completed(self):
         row = self._test_get_oldest_pending_row_with_dep(odl_const.COMPLETED)
         self.assertEqual(odl_const.PROCESSING, row.state)
@@ -215,6 +218,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         row = db.get_oldest_pending_db_row_with_lock(self.db_context)
         self.assertEqual(parent_row, row)
 
+    @in_session
     def test_get_oldest_pending_row_none_when_dep_processing(self):
         row = self._test_get_oldest_pending_row_with_dep(odl_const.PROCESSING)
         self.assertIsNone(row)
@@ -276,6 +280,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         rows = db.get_all_db_rows(self.db_context)
         self.assertTrue(row in rows)
 
+    @in_session
     def _test_delete_rows_by_state_and_time(self, last_retried, row_retention,
                                             state, expected_rows,
                                             dry_delete=False):
@@ -389,6 +394,7 @@ class DbTestCase(test_base_db.ODLBaseDbTestCase):
         # and we are changing the status twice
         self.assertEqual(mock_flush.call_count, 2)
 
+    @in_session
     def _test_periodic_task_lock_unlock(self, db_func, existing_state,
                                         expected_state, expected_result,
                                         task='test_task'):

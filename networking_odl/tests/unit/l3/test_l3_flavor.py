@@ -17,6 +17,7 @@ from unittest import mock
 from neutron.objects import router as l3_obj
 from neutron_lib.callbacks import events
 from neutron_lib.callbacks import resources
+from neutron_lib.db import api as db_api
 from oslo_config import fixture as config_fixture
 from oslo_utils import uuidutils
 
@@ -100,17 +101,23 @@ class OpenDaylightL3FlavorTestCase(base_v2.OpenDaylightConfigBase):
     def _test_router_operation(self, event, operation, router, ops=True):
         method = getattr(self.flavor_driver,
                          '_router_%s_%s' % (operation, event))
-        if event == 'precommit':
-            method(odl_const.ODL_ROUTER, mock.ANY, mock.ANY, **router)
-        else:
-            payload = events.DBEventPayload(
-                router.get('context'), states=(router.get('router_db'),),
-                request_body=router.get(resources.ROUTER),
-                resource_id=router.get(resources.ROUTER).get('id'))
+        with db_api.CONTEXT_WRITER.using(self.db_context):
+            if event == 'precommit':
+                method(odl_const.ODL_ROUTER, mock.ANY, mock.ANY, **router)
+            else:
+                payload = events.DBEventPayload(
+                    router.get('context'), states=(router.get('router_db'),),
+                    request_body=router.get(resources.ROUTER),
+                    resource_id=router.get(resources.ROUTER).get('id'))
 
-            method(odl_const.ODL_ROUTER, mock.ANY, mock.ANY, payload=payload)
-        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
+                method(odl_const.ODL_ROUTER, mock.ANY, mock.ANY,
+                       payload=payload)
+        row = None
+        rows = sorted(db.get_all_db_rows_by_state(self.db_context,
+                                                  odl_const.PENDING),
+                      key=lambda x: x.seqnum)
         if ops:
+            row = rows[0]
             if operation in ['del', odl_const.ODL_DELETE]:
                 self.assertEqual(router['router_id'], row.object_uuid)
             else:

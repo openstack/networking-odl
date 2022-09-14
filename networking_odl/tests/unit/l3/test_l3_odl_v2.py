@@ -24,6 +24,7 @@ from neutron.tests import base
 from neutron.tests.unit.db import test_db_base_plugin_v2
 from neutron.tests.unit import testlib_api
 from neutron_lib.api.definitions import external_net
+from neutron_lib.db import api as db_api
 from neutron_lib.plugins import constants
 from neutron_lib.plugins import directory
 from oslo_config import cfg
@@ -295,8 +296,10 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
             # Add and test 'update' database entry.
             method = getattr(self.driver,
                              odl_const.ODL_UPDATE + '_' + object_type)
-            method(self.db_context, object_id, object_dict)
-            self._test_db_results(object_id, odl_const.ODL_UPDATE, object_type)
+            with db_api.CONTEXT_WRITER.using(self.db_context):
+                method(self.db_context, object_id, object_dict)
+                self._test_db_results(
+                    object_id, odl_const.ODL_UPDATE, object_type)
 
             # Add and test 'delete' database entry.
             method = getattr(self.driver,
@@ -315,12 +318,16 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
         # Create dependency db row and mark as 'processing' so it won't
         # be processed by the journal thread.
         ctxt = self.db_context
-        journal.record(ctxt, dep_object, dep_id, dep_operation, dep_data)
-        row = db.get_all_db_rows_by_state(self.db_context, odl_const.PENDING)
-        db.update_db_row_state(self.db_context, row[0], odl_const.PROCESSING)
+        with db_api.CONTEXT_WRITER.using(self.db_context):
+            journal.record(ctxt, dep_object, dep_id, dep_operation, dep_data)
+            row = db.get_all_db_rows_by_state(self.db_context,
+                                              odl_const.PENDING)
+            db.update_db_row_state(self.db_context, row[0],
+                                   odl_const.PROCESSING)
 
-        # Create test row with dependent ID.
-        journal.record(ctxt, test_object, test_id, test_operation, test_data)
+            # Create test row with dependent ID.
+            journal.record(ctxt, test_object, test_id, test_operation,
+                           test_data)
 
         # Call journal thread.
         self.thread.sync_pending_entries()

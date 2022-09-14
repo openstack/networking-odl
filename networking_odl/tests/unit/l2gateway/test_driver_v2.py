@@ -73,7 +73,12 @@ class OpenDaylightL2GWDriverTestCase(base_v2.OpenDaylightConfigBase):
         return fake_l2_gateway_connection
 
     def _assert_op(self, operation, object_type, data, precommit=True):
-        row = db.get_oldest_pending_db_row_with_lock(self.db_context)
+        row = None
+        rows = sorted(db.get_all_db_rows_by_state(self.db_context,
+                                                  odl_const.PENDING),
+                      key=lambda x: x.seqnum)
+        if precommit:
+            row = rows[0]
         if precommit:
             self.db_context.session.flush()
             self.assertEqual(operation, row['operation'])

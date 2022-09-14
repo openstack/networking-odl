@@ -8,45 +8,26 @@
     check:
       jobs:
         - openstack-tox-pep8:
-            required-projects:
+            required-projects: &odl_doc_required_projects
               - openstack/ceilometer
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-cover:
-            required-projects:
+            required-projects: &odl_required_projects
               - openstack/ceilometer
               - openstack/neutron
               - x/networking-l2gw
               - openstack/networking-sfc
               - openstack/networking-bgpvpn
         - openstack-tox-docs:
-            required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_doc_required_projects
         - openstack-tox-py38:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_required_projects
         - openstack-tox-py39:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_required_projects
         - openstack-tox-py310:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_required_projects
         - networking-odl-grenade:
             voting: false
             irrelevant-files:
@@ -73,45 +54,26 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-neon
-        - networking-odl-functional-sodium
+        - networking-odl-functional-neon:
+            required-projects: *odl_required_projects
+        - networking-odl-functional-sodium:
+            required-projects: *odl_required_projects
     gate:
       jobs:
         - openstack-tox-pep8:
-            required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_doc_required_projects
         - openstack-tox-docs:
-            required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_doc_required_projects
         - openstack-tox-py38:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_required_projects
         - openstack-tox-py39:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+            required-projects: *odl_required_projects
         - openstack-tox-py310:
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - networking-odl-functional-neon
-        - networking-odl-functional-sodium
+            required-projects: *odl_required_projects
+        - networking-odl-functional-neon:
+            required-projects: *odl_required_projects
+        - networking-odl-functional-sodium:
+            required-projects: *odl_required_projects
     periodic-weekly:
       jobs:
         - openstack-tox-py39

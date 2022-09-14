@@ -16,6 +16,7 @@
 
 from unittest import mock
 
+from neutron_lib.db import api as db_api
 from neutron_lib import exceptions as nexc
 from neutron_lib.plugins import constants as plugin_constants
 from neutron_lib.plugins import directory
@@ -97,13 +98,14 @@ class RecoveryTestCase(test_base_db.ODLBaseDbTestCase):
             self.db_context.session, mock_row)
 
     def test_journal_recovery_retries_exceptions(self):
-        db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
-                              'id', odl_const.ODL_DELETE, {})
-        created_row = db.get_all_db_rows(self.db_context)[0]
-        db.update_db_row_state(self.db_context, created_row,
-                               odl_const.FAILED)
+        with db_api.CONTEXT_WRITER.using(self.db_context):
+            db.create_pending_row(self.db_context, odl_const.ODL_NETWORK,
+                                  'id', odl_const.ODL_DELETE, {})
+            created_row = db.get_all_db_rows(self.db_context)[0]
+            db.update_db_row_state(self.db_context, created_row,
+                                   odl_const.FAILED)
         with mock.patch.object(db, 'update_db_row_state') as m:
-            self._test_retry_exceptions(recovery.journal_recovery, m)
+            self._test_retry_exceptions(recovery.journal_recovery, m, False)
 
     def test_journal_recovery_no_rows(self):
         recovery.journal_recovery(self.db_context)
