@@ -1,13 +1,14 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
+# Andi Chandler <andi@gowling.com>, 2022. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: Networking OpenDaylight Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-07 20:20+0000\n"
+"POT-Creation-Date: 2022-09-23 09:40+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2017-12-13 01:16+0000\n"
+"PO-Revision-Date: 2022-09-15 08:58+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -16,6 +17,18 @@ msgstr ""
 
 msgid "11.0.0"
 msgstr "11.0.0"
+
+msgid "11.0.1"
+msgstr "11.0.1"
+
+msgid "12.0.0"
+msgstr "12.0.0"
+
+msgid "12.0.1"
+msgstr "12.0.1"
+
+msgid "13.0.0"
+msgstr "13.0.0"
 
 msgid "3.0.0"
 msgstr "3.0.0"
@@ -274,6 +287,13 @@ msgstr "Maintenance lock table was added to synchronise multiple threads."
 msgid "Maintenance thread for the V2 driver."
 msgstr "Maintenance thread for the V2 driver."
 
+msgid ""
+"Making config paramter sync_timeout of FloatOpt type to allow use of "
+"fraction values for timeouts."
+msgstr ""
+"Making config parameter sync_timeout of FloatOpt type to allow the use of "
+"fraction values for timeouts."
+
 msgid "Network Statistics From OpenDaylight."
 msgstr "Network Statistics From OpenDaylight."
 
@@ -314,6 +334,15 @@ msgstr ""
 "got to features, say neutron-extensions:feature1 and neutron-extensions:"
 "feature2, the config file should have, odl_features=feature1,feature2"
 
+msgid ""
+"Neutron-lbaas is retired in Train cycle, so all the related dependencies "
+"must be removed from networking-odl, for details see: http://lists.openstack."
+"org/pipermail/openstack-discuss/2019-May/006158.html"
+msgstr ""
+"Neutron-lbaas is retired in the Train cycle, so all the related dependencies "
+"must be removed from networking-odl, for details see: http://lists.openstack."
+"org/pipermail/openstack-discuss/2019-May/006158.html"
+
 msgid "New Features"
 msgstr "New Features"
 
@@ -324,11 +353,27 @@ msgid "Ocata Series Release Notes"
 msgstr "Ocata Series Release Notes"
 
 msgid ""
+"OpenDaylight changes are available at https://git.opendaylight.org/gerrit/#/"
+"c/63405/"
+msgstr ""
+"OpenDaylight changes are available at https://git.opendaylight.org/gerrit/#/"
+"c/63405/"
+
+msgid ""
 "OpenDaylight feature negotiation allows for networking_odl to adapt its "
 "behavior to the features supported by the specific ODL version."
 msgstr ""
 "OpenDaylight feature negotiation allows for networking_odl to adapt its "
 "behaviour to the features supported by the specific ODL version."
+
+msgid ""
+"OpenStack neutron allows L3 flavors to enable multiple L3 backends in the "
+"same cloud. This is ODL L3 flavor driver to implement L3 flavors for "
+"OpenStack Neutron and OpenDaylight integration."
+msgstr ""
+"OpenStack Neutron allows L3 flavours to enable multiple L3 backends in the "
+"same cloud. This is ODL L3 flavour driver to implement L3 flavours for "
+"OpenStack Neutron and OpenDaylight integration."
 
 msgid "Other Notes"
 msgstr "Other Notes"
@@ -338,6 +383,22 @@ msgstr "Pike Series Release Notes"
 
 msgid "Prelude"
 msgstr "Prelude"
+
+msgid ""
+"Python 2.7 support has been dropped. Last release of networking-odl to "
+"support python 2.7 is OpenStack Train. The minimum version of Python now "
+"supported by networking-odl is Python 3.6."
+msgstr ""
+"Python 2.7 support has been dropped. The last release of networking-odl to "
+"support python 2.7 is OpenStack Train. The minimum version of Python now "
+"supported by networking-odl is Python 3.6."
+
+msgid ""
+"Python 3.6 & 3.7 support has been dropped. The minimum version of Python now "
+"supported is Python 3.8."
+msgstr ""
+"Python 3.6 & 3.7 support has been dropped. The minimum version of Python now "
+"supported is Python 3.8."
 
 msgid "QoS Driver V1 for networking-odl."
 msgstr "QoS Driver V1 for networking-odl."
@@ -398,6 +459,9 @@ msgstr ""
 "default. To force the use of V1 architecture drivers you can specify "
 "'ODL_V2DRIVER=False' in the local.conf file."
 
+msgid "Support for bgpvpn-vni."
+msgstr "Support for bgpvpn-vni."
+
 msgid "Support for vlan-transparency."
 msgstr "Support for VLAN-transparency."
 
@@ -433,6 +497,20 @@ msgstr ""
 "IOV. It allows binding direct (SR-IOV) ports. Using ``openvswitch`` 2.8.0 "
 "and 'Linux Kernel' 4.12 allows to control the SR-IOV VF via OpenFlow control "
 "plane and gain accelerated 'Open vSwitch'."
+
+msgid ""
+"The config option odl_features_json has been added to allow specifying "
+"features in the same format ODL returns during negotiation."
+msgstr ""
+"The config option odl_features_json has been added to allow specifying "
+"features in the same format ODL returns during negotiation."
+
+msgid ""
+"The config parameter sync_timeout sometimes uses the fraction value and "
+"because it is set to Intopt, that use of fraction value may end up in error."
+msgstr ""
+"The config parameter sync_timeout sometimes uses the fraction value and "
+"because it is set to Intopt, that use of fraction value may end up in error."
 
 msgid ""
 "The default setting for OpenDayligut openstack service provider was changed "
