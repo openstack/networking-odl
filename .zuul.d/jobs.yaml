@@ -209,7 +209,7 @@
     pre-run: playbooks/functional/pre.yaml
     description: |
         Base job for functional tests
-    timeout: 1800
+    timeout: 2700
     roles:
       - zuul: openstack/devstack
     vars:
