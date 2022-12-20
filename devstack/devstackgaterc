@@ -26,21 +26,8 @@ export DEVSTACK_LOCAL_CONFIG+=$'\n'"BUILD_TIMEOUT=60"
 
 CINDER_SERVICES=c-api,c-bak,c-sch,c-vol,cinder
 COMMON_SERVICES=dstat,g-api,g-reg,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,rabbit,placement-api,n-api-meta
-NEUTRON_NEW=neutron-dhcp,neutron-metadata-agent,neutron-api,neutron
-# This variable is not being used, it will be removed once migration is complete
-NEUTRON_LEGACY=q-dhcp,q-meta,q-svc,quantum
-
-if [[ "$IS_GRENADE_JOB" == "True"  ]]; then
-    # TODO(rajivk): workaround, Remove this once, grenade has moved to lib/neutron
-    # from legacy. Currently, it checks service with q-*, so it does not detect new
-    # neutron-*. Therefore neutron does not get registered for upgrade, if we
-    # override and register neutron from networking-odl because it will look for
-    # required files available with neutron only. For now, lib/neutron-legacy to
-    # lib/neutron is not done for grenade jobs.
-    ALL_ENABLED_SERVICES=${COMMON_SERVICES},${NEUTRON_LEGACY}
-else
-    ALL_ENABLED_SERVICES=${CINDER_SERVICES},${COMMON_SERVICES},${NEUTRON_NEW}
-fi
+NEUTRON_SERVICES=neutron-dhcp,neutron-metadata-agent,neutron-api,neutron
+ALL_ENABLED_SERVICES=${CINDER_SERVICES},${COMMON_SERVICES},${NEUTRON_SERVICES}
 
 export OVERRIDE_ENABLED_SERVICES=${ALL_ENABLED_SERVICES}
 if [ -z "${RALLY_SCENARIO}" ] ; then

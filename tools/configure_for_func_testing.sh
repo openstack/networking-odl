@@ -176,7 +176,7 @@ function _install_opendaylight {
     echo_summary "Install OpenDaylight"
 
     # fake up necessary environment for odl to install/configure
-    source $DEVSTACK_PATH/lib/neutron-legacy
+    source $DEVSTACK_PATH/lib/neutron
     neutron_plugin_configure_common
     _create_neutron_conf_dir
     mkdir -p $NEUTRON_CONF_DIR
