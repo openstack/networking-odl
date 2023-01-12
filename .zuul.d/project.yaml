@@ -9,51 +9,66 @@
       jobs:
         - openstack-tox-pep8:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - openstack-tox-cover:
             required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: openstack/neutron
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - openstack-tox-docs:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - openstack-tox-lower-constraints:
-            voting: false
-            required-projects:
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - openstack-tox-py36:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - networking-odl-grenade:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-neon
-        - networking-odl-tempest-sodium
-        - networking-odl-tempest-neon-multinode:
-            voting: false
-        - networking-odl-tempest-sodium-multinode:
-            voting: false
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
+        - openstack-tox-py38:
+            required-projects:
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
+        - openstack-tox-py39:
+            required-projects:
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - networking-odl-rally-neon:
             voting: false
             irrelevant-files:
@@ -66,27 +81,55 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - networking-odl-functional-neon
-        - networking-odl-functional-sodium
     gate:
       jobs:
         - openstack-tox-pep8:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - openstack-tox-docs:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
         - openstack-tox-py36:
             required-projects:
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
-        - networking-odl-functional-neon
-        - networking-odl-functional-sodium
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
+        - openstack-tox-py38:
+            required-projects:
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
+        - openstack-tox-py39:
+            required-projects:
+              - name: openstack/ceilometer
+                override-checkout: stable/xena
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/xena
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/xena
