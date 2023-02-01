@@ -371,3 +371,15 @@
       grenade_devstack_localrc:
         shared:
           ODL_RELEASE: *sodium
+
+- job:
+    name: networking-odl-openstack-tox-py310-with-sqlalchemy-main
+    parent: openstack-tox-py310-with-oslo-master
+    required-projects:
+      - name: github.com/sqlalchemy/sqlalchemy
+        override-checkout: main
+      - name: github.com/sqlalchemy/alembic
+        override-checkout: main
+      - openstack/oslo.db
+      - openstack/neutron-lib
+

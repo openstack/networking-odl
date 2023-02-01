@@ -76,5 +76,9 @@
             required-projects: *odl_required_projects
     periodic-weekly:
       jobs:
-        - openstack-tox-py39
+        - openstack-tox-py310
+        - openstack-tox-py310-with-oslo-master:
+            required-projects: *odl_required_projects
+        - networking-odl-openstack-tox-py310-with-sqlalchemy-main:
+            required-projects: *odl_required_projects
         - networking-odl-functional-sodium
