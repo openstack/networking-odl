@@ -15,10 +15,10 @@ websocket-client>=0.47.0 # LGPLv2+
 
 # OpenStack CI will install the following projects from git
 # if they are in the required-projects list for a job:
-neutron>=16.0.0.0b1 # Apache-2.0
+neutron>=16.0.0 # Apache-2.0
 networking-l2gw>=12.0.0  # Apache-2.0
-networking-sfc>=10.0.0.0b1  # Apache-2.0
-networking-bgpvpn>=10.0.0b1  # Apache-2.0
+networking-sfc>=10.0.0  # Apache-2.0
+networking-bgpvpn>=10.0.0  # Apache-2.0
 
 # The comment below indicates this project repo is current with neutron-lib
 # and should receive neutron-lib consumption patches as they are released
