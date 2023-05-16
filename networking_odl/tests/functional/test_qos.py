@@ -77,7 +77,8 @@ class QoSDriverTests(base.V2DriverAdjustment,
 
     @contextlib.contextmanager
     def qos_policy(self, fmt='json'):
-        po_res = self.new_create_request('policies', self.policy_data, fmt)
+        po_res = self.new_create_request('policies', self.policy_data, fmt,
+                                         as_admin=True)
         po_rep = po_res.get_response(self.ext_api)
         policy = self.deserialize(fmt, po_rep)
         yield policy
