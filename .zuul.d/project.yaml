@@ -9,17 +9,26 @@
       jobs:
         - openstack-tox-pep8:
             required-projects: &odl_doc_required_projects
-              - openstack/ceilometer
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/zed
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/zed
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/zed
         - openstack-tox-cover:
             required-projects: &odl_required_projects
-              - openstack/ceilometer
-              - openstack/neutron
-              - x/networking-l2gw
-              - openstack/networking-sfc
-              - openstack/networking-bgpvpn
+              - name: openstack/ceilometer
+                override-checkout: stable/zed
+              - name: openstack/neutron
+                override-checkout: stable/zed
+              - name: x/networking-l2gw
+                override-checkout: stable/wallaby
+              - name: openstack/networking-sfc
+                override-checkout: stable/zed
+              - name: openstack/networking-bgpvpn
+                override-checkout: stable/zed
         - openstack-tox-docs:
             required-projects: *odl_doc_required_projects
         - openstack-tox-py38:
@@ -28,20 +37,6 @@
             required-projects: *odl_required_projects
         - openstack-tox-py310:
             required-projects: *odl_required_projects
-        - networking-odl-grenade:
-            voting: false
-            irrelevant-files:
-              - ^(test-|)requirements.txt$
-              - ^.*\.rst$
-              - ^doc/.*$
-              - ^releasenotes/.*$
-              - ^setup.cfg$
-        - networking-odl-tempest-neon
-        - networking-odl-tempest-sodium
-        - networking-odl-tempest-neon-multinode:
-            voting: false
-        - networking-odl-tempest-sodium-multinode:
-            voting: false
         - networking-odl-rally-neon:
             voting: false
             irrelevant-files:

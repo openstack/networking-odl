@@ -74,14 +74,22 @@
     post-run: playbooks/tempest/post.yaml
     voting: false
     required-projects: &required-projects
-      - openstack/ceilometer
-      - openstack/networking-odl
-      - x/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
-      - openstack/neutron
-      - openstack/tempest
-      - openstack/neutron-tempest-plugin
+      - name: openstack/ceilometer
+        override-checkout: stable/zed
+      - name: openstack/networking-odl
+        override-checkout: stable/zed
+      - name: x/networking-l2gw
+        override-checkout: stable/wallaby
+      - name: openstack/networking-sfc
+        override-checkout: stable/zed
+      - name: openstack/networking-bgpvpn
+        override-checkout: stable/zed
+      - name: openstack/neutron
+        override-checkout: stable/zed
+      - name: openstack/tempest
+        override-checkout: stable/zed
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: stable/zed
     roles:
       - zuul: openstack/devstack
     timeout: 10800
@@ -119,59 +127,6 @@
       tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
 
 - job:
-    name: networking-odl-tempest-multinode-base
-    parent: tempest-multinode-full-py3
-    required-projects: *required-projects
-    roles:
-      - zuul: zuul/zuul-jobs
-      - zuul: openstack/neutron-tempest-plugin
-    timeout: 10800
-    pre-run: playbooks/multinode-setup.yaml
-    irrelevant-files: *irrelevant_files
-    vars:
-      <<: *devstack_vars
-      tox_envlist: all
-      tox_extra_args: --sitepackages
-      zuul_copy_output:
-        '{{ devstack_log_dir }}/screen-karaf.log': 'logs'
-      devstack_services:
-        # Disable OVN services
-        br-ex-tcpdump: false
-        br-int-flows: false
-        ovn-controller: false
-        ovn-northd: false
-        ovs-vswitchd: false
-        ovsdb-server: false
-        q-ovn-metadata-agent: false
-        # Enable Neutron services which we need for ODL
-        q-svc: true
-      extensions_to_txt:
-          log: True
-          ini: True
-      devstack_plugins:
-        <<: *devstack_plugins
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
-      # Only scenario tests and some compute API tests actually verify ODL is working
-      # Any API networking tests don't bring up any VMs and just verify that stuff happened in the
-      # Neutron DB, so they don't actually fail even if ODL is not running at all.
-      tempest_test_regex: tempest\.(api.compute|scenario|thirdparty)|neutron_tempest_plugin.scenario
-      tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
-
-- job:
-    name: networking-odl-tempest-neon
-    parent: networking-odl-tempest-base
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *neon
-
-- job:
-    name: networking-odl-tempest-sodium
-    parent: networking-odl-tempest-base
-    vars:
-      devstack_localrc:
-        ODL_RELEASE: *sodium
-
-- job:
     name: networking-odl-devstack-base
     parent: devstack
     nodeset: openstack-single-node-focal
@@ -179,13 +134,20 @@
         Base job for devstack-based tests
     pre-run: playbooks/devstack/pre.yaml
     required-projects:
-      - openstack/neutron
-      - openstack/neutron-lib
-      - openstack/ceilometer
-      - openstack/networking-odl
-      - x/networking-l2gw
-      - openstack/networking-sfc
-      - openstack/networking-bgpvpn
+      - name: openstack/neutron
+        override-checkout: stable/zed
+      - name: openstack/neutron-lib
+        override-checkout: stable/zed
+      - name: openstack/ceilometer
+        override-checkout: stable/zed
+      - name: openstack/networking-odl
+        override-checkout: stable/zed
+      - name: x/networking-l2gw
+        override-checkout: stable/wallaby
+      - name: openstack/networking-sfc
+        override-checkout: stable/zed
+      - name: openstack/networking-bgpvpn
+        override-checkout: stable/zed
     roles:
       - zuul: openstack/devstack
     timeout: 9000
@@ -239,14 +201,6 @@
         ODL_RELEASE: *sodium
 
 - job:
-    name: networking-odl-tempest-neon-multinode
-    parent: networking-odl-tempest-multinode-base
-
-- job:
-    name: networking-odl-tempest-sodium-multinode
-    parent: networking-odl-tempest-multinode-base
-
-- job:
     name: networking-odl-rally-neon
     parent: rally-task-at-devstack
     nodeset: openstack-single-node-focal
@@ -273,10 +227,14 @@
       rally_task: rally-jobs/odl.yaml
     timeout: 7500
     required-projects:
-      - openstack/devstack
-      - openstack/networking-odl
-      - openstack/rally
-      - openstack/rally-openstack
+      - name: openstack/devstack
+        override-checkout: stable/zed
+      - name: openstack/networking-odl
+        override-checkout: stable/zed
+      - name: openstack/rally
+        override-checkout: stable/zed
+      - name: openstack/rally-openstack
+        override-checkout: stable/zed
     irrelevant-files:
       - ^.*\.rst$
       - ^doc/.*$
@@ -314,10 +272,14 @@
       rally_task: rally-jobs/odl.yaml
     timeout: 7500
     required-projects:
-      - openstack/devstack
-      - openstack/networking-odl
-      - openstack/rally
-      - openstack/rally-openstack
+      - name: openstack/devstack
+        override-checkout: stable/zed
+      - name: openstack/networking-odl
+        override-checkout: stable/zed
+      - name: openstack/rally
+        override-checkout: stable/zed
+      - name: openstack/rally-openstack
+        override-checkout: stable/zed
     irrelevant-files:
       - ^.*\.rst$
       - ^doc/.*$
@@ -327,47 +289,3 @@
       - ^tools/.*$
       - ^tox.ini$
 
-- job:
-    name: networking-odl-grenade
-    parent: grenade-multinode
-    timeout: 9000
-    irrelevant-files: *irrelevant_files
-    roles:
-      - zuul: openstack/neutron-tempest-plugin
-    required-projects:
-      - opendev.org/openstack/grenade
-      - opendev.org/openstack/networking-odl
-      - opendev.org/openstack/neutron
-      - opendev.org/openstack/ceilometer
-      - opendev.org/x/networking-l2gw
-      - opendev.org/openstack/networking-sfc
-      - opendev.org/openstack/networking-bgpvpn
-      - opendev.org/openstack/neutron-tempest-plugin
-    vars:
-      <<: *devstack_vars
-      tox_envlist: all
-      devstack_plugins:
-        neutron: https://opendev.org/openstack/neutron
-        networking-odl: https://opendev.org/openstack/networking-odl
-      tempest_test_regex: tempest\.(api.compute|scenario|thirdparty)
-      tempest_test_blacklist: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/tempest-blacklist.txt"
-      devstack_services:
-        c-bak: false
-        etcd: false
-        ovs-vswitchd: true
-        ovsdb-server: true
-        placement-api: true
-        q-svc: true
-        q-agt: false
-        q-dhcp: true
-        q-l3: false
-        q-meta: true
-        q-metering: false
-        # When running python3 Swift should be disabled for now
-        s-account: false
-        s-container: false
-        s-object: false
-        s-proxy: false
-      grenade_devstack_localrc:
-        shared:
-          ODL_RELEASE: *sodium
