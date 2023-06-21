@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    Fixes ODL Neutron NB URL path for SFC v2 Driver.

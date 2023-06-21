@@ -1,4 +1,0 @@
----
-deprecations:
-  - The QoS V1 driver is deprecated in the Pike cycle and will be removed
-    in the Queens release.

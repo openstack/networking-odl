@@ -1,8 +1,0 @@
-# This overrides the default fallback that can be located at:
-# https://opendev.org/openstack/project-config/src/branch/master/nodepool/elements/bindep-fallback.txt
-
-isc-dhcp-client [platform:ubuntu]
-netcat-openbsd [platform:ubuntu]
-iputils-arping [platform:ubuntu test]
-dhclient [platform:fedora]
-iputils [platform:fedora test]
