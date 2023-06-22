@@ -78,7 +78,8 @@ class _TestBGPVPNBase(base.OdlTestsBase):
 
     def test_bgpvpn_delete(self):
         with self.bgpvpn(do_delete=False) as bgpvpn:
-            self._delete('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'])
+            self._delete('bgpvpn/bgpvpns', bgpvpn['bgpvpn']['id'],
+                         as_admin=True)
             self.assertIsNone(
                 self.get_odl_resource(odl_const.ODL_BGPVPN, bgpvpn))
 

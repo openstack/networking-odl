@@ -91,13 +91,15 @@ class OdlTestsBase(object):
 
         self._update(odl_utils.make_url_object(resource_type),
                      resource[resource_type]['id'],
-                     {resource_type: {update_field: update_value}})
+                     {resource_type: {update_field: update_value}},
+                     as_admin=True)
         resource = self.get_odl_resource(resource_type, resource)
         self.assertEqual(update_value, resource[resource_type][update_field])
 
     def resource_delete_test(self, resource_type, resource):
         self._delete(odl_utils.make_url_object(resource_type),
-                     resource[resource_type]['id'])
+                     resource[resource_type]['id'],
+                     as_admin=True)
         self.assertIsNone(self.get_odl_resource(resource_type, resource))
 
 

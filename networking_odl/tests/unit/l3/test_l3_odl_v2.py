@@ -237,7 +237,8 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def _test_thread_processing(self, object_type):
         # Create network and subnet.
         kwargs = {'arg_list': (external_net.EXTERNAL,),
-                  external_net.EXTERNAL: True}
+                  external_net.EXTERNAL: True,
+                  'as_admin': True}
         with self.network(**kwargs) as network:
             with self.subnet(network=network, cidr='10.0.0.0/24'):
                 # Add and process create request.
@@ -278,7 +279,8 @@ class OpenDaylightL3TestCase(test_db_base_plugin_v2.NeutronDbPluginV2TestCase,
     def _prepare_resource(self, resource_type):
         # Create network and subnet for testing.
         kwargs = {'arg_list': (external_net.EXTERNAL,),
-                  external_net.EXTERNAL: True}
+                  external_net.EXTERNAL: True,
+                  'as_admin': True}
         with self.network(**kwargs) as network:
             with self.subnet(network=network):
                 yield self._get_mock_operation_info(
