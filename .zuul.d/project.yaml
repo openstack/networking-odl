@@ -68,7 +68,3 @@
             required-projects: *odl_required_projects
         - networking-odl-functional-sodium:
             required-projects: *odl_required_projects
-    periodic-weekly:
-      jobs:
-        - openstack-tox-py39
-        - networking-odl-functional-sodium
